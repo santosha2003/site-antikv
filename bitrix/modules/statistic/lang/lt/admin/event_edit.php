@@ -1,0 +1,32 @@
+<?
+$MESS['STAT_TITLE'] = '';
+$MESS['STAT_CHARGEBACK'] = 'Pinigø gràþinimas';
+$MESS['STAT_EVENT_TYPE'] = 'Ávykiø tipo ID';
+$MESS['STAT_DATE'] = 'Data';
+$MESS['STAT_PARAM'] = '';
+$MESS['STAT_COPY'] = '';
+$MESS['STAT_CALENDAR'] = 'Kalendorius';
+$MESS['STAT_SELECT_EVENT'] = 'Ávykiø tipo pasirinkimas';
+$MESS['STAT_LOAD'] = 'Ákelti';
+$MESS['STAT_FILE'] = 'CSV failas:';
+$MESS['STAT_MONEY'] = 'Pinigø suma';
+$MESS['STAT_PREVIEW'] = 'Perþiûra:';
+$MESS['STAT_STEP'] = '';
+$MESS['STAT_HANDLER'] = '';
+$MESS['STAT_LOADING_FROM_TABLE'] = '';
+$MESS['STAT_LOADING_FROM_CSV'] = '';
+$MESS['STAT_UNIQUE'] = '';
+$MESS['STAT_UNIQUE_ALT'] = '';
+$MESS['STAT_CURRENCY'] = 'Valiuta';
+$MESS['STAT_NEXT_STEP'] = 'Sekantis þingsnis';
+$MESS['STAT_EVENTS_LOADING'] = '';
+$MESS['STAT_LOADED'] = 'Ákelta:';
+$MESS['STAT_PROCESSED'] = 'Apdorota:';
+$MESS['STAT_ON_STEP'] = '';
+$MESS['STAT_TOTAL_CSV'] = 'Ið viso eiluèiø CSV:';
+$MESS['STAT_DUPLICATE'] = '';
+$MESS['STAT_CONVERT_TO_DEFAULT_CUR'] = '';
+$MESS['STAT_FROM_FILE'] = 'Ið failo';
+$MESS['STAT_FROM_FORM'] = '';
+$MESS['STAT_ATTENTION_1'] = 'Dëmesio!';
+?>

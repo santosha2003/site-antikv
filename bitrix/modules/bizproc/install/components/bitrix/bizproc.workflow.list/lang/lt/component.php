@@ -1,0 +1,27 @@
+<?
+$MESS["BPATT_NAV"] = "Verslo proceso ðablonai";
+$MESS["BPATT_TITLE"] = "Verslo proceso ðablonai";
+$MESS["BPATT_AE_CREATE"] = "Sukurti";
+$MESS["BPATT_AE_DELETE"] = "Paðalinti";
+$MESS["BPATT_AE_NONE"] = "Ne";
+$MESS["BPATT_NO_ENTITY"] = "Nenurodytas subjektas, kuriam turi bûti sukurtas verslo procesas.";
+$MESS["BPATT_NO_DOCUMENT_TYPE"] = "Privalomas dokumento tipas.";
+$MESS["BPATT_NO_MODULE_ID"] = "Privalomas modulio ID.";
+$MESS["BPATT_AE_EDIT"] = "Atnaujinti";
+$MESS["BPATT_NO_PERMS"] = "Jûs neturite teisës paleisti verslo procesà ðiam dokumentui.";
+$MESS["BPATT_DO_DELETE1_CONFIRM"] = "Ar tikrai norite paðalinti ðá ðablonà?";
+$MESS["BPATT_DO_DELETE1"] = "Paðalinti ";
+$MESS["BPATT_DO_N_LOAD_CREATE_TITLE"] = "Nevykdyti verslo proceso kuriant dokumentà";
+$MESS["BPATT_DO_N_LOAD_EDIT_TITLE"] = "Nevykdyti verslo proceso keièiant dokumentà";
+$MESS["BPATT_DO_N_LOAD_CREATE"] = "Nevykdyti kûrimo metu";
+$MESS["BPATT_DO_N_LOAD_EDIT"] = "Nevykdyti pakeiitimo metu";
+$MESS["BPATT_DO_EDIT1"] = "Redaguoti";
+$MESS["BPATT_DO_LOAD_CREATE_TITLE"] = "Vykdyti verslo procesà kuriant dokumentà";
+$MESS["BPATT_DO_LOAD_EDIT_TITLE"] = "Vykdyti verslo procesà keièiant dokumentà";
+$MESS["BPATT_DO_LOAD_CREATE"] = "Vykdyti kûrimo metu";
+$MESS["BPATT_DO_LOAD_EDIT"] = "Vykdyti keitimo metu";
+$MESS["BPATT_DO_EDIT_VARS"] = "Pakeisti pradines kintamøjø reikðmes";
+$MESS["BPATT_DO_EDIT_VARS1"] = "Kintamieji";
+$MESS['BPATT_DO_EDIT_CONSTANTS'] = "Nustatyti konstantø reikðmes";
+$MESS['BPATT_DO_EDIT_CONSTANTS1'] = "Konstantos";
+?>

@@ -1,0 +1,37 @@
+<?
+$MESS ['MAIL_CL_ERR_CHECK_MAIL'] = "Kutudan postanýn alýnmasýnda hata oluþtu";
+$MESS ['MAIL_CL_ERR_NAME'] = "Alan doldurulmamýþtýr ";
+$MESS ['MAIL_CL_NAME'] = "Adý";
+$MESS ['MAIL_CL_LOGIN'] = "Oturum aç";
+$MESS ['MAIL_CL_PASSWORD'] = "Parola ";
+$MESS ['MAIL_CL_SERVER'] = "Posta sunucusu";
+$MESS ['MAIL_CL_ERR_BAD_LANG'] = "Site yanlýþ";
+$MESS ['MAIL_CL_ERR_BAD_LANG_NX'] = "Posta kutusunun sitesi girilmedi";
+$MESS ['MAIL_CL_ERR_MAILBOX_NOT_FOUND'] = "Kutu bulunamadý.";
+$MESS ['MAIL_CL_TIMEOUT'] = "Baðlantý zaman aþýmý";
+$MESS ['MAIL_CL_ERR_APOP'] = "APOP uygulanmasýnda hata oluþtu.";
+$MESS ['MAIL_CL_ERR_USER'] = "USER uygulamasýnda hata oluþtu.";
+$MESS ['MAIL_CL_ERR_PASSWORD'] = "Parola yanlýþ.";
+$MESS ['MAIL_CL_ERR_STAT'] = "STAT görevin uygulanmasýnda hata oluþtu.";
+$MESS ['MAIL_CL_ERR_UIDL'] = "UIDL görevin uygulamasýnda hata oluþtu.";
+$MESS ['MAIL_CL_ERR_DISCONNECT'] = "Baðlantý sonunda hata oluþtu.";
+$MESS ['MAIL_CL_ERR_RETR'] = "Ýleti alýmýnda hata oluþtu.";
+$MESS ['MAIL_CL_ERR_DELE'] = "Ýleti silinmesinde hata oluþtu.";
+$MESS ['MAIL_CL_ERR_IN_PHP'] = "Alan içerisinde PHP kod hatasý";
+$MESS ['MAIL_CL_PHP_COND'] = "PHP betik üzerinde þartlar";
+$MESS ['MAIL_CL_PHP_ACT'] = "PHP betik üzerinde eylemler";
+$MESS ['MAIL_CL_ERR_WRONG_MAILBOX'] = "Yanlýþ posta kutusu";
+$MESS ['MAIL_CL_ERR_MAILBOX_NA'] = "Posta kutusu girilmedi";
+$MESS ['MAIL_CL_CONNECT_TO'] = "ile baðlanýyoruz";
+$MESS ['MAIL_CL_WHEN_CONNECT'] = "(alýnmasýnda)";
+$MESS ['MAIL_CL_WHEN_MANUAL'] = "(manuel arama ile)";
+$MESS ['MAIL_CL_RULE_ACT_SPAM'] = "Kural eylemi: Ýleti spam olarak iþaretlendi";
+$MESS ['MAIL_CL_ACT_SPAM'] = "Ýleti spam olarak iþaretlendi";
+$MESS ['MAIL_CL_RULE_ACT_NOTSPAM'] = "Kural eylemi: Ýleti spam olarak iþaretlenmedi";
+$MESS ['MAIL_CL_ACT_NOTSPAM'] = "Ýleti spam olarak iþaretlenmesi";
+$MESS ['MAIL_CL_RULE_ACT_PHP'] = "Kural eylemi: PHP betiðin uygulanmasý";
+$MESS ['MAIL_CL_RULE_ACT_DEL'] = "Kural eylemi: Ýletinin silinmesi";
+$MESS ['MAIL_CL_RULE_ACT_CANC'] = "Kural eylemi: Kural uygulamanýn durdurulmasý";
+$MESS ['MAIL_CL_NEW_MESSAGE'] = "Ýletinin alýnmasý:";
+$MESS ['MAIL_CL_RULE_RUN'] = "Kural ile iþleme";
+?>

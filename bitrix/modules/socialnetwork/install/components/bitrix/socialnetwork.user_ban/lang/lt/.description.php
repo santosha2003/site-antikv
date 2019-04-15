@@ -1,0 +1,5 @@
+<?
+$MESS["SONET_UBAN_TEMPLATE_NAME"] = "Vartotojo draudimø sàraðas";
+$MESS["SONET_UBAN_TEMPLATE_DESCRIPTION"] = "Leidþia perþiûrëti ir redaguoti vartotojo draudimø sàraðà.";
+$MESS["SONET_NAME"] = "Socialinis tinklas";
+?>

@@ -1,0 +1,33 @@
+<?
+$MESS ['CHANGE_STATUS'] = "Sorgu durumu deðiþtirilmesin";
+$MESS ['SUP_MESSAGE_NOT_FOUND'] = "Ýleti bulunmamýþtýr";
+$MESS ['SUP_EDIT_RECORD'] = "Ýleti # #ID# (sorgu# #TID#)";
+$MESS ['SUP_TICKETS_LIST'] = "Sorgu listesi";
+$MESS ['SUP_TICKET_EDIT'] = "# #TID# sorgunun düzenlenmesi";
+$MESS ['SUP_EDIT_ALT'] = "Ýleti parametrelerin düzenlenmesi";
+$MESS ['SUP_NUMBER'] = "Sýra No:";
+$MESS ['SUP_ERROR'] = "Ýletinin kaydýnda hata";
+$MESS ['SUP_MESSAGE'] = "Ýleti:";
+$MESS ['SUP_SAVE'] = "Kaydet";
+$MESS ['SUP_RESET'] = "Sýfýrla";
+$MESS ['SUP_FROM'] = "Kimden:";
+$MESS ['SUP_CREATE'] = "Oluþturuldu:";
+$MESS ['SUP_TIMESTAMP'] = "Deðiþtirildi:";
+$MESS ['SUP_TASK_TIME'] = "Çözüm zamaný (dk.):";
+$MESS ['SUP_EXTERNAL_ID'] = "dýþ orijinal ID(email vb.):";
+$MESS ['SUP_EXTERNAL_FIELD_1'] = "Dýþ orijinalin ek alaný ( email baþlýklarý vb.):";
+$MESS ['SUP_SPAM_MARK'] = "Spam hakkýnda iþaret:";
+$MESS ['SUP_POSSIBLE_SPAM'] = "spam üzerinde olanaklý";
+$MESS ['SUP_CERTAIN_SPAM'] = "spam";
+$MESS ['SUP_IS_HIDDEN'] = "Gizli:";
+$MESS ['SUP_IS_LOG'] = "Deðiþiklik günlüðün doldurulmasý:";
+$MESS ['SUP_ATTACHED_FILES'] = "Eklenmiþ dosyalar:";
+$MESS ['SUP_DOWNLOAD'] = "indir";
+$MESS ['SUP_ATTACH_NEW_FILES'] = "Yeni dosyalarý ekle:";
+$MESS ['SUP_MORE'] = "Daha...";
+$MESS ['SUP_VIEW_ALT'] = "Dosyanýn görüntülenmesi";
+$MESS ['SUP_MAX_FILE_SIZE_EXCEEDING'] = "Hata! \"#FILE_NAME#dosyanýn maksimum boyutu aþýlmýþtýr\".";
+$MESS ['SUP_DELETE_MESSAGE'] = "Ýletiyi sil";
+$MESS ['SUP_DELETE_MESSAGE_CONFIRM'] = "Ýletiyi silmek istediðinizden eminmisiniz?";
+$MESS ['SUP_IS_OVERDUE'] = "Müþterinin ileti süresi geçti:";
+?>

@@ -1,0 +1,29 @@
+<?
+$MESS ['IBLOCK_ACCESS'] = "Eriþim parametreleri";
+$MESS ['IBLOCK_SEF_EDIT'] = "düzenleme";
+$MESS ['IBLOCK_TYPE'] = "Bilgi-bloðu türü";
+$MESS ['IBLOCK_IBLOCK'] = "Bilgi Bloðu";
+$MESS ['IBLOCK_GROUPS'] = "Ekleme/düzenleme yapma hakkýna sahip kullanýcý gruplarý";
+$MESS ['IBLOCK_ADD_NAME'] = "Taným";
+$MESS ['IBLOCK_ADD_TAGS'] = "* etiketler *";
+$MESS ['IBLOCK_ADD_IBLOCK_SECTION'] = "* bilgi bloðu bölümü *";
+$MESS ['IBLOCK_ADD_PREVIEW_TEXT'] = "* önizleme metni *";
+$MESS ['IBLOCK_ADD_PREVIEW_PICTURE'] = "* Önizleme resmi *";
+$MESS ['IBLOCK_ADD_DETAIL_TEXT'] = "* detaylý metin *";
+$MESS ['IBLOCK_ADD_DETAIL_PICTURE'] = "* detaylý resim *";
+$MESS ['IBLOCK_ELEMENT_ASSOC'] = "Kullanýcýya baðla";
+$MESS ['IBLOCK_ELEMENT_ASSOC_PROPERTY'] = "Bilgi bloðu özelliðine göre -->";
+$MESS ['CP_BIEAL_IBLOCK_STATUS'] = "Konumda düzenleme yapýlabilir";
+$MESS ['IBLOCK_S_ACTIVE'] = "Düzenleme mümkün";
+$MESS ['IBLOCK_STATUS_ANY'] = "tüm öðeler";
+$MESS ['IBLOCK_STATUS_INCATIVE'] = "Aktif olmayan öðeler";
+$MESS ['IBLOCK_ADD_EDIT_URL'] = "Öðe düzenleme sayfasý";
+$MESS ['IBLOCK_ALLOW_EDIT'] = "Düzenlemeye izin ver";
+$MESS ['IBLOCK_ALLOW_DELETE'] = "Silmeye izin ver";
+$MESS ['IBLOCK_ALLOW_N'] = "hiçkimseye";
+$MESS ['IBLOCK_CREATED_BY'] = "oluþturana";
+$MESS ['IBLOCK_PROPERTY_ID'] = "Bilgi bloðu özelliðine göre -->";
+$MESS ['IBLOCK_PARAMS'] = "Bileþen parametresi";
+$MESS ['IBLOCK_MAX_USER_ENTRIES'] = "Bir kullanýcý için öðe sayýsýný sýnýrlandýr";
+$MESS ['IBLOCK_NAV_ON_PAGE'] = "Sayfada bulunan öðe sayýsý";
+?>

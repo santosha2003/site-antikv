@@ -1,0 +1,29 @@
+<?
+$MESS ['currency_err1'] = "Dövizin silme hata";
+$MESS ['currency_err2'] = "Tüm alanlar doldurulmak zorundadýr!";
+$MESS ['currency_err3_1'] = "Döviz";
+$MESS ['currency_err3_2'] = "zaaten var.";
+$MESS ['currency_list'] = "Döviz kurlarý";
+$MESS ['currency_sort'] = "Sýralama";
+$MESS ['currency_actions'] = "Etkinlikler";
+$MESS ['currency_empty'] = "Döviz listesi boþ";
+$MESS ['currency_title'] = "Dövizler";
+$MESS ['currency_add'] = "Ekle >>";
+$MESS ['currency_curr'] = "Döviz";
+$MESS ['currency_rate_cnt'] = "Numara.";
+$MESS ['currency_rate'] = "Varsayýlan kur.";
+$MESS ['currency_del'] = "Sil";
+$MESS ['currency_upd'] = "Kaydet";
+$MESS ['currency_need'] = "*Tüm alanlar doldurulmasý için zorunludur.";
+$MESS ['CURRENCY_TITLE'] = "Dövizler";
+$MESS ['CURRENCY_FULL_NAME_DESC'] = "Dövizin tam adý";
+$MESS ['CURRENCY_FULL_NAME'] = "Ad";
+$MESS ['CURRENCY_FORMAT_DESC'] = "Dövizin görüntülenmesi için biçim satýrý";
+$MESS ['CURRENCY_FORMAT'] = "Biçim";
+$MESS ['CURRENCY_DEC_POINT_DESC'] = "Görüntülemede ondalýk ayýrýcý ";
+$MESS ['CURRENCY_DEC_POINT'] = "Ondalýk ayýrýcý";
+$MESS ['THOU_SEP_DESC'] = "Görüntülemede binlik ayýrýcý";
+$MESS ['THOU_SEP'] = "Binlik ayýrýcý";
+$MESS ['DECIMALS_DESC'] = "Ondalýk iþaret sayýsý";
+$MESS ['DECIMALS'] = "Ondalýk iþaret  ";
+?>

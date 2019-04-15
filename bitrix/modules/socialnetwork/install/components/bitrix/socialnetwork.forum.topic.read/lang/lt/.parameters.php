@@ -1,0 +1,31 @@
+<?
+$MESS["F_URL_TEMPLATES"] = "Svetainës puslapiø valdymas";
+$MESS["F_MESSAGES_PER_PAGE"] = "Puslapyje esanèiø praneðimø skaièius";
+$MESS["F_DEFAULT_TID"] = "Temos ID";
+$MESS["F_DEFAULT_FID"] = "Forumo ID";
+$MESS["F_DEFAULT_MID"] = "Praneðimo ID";
+$MESS["F_DEFAULT_PATH_TO_SMILE"] = "Marðrutas á ðypsniukø aplankà (atitinkama ðaknis)";
+$MESS["F_READ_TEMPLATE"] = "Temø skaitymo puslapis";
+$MESS["F_LIST_TEMPLATE"] = "Temø sàraðo puslapis";
+$MESS["F_PROFILE_VIEW_TEMPLATE"] = "Profilio puslapis";
+$MESS["F_TOPIC_NEW_TEMPLATE"] = "Naujos temos kûrimo puslapis";
+$MESS["F_DATE_FORMAT"] = "Datos formatas";
+$MESS["F_DATE_TIME_FORMAT"] = "Datos ir laiko formatas";
+$MESS["F_PAGE_NAVIGATION_TEMPLATE"] = "Narðymo kelio navigacijos ðablono pavadinimas";
+$MESS["F_PAGEN"] = "PAGEN";
+$MESS["F_MESSAGE_TEMPLATE"] = "Praneðimo perþiûros puslapis (su praneðimo ID)";
+$MESS["F_IMAGE_SIZE"] = "Prisegto vaizdo dydis";
+$MESS["F_SOCNET_GROUP_ID"] = "Grupës ID";
+$MESS["F_USER_ID"] = "Naudotojo ID";
+$MESS["F_PAGE_NAVIGATION_WINDOW"] = "Puslapiø skaièius puslapiø navigacijoje";
+$MESS["F_PAGE_NAVIGATION_SHOW_ALL"] = "Ájungti visø puslapiø rodymo parinktá";
+$MESS["F_RATING_ID"] = "Vertinimas";
+$MESS["SHOW_RATING"] = "Ájungti vertinimà";
+$MESS["SHOW_RATING_CONFIG"] = "numatytasis";
+$MESS["RATING_TYPE"] = "Ávertinimo mygtukø dizainas";
+$MESS["RATING_TYPE_CONFIG"] = "numatytasis";
+$MESS["RATING_TYPE_STANDART_TEXT"] = "Patinka/Nepatinka (tekstas)";
+$MESS["RATING_TYPE_STANDART_GRAPHIC"] = "Patinka/Nepatinka (nuotrauka)";
+$MESS["RATING_TYPE_LIKE_TEXT"] = "Patinka (tekstas)";
+$MESS["RATING_TYPE_LIKE_GRAPHIC"] = "Patinka (nuotrauka)";
+?>

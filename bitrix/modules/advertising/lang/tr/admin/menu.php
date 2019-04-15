@@ -1,0 +1,30 @@
+<?
+$MESS ['AD_MENU_MAIN'] = "Reklam  ";
+$MESS ['AD_MENU_BANNER_LIST'] = "Bannerler ";
+$MESS ['AD_MENU_BANNER_LIST_ALT'] = "Banner listesi ";
+$MESS ['AD_MENU_TYPE_LIST'] = "Bannerlerin türü ";
+$MESS ['AD_MENU_TYPE_LIST_ALT'] = "Bannerlerin tür listesi ";
+$MESS ['AD_MENU_CONTRACT_LIST'] = "Sözleþmeler ";
+$MESS ['AD_MENU_CONTRACT_LIST_ALT'] = "Reklam yayýný için Sözleþme listesi ";
+$MESS ['AD_MENU_STATISTICS_GRAPH'] = "Grafikler ";
+$MESS ['AD_MENU_STATISTICS_ALT_GRAPH'] = "Görüntüleme grafiði ve banner üzerindeki týklamalar ";
+$MESS ['AD_MENU_STATISTICS_DIAGRAM'] = "Diyagramlar ";
+$MESS ['AD_MENU_STATISTICS_ALT_DIAGRAM'] = "Görüntüleme diyagramlarý ve banner üzerindeki týklamalar ";
+$MESS ['AD_MENU_BANNER_LIST_GRAPH'] = "Bannerler ";
+$MESS ['AD_MENU_CONTRACT_LIST_GRAPH'] = "Sözleþmeler";
+$MESS ['AD_MENU_TYPE_LIST_GRAPH'] = "Banner türleri ";
+$MESS ['AD_MENU_BANNER_LIST_DIAGRAM'] = "Bannerler ";
+$MESS ['AD_MENU_CONTRACT_LIST_DIAGRAM'] = "Sözleþmeler ";
+$MESS ['AD_MENU_TYPE_LIST_DIAGRAM'] = "Banner türleri ";
+$MESS ['AD_MENU_STATISTICS'] = "Diagrams";
+$MESS ['AD_MENU_STATISTICS_ALT'] = "Banner diagrams";
+$MESS ['AD_MENU_MAIN_TITLE'] = "Reklam yönetimi ";
+$MESS ['AD_MENU_REPORTS'] = "Raporlar ";
+$MESS ['AD_MENU_REPORTS_TITLE'] = "Sözleþme ve bannerler ile ilgili çizelge raporlarý   ";
+$MESS ['AD_MENU_BAN_GR'] = "Banner çizelgesi ";
+$MESS ['AD_MENU_BAN_CO'] = "Sözleþme çizelgesi ";
+$MESS ['AD_MENU_BAN_CO_TITLE'] = "Sözleþmeler çizelgesi ";
+$MESS ['AD_MENU_DIAG_BAN'] = "Banner diyagramý ";
+$MESS ['AD_MENU_DIAG_CO'] = "Sözleþme diyagramý ";
+$MESS ['AD_MENU_DIAG_CO_TITLE'] = "Sözleþmeler diyagramý ";
+?>

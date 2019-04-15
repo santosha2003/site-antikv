@@ -1,0 +1,33 @@
+<?
+$MESS["IBLOCK_SORT_SHOWS"] = "¶rednia ogl±dalno¶æ";
+$MESS["IBLOCK_SORT_SORT"] = "index sortowania";
+$MESS["IBLOCK_SORT_TIMESTAMP"] = "data modyfikacji";
+$MESS["IBLOCK_SORT_NAME"] = "nazwa";
+$MESS["IBLOCK_SORT_ID"] = "ID";
+$MESS["IBLOCK_SORT_ACTIVE_FROM"] = "aktywny od";
+$MESS["IBLOCK_SORT_ACTIVE_TO"] = "aktywny do";
+$MESS["IBLOCK_SORT_ASC"] = "rosn±co";
+$MESS["IBLOCK_SORT_DESC"] = "malej±co";
+$MESS["IBLOCK_TYPE"] = "Typ bloku informacyjnego";
+$MESS["IBLOCK_IBLOCK"] = "Blok informacyjny";
+$MESS["IBLOCK_LINE_ELEMENT_COUNT"] = "Ilo¶æ zdjêæ w rzêdzie tabeli";
+$MESS["IBLOCK_ELEMENT_SORT_FIELD"] = "Pole sortowania zdjêæ";
+$MESS["IBLOCK_ELEMENT_SORT_ORDER"] = "Kolejno¶æ sortowania zdjêæ w sekcji";
+$MESS["IBLOCK_CACHE_FILTER"] = "Aktywne cache w filtrze";
+$MESS["IBLOCK_SECTION_ID"] = "ID sekcji";
+$MESS["IBLOCK_FILTER_NAME_IN"] = "Nazwa warto¶ci do filtru elementów";
+$MESS["IBLOCK_PAGE_ELEMENT_COUNT"] = "Ilo¶æ elementów na stronie";
+$MESS["IBLOCK_DETAIL_URL"] = "URL do strony ze szczegó³ami zawarto¶ci";
+$MESS["IBLOCK_SECTION_URL"] = "URL do strony zawarto¶ci sekcji";
+$MESS["IBLOCK_SECTION_CODE"] = "Kod sekcji";
+$MESS["IBLOCK_FIELD"] = "Pola";
+$MESS["IBLOCK_PROPERTY"] = "W³a¶ciwo¶ci";
+$MESS["T_IBLOCK_DESC_PAGER_PHOTO"] = "Obrazy";
+$MESS["T_IBLOCK_DESC_ADD_SECTIONS_CHAIN"] = "Dodaj nazwê sekcji do nawigacji";
+$MESS["T_IBLOCK_DESC_KEYWORDS"] = "Umie¶æ s³owa kluczowe strony od w³asno¶ci";
+$MESS["T_IBLOCK_DESC_DESCRIPTION"] = "Umie¶æ opis strony od w³asno¶ci";
+$MESS["CP_BPS_SET_STATUS_404"] = "Ustaw status 404 je¿eli brak elementu lub sekcji";
+$MESS["CP_BPS_BROWSER_TITLE"] = "Ustaw tytu³ okna przegl±darki z w³asno¶ci warto¶ci";
+$MESS["CP_BPS_CACHE_GROUPS"] = "Respektuj prawa dostêpu";
+$MESS["CP_BPS_SECTION_USER_FIELDS"] = "Parametry sekcji";
+?>

@@ -1,0 +1,33 @@
+<?
+$MESS["F_CREATE_FORM"] = "Nauja tema";
+$MESS["F_REPLY_FORM"] = "Atsakymo forma";
+$MESS["F_EDIT_FORM"] = "Keisti praneðimà temoje";
+$MESS["F_TYPE_NAME"] = "Áveskite savo vardà";
+$MESS["F_TYPE_EMAIL"] = "Áveskite savo elektroninio paðto adresà";
+$MESS["F_TOPIC_NAME"] = "Pavadinimas";
+$MESS["F_TOPIC_DESCR"] = "Apraðymas";
+$MESS["F_TOPIC_TAGS"] = "Þymës";
+$MESS["F_TOPIC_TAGS_DESCRIPTION"] = "Pridëti þymes";
+$MESS["F_EDIT_REASON"] = "Pakeitimo prieþastis:";
+$MESS["F_EDIT_ADD_REASON"] = "Átraukti informacijà apie pakeitimus";
+$MESS["F_MESSAGE_TEXT"] = "Áveskite savo praneðimas";
+$MESS["F_WANT_ALLOW_SMILES"] = "Ar norite <B>naudoti</B> veidukus ðiame praneðime?";
+$MESS["F_CAPTCHA_TITLE"] = "Praðome ávesti þodá, kurá matote paveikslëlyje";
+$MESS["F_CAPTCHA_PROMT"] = "Áveskite tekstà ið paveikslëlio";
+$MESS["F_VIEW"] = "Perþiûrëti";
+$MESS["JQOUTE_AUTHOR_WRITES"] = "raðo";
+$MESS["JERROR_NO_TOPIC_NAME"] = "Praðome pateikti praneðimo pavadinimà. ";
+$MESS["JERROR_NO_MESSAGE"] = "Praðome pateikti savo praneðimà. ";
+$MESS["JERROR_MAX_LEN"] = "Maksimalus praneðimo ilgis yra #MAX_LENGTH# simboliø. Ið viso simboliø: #LENGTH#.";
+$MESS["F_ADD_VOTE"] = "Pridëti apklausà";
+$MESS["F_VOTE"] = "Apklausa";
+$MESS["F_VOTE_ADD_ANSWER"] = "Pridëti atsakymà";
+$MESS["F_VOTE_DROP_ANSWER"] = "Iðtrinti atsakymà";
+$MESS["F_VOTE_DROP_ANSWER_CONFIRM"] = "Ar tikrai norite iðtrinti atsakymà?";
+$MESS["F_VOTE_ADD_QUESTION"] = "Pridëti klausimà";
+$MESS["F_VOTE_DROP_QUESTION"] = "Iðtrinti klausimà";
+$MESS["F_VOTE_DROP_QUESTION_CONFIRM"] = "Ar tikrai norite iðtrinti klausimà?";
+$MESS["F_VOTE_MULTI"] = "Leisti keliø atsakymø pasirinkimà";
+$MESS["VOTE_DURATION"] = "Apklausos uþdarymo data:";
+$MESS["MPL_HAVE_WRITTEN"] = "paraðë:";
+?>

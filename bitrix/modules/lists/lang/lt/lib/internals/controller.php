@@ -1,0 +1,4 @@
+<?
+$MESS["LISTS_CONTROLLER_ERROR_REQUIRED_PARAMETER"] = "Parametras #PARAM# yra bûtinas.";
+$MESS["LISTS_CONTROLLER_ERROR_UNKNOWN_ACTION"] = "Neþinomas veiksmas: #ACTION#.";
+?>

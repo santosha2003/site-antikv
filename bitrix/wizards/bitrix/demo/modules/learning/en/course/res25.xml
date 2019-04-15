@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>363</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153402631</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>136</chapter_id>
+<name>Site templates</name>
+<sort>100</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>The site template is a group of PHP and CSS files (<code>&lt;file_name&gt;.css</code>). Templates are used for public section layout. Site template defines:</p>
+
+<ul>
+  <li>site design (layout, using sets of CSS and etc.); </li>
+
+  <li>menu types; </li>
+
+  <li>advertising areas; </li>
+
+  <li>include and editable areas; </li>
+
+  <li>occurrence of authorization or subscription forms in site design, etc.</li>
+</ul>
+
+<p>All templates are stored in directory <code>/bitrix/templates/</code>. Files that comprise the template are stored in subdirectory named by the template identifier (for example, <code>/bitrix/templates/demo/</code> or <code>/bitrix/templates/template1/</code>).</p>
+
+<p>A common site design usually includes three main parts:</p>
+
+<p><img src="cid:resources/res25/GsEk5.pikFr.templ_areas.png" height="341" width="588"/></p>
+
+<ul>
+  <li>Topmost section (header); </li>
+
+  <li>Main section that is used to display the site presentation and information content, components or the code; </li>
+
+  <li>Bottom section (footer).</li>
+</ul>
+
+<p>Each part of template is stored in separate files:</p>
+
+<ul>
+  <li>the topmost section is stored in <code>/template_name/header.php</code>; </li>
+
+  <li>Bottom section is stored in <code>/template_name/footer.php</code>; </li>
+
+  <li>Main section is stored in files <code>file_name.php</code> in folder of corresponding site section. </li>
+</ul>
+
+<p>Assembling of typical page is implemented by uniting header and footer parts of the site design with work (main) area. In the general case a site page has the following structure:</p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">&lt;?
+require($_SERVER[&quot;DOCUMENT_ROOT&quot;].&quot;/bitrix/header.php&quot;);
+$APPLICATION-&gt;SetTitle(&quot;Bitrix Site Manager 5.0&quot;);
+?&gt;
+
+Main part
+
+&lt;?
+require($_SERVER[&quot;DOCUMENT_ROOT&quot;].&quot;/bitrix/footer.php&quot;);
+?&gt;</pre>
+</font>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

@@ -1,0 +1,29 @@
+<?
+$MESS ['STAT_ADD_TO_STOPLIST_TITLE'] = "dur listeye IP ekle";
+$MESS ['STAT_EDIT_USER'] = "Kullanýcý profili";
+$MESS ['STAT_VIEW_HITS_LIST_1'] = "Kullanýcýnýn bu numarasýna göre vuruþ listesi";
+$MESS ['STAT_VIEW_HITS_LIST_2'] = "Oturumlarýn bu numarasýna göre vuruþ listesi";
+$MESS ['STAT_NEW_GUEST'] = "(ilk defa)";
+$MESS ['STAT_OLD_GUEST'] = "(döndürdü)";
+$MESS ['STAT_TITLE'] = "Oturum hakkýnda detaylý";
+$MESS ['STAT_ID'] = "ID:";
+$MESS ['STAT_LAST_PAGE'] = "Son sayfa:";
+$MESS ['STAT_NUM_PAGES'] = "Vuruþlar:";
+$MESS ['STAT_TIME'] = "Süre:";
+$MESS ['STAT_HOUR'] = "saat";
+$MESS ['STAT_MIN'] = "dk.";
+$MESS ['STAT_SEC'] = "sn.";
+$MESS ['STAT_USER'] = "Ziyaretçi";
+$MESS ['STAT_NOT_AUTH'] = "(yetkili deðil)";
+$MESS ['STAT_NOT_REGISTERED'] = "kayýtlý deðil";
+$MESS ['STAT_IP_FIRST'] = "Ýlk IP adresi:";
+$MESS ['STAT_IP_LAST'] = "Son IP adresi:";
+$MESS ['STAT_REFERER'] = "Nereden geldi:";
+$MESS ['STAT_URL_TO'] = "Ýlk sayfa:";
+$MESS ['STAT_NOT_FOUND'] = "Bulunamadý";
+$MESS ['STAT_FAVORITES'] = "(sýk kullanýlanlara ekledim)";
+$MESS ['STAT_ADV'] = "Reklam kampanyasý:";
+$MESS ['STAT_USER_AGENT'] = "UserAgent:";
+$MESS ['STAT_DATE_FIRST'] = "Baþla:";
+$MESS ['STAT_DATE_LAST'] = "Son:";
+?>

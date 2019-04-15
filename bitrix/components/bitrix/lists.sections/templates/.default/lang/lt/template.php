@@ -1,0 +1,8 @@
+<?
+$MESS["CT_BLS_TOOLBAR_UP"] = "Á virðø";
+$MESS["CT_BLS_TOOLBAR_UP_TITLE"] = "Narðyti pagrindiniame skyriuje";
+$MESS["CT_BLS_TOOLBAR_ADD_SECTION_TITLE"] = "Pridëti naujà skyriø prie dabartinio skyriaus";
+$MESS["CT_BLS_TOOLBAR_ELEMENTS_TITLE"] = "Atidaryti sàraðà";
+$MESS["CT_BLS_SECTION_NAME"] = "Pavadinimas";
+$MESS["CT_BLS_NEW_SECTION_NAME"] = "Áveskite naujo skyriaus pavadinimà";
+?>

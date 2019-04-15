@@ -1,0 +1,32 @@
+<?
+$MESS ['BLBE_SAVE_ERROR'] = "Blog parametrelerin kayýt hatasý";
+$MESS ['BLBE_UPDATING'] = "Blog parametrelerin deðiþtirilmesi";
+$MESS ['BLBE_ADDING'] = "Yeni blogun eklenmesi";
+$MESS ['BLBE_2FLIST'] = "blog listesi";
+$MESS ['BLBE_NEW_BLOG'] = "Yeni blog";
+$MESS ['BLBE_DELETE_BLOG'] = "Blogu sil";
+$MESS ['BLBE_DELETE_BLOG_CONFIRM'] = "Bu blogu silmek istediðinizden eminmisiniz?";
+$MESS ['BLBE_TAB_BLOG'] = "Blog parametreleri";
+$MESS ['BLBE_TAB_BLOG_DESCR'] = "Blog parametreleri";
+$MESS ['BLBE_NAME'] = "Ad";
+$MESS ['BLBE_DESCRIPTION'] = "Tanýmlama";
+$MESS ['BLBE_URL'] = "Ad latin harflerle";
+$MESS ['BLBE_URL_HINT'] = "Latin harfleri, rakalmlar, iþaretler, tire ve alt çizgiler geçerlidir";
+$MESS ['BLBE_REAL_URL'] = "Forum ile klasöre kadar göreceli yol";
+$MESS ['BLBE_ACTIVE'] = "Etkinlik";
+$MESS ['BLBE_OWNER_ID'] = "Blog sahibi";
+$MESS ['BLBE_GROUP'] = "Blog grubu";
+$MESS ['BLBE_ENABLE_COMMENTS'] = "Blog içerisinde yorum izni";
+$MESS ['BLBE_ENABLE_IMG_VERIF'] = "Robotlara karþý koruma açýktýr  (CAPTCHA)";
+$MESS ['BLBE_ENABLE_RSS'] = "RSS .92, RSS 2.0 ve Atom .03 içerisinde boþaltma açýktýr";
+$MESS ['BLBE_TAB_BLOG_PERMS'] = "Eriþim hakký";
+$MESS ['BLBE_TAB_BLOG_PERMS_DESCR'] = "Blog eriþim haklarýn ayarlarý";
+$MESS ['BLBE_P_POST'] = "Ýleti hakký";
+$MESS ['BLBE_P_ALL'] = "Tüm ziyaretçiler";
+$MESS ['BLBE_P_AUTH'] = "Kayýtlý ziyaretçiler";
+$MESS ['BLBE_P_COMMENT'] = "Yorum hakký";
+$MESS ['BLBE_EMAIL_NOTIFY'] = "Bildirimi e-postaya gönder";
+$MESS ['BLBE_ALLOW_HTML'] = "Görsel düzenleyicisi ve HTML kullanýmýna izin ver";
+$MESS ['BLBE_SEARCH_INDEX'] = "Arama modülü blog dizini";
+$MESS ['BLBE_SEARCH_INDEX_HINT'] = "Blog endekslemesini açtýðýnýzda, modülü yeniden endekslemeyi unutmayýnýz.";
+?>

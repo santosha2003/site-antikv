@@ -1,0 +1,36 @@
+<?
+$MESS['SPOD_RECORDS_LIST'] = 'Uþsakymø sàraðas';
+$MESS['P_ORDER_PRICE'] = 'Uþsakymo kaina';
+$MESS['P_ORDER_CANCELED'] = 'Atðaukta';
+$MESS['P_ORDER_PERS_TYPE'] = 'Mokëtojo tipas';
+$MESS['P_ORDER_USER'] = 'Uþsakymo pasirinkimai';
+$MESS['P_ORDER_PAYMENT'] = 'Apmokëjimas ir pristatymas';
+$MESS['P_ORDER_PAY_SYSTEM'] = 'Mokëjimo sistema';
+$MESS['P_ORDER_PAYED'] = 'Apmokëta';
+$MESS['P_ORDER_DELIVERY'] = 'Pristatymo tarnyba:';
+$MESS['P_ORDER_USER_COMMENT'] = 'Vartotojo komentarai';
+$MESS['P_ORDER_BASKET'] = 'Prekiø krepðelis';
+$MESS['SALE_YES'] = 'Taip';
+$MESS['SALE_NO'] = 'Ne';
+$MESS['SALE_CANCEL_ORDER'] = 'Atðaukti';
+$MESS['SALE_REPEAT_PAY'] = 'Kartoti mokëjimà';
+$MESS['SPOD_ORDER_NO'] = 'Uþsakymo nr.';
+$MESS['SPOD_FROM'] = 'nuo';
+$MESS['SPOD_ORDER_STATUS'] = 'Dabartinë uþsakymo bûsena:';
+$MESS['SPOD_ORDER_FROM'] = '(nuo';
+$MESS['SPOD_ACCOUNT_DATA'] = 'Jûsø sàskaitos informacija';
+$MESS['SPOD_ACCOUNT'] = 'Sàskaita';
+$MESS['SPOD_LOGIN'] = 'Vartotojo vardas';
+$MESS['SPOD_EMAIL'] = 'el. paðto adresas:';
+$MESS['SPOD_NONE'] = 'Nëra';
+$MESS['SPOD_NAME'] = 'Pavadinimas';
+$MESS['SPOD_PROPS'] = 'Savybës';
+$MESS['SPOD_PRICETYPE'] = 'Kainos tipas';
+$MESS['SPOD_QUANTITY'] = 'Kiekis';
+$MESS['SPOD_PRICE'] = 'Kaina';
+$MESS['SPOD_DISCOUNT'] = 'Nuolaida';
+$MESS['SPOD_TAX'] = 'Mokesèiø suma';
+$MESS['SPOD_DELIVERY'] = 'Pristatymo kaina';
+$MESS['SPOD_ITOG'] = 'Ið viso';
+$MESS['SPOD_ALREADY_PAID'] = '(jau sumokëta';
+?>

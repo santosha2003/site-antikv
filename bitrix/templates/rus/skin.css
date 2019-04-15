@@ -1,0 +1,91 @@
+.jcarousel-skin-tango .jcarousel-container {
+    float: right;
+    margin: 53px 30px 0 0 
+}
+
+.jcarousel-skin-tango .jcarousel-container-vertical {
+	width: 190px;
+    height: 390px;
+    padding:20px 0 20px 0px;
+}
+
+.jcarousel-skin-tango .jcarousel-clip-vertical {
+	width: 190px;
+    height: 390px;
+}
+
+.jcarousel-skin-tango .jcarousel-item  {    
+    position: relative; width:124px; height:122px; padding-left:66px;
+}
+
+.jcarousel-skin-tango .jcarousel-item .fotosl {    
+    width: 122px;
+    height: 122px;
+    border: 1px solid #bf862b; 
+    background: #fff;
+    cursor:hand; cursor: pointer;
+}
+
+.jcarousel-skin-tango .jcarousel-item .fotosl table {width:100%; height:120px;}
+.jcarousel-skin-tango .jcarousel-item .fotosl table td {width:100%; height:120px; text-align: center; vertical-align: middle; border:2px solid #fff;}
+.jcarousel-skin-tango .jcarousel-item .fotosl table td.active {border:2px solid #bf862b;}
+
+.jcarousel-skin-tango .jcarousel-item span.active  {
+	position: absolute;
+	z-index: 1000; 
+	left:0px; 
+	top:45px;
+	display: block;
+	width:68px; 
+	height:47px;
+	background: url(/bitrix/templates/rus/images/arr2.png) no-repeat 0 0;
+}
+
+.jcarousel-skin-tango .jcarousel-item img {
+   border:0px !important
+}
+
+.jcarousel-skin-tango .jcarousel-item-vertical {
+	margin-bottom: 8px
+}
+
+.jcarousel-skin-tango .jcarousel-item-placeholder {
+}
+
+
+/**
+ *  Vertical Buttons
+ */
+.jcarousel-skin-tango .jcarousel-next-vertical {
+    position: absolute;
+    bottom: 0px;
+    left: 91px;
+    width: 77px;
+    height: 13px;
+    cursor: pointer;
+    background: transparent url(/bitrix/templates/rus/images/arrBott.png) no-repeat 0 0;
+}
+
+ .jcarousel-skin-tango .jcarousel-next-disabled-vertical,
+.jcarousel-skin-tango .jcarousel-next-disabled-vertical:hover,
+.jcarousel-skin-tango .jcarousel-next-disabled-vertical:active {
+    cursor: default;
+    background:none;
+}
+
+.jcarousel-skin-tango .jcarousel-prev-vertical {
+    position: absolute;
+    top: 0px;
+    left: 91px;
+    width: 77px;
+    height: 13px;
+    cursor: pointer;
+    background: transparent url(/bitrix/templates/rus/images/arrTop.png) no-repeat 0 0;
+}
+
+.jcarousel-skin-tango .jcarousel-prev-disabled-vertical,
+.jcarousel-skin-tango .jcarousel-prev-disabled-vertical:hover,
+.jcarousel-skin-tango .jcarousel-prev-disabled-vertical:active {
+    cursor: default;
+    background:none;
+}

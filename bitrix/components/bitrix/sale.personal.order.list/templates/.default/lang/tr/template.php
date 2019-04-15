@@ -1,0 +1,30 @@
+<?
+$MESS ['SPOL_T_F_FILTER'] = "Filtre";
+$MESS ['SPOL_T_F_ID'] = "Sipariþ kodu";
+$MESS ['SPOL_T_F_DATE'] = "Sipariþ tarihi";
+$MESS ['SPOL_T_F_STATUS'] = "Sipariþ durumu";
+$MESS ['SPOL_T_F_ALL'] = "<Tümü>";
+$MESS ['SPOL_T_F_SUBMIT'] = "Ayarla";
+$MESS ['SPOL_T_F_DEL'] = "Kaldýr";
+$MESS ['SPOL_T_ID'] = "Sipariþ kodu";
+$MESS ['SPOL_T_PRICE'] = "Bedel";
+$MESS ['SPOL_T_STATUS'] = "Durum";
+$MESS ['SPOL_T_PAYED'] = "Ödendi";
+$MESS ['SPOL_T_CANCELED'] = "Deðiþtirildi";
+$MESS ['SPOL_T_ACTION'] = "Etkinlikler";
+$MESS ['SPOL_T_F_PAYED'] = "Ödendi";
+$MESS ['SPOL_T_F_CANCELED'] = "Deðiþtirildi";
+$MESS ['SPOL_T_F_HISTORY'] = "Teslim edilenler dahil";
+$MESS ['SPOL_T_PAY_SYS'] = "Teslimat/ ödeme yöntemi";
+$MESS ['SPOL_T_BASKET'] = "Ürünler";
+$MESS ['SPOL_T_DELETE'] = "Ýptal et";
+$MESS ['SPOL_T_COPY_ORDER'] = "Tekrarla";
+$MESS ['SPOL_T_DETAIL'] = "Ayrýntýlý";
+$MESS ['SPOL_T_YES'] = "Evet";
+$MESS ['SPOL_T_NO'] = "Hayýr";
+$MESS ['SPOL_T_FROM'] = "den";
+$MESS ['SPOL_T_DETAIL_DESCR'] = "Sipariþ hakkýnda ayrýntýlý bilgileri görüntüle";
+$MESS ['SPOL_T_COPY_ORDER_DESCR'] = "Sipariþi tekrarla";
+$MESS ['SPOL_T_DELETE_DESCR'] = "Sipariþi iptal et";
+$MESS ['STPOL_SHT'] = "adt.";
+?>

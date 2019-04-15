@@ -1,0 +1,19 @@
+<?
+$MESS["BIZPROC_SEL_USERS_TAB_GROUPS"] = "- Grupës";
+$MESS["BIZPROC_SEL_USERS_TAB_USERS"] = "- Naudotojai";
+$MESS["BIZPROC_SEL_TITLEBAR"] = "Pridëti laukus";
+$MESS["BIZPROC_SEL_CANCEL"] = "Atðaukti";
+$MESS["BIZPROC_SEL_FIELDS_TAB"] = "Dokumento laukai";
+$MESS["BIZPROC_SEL_TITLEBAR_DESC"] = "Dukart spustelëkite reikiamà laukà, norëdami pasirinkti já, arba paspauskite &quot;Insert&quot;.";
+$MESS["BIZPROC_SEL_INSERT"] = "Áterpti";
+$MESS["BIZPROC_SEL_TITLE"] = "Pasirinkti laukà";
+$MESS["BIZPROC_SEL_PARAMS_TAB"] = "Ðablono parametrai";
+$MESS["BIZPROC_SEL_USERS_TAB"] = "Naudotojai";
+$MESS["BIZPROC_SEL_ERR"] = "Jûs turite pasirinkti laukà viename ið sàraðø!";
+$MESS["BP_SEL_VARS"] = "Kintamieji";
+$MESS["BP_SEL_ADDIT"] = "Papildomi rezultatai";
+$MESS["BIZPROC_AS_TITLE_TOOLBAR"] = "Áterpti reikðmæ";
+$MESS["BIZPROC_AS_TITLE"] = "Áterpti reikðmæ";
+$MESS["BP_SEL_CONSTANTS"] = "Konstantos";
+$MESS["BIZPROC_SEL_GROUPS_TAB"] = "Naudotojø kategorijos";
+?>

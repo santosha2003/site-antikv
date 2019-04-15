@@ -1,0 +1,34 @@
+<?
+$MESS["IBEL_BIZPROC_STOP"] = "pabaiga";
+$MESS["IBEL_BIZPROC_LOG"] = "log";
+$MESS["IBEL_BIZPROC_DATE"] = "Dabartinës bûsenos data";
+$MESS["IBEL_BIZPROC_STATE"] = "Dabartinë bûsena";
+$MESS["IBEL_BIZPROC_RUN_CMD"] = "Paleisti veiksmà";
+$MESS["IBEL_BIZPROC_RUN_CMD_NO"] = "Nëra";
+$MESS["IBEL_BIZPROC_TASKS"] = "Verslo proceso uþduotys";
+$MESS["IBEL_BIZPROC_NEW"] = "Naujas verslo procesas";
+$MESS["IBEL_BIZPROC_START"] = "Paleisti naujà verslo procesà";
+$MESS["BPABL_TYPE_1"] = "Vykdomas veiksmas '#ACTIVITY#'#NOTE#";
+$MESS["BPABL_TYPE_2"] = "Baigtas veiksmas '#ACTIVITY#', gràþinta bûsena: '#STATUS#', rezultatas: '#RESULT#'#NOTE#";
+$MESS["BPABL_TYPE_3"] = "Atðauktas veiksmas '#ACTIVITY#'#NOTE#";
+$MESS["BPABL_TYPE_4"] = "Veiksmo '#ACTIVITY#'#NOTE# klaida";
+$MESS["BPABL_TYPE_5"] = "Veiksmas '#ACTIVITY#'#NOTE#";
+$MESS["BPABL_TYPE_6"] = " '#ACTIVITY#'#NOTE# vykdymo metu kaþkas ávyko";
+$MESS["BPABL_STATUS_1"] = "Inicializuotas";
+$MESS["BPABL_STATUS_2"] = "Vykdomas";
+$MESS["BPABL_STATUS_3"] = "Atðauktas";
+$MESS["BPABL_STATUS_4"] = "Baigtas";
+$MESS["BPABL_STATUS_5"] = "Klaida";
+$MESS["BPABL_STATUS_6"] = "Nenustatytas";
+$MESS["BPABL_RES_1"] = "Ne";
+$MESS["BPABL_RES_2"] = "Sëkmingai";
+$MESS["BPABL_RES_3"] = "Atðauktas";
+$MESS["BPABL_RES_4"] = "Klaida";
+$MESS["BPABL_RES_5"] = "Neinicijuotas";
+$MESS["BPABL_RES_6"] = "Nenustatytas";
+$MESS["IBEL_BIZPROC_CANCEL"] = "Atðauktas";
+$MESS["IBEL_BIZPROC_MODIFICATION"] = "Paskutinieji pakeitimai";
+$MESS["IBEL_BIZPROC_APPLY"] = "Taikyti";
+$MESS["IBEL_BIZPROC_SAVE"] = "Saugoti";
+$MESS["IBEL_BIZPROC_DEL"] = "ðalinti";
+?>

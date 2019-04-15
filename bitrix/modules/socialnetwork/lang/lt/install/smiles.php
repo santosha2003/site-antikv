@@ -1,0 +1,16 @@
+<?
+$MESS ['FICON_BIGGRIN'] = "Plati ðypsena";
+$MESS ['FICON_SMILE'] = "Ðypsena";
+$MESS ['FICON_SAD'] = "Liûdnas";
+$MESS ['FICON_EEK'] = "Nustebintas";
+$MESS ['FICON_COOL'] = "Nuostabus";
+$MESS ['FICON_KISS'] = "Bûèinys";
+$MESS ['FICON_REDFACE'] = "Sumiðæs";
+$MESS ['FICON_CRY'] = "Verkia";
+$MESS ['FICON_EVIL'] = "Piktas";
+$MESS ['FICON_WINK'] = "mirktelëti";
+$MESS ['FICON_EXCLAIM'] = "Ðûksnis";
+$MESS ['FICON_QUESTION'] = "Klausimas";
+$MESS ['FICON_IDEA'] = "Idëja";
+$MESS ['FICON_NEUTRAL'] = "Skeptiðkas";
+?>

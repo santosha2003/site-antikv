@@ -1,0 +1,29 @@
+<?
+$MESS ['VOTE_C_SORT'] = "Sýralama.";
+$MESS ['VOTE_F_SITE'] = "Siteler:";
+$MESS ['VOTE_SITE'] = "Siteler";
+$MESS ['VOTE_PAGE_TITLE'] = "Anketleme gruplarý";
+$MESS ['VOTE_F_SID'] = "Karakter tanýmlayýcýsý:";
+$MESS ['VOTE_PAGES'] = "Gruplar";
+$MESS ['VOTE_SID'] = "Karakter tanýmlayýcýsý";
+$MESS ['VOTE_CHANGE_CHANNEL'] = "Anketleme grubu parametrelerin deðiþtirilmesi";
+$MESS ['VOTE_DELETE_CHANNEL'] = "Anketleme grubu ve ilgili tüm anketlemelerin silinmesi";
+$MESS ['VOTE_CONFIRM_DEL_CHANNEL'] = "Anketleme grubu ve ilgili tüm anketlemeleriný silmek istediðinizden eminmisiniz?";
+$MESS ['VOTE_VOTES'] = "Anketleme";
+$MESS ['VOTE_TIMESTAMP'] = "Deðiþiklik tarihi.";
+$MESS ['VOTE_F_ACTIVE'] = "Etkin:";
+$MESS ['VOTE_FLT_ID'] = "Grubun ID";
+$MESS ['VOTE_FLT_SITES'] = "Site listesi";
+$MESS ['VOTE_FLT_ACTIVE'] = "Etkinlik";
+$MESS ['VOTE_FLT_TITLE'] = "Baþlýk";
+$MESS ['VOTE_ADD_GROUP'] = "Anketleme grubun eklenmesi";
+$MESS ['VOTE_ADD_GROUP_TITLE'] = "Yeni anketleme grubun eklenmesi için týklayýnýz";
+$MESS ['VOTE_SITE_EDIT'] = "Site ayarlarýný deðiþtir";
+$MESS ['VOTE_OPEN_VOTES'] = "Anketleme listesini aç";
+$MESS ['VOTE_ADD_VOTE'] = "Anketlemenin gruba eklenmesi";
+$MESS ['VOTE_SAVE_ERROR'] = "Veritabanýnda kayýt hatasý";
+$MESS ['VOTE_DELETE'] = "sil";
+$MESS ['VOTE_ACTIVATE'] = "etkinleþtir";
+$MESS ['VOTE_DEACTIVATE'] = "etkinliðini kaldýrmak";
+$MESS ['VOTE_EDIT_TITLE'] = "Anketleme grubun ayarlarýný deðiþtir";
+?>

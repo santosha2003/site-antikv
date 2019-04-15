@@ -1,0 +1,127 @@
+<?php 
+
+class CImageWatermark{ 
+
+//Событие создание элемента
+
+function ImageAdd(&$arFields){ 
+
+//IBLOCK_ID - идентификатор класса(инфоблока) Bitrix
+
+if ($arFields["IBLOCK_ID"] == 1){ 
+
+if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"]){ 
+
+MyImageWatermark::PostWaterMark(&$arFields["PREVIEW_PICTURE"]["tmp_name"]); 
+} 
+
+
+//Проверка существования атрибута Bitrix DETAIL_PICTURE
+
+if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"]){ 
+
+MyImageWatermark::PostWaterMark(&$arFields["DETAIL_PICTURE"]["tmp_name"]); 
+} 
+
+
+foreach ($arFields["PROPERTY_VALUES"] as $key=>$moreimg) 
+
+{ 
+
+MyImageWatermark::PostWaterMark(&$arFields["PROPERTY_VALUES"]["78"][$key]['VALUE']['tmp_name']); 
+
+} 
+
+} 
+
+} 
+
+//При боновлении элемента
+
+function ImageUpdate(&$arFields){ 
+
+
+//IBLOCK_ID - идентификатор класса(инфоблока) Bitrix
+
+if ($arFields["IBLOCK_ID"] == 1){ 
+
+
+//Если заполнено изображение анонса 
+
+if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"]){ 
+
+MyImageWatermark::PostWaterMark(&$arFields["PREVIEW_PICTURE"]["tmp_name"]); 
+
+} 
+
+
+//Проверка существования атрибута Bitrix DETAIL_PICTURE
+
+if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"]){ 
+
+MyImageWatermark::PostWaterMark(&$arFields["DETAIL_PICTURE"]["tmp_name"]); 
+
+} 
+
+
+foreach ($arFields["PROPERTY_VALUES"] as $key=>$moreimg) 
+
+{ 
+MyImageWatermark::PostWaterMark(&$arFields["PROPERTY_VALUES"]["78"][$key]['VALUE']['tmp_name']); 
+} 
+} 
+} 
+
+function PostWaterMark(&$_image){ 
+
+//Ссылка на папку загрузки
+
+$_upload_dir = COption::GetOptionString("main","upload_dir");  
+
+
+//Изображение водяного знака, лежащее в /bitrix/php_interface/
+$wmTarget = $_SERVER['DOCUMENT_ROOT'] ."/bitrix/php_interface/img_watermark.png";  
+$resultImage = imagecreatefromjpeg($_image); 
+imagealphablending($resultImage, true); 
+
+//Создание временного файла 
+$_image = $_SERVER['DOCUMENT_ROOT'] . "/" . $_upload_dir. "/tmp/".md5(microtime()).".jpg"; 
+
+
+//Загрузка изображения водяного знака
+$finalWaterMarkImage = imagecreatefrompng($wmTarget); 
+
+//Установка размеров изображения водяного знака
+$finalWaterMarkWidth = imagesx($finalWaterMarkImage); 
+$finalWaterMarkHeight = imagesy($finalWaterMarkImage); 
+
+//Установка значений размеров загружаемого изображения
+$imagesizeW = imagesx($resultImage); 
+$imagesizeH = imagesy($resultImage); 
+
+imagecopy($resultImage, $finalWaterMarkImage, $imagesizeW - $finalWaterMarkWidth, $imagesizeH - $finalWaterMarkHeight, 0, 0, $finalWaterMarkWidth, $finalWaterMarkHeight); 
+
+imagealphablending($resultImage, false); 
+imagesavealpha($resultImage, true); 
+imagejpeg($resultImage, $_image, 100); 
+imagedestroy($resultImage); 
+imagedestroy($finalWaterMarkImage); 
+} 
+
+
+//Очистка временной папки
+function Clear(){ 
+$_upload_dir = COption::GetOptionString("main", 
+"upload_dir"); 
+$_WFILE = glob($_SERVER['DOCUMENT_ROOT'] . "/" . 
+$_upload_dir . "/tmp/*.jpg"); 
+foreach($_WFILE as $_file) 
+unlink($_file); 
+
+return true; 
+
+} 
+
+} 
+
+?>

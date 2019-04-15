@@ -1,0 +1,33 @@
+<?
+$MESS ['SALE_F_FILTER'] = "Filtre";
+$MESS ['SALE_F_ID'] = "Sipariþ kodu";
+$MESS ['SALE_F_DATE'] = "Sipariþ tarihi";
+$MESS ['SALE_F_STATUS'] = "Sipariþ durumu";
+$MESS ['SALE_F_ALL'] = "<Tümü>";
+$MESS ['SALE_F_SUBMIT'] = "Ayarla";
+$MESS ['SALE_F_DEL'] = "Kaldýr";
+$MESS ['SALE_PRLIST'] = "Sipariþler";
+$MESS ['P_ID'] = "Sipariþ kodu";
+$MESS ['P_PRICE'] = "Bedel";
+$MESS ['P_STATUS'] = "Durum";
+$MESS ['P_PAYED'] = "Ödendi";
+$MESS ['P_CANCELED'] = "Deðiþtirildi";
+$MESS ['SALE_ACTION'] = "Etkinlikler";
+$MESS ['SALE_F_PAYED'] = "Ödendi";
+$MESS ['SALE_F_CANCELED'] = "Deðiþtirildi";
+$MESS ['SALE_F_HISTORY'] = "Teslim edilenler dahil";
+$MESS ['P_PAY_SYS'] = "Teslimat/ ödeme yöntemi";
+$MESS ['P_BASKET'] = "Ürünler";
+$MESS ['SALE_DELETE'] = "Ýptal et";
+$MESS ['SALE_COPY_ORDER'] = "Tekrarla";
+$MESS ['SALE_DETAIL'] = "Ayrýntýlý";
+$MESS ['SALE_YES'] = "Evet";
+$MESS ['SALE_NO'] = "Hayýr";
+$MESS ['SALE_FROM'] = "den";
+$MESS ['SALE_TO'] = "kadar";
+$MESS ['SALE_DETAIL_DESCR'] = "Sipariþ hakkýnda ayrýntýlý bilgileri görüntüle";
+$MESS ['SALE_COPY_ORDER_DESCR'] = "Sipariþi tekrarla";
+$MESS ['SALE_DELETE_DESCR'] = "Sipariþi iptal et";
+$MESS ['SALE_NO_MODULE_X'] = "Modül yüklü deðildir";
+$MESS ['SPO_ORDERS_LIST'] = "Sipariþ listesi";
+?>

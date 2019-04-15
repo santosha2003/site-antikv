@@ -1,0 +1,25 @@
+<?
+$MESS["CC_BLL_MODULE_NOT_INSTALLED"] = "Universalus sàraðø modulis neádiegtas.";
+$MESS["CC_BLL_TITLE"] = "Mano uþklausos";
+$MESS["CC_BLL_DOCUMENT_NAME"] = "Dokumentas";
+$MESS["CC_BLL_COMMENTS"] = "Komentarai";
+$MESS["CC_BLL_WORKFLOW_PROGRESS"] = "Progresas";
+$MESS["CC_BLL_WORKFLOW_STATE"] = "Verslo proceso statusas";
+$MESS["CC_BLL_FILTER_STATUS_ALL"] = "Visi";
+$MESS["CC_BLL_FILTER_STATUS_RUNNING"] = "Aktyvus";
+$MESS["CC_BLL_FILTER_STATUS_COMPLETE"] = "Uþbaigta";
+$MESS["CC_BLL_FILTER_STATUS"] = "Statusas";
+$MESS["CC_BLL_MODIFIED"] = "Pakeitimo data";
+$MESS["CC_BLL_CREATED"] = "Sukûrimo data";
+$MESS["CC_BLL_C_DOCUMENT"] = "Dokumentas (naujam lange)";
+$MESS["CC_BLL_C_DETAIL"] = "Plaèiau";
+$MESS["CC_BLL_INTS_TASKS_NAV"] = "Uþduotys";
+$MESS["CC_BLL_NAME"] = "Uþduotis";
+$MESS["CC_BLL_WRONG_IBLOCK_TYPE"] = "Informacinio bloko neteisingas tipas.";
+$MESS["CC_BLL_WRONG_IBLOCK"] = "Nurodytas sàraðas yra neteisingas.";
+$MESS["CC_BLL_LISTS_FOR_SONET_GROUP_DISABLED"] = "Sàraðø funkcionalas ðiai grupei yra iðjungtas.";
+$MESS["CC_BLL_UNKNOWN_ERROR"] = "Neþinoma klaida.";
+$MESS["CC_BLL_ACCESS_DENIED"] = "Nepakanka teisiø perþiûrëti ir redaguoti sàraðà.";
+$MESS["CC_BLL_DELETE_ERROR"] = "Trynimo klaidà.";
+$MESS["BPATL_NAME"] = "Pavadinimas";
+?>

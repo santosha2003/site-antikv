@@ -1,0 +1,33 @@
+<?
+$MESS["SONET_UR_EMPTY_FIRST_USER_ID"] = "Nenurodytas pirmas naudotojas.";
+$MESS["SONET_UR_ERROR_NO_FIRST_USER_ID"] = "Pirmas naudotojas nurodytas neteisingai.";
+$MESS["SONET_UR_EMPTY_SECOND_USER_ID"] = "Sekantis naudotojas nenurodytas.";
+$MESS["SONET_UR_ERROR_NO_SECOND_USER_ID"] = "Sekantis naudotojas nurodytas neteisingai.";
+$MESS["SONET_UR_EMPTY_RELATION"] = "Nenurodytas sàryðis.";
+$MESS["SONET_UR_ERROR_NO_RELATION"] = "Sàryðis nurodytas neteisingai.";
+$MESS["SONET_UR_EMPTY_DATE_CREATE"] = "Sukûrimo data nurodyta neteisingai.";
+$MESS["SONET_UR_EMPTY_DATE_UPDATE"] = "Pakeitimø data nurodyta neteisingai.";
+$MESS["SONET_UR_EMPTY_SENDER_USER_ID"] = "Nenurodytas uþklausos siuntëjas.";
+$MESS["SONET_UR_EMPTY_TARGET_USER_ID"] = "Nenurodytas uþklausos gavëjas.";
+$MESS["SONET_UR_ERROR_CREATE_RELATION"] = "Nepavyko sukurti ryðio tarp naudotojø,";
+$MESS["SONET_UR_EMPTY_RELATION_ID"] = "Ryðio ID nenurodytas.";
+$MESS["SONET_UR_RELATION_NOT_FOUND"] = "Ryðis tarp naudotojø nerastas.";
+$MESS["SONET_UR_RELATION_DELETE_ERROR"] = "Nepavyko iðtrinti ryðio tarp naudotojø.";
+$MESS["SONET_UR_NO_FRIEND_REQUEST"] = "Pakvietimas draugauti nerastas.";
+$MESS["SONET_UR_ERROR_UPDATE_RELATION"] = "Nepavyko pakeisti ryðio tarp naudotojø.";
+$MESS["SONET_UR_AGREE_FRIEND_MESSAGE"] = "Naudotojas patvirtino jûsø kvietimà draugauti.";
+$MESS["SONET_UR_REJECT_FRIEND_MESSAGE"] = "Naudotojas atmetë jûsø kvietimà draugauti.";
+$MESS["SONET_UR_BANUSER_MESSAGE"] = "Jûs átraukti á juodàjá sàraðà.";
+$MESS["SONET_UR_ALREADY_BAN"] = "Naudotojas jau  juodajame sàraðe.";
+$MESS["SONET_UR_UNBANUSER_MESSAGE"] = "Jûs paðalintas ið juodojo sàraðo.";
+$MESS["SONET_UR_UNBAN_ERROR"] = "Jûs neturite teisiø paðalinti ðá naudotojà ið juodojo sàraðo.";
+$MESS["SONET_U_INVITE_CONFIRM_TEXT"] = "Kvietimas draugauti: \"#TEXT#\"";
+$MESS["SONET_U_INVITE_CONFIRM"] = "Priimti";
+$MESS["SONET_U_INVITE_REJECT"] = "Atmesti";
+$MESS["SONET_UR_INVALID_TARGET_USER_ID"] = "Naudotojas iðsiuntæs jums pakvietimà nerastas.";
+$MESS["SONET_U_INVITE_CONFIRM_TITLE"] = "Pakvietimas draugauti ið naudotojo #USER#";
+$MESS["SONET_UR_IM_UNFRIEND"] = "nustojo bûti jûsø draugu";
+$MESS["SONET_UR_IM_UNFRIEND_M"] = "nustojo bûti jûsø draugu";
+$MESS["SONET_UR_IM_UNFRIEND_F"] = "nustojo bûti jûsø draugu";
+$MESS["SONET_UR_ERROR_RELATION_FRIENDS2"] = "Ryðis \"draugas draugo\" daugiau nepalaikomas";
+?>

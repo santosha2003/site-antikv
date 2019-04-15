@@ -1,0 +1,128 @@
+<?
+/**
+ * This is the translation of VietNamese language files for BitrixSoft
+ * @version 1.0
+ * @copyright V&V IDS, JSC 2007
+ * @website: www.bitrixsoft.vn, vivicorp.com
+ * @email: contact@vivicorp.com
+ * @phone: (+84)46416724	(+84)42910711
+ */
+ 
+$MESS ['AD_BACK_TO_BANNER_LIST'] = "Danh sách banner";
+$MESS ['AD_BACK_TO_BANNER_LIST_TITLE'] = "Chuyển đến danh sách banner";
+$MESS ['AD_EDIT_RECORD'] = "Banner # #ID#";
+$MESS ['AD_NEW_RECORD'] = "Tạo banner mới";
+$MESS ['AD_CREATED'] = "Đã tạo:";
+$MESS ['AD_MODIFIED'] = "Đã sửa chữa:";
+$MESS ['AD_ACTIVE'] = "Kích hoạt:";
+$MESS ['AD_NAME'] = "Tên:";
+$MESS ['AD_GROUP'] = "Nhóm:";
+$MESS ['AD_TYPE'] = "Kiểu:";
+$MESS ['AD_WHEN'] = "Hiện thời gian và khoảng thời gian";
+$MESS ['AD_SHOW_INTERVAL'] = "Hiện chu kì";
+$MESS ['AD_WEIGHT'] = "Trọng số (độ ưu tiên)";
+$MESS ['AD_SHOW_COUNT'] = "Số lần hiển thị tối đa:";
+$MESS ['AD_SHOW_COUNT_2'] = "<b>Số lần hiển thị hiện tại</b><br>/ số lần tối đa:";
+$MESS ['AD_SHOWN'] = "Hiển thị:";
+$MESS ['AD_RESET_COUNTER'] = "thiết lập lại:";
+$MESS ['AD_CLICK_COUNT'] = "Số lần nhấp chuột tối đa:";
+$MESS ['AD_CLICK_COUNT_2'] = "<b>Số lần nhấp chuột hiện tại</b><br>/ số lần tối đa:";
+$MESS ['AD_CLICKED'] = "số lần nhấp chuột:";
+$MESS ['AD_WHERE'] = "Hiện người xem";
+$MESS ['AD_ALL'] = "(Tất cả)";
+$MESS ['AD_SHOW_PAGES'] = "Banner sẽ hiển thị trên<br> các khu vực và trang";
+$MESS ['AD_NOT_SHOW_PAGES'] = "Banner sẽ không hiển thị trên<br> các khu vực và trang";
+$MESS ['AD_PAGES_ALT'] = "Các trang nên ngăn cách với nhau.<br>Để trống để hiển thị mọi nơi.";
+$MESS ['AD_COUNTRY'] = "Hiện số người xem đến từ các nước khác nhau:";
+$MESS ['AD_SELECT_WHAT_YOU_NEED'] = "(yêu cầu chọn)";
+$MESS ['AD_STAT_ADV'] = "Hiện số người xem dưới các quảng cáo";
+$MESS ['AD_WHAT'] = "Phương tiện";
+$MESS ['AD_VISITORS_TYPE'] = "Hiện số người xem";
+$MESS ['AD_NEW_VISITORS_ONLY'] = "Chỉ những người xem mới";
+$MESS ['AD_RETURNED_VISITORS_ONLY'] = "chỉ những người xem nhiều lần";
+$MESS ['AD_ALL_VISITORS'] = "tất cả người xem";
+$MESS ['AD_IMAGE'] = "Ảnh:";
+$MESS ['AD_IMAGE_ALT'] = "Đoạn giới thiệu ngắn (ALT):";
+$MESS ['AD_URL'] = "URL:";
+$MESS ['AD_URL_TARGET'] = "Đích URL (&lt;a đích=)";
+$MESS ['AD_OR'] = "Mã banner:";
+$MESS ['AD_HTML_ALT'] = "Bạn có thể sử dụng tới năm số ngẫu nhiên với những tên sau ở trong trường \"Mã banner\":<br>";
+$MESS ['AD_STAT'] = "Ghi lại số lần nhấp chuột trong mô-đun Thống kê (Statistics module)";
+$MESS ['AD_EVENT12'] = "sự kiên 1, sự kiên 2 - tham số xác định kiểu sự kiện.";
+$MESS ['AD_EVENT3'] = "sự kiên 3 - tham số bổ sung.<br><br>Đối với sự kiên 1, sự kiện 2, sự kiện 3 và \"Mã banner\" bạn có thể sử dụng các trường sau:<br>";
+$MESS ['AD_BANNER_NAME'] = "tên banner";
+$MESS ['AD_BANNER_ID'] = "ID banner";
+$MESS ['AD_CONTRACT_ID'] = "ID hợp đồng (contract)";
+$MESS ['AD_TYPE_SID'] = "kiểu banner";
+$MESS ['AD_COMMENTS'] = "Chú thích";
+$MESS ['AD_WEEKDAY'] = "Ngày và thời gian hiển thị:";
+$MESS ['AD_SUNDAY'] = "CN";
+$MESS ['AD_MONDAY'] = "T2";
+$MESS ['AD_TUESDAY'] = "T3";
+$MESS ['AD_WEDNESDAY'] = "T4";
+$MESS ['AD_THURSDAY'] = "T5";
+$MESS ['AD_FRIDAY'] = "T6";
+$MESS ['AD_SATURDAY'] = "T7";
+$MESS ['AD_CONTRACT'] = "Hợp đồng(contract):";
+$MESS ['AD_CONTRACT_SETTINGS'] = "Xem cài đặt hợp đồng";
+$MESS ['AD_TEXT'] = "Văn bản";
+$MESS ['AD_ALL_1'] = "(tới tất cả)";
+$MESS ['AD_STATUS'] = "Trạng thái:";
+$MESS ['AD_STATUS_COMMENTS'] = "Chú thích trạng thái:";
+$MESS ['AD_CONFIRMED_FIELDS'] = "Người quản trị (admin) có thể cần chứng nhận những sửa chữa của các trường ngày (phụ thuộc vào cài đặt hợp đồng).";
+$MESS ['AD_BANNER_VIEW_SETTINGS'] = "Xem các cài đặt banner";
+$MESS ['AD_BANNER_EDIT'] = "Sửa chữa các cài đặt banner";
+$MESS ['AD_BANNER_STATUS'] = "Trạng thái banner";
+$MESS ['AD_RED_ALT'] = "Không hiển thị trên site";
+$MESS ['AD_GREEN_ALT'] = "Hiển thị trên trang web";
+$MESS ['AD_SEND_EMAIL'] = "Thông báo cho chủ hợp đồng:";
+$MESS ['AD_BANNER_STATISTICS'] = "Xem đồ thị CTR của banner";
+$MESS ['AD_BANNER_STATISTICS_TITLE'] = "Xem đồ thị CTR của banner";
+$MESS ['AD_BANNER_VIEW_SETTINGS_TITLE'] = "Xem các tham số banner";
+$MESS ['AD_BANNER_EDIT_TITLE'] = "Nhấp chuột để sửa chữa các tham số banner";
+$MESS ['AD_ADD_NEW_BANNER'] = "Thêm một banner mới";
+$MESS ['AD_ADD_NEW_BANNER_TITLE'] = "Thêm một banner mới";
+$MESS ['AD_DELETE_BANNER'] = "Xóa banner";
+$MESS ['AD_DELETE_BANNER_TITLE'] = "Xóa banner hiện tại";
+$MESS ['AD_DELETE_BANNER_CONFIRM'] = "Bạn có chắc muốn xóa banner này?";
+$MESS ['AD_DELETE_BANNER_ERROR'] = "Lỗi trong khi xóa banner";
+$MESS ['AD_CTR'] = "Nhấp chuột - Qua - Tỉ lệ (CTR) (%):";
+$MESS ['AD_CAN_USE_EVENT_GID'] = "Trong tham số URL bạn có thể sử dụng mẫu #EVENT_GID#  để thay thế nhấp chuột với chuỗi định danh người xem (được sử dụng bởi mô-đun thống kê)";
+$MESS ['AD_VISITOR_COUNT_2'] = "<b>Số lần xem hiện tại</b><br> / số lần tối đa:";
+$MESS ['AD_VISITOR_COUNT'] = "Người xem tối đa:";
+$MESS ['AD_VISITORS'] = "Số người xem:";
+$MESS ['AD_SHOWS_FOR_VISITOR'] = "Số lần hiển thị tối đa tới một người dùng:";
+$MESS ['AD_FIX_CLICK'] = "Ghi lại những nhấp chuột vào banner này:";
+$MESS ['AD_FIX_SHOW'] = "Theo dõi những ân tượng của banner:";
+$MESS ['AD_UNIFORM'] = "Phần chia những ấn tượng ngang bằng nhau:";
+$MESS ['AD_KEYWORDS'] = "Từ khóa:";
+$MESS ['AD_KEYWORDS_ALT'] = "Mỗi từ khóa nằm trên một dòng";
+$MESS ['AD_SITE'] = "Sites:";
+$MESS ['AD_BANNER_COPY'] = "Sao chép banner";
+$MESS ['AD_BANNER_COPY_TITLE'] = "Sao chép banner";
+$MESS ['AD_USER_GROUPS'] = "Nhóm người dùng:";
+$MESS ['AD_USER_GROUP_Y'] = "Chỉ hiện banner tới nhóm người dùng đã chọn ";
+$MESS ['AD_USER_GROUP_N'] = "Không hiện banner tới nhóm người dùng đã chọn ";
+$MESS ['AD_TAB_CONTRACT'] = "Banner";
+$MESS ['AD_TAB_TITLE_CONTRACT'] = "Các cài đặt banner";
+$MESS ['AD_TAB_LIMIT'] = "Các giới hạn";
+$MESS ['AD_TAB_ACCESS'] = "Truy cập";
+$MESS ['AD_TAB_COMMENT'] = "Chú thích";
+$MESS ['AD_USER_ALT'] = "Xem các tham số người dùng";
+$MESS ['AD_SITE_ALT'] = "Xem các tham số của site";
+$MESS ['AD_FIX_STAT'] = "Ghi lại các sự kiện:";
+$MESS ['AD_TAB_BANNER'] = "Banner";
+$MESS ['AD_TAB_TITLE_BANNER'] = "Các cài đặt banner";
+$MESS ['AD_TAB_TARGET'] = "Đích";
+$MESS ['AD_TAB_STAT'] = "Thống kê";
+$MESS ['AD_ERROR_INCORRECT_ID'] = "Không tìm thấy banner";
+$MESS ['ADV_NO_LIMITS'] = "(không giới hạn)";
+$MESS ['ADV_NOT_SET'] = "(không chỉ định)";
+$MESS ['ADV_Y'] = "Có";
+$MESS ['ADV_N'] = "Không";
+$MESS ['ADV_TYPE_VIEW'] = "Xem các tham số kiểu banner";
+$MESS ['ADV_VIEW_UGROUP'] = "Xem các tham số nhóm người dùng";
+$MESS ['ADV_VIEW_PAGE'] = "Xem trang";
+$MESS ['AD_INS_TEMPL'] = "Sử dụng mẫu thiết kế";
+$MESS ['ADV_BANNER_NO_LINK'] = "Flash banner không chứa liên kết";
+?>

@@ -1,0 +1,22 @@
+<?
+$MESS ['LEARNING_MENU_LEARNING'] = "Eðitim";
+$MESS ['LEARNING_MENU_COURSES'] = "Kurslar";
+$MESS ['LEARNING_MENU_COURSES_ALT'] = "Kurs listesi";
+$MESS ['LEARNING_MENU_COURSES_OTHER'] = "Diðer";
+$MESS ['LEARNING_CHAPTERS_LIST'] = "Bölüm listesi";
+$MESS ['LEARNING_LESSONS_LIST'] = "Tüm ders listesi";
+$MESS ['LEARNING_QUESTION_LIST'] = "Tüm soru listesi";
+$MESS ['LEARNING_MENU_STUDENTS'] = "Katýlýmcýlar";
+$MESS ['LEARNING_MENU_STUDENTS_ALT'] = "Katýlýmcý listesi";
+$MESS ['LEARNING_MENU_GRADEBOOK'] = "Dergi";
+$MESS ['LEARNING_MENU_GRADEBOOK_ALT'] = "Dergi";
+$MESS ['LEARNING_MENU_ATTEMPT'] = "Denemeler";
+$MESS ['LEARNING_MENU_ATTEMPT_ALT'] = "Test geçiþ denemeleri ";
+$MESS ['LEARNING_MENU_IMPORT'] = "Ýthalat";
+$MESS ['LEARNING_MENU_IMPORT_ALT'] = "Kurs içeri aktarýmý";
+$MESS ['LEARNING_MENU_EXPORT'] = "Ýhracat";
+$MESS ['LEARNING_MENU_EXPORT_ALT'] = "Kurs dýþarý aktarýmý";
+$MESS ['LEARNING_MENU_LEARNING_TITLE'] = "Online eðitim yönetimi ";
+$MESS ['LEARNING_MENU_CERTIFICATION'] = "Sertifikasyon";
+$MESS ['LEARNING_MENU_CERTIFICATION_ALT'] = "Sertifikasyon";
+?>

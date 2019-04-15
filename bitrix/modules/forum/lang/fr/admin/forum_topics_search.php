@@ -1,0 +1,29 @@
+<?
+$MESS ['FM_TITLE_DATE_LAST_POST'] = "Modifié ";
+$MESS ['FM_DELETE_TOPIC_CONF'] = "Sur de supprimer le thème&nbsp;?";
+$MESS ['FM_TITLE_AUTHOR'] = "Auteur";
+$MESS ['FM_NEW_TOPIC_ALT'] = "Cliquer pour créer un nouveau thème";
+$MESS ['FM_TITLE_DATE_CREATE'] = "Créé(e)";
+$MESS ['FM_ACT_DELETE'] = "Supprimer";
+$MESS ['FM_ACT_DELETE_ALT'] = "Supprime un thème";
+$MESS ['FM_ACT_EDIT'] = "Éditer";
+$MESS ['FM_ACT_TOPIC_EDIT'] = "Éditer un thème";
+$MESS ['FM_ACT_EDIT_ALT'] = "Éditer un thème  (non disponible)";
+$MESS ['FM_FILTER_ERROR'] = "Erreur&nbsp;:";
+$MESS ['FM_TITLE_FORUM'] = "Forum";
+$MESS ['FM_WRONG_NOT_RIGHT'] = "Autorisations insuffisantes.";
+$MESS ['FM_TITLE_LAST_MESSAGE'] = "Dernier message";
+$MESS ['FORUM_TOPICS'] = "Gérer les thèmes";
+$MESS ['FM_TITLE_MESSAGES'] = "Messages";
+$MESS ['FM_TOPICS'] = "Messages";
+$MESS ['FM_ACT_MOVE'] = "Déplacer";
+$MESS ['FM_TITLE_NAME'] = "Nom";
+$MESS ['FM_NEW_TOPIC'] = "Nouveau thème";
+$MESS ['FM_WRONG_ID'] = "Aucun élément sélectionné";
+$MESS ['FM_TITLE_PERIOD'] = "Période";
+$MESS ['FM_WRONG_FORUM'] = "Choisir un forum";
+$MESS ['FM_WRONG_DATE_OP'] = "Donnez une période valable";
+$MESS ['FM_WRONG_FORUM_ID'] = "Le forum de destination n'est pas correct";
+$MESS ['FM_WRONG_UPDATE'] = "Échec de la mise à jour";
+$MESS ['FM_TITLE_VIEWS'] = "Vues";
+?>

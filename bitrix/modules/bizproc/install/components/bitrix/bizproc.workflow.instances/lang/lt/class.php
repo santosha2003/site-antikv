@@ -1,0 +1,31 @@
+<?
+$MESS["BPWI_PAGE_TITLE"] = "Veikiantys verslo procesai";
+$MESS["BPWI_MODIFIED"] = "Pakeitimo data.";
+$MESS["BPWI_OWNED_UNTIL"] = "Uþrakintas iki";
+$MESS["BPWI_WS_STARTED"] = "Pradþios data";
+$MESS["BPWI_WS_STARTED_BY"] = "Procesà pradëjo";
+$MESS["BPWI_WS_WORKFLOW_TEMPLATE_ID"] = "Verslo procesas";
+$MESS["BPWI_NO_MATTER"] = "(nesvarbu)";
+$MESS["BPWI_YES"] = "Taip";
+$MESS["BPWI_NO"] = "Ne";
+$MESS["BPWI_WORKFLOW_ID_ANY"] = "(bet koks)";
+$MESS["BPWI_FILTER_PRESET_LOCKED"] = "Pakibæ";
+$MESS["BPWI_FILTER_DOCTYPE_ALL"] = "Visi";
+$MESS["BPWI_FILTER_DOCTYPE_CLAIMS"] = "Procesai";
+$MESS["BPWI_FILTER_DOCTYPE_CRM"] = "CRM";
+$MESS["BPWI_FILTER_DOCTYPE_DISK"] = "Failai";
+$MESS["BPWI_FILTER_DOCTYPE_LISTS"] = "Sàraðai";
+$MESS["BPWI_FILTER_STATUS"] = "Statusas";
+$MESS["BPWI_NO_ACCESS"] = "Prieigos teisës ðiam puslapiui suteiktos tik administratoriui";
+$MESS["BPWI_DELETE_LABEL"] = "Iðtrinti";
+$MESS["BPWI_DELETE_CONFIRM"] = "Ar tikrai norite iðtrinti ðá procesà ir susijusius su juo duomenis?";
+$MESS["BPWI_OPEN_DOCUMENT"] = "Dokumentas (naujame lange)";
+$MESS["BPWI_NO_DOCUMENT"] = "Dokumentas nerastas.";
+$MESS["BPWI_IS_LOCKED"] = "Uþrakintas";
+$MESS["BPWI_WS_MODULE_ID"] = "Modulis";
+$MESS["BPWI_DOCUMENT_NAME"] = "Dokumentas";
+$MESS["BPWI_MODULE_CRM"] = "CRM";
+$MESS["BPWI_MODULE_IBLOCK"] = "Sàraðai";
+$MESS["BPWI_MODULE_DISK"] = "Diskas";
+$MESS["BPWI_MODULE_LISTS"] = "Procesai";
+?>

@@ -1,0 +1,34 @@
+<?
+$MESS ['VOTE_C_SORT'] = "Сорт.";
+$MESS ['VOTE_F_SITE'] = "Сайтове:";
+$MESS ['VOTE_SITE'] = "Сайтове";
+$MESS ['VOTE_PAGE_TITLE'] = "Групи анкети";
+$MESS ['VOTE_F_SID'] = "Символен идентификатор:";
+$MESS ['VOTE_PAGES'] = "Групи";
+$MESS ['VOTE_SID'] = "Символен идентификатор";
+$MESS ['VOTE_CONFIRM_DEL_CHANNEL'] = "Сигурни ли сте, че искате да изтриете групата анкети и включените в нея анкети?";
+$MESS ['VOTE_VOTES'] = "Анкети";
+$MESS ['VOTE_TIMESTAMP'] = "Променено";
+$MESS ['VOTE_F_ACTIVE'] = "Активна:";
+$MESS ['VOTE_FLT_ID'] = "ID на групата";
+$MESS ['VOTE_FLT_ACTIVE'] = "Дейност";
+$MESS ['VOTE_ADD_GROUP_TITLE'] = "Натиснете да добавите нова група анкети";
+$MESS ['VOTE_SITE_EDIT'] = "Промени настройките на сайта";
+$MESS ['VOTE_OPEN_VOTES'] = "Отвори списъка на анкетите";
+$MESS ['VOTE_ADD_VOTE'] = "Добави анкета в групата";
+$MESS ['VOTE_SAVE_ERROR'] = "Грешка при записа в базата данни";
+$MESS ['VOTE_DELETE'] = "премахни";
+$MESS ['VOTE_ACTIVATE'] = "активиране";
+$MESS ['VOTE_DEACTIVATE'] = "деактивиране";
+$MESS ['VOTE_EDIT_TITLE'] = "Промени настройките на групата анкети";
+$MESS ['VOTE_YES'] = "да";
+$MESS ['VOTE_NO'] = "не";
+$MESS ['VOTE_ALL'] = "(всички)";
+$MESS ['VOTE_TITLE'] = "Заглавие";
+$MESS ['VOTE_EXACT_MATCH'] = "Търси точно съвпадение при филтрирането";
+$MESS ['VOTE_CREATE'] = "Създай";
+$MESS ['VOTE_ACTIVE'] = "Акт.";
+$MESS ['VOTE_F_TITLE'] = "Заглавие:";
+$MESS ['DELETE_ERROR'] = "Възникна грешка при премахването на обекта.";
+$MESS ['SAVE_ERROR'] = "Възникна грешка при записа на обекта.";
+?>

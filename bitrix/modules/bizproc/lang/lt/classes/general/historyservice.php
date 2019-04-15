@@ -1,0 +1,3 @@
+<?
+$MESS["BPCGHIST_INVALID_ID"] = "Áraðø su ID  #ID# nerasta.  ";
+?>

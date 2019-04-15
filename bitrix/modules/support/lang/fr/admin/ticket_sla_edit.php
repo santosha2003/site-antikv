@@ -1,0 +1,35 @@
+<?
+$MESS ['SUP_24H'] = "24 heures";
+$MESS ['SUP_WHAT_ACCESSIBLE_S'] = "Accès";
+$MESS ['SUP_ALL_CURRENT_FUTURE'] = "tous les actuels & futurs";
+$MESS ['SUP_MARK'] = "Évaluations de la réponse";
+$MESS ['SUP_DELETE_RECORD_CONFIRM'] = "Sur de supprimer ce niveau de support&nbsp;?";
+$MESS ['SUP_CATEGORY'] = "Catégories";
+$MESS ['SUP_CLOSED'] = "fermé";
+$MESS ['SUP_CRITICALITY'] = "Urgences";
+$MESS ['SUP_DAYS'] = "j.";
+$MESS ['SUP_DELETE_RECORD'] = "Supprimer un niveau";
+$MESS ['SUP_DESCRIPTION'] = "Description";
+$MESS ['SUP_ERROR'] = "Erreur à l'enregistrement du niveau de support";
+$MESS ['SUP_USER_GROUPS_S'] = "Groupes";
+$MESS ['SUP_HOURS'] = "h.";
+$MESS ['SUP_MINUTES'] = "min.";
+$MESS ['SUP_NAME'] = "Nom";
+$MESS ['SUP_NEW_RECORD'] = "Nouveau niveau";
+$MESS ['SUP_PAGE_TITLE_NEW_RECORD'] = "Nouveau niveau de support (SLA)";
+$MESS ['SUP_PRIORITY'] = "Priorité";
+$MESS ['SUP_RESPONSIBLE'] = "Personne responsable par défaut";
+$MESS ['SUP_SHEDULE_S'] = "Planifier";
+$MESS ['SUP_SITE'] = "Sites";
+$MESS ['SUP_RECORD'] = "Niveau de support";
+$MESS ['SUP_PAGE_TITLE_EDIT_RECORD'] = "Niveau de support (SLA) # #ID#";
+$MESS ['SUP_RECORD_S'] = "Réglages du niveau de support";
+$MESS ['SUP_RECORD_LIST'] = "Niveaux de support";
+$MESS ['SUP_RESPONSE_TIME'] = "Temps de réponse au message de client";
+$MESS ['SUP_WARNING_TIME'] = "Temps pour l'envoi de notification par courriel (période avant la fin du temps de réponse)";
+$MESS ['SUP_USER_GROUPS'] = "Groupes d'utilisateurs";
+$MESS ['SUP_WHAT_ACCESSIBLE'] = "Qu'est-ce qui est disponible avec ce niveau de contrat (SLA) pour la création de tiquets";
+$MESS ['SUP_USER_ACCESS'] = "Qui avec ce niveau (SLA) peut créer des tiquets";
+$MESS ['SUP_SHEDULE'] = "Temps de traitement pour les tiquets de ce niveau de service (SLA)";
+$MESS ['SUP_CUSTOM'] = "heures de travail&nbsp;:<br>(HH24:MI)";
+?>

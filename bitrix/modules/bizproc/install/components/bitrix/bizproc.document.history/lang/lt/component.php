@@ -1,0 +1,17 @@
+<?
+$MESS["W_WEBDAV_IS_NOT_INSTALLED"] = "Dokumentø bibliotekos modulis nëra ádiegtas.";
+$MESS["BPADH_RECOVERY_ERROR"] = "Nepavyko atkurti áraðà ið istorijos.";
+$MESS["BPADH_RECOVERY_OK"] = "Istorijos áraðas buvo atkurtas.";
+$MESS["BPADH_DELETE_OK"] = "Istorijos áraðas buvo paðalintas.";
+$MESS["BPADH_TITLE"] = "Dokumento istorija";
+$MESS["BPABS_EMPTY_DOC_ID"] = "Nurodytas dokumentas, kuriam turi bûti sukurtas verslo procesas, ID.";
+$MESS["BPABS_EMPTY_ENTITY"] = "Nurodytas subjektas, kuriam turi bûti sukurtas verslo procesas.";
+$MESS["BPABS_EMPTY_DOC_TYPE"] = "Privalomas dokumento tipas.";
+$MESS["BPATT_NO_MODULE_ID"] = "Privalomas modulio ID.";
+$MESS["BPADH_NAV_TITLE"] = "Versijos";
+$MESS["BPADH_NO_PERMS"] = "Jûs neturite teisës prieiti prie dokumento istorijos.";
+$MESS["BPADH_DELETE_DOC_CONFIRM"] = "Ar tikrai norite paðalinti ðá áraðà?";
+$MESS["BPADH_DELETE_DOC"] = "Paðalinti";
+$MESS["BPADH_RECOVERY_DOC"] = "Atkurti";
+$MESS["BPADH_VIEW_DOC"] = "Perþiûrëti dokumentà";
+?>

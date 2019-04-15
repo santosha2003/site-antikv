@@ -1,0 +1,7 @@
+<?
+$MESS["CONVERSION_CURRENCY"] = "Basiswährung";
+$MESS["CONVERSION_TAB_MODULES_NAME"] = "Module";
+$MESS["CONVERSION_TAB_MODULES_DESC"] = "Moduleinstellungen";
+$MESS["CONVERSION_TAB_MODULES_MODULE_NAME"] = "Modulname";
+$MESS["CONVERSION_TAB_MODULES_ACTIVE"] = "Konversion berechnen";
+?>

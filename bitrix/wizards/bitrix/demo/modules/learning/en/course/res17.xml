@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="CHA"><id>135</id>
+<timestamp_x>1162482874</timestamp_x>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>134</chapter_id>
+<name>Properties of pages and folders</name>
+<code></code>
+<sort>500</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>The Bitrix Site Manager allows to assign properties to pages and sections. This enables to flexibly manage the information show.<p>
+<p>By setting properties to the site pages, you can:</p>
+<ul>
+<li>assign the metadata values for different pages;</li>
+<li>change the visual aspect of the site design on the fly depending on the active section or page;</li>
+<li>manage advertising show;</li>
+<li>and so on.</li>
+</ul>]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

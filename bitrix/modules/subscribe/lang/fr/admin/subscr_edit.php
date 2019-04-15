@@ -1,0 +1,34 @@
+<?
+$MESS ['subscr_upd'] = "Mise à jour";
+$MESS ['subscr_date_upd'] = "Modifié&nbsp;:";
+$MESS ['subscr_deny'] = "accès refusé";
+$MESS ['subscr_add_text'] = "Ajouter";
+$MESS ['subscr_mnu_add'] = "Ajouter un nouvel abonné";
+$MESS ['subscr_title_add'] = "Ajouter une adresse";
+$MESS ['subscr_list'] = "Liste d'adresses";
+$MESS ['subscr_anonym'] = "Abonné anonyme&nbsp;:";
+$MESS ['subscr_appl'] = "Appliquer";
+$MESS ['subscr_date_add'] = "Créé(e)&nbsp;:";
+$MESS ['subscr_date_conf'] = "Date de génération d'un code de confirmation&nbsp;:";
+$MESS ['subscr_del_text'] = "Supprimer";
+$MESS ['subscr_mnu_del'] = "Supprimer cet abonné";
+$MESS ['subscr_title_edit'] = "Éditer l'adresse #";
+$MESS ['subs_save_error'] = "Erreur à l'enregistrement de l'adresse d' abonnement.";
+$MESS ['subscr_fmt'] = "Format&nbsp;:";
+$MESS ['subscr_list_text'] = "Liste";
+$MESS ['subscr_rub'] = "Catégories de bulletins&nbsp;:";
+$MESS ['subscr_mnu_del_conf'] = "Supprimer l'adresse de l'abonné&nbsp;?";
+$MESS ['subscr_req'] = "Champs obligatoires.";
+$MESS ['subscr_reset'] = "Réinitialiser";
+$MESS ['subscr_templ'] = "Envoi d'un message sur la base d'un modèle du site&nbsp;:";
+$MESS ['subscr_send_conf'] = "Envoyer le code de confirmation é l'abonné si l'adresse a changé ou si ajout d'une nouvelle&nbsp;:";
+$MESS ['subscr_tab_subscriber'] = "Abonné";
+$MESS ['subscr_active'] = "Abonnement actif&nbsp;:";
+$MESS ['subs_saved'] = "L'adresse de l'abonnement a été enregistrée avec succès.";
+$MESS ['subscr_conf_code'] = "Code de confirmation de souscription";
+$MESS ['subscr_conf'] = "Souscription confirmée&nbsp;:";
+$MESS ['subscr_tab_subscriber_title'] = "Paramètres d'abonnement";
+$MESS ['subscr_tab_subscription'] = "Abonnements";
+$MESS ['subscr_fmt_text'] = "Texte";
+$MESS ['subscr_user'] = "Utilisateur (ID)&nbsp;:";
+?>

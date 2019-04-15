@@ -1,0 +1,29 @@
+<?
+$MESS ['STE_EMPTY_USER'] = "Kullanýcý alaný doldurulmamýþtýr";
+$MESS ['STE_EMPTY_CURRENCY'] = "Döviz alaný doldurulmamýþtýr";
+$MESS ['STE_EMPTY_SUM'] = "Miktar alaný doldurulmamýþtýr";
+$MESS ['STE_EMPTY_DATE'] = "Hareket tarihi alaný doldurulmamýþtýr";
+$MESS ['STE_ERROR_SAVE_ACCOUNT'] = "Hesap kaydýnda hata";
+$MESS ['STE_TITLE'] = "Yeni hareket";
+$MESS ['STE_TO_LIST'] = "Hareket listesi";
+$MESS ['STE_USER'] = "Kullanýcý:";
+$MESS ['STE_DATE'] = "Hareket tarihi (";
+$MESS ['STE_SUM'] = "Miktar:";
+$MESS ['STE_CURRENCY'] = "Döviz:";
+$MESS ['STE_TYPE'] = "Kayýt türü:";
+$MESS ['STE_DEBET'] = "Kullanýcý hesabýna tutarýn geçirilmesi";
+$MESS ['STE_KREDIT'] = "Kullanýcý hesabýndan tutarýn alýnmasý";
+$MESS ['STE_ORDER_ID'] = "Sipariþ numarasý (eðer hareket sipariþ ile ilgili ise):";
+$MESS ['STE_DESCR'] = "Tanýmý:";
+$MESS ['STE_NOTES'] = "Notlar:";
+$MESS ['STE_SAVE'] = "Kaydet";
+$MESS ['STE_APPLY'] = "Uygula";
+$MESS ['STE_CANCEL'] = "Sýfýrla";
+$MESS ['STE_USER_PROFILE'] = "Kullanýcý profili";
+$MESS ['STEN_2FLIST'] = "Hareket listesi";
+$MESS ['STEN_2FLIST_TITLE'] = "Hareket listesini görüntüle";
+$MESS ['STEN_TAB_TRANSACT'] = "Hareket";
+$MESS ['STEN_TAB_TRANSACT_DESCR'] = "Hareket";
+$MESS ['STE_CANCEL1'] = "Ýptal et";
+$MESS ['STE_ERROR'] = "Kayýt hata!";
+?>

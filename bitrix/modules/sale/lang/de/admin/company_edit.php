@@ -1,0 +1,30 @@
+<?
+$MESS["COMPANY_TITLE_UPDATE"] = "Unternehmen #ID# bearbeiten";
+$MESS["COMPANY_TITLE_ADD"] = "Neues Unternehmen";
+$MESS["COMPANY_SECTION_TITLE"] = "Unternehmen";
+$MESS["COMPANY_TAB"] = "Unternehmen";
+$MESS["COMPANY_TAB_DESCR"] = "Unternehmen";
+$MESS["COMPANY_LOCATION"] = "Adresse:";
+$MESS["COMPANY_ID"] = "ID:";
+$MESS["COMPANY_NAME"] = "Name:";
+$MESS["COMPANY_LOCATION_ID"] = "Standort:";
+$MESS["COMPANY_CODE"] = "Code:";
+$MESS["COMPANY_XML_ID"] = "XML_ID:";
+$MESS["COMPANY_ADD_NEW"] = "Unternehmen hinzufügen";
+$MESS["COMPANY_ADD_NEW_ALT"] = "Unternehmen hinzufügen";
+$MESS["COMPANY_EDIT"] = "Ändern";
+$MESS["COMPANY_EDIT_DESCR"] = "Ändern";
+$MESS["COMPANY_DELETE"] = "Löschen";
+$MESS["COMPANY_DELETE_DESCR"] = "Löschen";
+$MESS["COMPANY_COMPANY"] = "Unternehmen";
+$MESS["COMPANY_CONFIRM_DEL_COMPANY"] = "Möchten Sie dieses Unternehmen wirklich löschen?";
+$MESS["NAME_EMPTY"] = "Geben Sie den Unternehmensnamen ein";
+$MESS["COMPANY_E_USER_FIELDS_ADD_HREF"] = "Benutzerdefiniertes Feld hinzufügen";
+$MESS["COMPANY_ACTIVE"] = "Aktiv:";
+$MESS["ERROR_NO_NAME"] = "Unternehmensname ist nicht angegeben.";
+$MESS["ERROR_NO_LOCATION_ID"] = "Unternehmensstandort ist nicht angegeben.";
+$MESS["COMPANY_DATE_CREATE"] = "Erstellt am:";
+$MESS["COMPANY_DATE_MODIFY"] = "Geändert am:";
+$MESS["COMPANY_CREATED_BY"] = "Erstellt von:";
+$MESS["COMPANY_MODIFIED_BY"] = "Geändert von:";
+?>

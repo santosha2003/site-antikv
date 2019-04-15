@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<CommerceInformation SchemaVersion="2.021" CreationDate="2008-06-05T10:11:55">
+	<Metadata>
+		<Id>services-faq</Id>
+		<Title>FAQ</Title>
+		<Properties>
+			<Property>
+				<Id>CML2_CODE</Id>
+				<Title>Code</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_SORT</Id>
+				<Title>Sort</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_ACTIVE_FROM</Id>
+				<Title>Start time</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_ACTIVE_TO</Id>
+				<Title>End time</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_PREVIEW_TEXT</Id>
+				<Title>Anons</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_PREVIEW_PICTURE</Id>
+				<Title>Preview picture</Title>
+				<Multiple>false</Multiple>
+			</Property>
+		</Properties>
+		<Sections>
+			<Section>
+				<Id>174</Id>
+				<Title>Order payment</Title>
+				<BitrixSort>500</BitrixSort>
+				<BitrixCode></BitrixCode>
+				<BitrixPicture></BitrixPicture>
+				<BitrixDetailPicture></BitrixDetailPicture>
+			</Section>
+			<Section>
+				<Id>175</Id>
+				<Title>Partners program</Title>
+				<BitrixSort>500</BitrixSort>
+				<BitrixCode></BitrixCode>
+				<BitrixPicture></BitrixPicture>
+				<BitrixDetailPicture></BitrixDetailPicture>
+			</Section>
+			<Section>
+				<Id>173</Id>
+				<Title>Product settings</Title>
+				<BitrixSort>500</BitrixSort>
+				<BitrixCode></BitrixCode>
+				<BitrixPicture></BitrixPicture>
+				<BitrixDetailPicture></BitrixDetailPicture>
+			</Section>
+		</Sections>
+	</Metadata>
+	<Catalog>
+		<Id>services-faq</Id>
+		<MetadataId>services-faq</MetadataId>
+		<Title>FAQ</Title>
+		<BitrixCode>faq</BitrixCode>
+		<BitrixSort>600</BitrixSort>
+		<BitrixListURL>/content/faq/</BitrixListURL>
+		<BitrixDetailURL>/content/faq/index.php?ELEMENT_ID=#ID#</BitrixDetailURL>
+		<BitrixSectionURL>/content/faq/index.php?ID=#ID#</BitrixSectionURL>
+		<BitrixPicture></BitrixPicture>
+		<BitrixIndexElements>true</BitrixIndexElements>
+		<BitrixIndexSections>true</BitrixIndexSections>
+		<BitrixWorkflow>true</BitrixWorkflow>
+		<BitrixLabels>
+			<BitrixLabel>
+				<Id>ELEMENT_NAME</Id>
+				<Value>Question</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENTS_NAME</Id>
+				<Value>Questions</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_ADD</Id>
+				<Value>Add new question</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_EDIT</Id>
+				<Value>Edit question</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_DELETE</Id>
+				<Value>Delete question</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_NAME</Id>
+				<Value>Section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTIONS_NAME</Id>
+				<Value>Sections</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_ADD</Id>
+				<Value>Add new section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_EDIT</Id>
+				<Value>Edit section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_DELETE</Id>
+				<Value>Delete section</Value>
+			</BitrixLabel>
+		</BitrixLabels>
+		<Elements>
+			<Element>
+				<Id>1236</Id>
+				<Title>How can I order Bitrix Site Manager?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>174</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>150</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;You can order Bitrix Site Manager by using either the Plimus registration service or a variety of other payment options: MasterCard, Visa, EuroCard, American Express, Discover/Novus, Diners Club, JCB, US$ Checks, Eurochecks, Wire Transfers, or PayPal. To create an order you need to add a product to the shopping cart and then proceed.&lt;/p&gt;
+</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1239</Id>
+				<Title>How to become a partner?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>175</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>100</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;To become our partner you need to fill in the application and give us a brief description of your company, its main business activity, completed projects and other details required. Your application will be considered by the partnership coordinators and you will be contacted via e-mail shortly.&lt;/p&gt;
+</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1240</Id>
+				<Title>How do I get a 40% discount?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>175</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>150</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;After your partner's application is accepted, it will be considered by the partners program coordinators. And if all the requirements are complied, you will be informed that your user account is granted special access rights which allow you to make any purchase on our web site with 40% partner's discount.&lt;/p&gt;</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1242</Id>
+				<Title>What product editions does Bitrix offer?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>173</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;Bitrix Site Manager is shipped in five different product packages - Start, Standard, Professional, Small Business, and Enterprise. You can take a look at the comparison table to learn more about them:
+&lt;a href=&quot;http://www.bitrixsoft.com/editions/comparison.php&quot;&gt;http://www.bitrixsoft.com/editions/comparison.php&lt;/a&gt;&lt;/p&gt;
+
+</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1244</Id>
+				<Title>How to get a partner's license?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>175</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>200</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;To get your free copy you have to:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Transfer your web site to the trial version of the Bitrix Site Manager.&lt;/li&gt;
+
+&lt;li&gt;Place the Bitrix Company logo, the title &quot;Powered by Bitrix Site Manager - Content Management &amp; Portal Solutions&quot; on your site and a link to the official product site: www.bitrixsoft.com.&lt;li&gt;
+
+&lt;li&gt;Keep the Bitrix Company logo, the title and the link during the whole term of the Distribution and Licensing Agreement.&lt;/li&gt;
+
+&lt;li&gt;Place Bitrix Site Manager product description on your web site.&lt;/li&gt;
+
+&lt;li&gt;Cease using the free product copy or purchase the commercial product copy in case of the Distribution and Licensing Agreement termination.&lt;/li&gt;
+
+&lt;li&gt;During one year since the free product copy activation you should sell the product copies totaling to the price of two product editions of your partner's copy. If you do not meet this condition you are obliged to purchase your product copy with the dealer discount.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Note that when integrating the Bitrix Site Manager you should change the trial version design. The free product copy is granted for a partner's web site that deals with software delivery and integration, software distribution, web design and web development, IT consulting, systems integration, advertising and site promotion and other web services.&lt;/p&gt;
+
+&lt;p&gt;When the foregoing conditions are accomplished please send us a link to your site and a request for the partner's license key to partners@bitrixsoft.com.&lt;/p&gt;
+</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1246</Id>
+				<Title>I have paid the order and I haven't received a download link yet. What happened?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>174</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>100</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>Please check your mailbox carefully, it might be a spam filter that removed the automatically generated message with the license key. If you haven&amp;#39;t found the message please create a trouble ticket in the helpdesk and specify the order reference.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1247</Id>
+				<Title>What happens when the license expires?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>174</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>200</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;Your site will continue working, however the product updates will be unavailable to download. If you would like to extend the updates period you need to buy the Updates and Support Subscription.&lt;/p&gt;
+
+&lt;p&gt;When your license expires you can extend the updates period for another year at 22% of the product price. If you order the updates extension within one month after the license expiration you can purchase the Privileged updates subscription:
+&lt;a href=&quot;http://www.bitrixsoft.com/buy/support.php#privileged&quot;&gt;http://www.bitrixsoft.com/buy/support.php#privileged&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you order the updates extension later than one month after expiration, you have to pay 60% of the product price - Standard updates subscription:
+&lt;a href=&quot;http://www.bitrixsoft.com/buy/support.php#standard&quot;&gt;http://www.bitrixsoft.com/buy/support.php#standard&lt;/a&gt;
+</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1249</Id>
+				<Title>Error connecting to database. How to resolve the problem?</Title>
+				<BitrixTags></BitrixTags>
+				<Sections>
+					<Id>173</Id>
+				</Sections>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>&lt;p&gt;Please check the connection parameters in &quot;/bitrix/php_interface/dbconn.php&quot; file.&lt;/p&gt;
+
+&lt;p&gt;You need to specify the correct information for your database: database server, database name, type, database login and password. Also please check whether the database is accessible.&lt;/p&gt;</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+		</Elements>
+	</Catalog>
+</CommerceInformation>

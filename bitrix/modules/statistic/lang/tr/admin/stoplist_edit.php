@@ -1,0 +1,37 @@
+<?
+$MESS ['STAT_ERROR'] = "Kyýtlarýn kaydetmesinde hata oluþtu";
+$MESS ['STAT_PARAMS'] = "Parametreler";
+$MESS ['STAT_PARAMS_S'] = "Kayýt parametreleri";
+$MESS ['STAT_REDIRECT'] = "(URL) adresine yönlendir:";
+$MESS ['STAT_GREEN_LAMP'] = "etkin";
+$MESS ['STAT_RED_LAMP'] = "etkin deðil";
+$MESS ['STAT_WRONG_END_DATE'] = "Belirtilen format içerisinde \"Bitiþ tarihi\" doðru giriniz  ";
+$MESS ['STAT_WRONG_START_DATE'] = "Belirtilen format içerisinde \"Baþlangýç tarihini\" doðru giriniz ";
+$MESS ['STAT_START_DATE'] = "Baþlangýç tarihi";
+$MESS ['STAT_END_DATE'] = "Bitiþ tarihi";
+$MESS ['STAT_DEFAULT_MESSAGE'] = "Eriþim site yöneticisi tarafýndan engellenmiþtir ";
+$MESS ['STAT_EDIT_RECORD'] = "# #ID# baykot listesi kayýt parametreleri";
+$MESS ['STAT_NEW_RECORD'] = "Baykot listesinin yeni kaydý";
+$MESS ['STAT_RECORDS_LIST'] = "Baykot listesi";
+$MESS ['STAT_TIMESTAMP'] = "Deðiþiklik tarihi:";
+$MESS ['STAT_ACTIVE'] = "Etkinlik bayraðý:";
+$MESS ['STAT_IP'] = "Sitenin IP adresi:";
+$MESS ['STAT_MASK'] = "Site maskesi:";
+$MESS ['STAT_USER_AGENT'] = "UserAgent:";
+$MESS ['STAT_URL_FROM'] = "Nereden geldi:";
+$MESS ['STAT_URL_TO'] = "Nereye geldi:";
+$MESS ['STAT_MESSAGE'] = "Ýletiyi görüntüle:";
+$MESS ['STAT_COMMENT_S'] = "Yorumlar";
+$MESS ['STAT_SAVE_STATISTIC'] = "Ýstatistiði kaydet:";
+$MESS ['STAT_WRONG_STOPLIST_PARAMS'] = "Kendi kendinizi baykot listesine ekleyemezsiniz.";
+$MESS ['STAT_MESSAGE_LID'] = "Dil kodlamasýnda:";
+$MESS ['STAT_EMPTY'] = "boþ";
+$MESS ['STAT_ACTIVITY'] = "Kayýt etkinliði";
+$MESS ['STAT_CONDITIONS'] = "Ziyaretçileri hangi özelliklerine göre filtrelemeli (mantýk - \"ve\")";
+$MESS ['STAT_WHAT_TO_DO'] = "Yapýlmasý kerekenler";
+$MESS ['STAT_ACTIONS'] = "Etkinlikler";
+$MESS ['STAT_COMMENT'] = "Yönetici yorumu";
+$MESS ['STAT_NEW_STOPLIST'] = "Baykot listesinin yeni kaydý";
+$MESS ['STAT_DELETE_STOPLIST'] = "Baykot listesinin kaydýný sil";
+$MESS ['STAT_DELETE_STOPLIST_CONFIRM'] = "Baykot listesi kaydýný silmek istediðinizden eminmisiniz?";
+?>

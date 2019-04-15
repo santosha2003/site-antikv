@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>371</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153486609</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>139</chapter_id>
+<name>Using the CSS</name>
+<sort>100</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>Generally CSS is a group of rules defining layout of some page elements. The CSS technology allows to store all information about page layout, utilized fonts and colors, menu layout stiles and etc. in one or several exact files. </p>
+
+<p>Using the CSS simplifies the page designing. More over, if you change a site design you do not need to modify each site page. It may be enough to make necessary modifications in corresponding CSS files. </p>
+
+<p>For example, using the CSS you can modify a forum layout (in this example forum CSS files are stored separately from the site template CSS).</p>
+
+<table>
+  <tbody>
+    <tr valign="top"><td><img src="cid:resources/res40/gLMl9.tkXIK.forum1.png" height="126" width="350"/></td></tr>
+  
+    <tr><td>
+        <br />
+      <font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+          <pre class="syntax">.forumborder {background-color:#B8B8B8;}
+.forumhead {background-color:#DDDDDD;}
+.forumbody {background-color:#F5F5F5;}
+.forumbodytext {
+	font-family: Tahoma, Arial, Verdana, sans-serif;
+	font-size: 80%;
+	color:#000000;
+}
+.forumheadtext {
+	font-family: Tahoma, Arial, Verdana, sans-serif;
+	font-size: 80%;
+	color:#011B46;
+&hellip;</pre>
+        </font></td></tr>
+  
+    <tr><td></td></tr>
+  
+    <tr valign="top"><td><img src="cid:resources/res40/TyEbO.lUMHw.forum2.png" height="126" width="350"/></td></tr>
+  
+    <tr valign="top"><td>
+        <br />
+      <font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+          <pre class="syntax">.forumborder {background-color:#96C0FA;}
+.forumhead {background-color:#A9CAF7;}
+.forumbody {background-color:#D7E6FB;}
+.forumbodytext {
+	font-family: Tahoma, Arial, Verdana, sans-serif;
+	font-size: 80%;
+	color:#042A69;
+}
+.forumheadtext {
+	font-family: Tahoma, Arial, Verdana, sans-serif;
+	font-size: 80%;
+	color:#011B46;
+&hellip;</pre>
+        </font></td></tr>
+  </tbody>
+</table>
+
+<p>Stylesheets are uniquely customized for each site template in the system; each stylesheet set is stored in the folder of the corresponding template, as well as other files comprising the interface of the template. Stylesheets used in site templates are stored in the <code>styles.css</code> files. Additional stylesheets used for exact site elements (for example, for forum layout) a stored in files with such names as <code>forum.css</code>. </p>
+
+<div class="hint"><b>Note</b>: The Bitrix Site Manager includes a mechanism allowin to store CSS file separatly: 
+  <ul>
+    <li>site template CSS can be stored in the <code>template_styles.css</code> file; </li>
+  
+    <li>CSS used for site content can be stored in the <code>styles.css</code> files. </li>
+  </ul>
+This mechanism allows to avoid overloading of stiles list that is available in WYSIWYG editor mode. </div>
+
+<p>Stylesheets customization is implemented in the <b>Edit template</b> form: </p>
+
+<p><em>Settings -&gt; System settings -&gt; Sites -&gt; Site templates</em>.</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/css/styles_css.png',558,561,'Template CSS file')"><img src="cid:resources/res40/7j3PS.NrgcV.styles_css_s.png" height="227" alt="Click to enlarge" hspace="0" width="226" border="0"/></a>&nbsp;</p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

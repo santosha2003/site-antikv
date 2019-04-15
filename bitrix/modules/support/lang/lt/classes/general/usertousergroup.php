@@ -1,0 +1,10 @@
+<?
+$MESS["SUP_ERROR_USER_ID_EMPTY"] = "Naudotojjo ID yra tuðèias";
+$MESS["SUP_ERROR_GROUP_ID_EMPTY"] = "Grupës ID yra tuðèias";
+$MESS["SUP_ERROR_USERGROUP_EXISTS"] = "Ðis naudotojas jau yra ðios grupës narys";
+$MESS["SUP_ERROR_NO_SUPPORT_USER"] = "Ðis naudotojas nëra techninio palaikymo grupës narys";
+$MESS["SUP_ERROR_USER_NO_TEAM"] = "Tik techninio palaikymo grupës nariai gali bûti pridëti prie ðios grupës";
+$MESS["SUP_ERROR_USER_NO_CLIENT"] = "Tik techninio palaikymo grupës klientai gali bûti pridëti prie ðios grupës";
+$MESS["SUP_ERROR_NO_GROUP"] = "Nëra tokios grupës";
+$MESS["SUP_ERROR_NO_USER"] = "Nëra tokio naudotojo";
+?>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>400</id>
+<timestamp_x>1162482875</timestamp_x>
+<date_create>1153825259</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>150</chapter_id>
+<name>SEO (Search engine optimization)</name>
+<sort>100</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>Bitrix Site Manager provides special tools for better solving different SEO issues:</p>
+
+<ol>
+  <li><b>Meta data</b>. Special folder and page properties can be used for setting keywords and description metadata. These properties can be easily set by site content editors through the WYSIWYG editor or in text mode. 
+    <p><a href="javascript:ShowImg('/images/integration_course_en/meta/meta_html.png',603,422,'Page metadata')"><img src="cid:resources/res112/Uk9l5.CzkJU.meta_html_s.png" height="210" alt="Click to enlarge" hspace="0" width="300" border="0"/></a></p>
+  </li>
+
+  <li><b>Browser window title settings</b>. Page properties can also be used for setting separate title of the browser page. Every page can be configured to have different titles of the browser window. Or these titles can depend on the page content title or even dynamic content parts, e.g. news titles or goods names. 
+    <p><a href="javascript:ShowImg('/images/integration_course_en/title/html_mode_add_title.png',450,334,'Web-browser window title')"><img src="cid:resources/res112/f0qBL.zg1gp.html_mode_add_title_s.png" height="223" alt="Click to enlarge" hspace="0" width="300" border="0"/></a></p>
+  </li>
+
+  <li><b>Heading styles (H1, H2, H3)</b>. Page heading styles can be managed in HTML-editor (WYSIWYG) editor. 
+    <p><a href="javascript:ShowImg('/images/integration_course_en/title/heading.png',752,500,'Heading styles')"><img src="cid:resources/res112/wf4o9.s506G.heading_s.png" height="199" alt="Click to enlarge" hspace="0" width="300" border="0"/></a></p>
+  </li>
+
+  <li><b>Excluding CSS code from the page code for SE bots</b>. Cascading style sheets (CSS) can be included in the page body for better page viewing by site visitors or they can be completely excluded from the page code or just linked as external file with special mechanism that helps to determine if the search engine bot visits the page or just an ordinary user came. </li>
+
+  <li><b>No limitations on site layout</b>. Site template can be built with Table or DIV (layers) layout - there are no limitations. So the page content can be placed closer to the top of the page depending on the layout techniques used. 
+    <p>Previous two features can be helpful for the site owners because currently Google indexes only first 100kB of a page. For a short while, a few months ago, they did cache up to 250kB but are no longer doing so for new pages. The figure has reverted to 100kB again. </p>
+  </li>
+
+  <li><b>User friendly URLs</b>. Dynamic content can be displayed on the pages that use user friendly URLs (it means they do not have URL parameters as news or goods IDs, etc). So the page has standard URL like <code>mysite.com/news/23.php</code> instead of <code>mysite.com/news/index.php?ID=23</code>. (Standard product feature, no <code>mod_rewrite</code> rules used) 
+    <p>This feature still can be desired by site owners although the latest news from SEO market shows that Google already handles long/deep URLs with 3 or even 5 variables in URL. (It seems the deep of indexing depends on site page rank) </p>
+  </li>
+
+  <li><b>Meta data settings for dynamic content. Keywords and descriptions for the goods, articles etc.</b> Special properties of the catalog elements can be used for setting different metadata for the goods or articles. This way every goods in your catalog will be indexed with its own keywords as well as every news or job vacancies published on the site. 
+    <p><a href="javascript:ShowImg('/images/integration_course_en/title/meta.png',752,500,'Setting meta data for dynamic content')"><img src="cid:resources/res112/NOOrm.c7ZHt.meta_s.png" height="199" alt="Click to enlarge" hspace="0" width="300" border="0"/></a></p>
+  </li>
+
+  <li><b>Find a phrases what your visitors search for on your site</b>. Special web analytics tools enable to collect the data on the most used search phrases with which users came from the search engine. So you are able to use the most popular search phrases across the site for your keywords settings and for better visitor site paths optimization. 
+    <p><img src="cid:resources/res112/iFtFZ.7FgYW.search_phrases.png" height="133" width="451"/></p>
+  </li>
+
+  <li><b>Limiting activity of the search engine bots</b>. Some search engines bots can be automatically blocked for some period of time with the internal mechanism if they show big activity (this can be configured by site owner). 
+    <ul>
+      <li>activity limiting parameters are defined on the <b>Statistics</b> module settings page; 
+        <p><img src="cid:resources/res112/z1ddE.J2Oot.activity_lim.png" height="171" width="369"/></p>
+      </li>
+    
+      <li>if you want a SE bots to be involved in activity control then check the field &quot;Check activity limit&quot; on the search engine editing page.
+        <p><img src="cid:resources/res112/wMoj9.nwbDo.activity_lim_contr.png" height="301" width="442"/></p>
+      </li>
+    </ul>
+      <li><b>Session IDs can be removed from URLs</b>. It seems that Google and other search engines definitely do not like Session IDs. You can remove them quite easily from your URLs just with adding a string in site configuration file. 
+        <p></p>
+      
+        <pre class="syntax">#php_flag session.use_trans_sid off</pre>
+      
+        <p></p>
+      </li>
+    </ul>
+  </li>
+</ol>
+
+<p>Note that for better understanding the principles of search engine optimization you should read more hints from Google and others: <a href="http://www.google.com/webmasters/guidelines.html" target="blank">http://www.google.com/webmasters/guidelines.html</a> </p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

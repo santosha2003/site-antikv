@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>396</id>
+<timestamp_x>1162482875</timestamp_x>
+<date_create>1153815571</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>148</chapter_id>
+<name>Visual components structure</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>All components included in the product supply are developed with use of the message files. This mechanism allows to use the same components for interfaces on different languages. For example, a component for news displaying can be used for sites both in English or German.</p>
+
+<p>For each component or component group is created a description file <code>.description.php</code>. This file contains description of the component control panel:</p>
+
+<ul>
+  <li>names of adjusted parameters; </li>
+
+  <li>formats of fields used for parameter values assignment; </li>
+
+  <li>default values of some parameters; </li>
+
+  <li>etc. </li>
+</ul>
+
+<p>Also this file can contain rules or functions used for defining some necessary source data and values. For example, descriptions for the information blocks components are stored in the file: <code>/bitrix/modules/iblock/install/templates/iblock/.description.php</code>.</p>
+
+<p>More detailed description of the visual components structure and work is given in the <a href="http://www.bitrixsoft.com/download/manuals/en/Installation_guide.pdf" target="_blank">Installation Guide</a>.</p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

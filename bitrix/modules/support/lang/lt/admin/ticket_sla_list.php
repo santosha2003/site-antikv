@@ -1,0 +1,33 @@
+<?
+$MESS["SUP_PAGE_TITLE"] = "Techninës pagalbos lygis (SLA)";
+$MESS["SUP_FORGOT_NAME"] = "Pamirðote ávesti \\\"Pavadinimas\\\" áraðui # #ID#";
+$MESS["SUP_NAME"] = "Pavadinimas";
+$MESS["SUP_DESCRIPTION"] = "Apraðymas";
+$MESS["SUP_PRIORITY"] = "Prioritetas";
+$MESS["SUP_RESPONSE_TIME"] = "Sprendimo laikas";
+$MESS["SUP_USER_GROUPS"] = "Naudotojø grupës";
+$MESS["SUP_HOUR_1"] = "Valanda";
+$MESS["SUP_HOUR_3"] = "valandas";
+$MESS["SUP_HOUR_5"] = "valandø";
+$MESS["SUP_MINUTE_1"] = "minutë";
+$MESS["SUP_MINUTE_3"] = "minutës";
+$MESS["SUP_MINUTE_5"] = "minuèiø";
+$MESS["SUP_DAY_1"] = "diena";
+$MESS["SUP_DAY_3"] = "dienos";
+$MESS["SUP_DAY_5"] = "dienø";
+$MESS["SUP_DELETE_CONFIRMATION"] = "Ar tikrai norite paðalinti ðá SLA?";
+$MESS["SUP_PAGES"] = "Lygiai";
+$MESS["SUP_NO_LIMITS"] = "< be apribojimø >";
+$MESS["SUP_SITE"] = "Tinklapis";
+$MESS["SUP_RESPONSIBLE"] = "Atsakingas";
+$MESS["SUP_SHEDULE_S"] = "Tvarkaraðtis";
+$MESS["MAIN_ADMIN_LIST_SELECTED"] = "Pasirinkta:";
+$MESS["MAIN_ADMIN_LIST_CHECKED"] = "Paþymëta:";
+$MESS["MAIN_ADMIN_LIST_DELETE"] = "iðtrinti";
+$MESS["MAIN_ADMIN_MENU_EDIT"] = "Redaguoti";
+$MESS["SUP_EDIT"] = "Modifikuoti";
+$MESS["SUP_DELETE"] = "Iðtrinti";
+$MESS["SUP_ADD"] = "Pridëti";
+$MESS["SUP_EXACT_MATCH"] = "Naudokite tikslø atitikimà";
+$MESS["SUP_ALL"] = "(visi)";
+?>

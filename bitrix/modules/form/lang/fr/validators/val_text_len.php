@@ -1,0 +1,7 @@
+<?
+$MESS ['FORM_VALIDATOR_VAL_TEXT_LEN_ERROR_MORE'] = "#FIELD_NAME#&nbsp;: le text est trop long";
+$MESS ['FORM_VALIDATOR_VAL_TEXT_LEN_ERROR_LESS'] = "#FIELD_NAME#&nbsp;: le text est trop court";
+$MESS ['FORM_VALIDATOR_VAL_TEXT_LEN_SETTINGS_LENGTH_TO'] = "Longueur maximale";
+$MESS ['FORM_VALIDATOR_VAL_TEXT_LEN_SETTINGS_LENGTH_FROM'] = "Longueur minimale";
+$MESS ['FORM_VALIDATOR_VAL_TEXT_LEN_DESCRIPTION'] = "Longueur du texte";
+?>

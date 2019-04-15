@@ -1,0 +1,4 @@
+<?
+$MESS ['IBLOCK_ELEMENT_ADD_LIST_NAME'] = "Kiþisel öðe listesi";
+$MESS ['IBLOCK_ELEMENT_ADD_LIST_DESCRIPTION'] = "Kiþisel öðe listesi";
+?>

@@ -1,0 +1,9 @@
+
+.catalog-section-list ul {list-style-type:decimal; font-size:16px; }
+.catalog-section-list ul li {margin:0 0 15px 0; font-weight:bold}
+.catalog-section-list ul li a {text-decoration:none; color:#333 !important}
+.catalog-section-list ul ul {list-style-type:circle; line-height:16px; font-size:13px; margin:10px 0px 20px 20px; padding:0px}
+.catalog-section-list ul ul li {margin:0}
+.catalog-section-list ul ul li a {text-decoration:none; font-size:18px; font-weight:bold color:gray !important}
+
+

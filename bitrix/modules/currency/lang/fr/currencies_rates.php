@@ -1,0 +1,37 @@
+<?
+$MESS ['curr_rates_all'] = "(tout)";
+$MESS ['currency_error'] = "Erreur";
+$MESS ['curr_rates_rate_cnt'] = "Montant";
+$MESS ['ERROR_SAVING_RATE2'] = "Le montant n'est pas fixé";
+$MESS ['CONFIRM_DEL_MESSAGE'] = "Sûr de supprimer cette évaluation&nbsp;?";
+$MESS ['curr_rates_list'] = "Monnaies";
+$MESS ['curr_rates_curr1'] = "Monnaie";
+$MESS ['ERROR_CURRENCY'] = "La monnaie n'est pas spécifiée";
+$MESS ['curr_rates_title'] = "Taux de change";
+$MESS ['CURRENCY_TITLE'] = "Taux de change";
+$MESS ['curr_rates_curr'] = "Monnaie&nbsp;:";
+$MESS ['curr_rates_date1'] = "Date";
+$MESS ['curr_rates_flt_date'] = "Date:";
+$MESS ['curr_rates_del'] = "Supprimer";
+$MESS ['CURRENCY_EDIT_TITLE'] = "Éditer le taux de change";
+$MESS ['ERROR_ADD_REC'] = "Erreur à l'ajout de données";
+$MESS ['ERROR_QUERY_RATE'] = "Erreur à la lecture d'une évaluation";
+$MESS ['ERROR_SAVING_RATE'] = "Erreur à l'enregistrement de l'évaluation";
+$MESS ['ERROR_UPDATE_REC'] = "Erreur à la mise à jour d'un enregistrement";
+$MESS ['CURRENCY_NEW_TITLE'] = "Nouvelle taux de change";
+$MESS ['curr_rates_query'] = "Requête";
+$MESS ['curr_rates_query_ex'] = "Requête au serveur à distance";
+$MESS ['curr_rates_rate'] = "Classification";
+$MESS ['ERROR_DATE_RATE'] = "Date du classement non entrée";
+$MESS ['ERROR_SAVING_RATE1'] = "Classement non entré";
+$MESS ['curr_rates_rate_ex'] = "Options de classification";
+$MESS ['curr_rates_nav'] = "Cours du change";
+$MESS ['CURRENCY_F_DEL'] = "Supprimer le filtre";
+$MESS ['curr_rates_reset'] = "Réinitialiser";
+$MESS ['curr_rates_upd'] = "Enregistrer";
+$MESS ['ERROR_EMPTY_ANSWER'] = "Le serveur renvoie une réponse vide.";
+$MESS ['curr_rates_flt_btn'] = "Placer un filtre";
+$MESS ['ERROR_ADD_REC2'] = "Il est fort possible que le taux de change ait déjé été fixé pour cette date.";
+$MESS ['curr_rates_err2'] = "Mauvais format pour la date de fin.";
+$MESS ['curr_rates_err1'] = "Muvais format pour la date de début.";
+?>

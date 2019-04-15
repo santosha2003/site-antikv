@@ -1,0 +1,10 @@
+<?
+$MESS["SONET_MODULE_NOT_INSTALL"] = "The Social Network module is not installed.";
+$MESS["SONET_P_USER_NO_GROUP"] = "Grupë nerasta.";
+$MESS["SONET_C5_NO_PERMS"] = "Neturite leidimo ðios grupës profiliui perþiûrëti.";
+$MESS["SONET_C5_TITLE"] = "Profilis";
+$MESS["SONET_C6_BLOG_T"] = "Tinklaraðèiai";
+$MESS["SONET_C6_FORUM_T"] = "Diskusijos";
+$MESS["SONET_C6_TASKS_T"] = "Uþduotys";
+$MESS["SONET_C6_NAME_TEMPLATE_DEFAULT"] = "#NOBR##NAME# #LAST_NAME##/NOBR#";
+?>

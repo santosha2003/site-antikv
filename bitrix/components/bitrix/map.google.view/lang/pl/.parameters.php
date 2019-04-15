@@ -1,0 +1,23 @@
+<?
+$MESS["MYMS_PARAM_INIT_MAP_TYPE"] = "Pocz±tkowy typ mapy";
+$MESS["MYMS_PARAM_INIT_MAP_TYPE_MAP"] = "Mapa";
+$MESS["MYMS_PARAM_INIT_MAP_TYPE_SATELLITE"] = "Satelita";
+$MESS["MYMS_PARAM_INIT_MAP_TYPE_HYBRID"] = "Hybryda";
+$MESS["MYMS_PARAM_INIT_MAP_TYPE_TERRAIN"] = "teren";
+$MESS["MYMS_PARAM_OPTIONS"] = "Ustawienia";
+$MESS["MYMS_PARAM_OPTIONS_ENABLE_SCROLL_ZOOM"] = "U¿yj kó³ka myszki do skalowania";
+$MESS["MYMS_PARAM_OPTIONS_ENABLE_DBLCLICK_ZOOM"] = "U¿yj podwójnego klikniêcia do skalowania";
+$MESS["MYMS_PARAM_OPTIONS_ENABLE_DRAGGING"] = "Umo¿liw przesuwanie mapy";
+$MESS["MYMS_PARAM_OPTIONS_ENABLE_KEYBOARD"] = "u¿ywaæ klawiszy klawiatury";
+$MESS["MYMS_PARAM_CONTROLS"] = "Kontrole";
+$MESS["MYMS_PARAM_CONTROLS_SMALL_ZOOM_CONTROL"] = "Przycisk zoom";
+$MESS["MYMS_PARAM_CONTROLS_TYPECONTROL"] = "Typ mapy";
+$MESS["MYMS_PARAM_CONTROLS_SCALELINE"] = "Skala zoom";
+$MESS["MYMS_PARAM_DATA"] = "Poka¿ dane";
+$MESS["MYMS_PARAM_DATA_DEFAULT_LAT"] = "40.7561";
+$MESS["MYMS_PARAM_DATA_DEFAULT_LON"] = "-73.9869";
+$MESS["MYMS_PARAM_DATA_SET"] = "Edytuj";
+$MESS["MYMS_PARAM_MAP_HEIGHT"] = "Wysoko¶æ mapy";
+$MESS["MYMS_PARAM_MAP_WIDTH"] = "Szeroko¶æ mapy";
+$MESS["MYMS_PARAM_MAP_ID"] = "ID mapy";
+?>

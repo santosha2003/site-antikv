@@ -1,0 +1,17 @@
+<?
+$MESS["SONET_ACTIVITY_T_GROUP_TITLE"] = "Grupë #NAME#";
+$MESS["SONET_ACTIVITY_T_USER_TITLE1"] = "Naudotojas ";
+$MESS["SONET_ACTIVITY_T_SWITCH1"] = "Suskleisti";
+$MESS["SONET_ACTIVITY_T_SWITCH2"] = "Iðsamiai";
+$MESS["SONET_ACTIVITY_T_NO_UPDATES"] = "Nëra atnaujinimø.";
+$MESS["SONET_ACTIVITY_T_FORUM"] = "forumai/aptarimai";
+$MESS["SONET_ACTIVITY_T_BLOG"] = "dienoraðèiai/ataskaitos";
+$MESS["SONET_ACTIVITY_T_PHOTO"] = "foto";
+$MESS["SONET_ACTIVITY_T_FILES"] = "failai";
+$MESS["SONET_ACTIVITY_T_CALENDAR"] = "kalendoriai";
+$MESS["SONET_ACTIVITY_T_TASKS"] = "uþduotys";
+$MESS["SONET_ACTIVITY_T_SYSTEM"] = "sistemos";
+$MESS["SONET_ACTIVITY_T_SYSTEM_GROUPS"] = "grupës";
+$MESS["SONET_ACTIVITY_T_SYSTEM_FRIENDS"] = "draugai";
+$MESS["SONET_ACTIVITY_T_ALL"] = "visi";
+?>

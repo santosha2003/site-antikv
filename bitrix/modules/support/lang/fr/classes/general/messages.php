@@ -1,0 +1,34 @@
+<?
+$MESS ['SUP_TECHSUPPORT_HINT'] = "[équipe de support]";
+$MESS ['SUP_CATEGORY_CHANGED'] = "< categorie modifiée>";
+$MESS ['SUP_DIFFICULTY_CHANGED'] = "< changement du niveau de difficulté >";
+$MESS ['SUP_MARK_CHANGED'] = "< estimation modifiée >";
+$MESS ['SUP_NEW_HIDDEN_MESSAGE'] = "< message caché ajouté >";
+$MESS ['SUP_NEW_MESSAGE'] = "< message ajouté >";
+$MESS ['SUP_POSSIBLE_SPAM'] = "< pourriel  éventuel&nbsp;? >";
+$MESS ['SUP_REQUEST_CLOSED'] = "< requête close >";
+$MESS ['SUP_REQUEST_OPENED'] = "< requête ouverte >";
+$MESS ['SUP_RESPONSIBLE_CHANGED'] = "<changement de responsable >";
+$MESS ['SUP_EXACTLY_SPAM'] = "<pourriel&nbsp;! >";
+$MESS ['SUP_STATUS_CHANGED'] = "<état modifié >";
+$MESS ['SUP_SLA_CHANGED'] = "< niveau de support modifié  >";
+$MESS ['SUP_CRITICALITY_CHANGED'] = "< niveau d'urgence modifié  >";
+$MESS ['SUP_MARK_CHANGED_LOG'] = "évaluation de la réponse&nbsp;: #VALUE#";
+$MESS ['SUP_ATTACHED_FILES'] = "fichiers joints&nbsp;:";
+$MESS ['SUP_CATEGORY_CHANGED_LOG'] = "Catégorie&nbsp;: #VALUE#";
+$MESS ['SUP_CRITICALITY_CHANGED_LOG'] = "urgence&nbsp;: #VALUE#";
+$MESS ['SUP_DIFFICULTY_CHANGED_LOG'] = "Niveau de difficulté&nbsp;: #VALUE#";
+$MESS ['SUP_MAIL_HIDDEN_MESSAGE'] = "message caché";
+$MESS ['SUP_HOUR'] = "h";
+$MESS ['SUP_MAIL_MESSAGE'] = "MESSAGE";
+$MESS ['SUP_MESSAGE_OVERDUE_LOG'] = "Message # #NUMBER# (ID: #ID#) est arriéré&nbsp;!";
+$MESS ['SUP_MIN'] = "min.";
+$MESS ['SUP_RESPONSIBLE_CHANGED_LOG'] = "personne responsable&nbsp;: #VALUE#";
+$MESS ['SUP_RESPONSIBLE_LOG'] = "personne responsable&nbsp;: #VALUE#";
+$MESS ['SUP_SEC'] = "sec.";
+$MESS ['SUP_STATUS_CHANGED_LOG'] = "statut&nbsp;: #VALUE#";
+$MESS ['SUP_SLA_CHANGED_LOG'] = "Niveau de support&nbsp;: #VALUE#";
+$MESS ['SUP_SLA_LOG'] = "Niveau de support&nbsp;: #VALUE#";
+$MESS ['SUP_REQUEST_CLOSED_LOG'] = "tiquet clos";
+$MESS ['SUP_REQUEST_OPENED_LOG'] = "Tiquet ouvert";
+?>

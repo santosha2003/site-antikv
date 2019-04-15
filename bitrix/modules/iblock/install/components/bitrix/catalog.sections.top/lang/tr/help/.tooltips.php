@@ -1,0 +1,29 @@
+<?
+$MESS ['IBLOCK_TYPE_TIP'] = "Açýlan listeden sistemde oluþturulan bilgi bloðu tiplerinden birisi seçilir. <b><i>??</i></b> tuþuna basýldýðýnda seçilen tip için oluþturulan bilgi bloklarý yüklenecektir.";
+$MESS ['IBLOCK_ID_TIP'] = "</b>, specify the information block ID in the field beside.";
+$MESS ['SECTION_SORT_FIELD_TIP'] = "Bilgi bloðu bölümlerinin sýralanacaðýý alan belirtilmektedir.";
+$MESS ['SECTION_SORT_ORDER_TIP'] = "Bölümler hangi yönde sýralanacak, artan mý azalan mý.";
+$MESS ['ELEMENT_SORT_FIELD_TIP'] = "Öðelerin sýralamasýnýn yapýlacaðý alan belirtilmektedir.";
+$MESS ['ELEMENT_SORT_ORDER_TIP'] = "Öðeler hangi yönde sýralanacak, artan mý azalan mý.";
+$MESS ['FILTER_NAME_TIP'] = "Filtre parametrelerinin iletildiði deðiþkenin adý girilir. Filtreden gelen öðelerin belirlenmesinde kullanýlýr. Alan boþ býrakýlabilir, bu durumda varsayýlan deðer kullanýlýr.";
+$MESS ['SECTION_URL_TIP'] = "Bilgi bloðu bölümünün tanýmýnýn bulunduðu sayfaya giden baðlantý";
+$MESS ['DETAIL_URL_TIP'] = "Bilgi bloðu öðesinin detaylý tanýmýnýn bulunduðu sayfaya giden baðlantý";
+$MESS ['BASKET_URL_TIP'] = "Müþteri sepetinin bulunduðu sayfaya giden baðlantý gösterilir.";
+$MESS ['ACTION_VARIABLE_TIP'] = "Eylemin gerçekleþtiði deðiþken adý belirtilir: ADD_TO_COMPARE_LIST, ADD2BASKET vb. Alanýn deðeri varsayýlandýr <i>action</i>.";
+$MESS ['PRODUCT_ID_VARIABLE_TIP'] = "Ürün kimliðinin verildiði deðiþken adý.";
+$MESS ['SECTION_ID_VARIABLE_TIP'] = "Bilgi bloðu bölümü kimliðinin verildiði deðiþken adý.";
+$MESS ['DISPLAY_PANEL_TIP'] = "Seçenek seçildiðinde yönetim panelinde düzenleme düðmeleri site ve ilgili öðenin düzenleme modunda aktif olacaktýr.";
+$MESS ['DISPLAY_COMPARE_TIP'] = "Seçenek seçildiðinde <i>Kýyasla</i> düðmesi gösterilir, ve bu düðme ile öðe kýyaslama listesine eklenir.";
+$MESS ['SET_TITLE_TIP'] = "Sayfa baþlýðý olarak seçeneðin belirtilmesinde, bölüm adý tanýmlanacaktýr.";
+$MESS ['SECTION_COUNT_TIP'] = "Gösterilecek maksimum bölüm sayýsý";
+$MESS ['ELEMENT_COUNT_TIP'] = "Her bir bölümde gösterilecek maksimum öðe sayýsý";
+$MESS ['LINE_ELEMENT_COUNT_TIP'] = "Tablonun bir satýrýna girilecek öðe sayýsý";
+$MESS ['PROPERTY_CODE_TIP'] = "Bilgi bloðu özelliði içinde bölüm içerisinde öðelerin top görünümleri gösterilir. (seçim yapýlmadý)->  hanesi seçildiðinde ve özellik kodu belirtilmediðinde özellik altýndai satýrlardaki özellikler gösterilmez.";
+$MESS ['PRICE_CODE_TIP'] = "Katalogda hangi tür fiyatýn girileceði durumda ayarlanýr. Herhangi bir tür seçilmemiþ ise, \"satýn al\" ve \"sepete at\" düðmeleri ile fiyat görüntülenmeyecektir.";
+$MESS ['USE_PRICE_COUNT_TIP'] = "Bu seçenek iþaretlendiðinde tüm ürünler için fiyatlar girilir.";
+$MESS ['SHOW_PRICE_COUNT_TIP'] = "depends on the product nature.";
+$MESS ['CACHE_TYPE_TIP'] = "<br /><i>Cache</i>: always cache for the period specified in the next field";
+$MESS ['CACHE_TIME_TIP'] = "Alan, saniye olarak önbellekleme zamanýný belirtmek için kullanýlmaktadýr.";
+$MESS ['CACHE_FILTER_TIP'] = "Bu çenek seçildiðinde filtredne elde edilen her bir sonuç önbelleðe alýnacaktýr.";
+$MESS ['PRICE_VAT_INCLUDE_TIP'] = "Bu seçenek seçildiðinde fiyatlar KDV dahil gösterilir.";
+?>

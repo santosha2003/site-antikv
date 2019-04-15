@@ -1,0 +1,35 @@
+<?
+$MESS ['STAT_FORGOT_REFERER'] = "referer1, referer2 girmeyi unuttunuz";
+$MESS ['STAT_WRONG_REFERER'] = "Bu tür referer1 ve referer2 zaaten kullanýlmaktadýr";
+$MESS ['STAT_EDIT_RECORD'] = "# #ID# reklam kampanyasý";
+$MESS ['STAT_NEW_RECORD'] = "Yeni reklam kampanyasý";
+$MESS ['STAT_RECORDS_LIST'] = "Reklam kampanyalarýn listesi";
+$MESS ['STAT_EVENTS_VIEW'] = "Olaylarýn görüntüleneceði þekil:";
+$MESS ['STAT_DEFAULT'] = "< varsayýlan olarak >";
+$MESS ['STAT_DESCRIPTION'] = "Tanýmý:";
+$MESS ['STAT_PAGES_FROM'] = "Geldikleri yer [%_]:<br>(yeni satýr ile ayrýlmýþ<br>yönlendirilmiþ sayfalar)";
+$MESS ['STAT_SEARCHERS'] = "Arama motorlarý:";
+$MESS ['STAT_ADDITIONAL'] = "Ek ayarlar";
+$MESS ['STAT_MORE'] = "Ek olarak";
+$MESS ['STAT_PROP'] = "Özellikleri";
+$MESS ['STAT_PROP_TITLE'] = "Reklam kampanyasýnýn parametreleri";
+$MESS ['STAT_MORE_TITLE'] = "Finansman ve ek ayarlar";
+$MESS ['STAT_IDENTIFIERS'] = "Reklam kampanyasý belirleyicisi";
+$MESS ['STAT_SELECT_WHAT_YOU_NEED'] = "(gerekenleri seçiniz)";
+$MESS ['STAT_PRIORITY'] = "Öncelik:";
+$MESS ['STAT_PRIORITY_ALT'] = "(önceliðin fazla olduðunda deðer daha da fazladýr)";
+$MESS ['STAT_PAGES_TO'] = "Geldiðimiz yer [%_]:<br>(yeni satýr ile ayrýlmýþ <br>site sayfalarýnýzýn tam adresleri)";
+$MESS ['STAT_FINANCES'] = "Finans";
+$MESS ['STAT_COST'] = "Giderler:";
+$MESS ['STAT_REVENUE'] = "Gelirler:";
+$MESS ['STAT_BASE'] = "baz";
+$MESS ['STAT_NEW_ADV'] = "Yeni reklam kampanyasý";
+$MESS ['STAT_RESET_ADV'] = "Reklam kampanyasýný sýfýrlar";
+$MESS ['STAT_RESET_ADV_CONFIRM'] = "Reklam kampanyasýný sýfýrlatmak istediðinizden eminmisiniz?";
+$MESS ['STAT_DELETE_ADV'] = "Reklam kampanyasýný sil";
+$MESS ['STAT_DELETE_ADV_CONFIRM'] = "Reklam kampanyasýný silmek istediðinizden eminmisiniz?";
+$MESS ['STAT_ERROR'] = "Hata!";
+$MESS ['STAT_ID_ADD'] = "Ek koþullar";
+$MESS ['STAT_ID_ADD_NOTE'] = "Kampanya, koþullarýn her hangi birini yerine getrilmesinde çalýþmaktadýr";
+$MESS ['STAT_ATTENTION_1'] = "Dikkat";
+?>

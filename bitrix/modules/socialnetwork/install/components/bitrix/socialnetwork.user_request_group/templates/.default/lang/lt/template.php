@@ -1,0 +1,18 @@
+<?
+$MESS ['SONET_C39_T_PROMT'] = "Grupei bus atsiøstas praðymas átraukti jus á nariø sàraðà. Po to kai grupës vadovybë sutiks átraukti jus á grupës nariø sàraðà, ji bus matoma sàraðe.";
+$MESS ['SONET_C39_T_GROUP'] = "Grupë";
+$MESS ['SONET_C39_T_MESSAGE'] = "Jûsø praneðimas";
+$MESS ['SONET_C39_T_SEND'] = "Siøsti praneðimà";
+$MESS ['SONET_C39_T_SUCCESS'] = "Jûsø praðymas iðsiøstas. Po to kai grupës vadovybë sutiks átraukti jus á grupës nariø sàraðà, ji bus matoma sàraðe.";
+$MESS ['SONET_C39_T_SUCCESS_ALT'] = "Jûs ástojote á grupæ, ir dabar esate jos nariu. Norëdami atsisakyti narystës grupëje, pasinaudokite nuorodà grupës profilio pagrindiniame puslapyje.";
+$MESS ['SONET_C39_T_REJECTED'] = "Jûs atsisakë prisijungti prie grupës";
+$MESS ['SONET_C39_T_SENDER'] = "Siuntëjas";
+$MESS ['SONET_C39_T_MESSAGE'] = "Praneðimas";
+$MESS ['SONET_C39_T_ACTIONS'] = "Veiksmai";
+$MESS ['SONET_C39_T_FRIEND_REQUEST'] = "Naudotojas nori átraukti jus á savo draugø sàraðà";
+$MESS ['SONET_C39_T_USER'] = "Naudotojas";
+$MESS ['SONET_C39_T_INVITE'] = "kvieèia Jus prisijungti prie grupës";
+$MESS ['SONET_C39_T_DO_FRIEND'] = "Draugauti";
+$MESS ['SONET_C39_T_DO_DENY'] = "Atmesti";
+$MESS ['SONET_C39_T_DO_AGREE'] = "Priimti";
+?>

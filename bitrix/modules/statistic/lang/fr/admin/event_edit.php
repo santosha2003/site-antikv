@@ -1,0 +1,32 @@
+<?
+$MESS ['STAT_CHANGE'] = "Modifier ";
+$MESS ['STAT_PARAM'] = "Paramètre supplémentaire <br>(#GROUP_SITE_ID#.session.<br>visitor.country.<br>advertising_campaign.<br>back.site)";
+$MESS ['STAT_MONEY'] = "Montant monétaire";
+$MESS ['STAT_ATTENTION_1'] = "Attention";
+$MESS ['STAT_CONVERT_TO_DEFAULT_CUR'] = "Avant touché, les montants seront convertis en la monnaie de base.";
+$MESS ['STAT_CALENDAR'] = "Calendrier";
+$MESS ['STAT_CHARGEBACK'] = "Équilibrage des comptes";
+$MESS ['STAT_COPY'] = "Copier vers la ligne du bas";
+$MESS ['STAT_HANDLER'] = "Routine du fichier CSV";
+$MESS ['STAT_FILE'] = "Fichier CSV&nbsp;:";
+$MESS ['STAT_CURRENCY'] = "Monnaie";
+$MESS ['STAT_DATE'] = "Date<br>";
+$MESS ['STAT_DUPLICATE'] = "Duplifie&nbsp;:";
+$MESS ['STAT_LOADING_FROM_CSV'] = "Événement au chargement du fichier CSV";
+$MESS ['STAT_EVENTS_LOADING'] = "Le touché des événements est en cours. Prière de patienter …";
+$MESS ['STAT_EVENT_TYPE'] = "Type d'événement<br>ID";
+$MESS ['STAT_TITLE'] = "Chargement des événements";
+$MESS ['STAT_FROM_FILE'] = "Du fichier";
+$MESS ['STAT_LOAD'] = "Charge";
+$MESS ['STAT_UNIQUE'] = "Ne charger que les événements univoques";
+$MESS ['STAT_LOADED'] = "Chargé&nbsp;:";
+$MESS ['STAT_STEP'] = "Étape du chargement (sec.)&nbsp;:";
+$MESS ['STAT_LOADING_FROM_TABLE'] = "Charger manuellement l'événement";
+$MESS ['STAT_NEXT_STEP'] = "prochain pas";
+$MESS ['STAT_ON_STEP'] = "à ce pas";
+$MESS ['STAT_PROCESSED'] = "Traités&nbsp;:";
+$MESS ['STAT_SELECT_EVENT'] = "Choisir le type d'événement";
+$MESS ['STAT_TOTAL_CSV'] = "Nombre de lignes dans le CSV&nbsp;:";
+$MESS ['STAT_UNIQUE_ALT'] = "L'unicité est vérifiée par la combinaison de tous les champs chargés (excepté les valeurs monétaires)";
+$MESS ['STAT_PREVIEW'] = "Utiliser l'aperçu&nbsp;:";
+?>

@@ -1,0 +1,3 @@
+<?
+$MESS["POST_ERROR_ATTACH_NOT_FOUND"] = "Za³±cznika nie znaleziono.";
+?>

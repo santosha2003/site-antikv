@@ -1,0 +1,16 @@
+<?
+$MESS["WIKI_PATH_TO_POST"] = "Wiki puslapio kelioðablonas";
+$MESS["WIKI_PATH_TO_POST_EDIT"] = "Wiki puslapio redaktoriaus kelioðablonas";
+$MESS["WIKI_PATH_TO_PAGES"] = "Puslapiø sàraðo kelioðablonas";
+$MESS["WIKI_PATH_TO_CATEGORY"] = "Wiki kategorijø puslapio apraðymo kelioðablonas";
+$MESS["WIKI_PATH_TO_CATEGORIES"] = "Wiki kategorijø puslapio kelioðablonas";
+$MESS["WIKI_PATH_TO_HISTORY"] = "Kelias á Wiki puslapio ðablonà su puslapio keitimo istorija";
+$MESS["WIKI_PATH_TO_DISCUSSION"] = "Kelias á Wiki diskusijø puslapio ðablonà";
+$MESS["WIKI_PATH_TO_USER"] = "Kelias á Wiki naudotojo puslapio ðablonà";
+$MESS["WIKI_PAGE_VAR"] = "Puslapio kintamojo pavadinimas";
+$MESS["WIKI_OPER_VAR"] = "Operacijos kintamojo pavadinimas";
+$MESS["WIKI_VARIABLE_ALIASES"] = "Kintamøjø pavadinimai";
+$MESS["WIKI_CATEGORY_COUNT"] = "Kategorijø puslapyje";
+$MESS["T_IBLOCK_DESC_LIST_ID"] = "Informacinis blokas ID";
+$MESS["T_IBLOCK_DESC_LIST_TYPE"] = "Informacinio bloko tipas (tik patikrinimui)";
+?>

@@ -1,0 +1,5 @@
+<?
+$MESS["CLUWIZ_DESCR_NAME"] = "Naujo modulio duomenø bazë";
+$MESS["CLUWIZ_DESCR_DESCRIPTION"] = "Ðis vedlys sukurs ryðá prie moduliø duomenø bazës.";
+$MESS["CLUWIZ_DESCR_COPYRIGHT"] = "Bitrix";
+?>

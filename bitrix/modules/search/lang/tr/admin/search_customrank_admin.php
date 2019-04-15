@@ -1,0 +1,32 @@
+<?
+$MESS ['customrank_of'] = "den";
+$MESS ['customrank_continue'] = "Devam et";
+$MESS ['customrank_site'] = "Site";
+$MESS ['customrank_all'] = "(tümü)";
+$MESS ['customrank_module'] = "Modül";
+$MESS ['customrank_param1'] = "Parametre 1";
+$MESS ['customrank_add'] = "Ekle";
+$MESS ['customrank_param2'] = "Parametre 2";
+$MESS ['customrank_param3'] = "Parametre 3";
+$MESS ['customrank_edit'] = "Deðiþtir";
+$MESS ['customrank_delete'] = "Sil";
+$MESS ['customrank_id'] = "ID";
+$MESS ['customrank_title'] = "Sýralama kurallarýn listesi";
+$MESS ['customrank_applied'] = "Ýþlendi";
+$MESS ['customrank_saved'] = "Kurallar kaydedilmiþtir.";
+$MESS ['customrank_rules'] = "Kurallar  ";
+$MESS ['customrank_sort'] = "Aðýrlýk";
+$MESS ['customrank_update'] = "Yenile";
+$MESS ['customrank_step2'] = "Adým 2. Arama endeksin yenilenmesi";
+$MESS ['customrank_step1'] = "Adým 1. Sýralama kurallarýn yönetimi";
+$MESS ['customrank_save_note'] = "Kurallarýn silinmesi veya deðiþtirilmesinden sonra, etkin olmalarý için \"Yenile\" düðmesine týklamak zorundasýnýz.  ";
+$MESS ['customrank_no'] = "(hayýr)";
+$MESS ['customrank_edit_error'] = "Kayýt deðiþikliðinde hata oluþtu:";
+$MESS ['customrank_no_rule'] = "kurallar bulunmamýþtýrlar";
+$MESS ['customrank_add_title'] = "Sýralamadaki yeni kurallarý eklemek için týklayýnýz";
+$MESS ['customrank_find'] = "Bul";
+$MESS ['customrank_find_title'] = "Arama için satýr giriniz";
+$MESS ['customrank_stop'] = "Durdur";
+$MESS ['customrank_error_delete'] = "Kural silinmesinde hata oluþtu";
+$MESS ['customrank_delete_confirm'] = "Bu kuralý silmek istediðinizden eminmisiniz?";
+?>

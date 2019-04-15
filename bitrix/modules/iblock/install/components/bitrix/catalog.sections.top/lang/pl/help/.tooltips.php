@@ -1,0 +1,29 @@
+<?
+$MESS ['IBLOCK_TYPE_TIP'] = "Wybierz jeden z istniej±cego bloku informacji wprowadza listê i klikaj <B>OK</B>. To bêdzie ³adowaæ bloki informacji wybranego typu.";
+$MESS ['IBLOCK_ID_TIP'] = "Wybierz jeden z bloków informacji wybranego typu. Je¿eli wybierasz <B>(inny)-&gt;</B>, wyszczególnij blok informacji ID w polu obok.";
+$MESS ['SECTION_SORT_FIELD_TIP'] = "Pole, przez które sekcje maj± byæ posortowane w granicach bloku informacji.";
+$MESS ['SECTION_SORT_ORDER_TIP'] = "Definiuje sekcja sortuj±ca";
+$MESS ['ELEMENT_SORT_FIELD_TIP'] = "Pole, przez które elementy maj± byæ posortowane w granicach sekcji.";
+$MESS ['ELEMENT_SORT_ORDER_TIP'] = "Kierunek, w którym elementy bêd± posortowane.";
+$MESS ['FILTER_NAME_TIP'] = "Nazwa zmiennej, w której ustawienia filtru bêd± przesz³e. Mo¿esz zostawiæ pole puste by u¿yæ nazwy domy¶lnej.";
+$MESS ['SECTION_URL_TIP'] = "Wyszczególnij tutaj ¶cie¿kê do opisu sekcji bloku informacji.";
+$MESS ['DETAIL_URL_TIP'] = "Wyszczególnij tutaj ¶cie¿kê do strony detalu elementu bloku informacji.";
+$MESS ['BASKET_URL_TIP'] = "Wyszczególnij tutaj ¶cie¿kê do strony koszyka klienta.";
+$MESS ['ACTION_VARIABLE_TIP'] = "Nazwa zmiennej, w której wymagane dzia³anie bêdzie przesz³e: ADD_TO_COMPARE_LIST, ADD2BASKET etc. Domy¶lna warto¶æ <i>action</i>.";
+$MESS ['PRODUCT_ID_VARIABLE_TIP'] = "Nazwa zmiennej, w której produktu ID bêdzie przesz³y.";
+$MESS ['SECTION_ID_VARIABLE_TIP'] = "Nazwa zmiennej, w której informacji bloku sekcji ID bêdzie przesz³y.";
+$MESS ['DISPLAY_PANEL_TIP'] = "Je¿eli zaznaczony, przyciski narzêdzia bêd± pokazane na pasku narzêdziowym administracji i sk³adowym pasku narzêdziowym obszaru edycji w trybie edycji strony.";
+$MESS ['DISPLAY_COMPARE_TIP'] = "Zaznaczaj±c t± opcjê poka¿esz <B>Porównuj</B> przycisk by dodaæ element do tabeli porównania.";
+$MESS ['SET_TITLE_TIP'] = "Je¿eli zaznaczony, tytu³em strony bêdzie aktualna nazwa sekcji.";
+$MESS ['SECTION_COUNT_TIP'] = "Maksymalna liczba sekcji pokazana.";
+$MESS ['ELEMENT_COUNT_TIP'] = "Maksymalna liczba elementów pokazana w sekcji.";
+$MESS ['LINE_ELEMENT_COUNT_TIP'] = "Liczba elementów w rzêdzie.";
+$MESS ['PROPERTY_CODE_TIP'] = "Tutaj mo¿esz wybraæ blok informacji w³asno¶æ by byæ pokazany przy szczycie oceni³e¶ elementów stronê. Je¿eli wybierasz <B>(nie wybrany)-</B>> i nie wyszczególniasz w³asno¶ci ID,  w³asno¶ci nie bêd± pokazane.";
+$MESS ['PRICE_CODE_TIP'] = "Wyszczególnij , ¿e typ ceny ma byæ u¿ywana w katalogu. Je¿eli pomijasz typ cena, ceny i przyciski <B>Kup</B> i<B>Dodaj do koszyka</B> nie bêd± pokazane.";
+$MESS ['USE_PRICE_COUNT_TIP'] = "Pokazuj± ceny wszystkich typów cen.";
+$MESS ['SHOW_PRICE_COUNT_TIP'] = "Ilo¶æ pozycji produktu, dla których cena jest wyszczególniona (na przyk³ad 1 albo 10); zale¿y od natury produktu.";
+$MESS ['CACHE_TYPE_TIP'] = "<i>Auto</i>: schowek obowi±zuje podczas czasu predefiniowanego w ustawieniach schowka;<br /><i>Schowek</i>: zawsze schowek dla okresu wyszczególnionego w nastêpnym polu;<br /><i>Nie rób cahce</i>: ¿adne buforowanie podrêczne nie jest wykonane.";
+$MESS ['CACHE_TIME_TIP'] = "Wyszczególnij tutaj okres czasu, podczas którego schowek obowi±zuje.";
+$MESS ['CACHE_FILTER_TIP'] = "Aktywuj±c t± opcjê spowoduje wszystkie filtru wyniki maj± byæ chowane.";
+$MESS ['PRICE_VAT_INCLUDE_TIP'] = "Zaznaczaj±c opcjê wyszczególnisz objêcie podatku w cenach.";
+?>

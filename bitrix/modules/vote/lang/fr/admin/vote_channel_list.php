@@ -1,0 +1,29 @@
+<?
+$MESS ['VOTE_TIMESTAMP'] = "Modifié ";
+$MESS ['VOTE_ACTIVATE'] = "activer";
+$MESS ['VOTE_F_ACTIVE'] = "Actif&nbsp;:";
+$MESS ['VOTE_FLT_ACTIVE'] = "Avtivité";
+$MESS ['VOTE_ADD_GROUP'] = "Ajouter un canal d'enquête";
+$MESS ['VOTE_ADD_VOTE'] = "Ajouter une enquête à un canal d'enquête";
+$MESS ['VOTE_CONFIRM_DEL_CHANNEL'] = "Sur de supprimer à la fois le canal d'enquête et ses enquêtes&nbsp;?";
+$MESS ['VOTE_CHANGE_CHANNEL'] = "Modifier les options du canal d'enquête";
+$MESS ['VOTE_PAGES'] = "Canaux";
+$MESS ['VOTE_ADD_GROUP_TITLE'] = "Cliquer pour ajouter un nouveau canal d'enquête";
+$MESS ['VOTE_DEACTIVATE'] = "désactiver";
+$MESS ['VOTE_DELETE'] = "supprimer";
+$MESS ['VOTE_DELETE_CHANNEL'] = "Supprimer le canal d'enquête avec les enquêtes incluses";
+$MESS ['VOTE_SAVE_ERROR'] = "Erreur à l'écriture dans la BdD";
+$MESS ['VOTE_FLT_ID'] = "ID de groupe";
+$MESS ['VOTE_PAGE_TITLE'] = "Liste des canaux d'enquête";
+$MESS ['VOTE_SID'] = "Code mnémonique";
+$MESS ['VOTE_F_SID'] = "Code mnémonique&nbsp;:";
+$MESS ['VOTE_EDIT_TITLE'] = "Modifier les options du canal d'enquête";
+$MESS ['VOTE_SITE_EDIT'] = "Modifier le options du site";
+$MESS ['VOTE_OPEN_VOTES'] = "Ouvrir la liste des enquêtes";
+$MESS ['VOTE_VOTES'] = "Enquêtes";
+$MESS ['VOTE_FLT_SITES'] = "Liste du site";
+$MESS ['VOTE_SITE'] = "Sites";
+$MESS ['VOTE_F_SITE'] = "Sites&nbsp;:";
+$MESS ['VOTE_C_SORT'] = "Tri.";
+$MESS ['VOTE_FLT_TITLE'] = "Titre";
+?>

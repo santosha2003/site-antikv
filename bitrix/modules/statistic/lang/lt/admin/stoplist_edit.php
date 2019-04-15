@@ -1,0 +1,34 @@
+<?
+$MESS['STAT_ERROR'] = 'Klaida iðsaugojant áraðà';
+$MESS['STAT_PARAMS'] = 'Parametrai';
+$MESS['STAT_PARAMS_S'] = 'Áraðo parametrai';
+$MESS['STAT_REDIRECT'] = 'Peradresuoti á (URL):';
+$MESS['STAT_GREEN_LAMP'] = 'aktyvus';
+$MESS['STAT_RED_LAMP'] = 'neaktyvus';
+$MESS['STAT_START_DATE'] = 'Pradþios data ';
+$MESS['STAT_END_DATE'] = 'Pabaigos data';
+$MESS['STAT_DEFAULT_MESSAGE'] = 'Priëjimas uþdraustas tinklapio administratoriu';
+$MESS['STAT_EDIT_RECORD'] = 'Stop-sàraðo áraðo # #ID# parametrai';
+$MESS['STAT_NEW_RECORD'] = 'Naujas stop-sàraðo áraðas';
+$MESS['STAT_RECORDS_LIST'] = 'stop-sàraðas';
+$MESS['STAT_TIMESTAMP'] = 'Redaguota:';
+$MESS['STAT_ACTIVE'] = 'Aktyvum þymë:';
+$MESS['STAT_IP'] = 'Tinklo IP adresas:';
+$MESS['STAT_MASK'] = 'Tinklo kaukë:';
+$MESS['STAT_USER_AGENT'] = 'UserAgent:';
+$MESS['STAT_URL_FROM'] = 'Ið kur atëjo:';
+$MESS['STAT_URL_TO'] = 'Kur atëjo:';
+$MESS['STAT_MESSAGE'] = 'Rodyti praneðimà:';
+$MESS['STAT_COMMENT_S'] = 'Komentarai';
+$MESS['STAT_SAVE_STATISTIC'] = 'Iðsaugoti statistikà:';
+$MESS['STAT_MESSAGE_LID'] = 'Kalbos koduotëje:';
+$MESS['STAT_EMPTY'] = 'tuðèias';
+$MESS['STAT_ACTIVITY'] = 'Áraðo aktyvumas';
+$MESS['STAT_CONDITIONS'] = 'Pagal kokius poþymius filtruoti lankytojus (logika - \"ir\")';
+$MESS['STAT_WHAT_TO_DO'] = 'Kà bûtina padaryti';
+$MESS['STAT_ACTIONS'] = 'Veiksmai';
+$MESS['STAT_COMMENT'] = 'Administratoriaus komentaras';
+$MESS['STAT_NEW_STOPLIST'] = 'Naujas stop-sàraðo áraðas';
+$MESS['STAT_DELETE_STOPLIST'] = 'Ðalinti stop-sàraðo áraðà';
+$MESS['STAT_DELETE_STOPLIST_CONFIRM'] = 'Ar tikrai norite ðalinti stop-sàraðo áraðà?';
+?>

@@ -1,0 +1,30 @@
+<?
+$MESS ['STPD_PER_FOLDER'] = "Kiþisel bölüm";
+$MESS ['STPD_ACCOUNT'] = "Mevcut kullanýcý hesaplarý";
+$MESS ['STPD_CCARDS'] = "Mevcut kullanýcýnýn plastik kart listesi";
+$MESS ['STPD_CCARDS_DET'] = "Kredi kartýný düzenleme sayfasý";
+$MESS ['STPD_CCARDS_DET_PAGE'] = "Mevcut kullanýcýnýn plastik kartlarýn düzenlenmesi";
+$MESS ['STPD_CCARDS_LIST'] = "Mevcut kullanýcýnýn plastik kartl listeli sayfasý";
+$MESS ['STPD_ORDER_LIST'] = "Mevcut kullanýcýnýn sipariþ listesi ";
+$MESS ['STPD_ORDER_DET_PAGE'] = "Sipariþ hakkýnda ayrýntýlý bilgi sayfasý";
+$MESS ['STPD_ORDER_REP_PAGE'] = "Sipariþ tekrarlama sayfasý (genelde sipariþ listeli sayfa ile eþleþmektedir)";
+$MESS ['STPD_ORDER_CANC_PAGE'] = "Sipariþ iptal sayfasý";
+$MESS ['STPD_ORDER_BASK_PAGE'] = "Sepet sayfasý";
+$MESS ['STPD_ORDER_DET'] = "Sipariþ hakkýnda ayrýntýlý bilgi";
+$MESS ['STPD_ORDER_DET_DESCR'] = "Mevcut kullanýcýnýn sipariþi hakkýnda ayrýntýlý bilgi ???????? ????????????";
+$MESS ['STPD_ORDER_LIST_PAGE'] = "Mevcut kullanýcýnýn sipariþ listeli sayfa";
+$MESS ['STPD_ORDER_PAY_PAGE'] = "Sipariþ ödeme sayfasý";
+$MESS ['STPD_CANSEL'] = "Sipariþ iptali";
+$MESS ['STPD_CANCEL_DESCR'] = "Mevcut kullanýcý sipariþin iptali";
+$MESS ['STPD_ORDER_TABLE'] = "Mevcut kullanýcý sipariþ tablosu";
+$MESS ['STPD_PROFILE_LIST'] = "Mevcut kullanýcý profillerin listesi";
+$MESS ['STPD_PROFILE_DET_PAGE'] = "Profil düzenleme sayfasý";
+$MESS ['STPD_PROFILE_DET'] = "Profil düzenlenmesi";
+$MESS ['STPD_PROFILE_DET1'] = "Mevcut kullanýcý profil düzenlenmesi";
+$MESS ['STPD_PROFILE_LIST_PAGE'] = "Mevcut kullanýcý profil sayfasýnýn listesi";
+$MESS ['STPD_SUBSCR_LIST'] = "Mevcut kullanýcý aboneliðin listesi";
+$MESS ['STPD_SUBSCR_CANCEL'] = "Abonelik iptal sayfasý";
+$MESS ['STPD_CANCEL'] = "Aboneliðin iptali";
+$MESS ['STPD_CANCEL_DESCR1'] = "Mevcut kullanýcý aboneliðin iptali";
+$MESS ['STPD_CANCEL_LIST_PAGE'] = "Mevcut kullanýcý aboneliðin liste sayfasý";
+?>

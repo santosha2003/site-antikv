@@ -1,0 +1,30 @@
+<?
+$MESS["FLOW_CANNOT_DELETE_STATUS"] = "Statusas, kurá jûs bandote paðalinti, ðiuo metu yra  priskirtas kai kuriems dokumentams";
+$MESS["FLOW_CANNOT_DELETE_STATUS_IBLOCK"] = "Statusas, kurá jûs bandote paðalinti, ðiuo metu yra  priskirtas kai kuriems informacijos bloko elementams";
+$MESS["FLOW_PAGE_TITLE"] = "Dokumento statusai";
+$MESS["FLOW_F_ACTIVE"] = "Aktyvus:";
+$MESS["FLOW_F_DESCRIPTION"] = "Apraðymas:";
+$MESS["FLOW_F_DOCUMENTS"] = "Dokumentai:";
+$MESS["FLOW_PAGES"] = "Statusai";
+$MESS["FLOW_TIMESTAMP"] = "Pakeista";
+$MESS["FLOW_ACTIVE"] = "Aktyvus";
+$MESS["FLOW_C_SORT"] = "Rûðis.";
+$MESS["FLOW_DESCRIPTION"] = "Apraðymas";
+$MESS["FLOW_DOCUMENTS"] = "Dokumentai";
+$MESS["FLOW_DELETE_STATUS_CONFIRM"] = "Ar tikrai norite paðalinti ðá statusà?";
+$MESS["FLOW_F_LOGIC"] = "Logika tarp laukø";
+$MESS["FLOW_TITLE"] = "Antraðtë";
+$MESS["FLOW_FORGOT_NAME"] = "Áraðo ##ID# pavadinimas nenurodytas";
+$MESS["FLOW_TILL"] = "iki";
+$MESS["FLOW_ADD"] = "Pridëti";
+$MESS["FLOW_DELETE"] = "Paðalinti";
+$MESS["FLOW_EDIT"] = "Pakeisti";
+$MESS["MAIN_ADMIN_LIST_SELECTED"] = "Pasirinktas:";
+$MESS["MAIN_FIND"] = "Ieðkoti";
+$MESS["MAIN_ADMIN_LIST_CHECKED"] = "Paþymëta:";
+$MESS["MAIN_FIND_TITLE"] = "Áveskite tekstà paieðkai";
+$MESS["MAIN_ADMIN_LIST_ACTIVATE"] = "ájungti";
+$MESS["MAIN_ALL"] = "(visi)";
+$MESS["MAIN_ADMIN_LIST_DEACTIVATE"] = "iðjungti";
+$MESS["MAIN_ADMIN_LIST_DELETE"] = "paðalinti";
+?>

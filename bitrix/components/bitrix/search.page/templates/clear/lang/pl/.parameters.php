@@ -1,0 +1,31 @@
+<?
+$MESS["TP_BSP_USE_SUGGEST"] = "Poka¿ monity wyra¿enia wyszukiwania";
+$MESS["TP_BSP_SHOW_ITEM_TAGS"] = "Poka¿ tagi dokumentu";
+$MESS["TP_BSP_TAGS_INHERIT"] = "W±ski obszar wyszukiwania";
+$MESS["TP_BSP_SHOW_ITEM_DATE_CHANGE"] = "Poka¿ datê modyfikacji";
+$MESS["TP_BSP_SHOW_ORDER_BY"] = "Poka¿ kolejno¶æ sortowania";
+$MESS["TP_BSP_SHOW_TAGS_CLOUD"] = "Poka¿ tagi";
+$MESS["TP_BSP_FONT_MAX"] = "Rozmiar du¿ych liter (px)";
+$MESS["TP_BSP_FONT_MIN"] = "Rozmiar ma³ych liter (px)";
+$MESS["TP_BSP_COLOR_OLD"] = "Kolor nowych tagów (ex. \"FEFEFE\")";
+$MESS["TP_BSP_COLOR_NEW"] = "Kolor tagów poczatkowych (ex. \"C0C0C0\")";
+$MESS["TP_BSP_CNT"] = "Wed³ug czêstotliwo¶ci";
+$MESS["TP_BSP_COLOR_TYPE"] = "U¿yj grenadieru kolorów";
+$MESS["TP_BSP_NAME"] = "Wed³ug nazwy";
+$MESS["TP_BSP_PAGE_ELEMENTS"] = "Ilo¶æ tagów";
+$MESS["TP_BSP_PERIOD"] = "Szukaj tagi w ci±gu (dni)";
+$MESS["TP_BSP_PERIOD_NEW_TAGS"] = "Wazno¶æ tagów (dni)";
+$MESS["TP_BSP_WIDTH"] = "Szeroko¶æ tagów (ex. \"100%\", \"100px\", \"100pt\" lub \"100in\")";
+$MESS["TP_BSP_URL_SEARCH"] = "¦cie¿ka do strony wyszukiwania (relatywnie do g³ównej)";
+$MESS["TP_BSP_SHOW_CHAIN"] = "Poka¿ nawigacjê";
+$MESS["TP_BSP_SORT"] = "Ranking tagów";
+$MESS["TP_BSP_SHOW_RATING"] = "Poka¿ oceny";
+$MESS["TP_BSP_PATH_TO_USER_PROFILE"] = "¦cie¿ka do szablonu profilu u¿ytkownika";
+$MESS["TP_BSP_SHOW_RATING_CONFIG"] = "domy¶lny";
+$MESS["TP_BSP_RATING_TYPE"] = "Wzór przycisków oceny";
+$MESS["TP_BSP_RATING_TYPE_CONFIG"] = "domy¶lny";
+$MESS["TP_BSP_RATING_TYPE_STANDART_TEXT"] = "Lubiê/nie lubiê (tekst)";
+$MESS["TP_BSP_RATING_TYPE_STANDART_GRAPHIC"] = "Lubiê/nie lubiê (obraz)";
+$MESS["TP_BSP_RATING_TYPE_LIKE_TEXT"] = "Lubiê (tekst)";
+$MESS["TP_BSP_RATING_TYPE_LIKE_GRAPHIC"] = "Lubiê (obraz)";
+?>

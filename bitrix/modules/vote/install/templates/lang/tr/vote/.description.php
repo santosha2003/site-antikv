@@ -1,0 +1,30 @@
+<?
+$MESS ['VOTE_TEMPLATE_SECTION_NAME'] = "Anketleme, oylama";
+$MESS ['VOTE_RESULT_NAME'] = "Anketleme sonuçlarý";
+$MESS ['VOTE_BY_DEFAULT'] = "<varsayýlan>";
+$MESS ['VOTE_CHANNEL_SID'] = "Anketleme grubu";
+$MESS ['VOTE_POLL_ID'] = "Anketleme ID ";
+$MESS ['VOTE_REDIRECT_PAGE'] = "Oylamadan sonra kullanýcýnýn yöndirileceði sayfa ";
+$MESS ['VOTE_EMPTY_FORM_PAGE'] = "Anketlemedeki boþ formun görüntülenmesi için sayfa";
+$MESS ['VOTE_RESULT_PAGE'] = "Anketleme sonuçlarý diyagramýn görüntülenmesi için sayfa";
+$MESS ['VOTE_NEW_NAME'] = "Anketleme formu";
+$MESS ['VOTE_NEW_DECSRIPTION'] = "Anketleme formun görüntülenmesi için bileþenler";
+$MESS ['VOTE_NEW_DEFAULT_TEMPLATE_NAME'] = "Anketleme formun görüntülenmesi";
+$MESS ['VOTE_NEW_DEFAULT_TEMPLATE_DESCRIPTION'] = "Doldurulmasý için boþ anketleme formunu görüntülemektedir";
+$MESS ['VOTE_NEW_MAIN_PAGE_TEMPLATE_NAME'] = "Anketleme formu (form içerisinde ince çerçeveli, anketlemenin tanýmý olmaksýzýn)";
+$MESS ['VOTE_NEW_MAIN_PAGE_TEMPLATE_DESCRIPTION'] = "Doldurulmasý için anketleme formunu görüntülemektedir (form içerisinde ince çerçeveli, anketlemenin tanýmý olmaksýzýn)";
+$MESS ['VOTE_RESULT_DESCRIPTION'] = "Anketleme sonuçlarýn görüntülenmesi için diyagramlar";
+$MESS ['VOTE_RESULT_DEFAULT_TEMPLATE_NAME'] = "Anketleme sonuçlarý";
+$MESS ['VOTE_RESULT_DEFAULT_TEMPLATE_DESCRIPTION'] = "Anketleme sonuçlarýn diyagramlarýný  görüntülemektedir";
+$MESS ['VOTE_RESULT_MAIN_PAGE_TEMPLATE_NAME'] = "Anketleme sonuçlarýn (form içerisinde ince çerçeveli, anketlemenin tanýmý olmaksýzýn)";
+$MESS ['VOTE_RESULT_MAIN_PAGE_TEMPLATE_DESCRIPTION'] = "Anketleme sonuçlarýn diyagramýný görüntülemektedir (form içerisinde ince çerçeveli, anketlemenin tanýmý olmaksýzýn)";
+$MESS ['VOTE_RESULT_BORDER_TEMPLATE_NAME'] = "Anketleme sonuçlarý (form içerisinde ince çerçeveli, anketleme tanýmý ile)";
+$MESS ['VOTE_RESULT_BORDER_TEMPLATE_DESCRIPTION'] = "Anketleme sonuçlarýn diyagramýný görüntülemektedir  (form içerisinde ince çerçeveli, anketleme tanýmý ile)";
+$MESS ['VOTE_LIST_NAME'] = "Anketleme listesi";
+$MESS ['VOTE_LIST_DESCRIPTION'] = "Anketleme listesini görüntülemektedir";
+$MESS ['VOTE_LIST_DEFAULT_TEMPLATE_NAME'] = "Anketleme listesi";
+$MESS ['VOTE_LIST_DEFAULT_TEMPLATE_DESCRIPTION'] = "Anketleme listesini görüntülemektedir";
+$MESS ['VOTE_CURRENT_CHANNEL_TEMPLATE_NAME'] = "Belirtilen grubun mevcut anketleme sonuçlarý veya form (ana sayfa için)";
+$MESS ['VOTE_CURRENT_CHANNEL_TEMPLATE_DESCRIPTION'] = "Ziyaretçinin oy kullanmamasý durumunda anketleme formu görüntülenmektedir, ziyaretçinin oy kullanmasý durumunda ise belirtilen grubu mevcut anketlemesini görüntülemektedir";
+$MESS ['VOTE_TEMPLATE_FOR_QUESTION'] = "#QUESTION# sorusu için bileþen";
+?>

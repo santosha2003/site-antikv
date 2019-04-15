@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>362</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153400488</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>135</chapter_id>
+<name>Folder property values management</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>The section properties provide a flexible means to control information and its presentation as well as manage the page metadata. By changing values of the section properties, you propagate the metadata values to all pages of a section, control the navigation chain display, show the desired image on all pages of a section etc.</p>
+
+<p>Section properties management are available for management in the corresponding folder editing form. This form can be accessed the following ways: </p>
+
+<ul>
+  <li><u>from the administrative section</u> using the <strong>Folder properties </strong>button located on the <b>File manager</b> content panel. 
+    <br />
+  
+    <br />
+  <i>Content -&gt; Site Explorer</i>&nbsp; 
+    <br />
+  
+    <br />
+  <img src="cid:resources/res20/nBcqj.8eRzh.folder_prop_btn_adm.png" height="127" width="450"/>&nbsp; 
+    <br />
+  
+    <br />
+  
+    <p>This button opens editing form for current (opened at this moment) folder.</p>
+  </li>
+
+  <li><u>from the public section</u> using the button, located on the administrative panel.&nbsp; 
+    <br />
+  
+    <br />
+  <img src="cid:resources/res20/2vuPu.cKfPj.folder_prop_btn.png" height="85" width="383"/>&nbsp; 
+    <br />
+  
+    <br />
+  This button opens editing form for current (opened at this moment) section folder. </li>
+</ul>
+
+<p>Values assigned to the folder properties will be used for all pages of the corresponding section by default (if&nbsp;this documents do not have their own values for these properties). </p>
+
+<p>For every folder (section) can be assigned an additional set of properties. To do so use the empty fields in the folder editing form.</p>
+
+<p><img src="cid:resources/res20/449hI.GK5wE.folder_prop_addit.png" height="213" width="400"/></p>
+
+<p></p>
+
+<div class="hint">Section property values also can be in assigned in the <code><strong>.section.php</strong></code> file: <font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+    <pre class="syntax">&lt; ?
+&hellip;
+$APPLICATION-&gt;SetDirProperty(&quot;keywords&quot;, &quot;Site, web, site management, management system&quot;);
+…
+?&gt;</pre>
+  </font></div>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>
