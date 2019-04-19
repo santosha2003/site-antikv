@@ -1,0 +1,24 @@
+<?
+$MESS['LEARNING_RESUME'] = 'Santrauka';
+$MESS['LEARNING_PUBLIC_PROFILE'] = 'Suteikti vieðàjá priëjimà prie studento profilio';
+$MESS['LEARNING_EDIT_PROFILE'] = 'Profilio nustatymai
+';
+$MESS['LEARNING_SAVE'] = 'Iðsaugoti';
+$MESS['LEARNING_TRANSCRIPT'] = 'Nuoroda á sertifikacijos puslapá';
+$MESS['LEARNING_PERSONAL_DATA'] = 'Asmeniniai duomenys';
+$MESS['LEARNING_USER_NAME'] = 'Vardas';
+$MESS['LEARNING_COUNTRY_NONE'] = '(nëra duomenø)';
+$MESS['LEARNING_USER_LAST_NAME'] = 'Pavardë';
+$MESS['LEARNING_USER_EMAIL'] = 'El. paðtas';
+$MESS['LEARNING_USER_PERSONAL_WWW'] = 'Tinklapis';
+$MESS['LEARNING_USER_PERSONAL_ICQ'] = 'ICQ';
+$MESS['LEARNING_USER_ADDRESS'] = 'Paðto kodas';
+$MESS['LEARNING_USER_PERSONAL_COUNTRY'] = 'Ðalis';
+$MESS['LEARNING_USER_PERSONAL_STATE'] = 'Regionas/ rajonas:
+';
+$MESS['LEARNING_USER_PERSONAL_CITY'] = 'Miestas';
+$MESS['LEARNING_USER_PERSONAL_ZIP'] = 'Paðto kodas';
+$MESS['LEARNING_USER_PERSONAL_STREET'] = 'Gatvë, namo nr.:';
+$MESS['LEARNING_USER_PHOTO'] = 'Nuotrauka';
+$MESS['LEARNING_DELETE_FILE'] = 'Iðtrinti bylà';
+?>

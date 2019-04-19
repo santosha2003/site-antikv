@@ -1,0 +1,35 @@
+<?
+$MESS ['STAT_ALL'] = "(tout)";
+$MESS ['STAT_OTHER'] = "autres";
+$MESS ['STAT_F_ADV'] = "Campagne publicitaire";
+$MESS ['STAT_ATTENTION_GOTO'] = "Cliquer le symbole \"&raquo;\" pour naviguer vers la section d'une page.";
+$MESS ['STAT_F_ADV_DATA_TYPE'] = "Type de données<br>pour campagnes publicitaires";
+$MESS ['STAT_HITS_DIAGRAM'] = "Diagramme des accès par session";
+$MESS ['STAT_GROUP_BY_ENTERS'] = "Points d'entrée";
+$MESS ['STAT_T_ENTER_DIAGRAM'] = "Liste de points d'entrée";
+$MESS ['STAT_GROUP_BY_EXITS'] = "Points de sortie";
+$MESS ['STAT_T_EXIT_DIAGRAM'] = "Liste des points de sortie";
+$MESS ['STAT_GROUP_BY_HITS'] = "Accès";
+$MESS ['STAT_HITS'] = "Accès";
+$MESS ['STAT_SECTION_LINK_STAT'] = "Statistique des liens à cette page";
+$MESS ['STAT_GO'] = "Lien de navigation";
+$MESS ['STAT_NO_DATA'] = "Aucune donnée pour dessiner le diagramme";
+$MESS ['STAT_ADV_NO_BACK'] = "sur accès direct";
+$MESS ['STAT_ADV_BACK'] = "au retour";
+$MESS ['STAT_F_SECTIONS'] = "Page / Section";
+$MESS ['STAT_RECORDS_LIST'] = "Popularité des pages et sections";
+$MESS ['STAT_F_VIEW_FILES'] = "Pages uniquement";
+$MESS ['STAT_PERCENT'] = "Pourcent";
+$MESS ['STAT_F_DATE'] = "Période";
+$MESS ['STAT_T_HITS_DIAGRAM'] = "Popularité";
+$MESS ['STAT_SECTION_PAGES'] = "Enregistrements";
+$MESS ['STAT_PAGE'] = "Section/page";
+$MESS ['STAT_F_VIEW_SECTIONS'] = "sections uniquement";
+$MESS ['STAT_SESSIONS'] = "Sessions";
+$MESS ['STAT_FILTER_PAGE_DIAGRAM_ALT'] = "Montrer le diagramme des accès à cette section";
+$MESS ['STAT_F_URL_404'] = "Site introuvable<br>(erreur 404)";
+$MESS ['STAT_ADV_SUMMA'] = "quantité par accès direct et sur retour";
+$MESS ['STAT_SECTION_GRAPH'] = "Graphe du trafic pour cette page";
+$MESS ['STAT_F_VIEW'] = "Vue";
+$MESS ['STAT_ATTENTION'] = "Avertissement";
+?>

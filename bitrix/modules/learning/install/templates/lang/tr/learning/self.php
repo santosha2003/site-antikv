@@ -1,0 +1,8 @@
+<?
+$MESS ['LEARNING_BAD_SELFTEST'] = "Test bulunmamýþtýr";
+$MESS ['LEARNING_QUESTION_S'] = "Soru";
+$MESS ['LEARNING_QUESTION_FROM'] = "den";
+$MESS ['LEARNING_QUESTION_DESC'] = "Açýklama";
+$MESS ['LEARNING_SELECT_ANSWER'] = "Cevabý seçiniz";
+$MESS ['LEARNING_SUBMIT_ANSWER'] = "Cevapla";
+?>

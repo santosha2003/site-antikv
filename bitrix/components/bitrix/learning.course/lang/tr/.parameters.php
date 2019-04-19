@@ -1,0 +1,30 @@
+<?
+$MESS ['LEARNING_DESC_YES'] = "Evet";
+$MESS ['LEARNING_DESC_NO'] = "Hayýr";
+$MESS ['LEARNING_COURSE_ID_NAME'] = "Kurs ID";
+$MESS ['LEARNING_CHECK_PERMISSIONS'] = "Eriþim hakkýný kontrol et";
+$MESS ['LEARN_COURSE_ID_DESC'] = "Kurs ID";
+$MESS ['LEARN_INDEX_ID_DESC'] = "ÝD sayfa indisi";
+$MESS ['LEARN_LESSON_ID_DESC'] = "Ders ID";
+$MESS ['LEARN_CHAPTER_ID_DESC'] = "Bölüm ID";
+$MESS ['LEARN_SELF_TEST_DESC'] = "Otomatik sýnama ID";
+$MESS ['LEARN_TEST_ID_DESC'] = "Test ID";
+$MESS ['LEARN_TYPE_ID_DESC'] = "Kursun tüm içeriðin ID";
+$MESS ['LEARN_TEST_LIST_ID_DESC'] = "Test listesinin ID";
+$MESS ['LEARN_GRADEBOOK_ID_DESC'] = "Dergi ID";
+$MESS ['LEARN_FOR_TEST_ID_DESC'] = "Dergi içerisindeki test ID";
+$MESS ['LEARN_INDEX_DESC'] = "Ana sayfaya giden URL";
+$MESS ['LEARN_LESSON_DETAIL_DESC'] = "Ders sayfasýna giden URL";
+$MESS ['LEARN_CHAPTER_DETAIL_DESC'] = "Sayfa bölümüne giden URL";
+$MESS ['LEARN_TEST_SELF_DESC'] = "Otomatik sýnama için test sayfasýna giden URL";
+$MESS ['LEARN_TEST_DETAIL_DESC'] = "Test sayfasýna giden URL";
+$MESS ['LEARN_TEST_LIST_DESC'] = "Test liste sayfasýna giden URL";
+$MESS ['LEARN_COURSE_CONTENTS_DESC'] = "Tüm kurs materyal sayfasýna giden URL";
+$MESS ['LEARN_GRADEBOOK_DESC'] = "Dergi sayfasýna giden URL";
+$MESS ['LEARNING_PAGE_WINDOW_NAME'] = "Gezinti zincirinde soru miktarý";
+$MESS ['LEARNING_SHOW_TIME_LIMIT'] = "Zaman sýnýrlama sayacýný görüntüle";
+$MESS ['LEARNING_TESTS_PER_PAGE'] = "Sayfa içerisindeki test sayýsý";
+$MESS ['TEST_DETAIL_GROUP'] = "Test ayarlarý";
+$MESS ['TEST_LIST_GROUP'] = "Test listesinin ayarlarý";
+$MESS ['T_LEARNING_PAGE_NUMBER_VARIABLE'] = "Soru ID";
+?>

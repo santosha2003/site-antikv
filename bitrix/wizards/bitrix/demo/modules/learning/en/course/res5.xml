@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>357</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153382012</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>133</chapter_id>
+<name>Visual components</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>The Bitrix Site Manager allows managing sites using the intuitive visual user interface. This possibility is realized due to using visual components on site pages and in design templates.</p>
+
+<p><b>Visual component</b> is logically completed source code, implementing operations with data of exact modules. Virtually any script can be shaped as a component.</p>
+
+<p>Visual components can be used for such purposes as:</p>
+
+<ul>
+  <li>creating frequently used areas in site template or on site pages (e.g. search form, authorization or subscription form); </li>
+
+  <li>publishing frequently renewal information (e.g. news list, field with random photo) </li>
+
+  <li>implementing any other operations. </li>
+</ul>
+
+<p>
+  <table>
+    <tbody>
+      <tr><td>&nbsp;<img src="cid:resources/res5/4bdfk.QyAVM.comp_publ.png" height="200" width="296"/></td><td>&nbsp;</td><td>&nbsp;<img src="cid:resources/res5/eOyAX.I09Sn.comp_adm_s.png" height="200" width="318"/></td></tr>
+    </tbody>
+  </table>
+</p>
+
+<p>Utilization of visual components allows eliminate users, who do not have special knowledge in web-programming, from need to work directly with source code. A distinctive feature of components is the ability not only to be controlled on the source code level, but also through the use of parameters that define the component behavior.</p>
+
+
+
+<p>To add component to pages and adjust its properties use the visual editor. All components are grouped according to modules they belong to. Dropdown list, located on the <b>Component</b> panel, allows to choose a proper module:</p>
+
+<p><img src="cid:resources/res5/4YOEp.K78qM.moduls_list_s.png" height="200" alt="" hspace="0" width="300" border="0"/></p>
+
+<p>All components are displayed as pictures. To insert a component into a page, simply select it in the list and drag and drop it to the desired position within the page.</p>
+
+<p>After you have added a component, you can customize its parameters. To do so, select an existing component in the page. As the result the list of available component parameters will appear in the bottom of the screen:</p>
+
+<p><img src="cid:resources/res5/pppmd.XyiDm.comp_placing_s.png" height="200" width="300"/></p>
+
+<p>Besides that a component parameters can be adjusted in page source code editing mode. To switch to this mode use the button <img src="cid:resources/res5/SzOcL.meOBx.text.gif" height="20" width="20"/>, located on the left panel of the visual editor.</p>
+
+<p><img src="cid:resources/res5/jClCH.hct2N.source_code_s.png" height="200" width="300"/></p>
+
+<p>Using visual component parameters you can easily adjust it on implementing necessary operations. </p>
+
+<p>Also any arbitrary PHP code can be added to page in the similar manner. In this case, it could be modified in the text editor in the bottom of the screen:</p>
+
+<p><img src="cid:resources/res5/uJIoe.7S1nC.php_s.png" height="200" width="300"/></p>
+
+<div class="hint"><strong>Note</strong>: Any arbitrary php code, placed on a page, in the visual editor mode will be displayed as the picture <img src="cid:resources/res5/E51Xa.kRcx8.php.png" height="16" width="32"/>.</div>
+
+<p>The Bitrix Site Manager allows to use on pages almost any php code without damage to visual editing mode.</p>
+
+<p>Each visual component can be customized according to site requirements. For example, you can adjust form and size for buttons used in a component, change font, background color or even component work logic. </p>
+
+<p>
+  <table>
+    <tbody>
+      <tr valign="bottom"><td>&nbsp;<img src="cid:resources/res5/QGklo.beFfY.search_form3.png" height="62" width="188"/></td><td>&nbsp;</td><td>&nbsp;<img src="cid:resources/res5/5Ol4W.KLcax.search_form1.png" height="85" width="174"/></td><td>&nbsp; </td><td>&nbsp;<img src="cid:resources/res5/J1aea.9xtNH.search_form2.png" height="85" width="182"/></td></tr>
+    </tbody>
+  </table>
+</p>
+
+<p>Site administrators are allowed&nbsp;to create their own components.</p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

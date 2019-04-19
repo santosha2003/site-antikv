@@ -1,0 +1,30 @@
+<?
+$MESS ['imp_add'] = "Ajouter des souscripteurs&nbsp;:";
+$MESS ['imp_add_gr'] = "Ajouter des utilisateurs au groupe";
+$MESS ['imp_results_added'] = "Ajouter des adresses&nbsp;:";
+$MESS ['imp_delim'] = "Addresses in the list must be separated with a <b>comma</b> or a <b>carriage return</b>.";
+$MESS ['imp_user_anonym'] = "Aucun compte personnel n'est ouvert sur le site aux souscripteurs anonymes. Les souscripteurs enregistrés ont un compte personnel et font partie d'un ou plusieurs groupes.";
+$MESS ['imp_add_anonym'] = "En tant qu'utilisateur anonyme";
+$MESS ['imp_add_users'] = "En tant qu'utilisateurs enregistrés (créant le compte)";
+$MESS ['imp_results_err'] = "Mauvaises adresses&nbsp;:";
+$MESS ['subscr_imp_err2'] = "Code d'erreur";
+$MESS ['imp_error'] = "Erreur à l'importation des adresses";
+$MESS ['subscr_imp_err1'] = "Erreur au chargement de fichier.";
+$MESS ['imp_fmt'] = "Format&nbsp;:";
+$MESS ['imp_import_tab'] = "Import";
+$MESS ['imp_butt'] = "Adresse d'importation";
+$MESS ['imp_title'] = "Import de messages";
+$MESS ['imp_file'] = "Import du fichier&nbsp;:";
+$MESS ['imp_list'] = "Import du fichier&nbsp;:";
+$MESS ['imp_results'] = "Importation des résultats&nbsp;:";
+$MESS ['imp_conf'] = "Indiquer la confirmation de l'abonnement";
+$MESS ['imp_import_tab_title'] = "Paramètres d'importation";
+$MESS ['imp_site'] = "Envoi de messages basés sur les modèles du site&nbsp;:";
+$MESS ['imp_send_reg'] = "Envoi des infos de souscription aux utilisateurs&nbsp;:";
+$MESS ['imp_send_code'] = "Envoyer le code de confirmation pour l'abonnement&nbsp;:";
+$MESS ['imp_subscr'] = "S'abonner aux catégories:";
+$MESS ['imp_user'] = "Les abonnées peuvent être inscrits en tant qu'utilisateurs anonymes ou inscrits.";
+$MESS ['imp_fmt_text'] = "Texte";
+$MESS ['imp_results_total'] = "Nombre total d'adresses uniques pour import&nbsp;:";
+$MESS ['subscr_send_info'] = "Vous êtes enregistré.";
+?>

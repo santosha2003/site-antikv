@@ -1,0 +1,12 @@
+<?
+$MESS ['SEARCH_TAGSTAT_TITLE'] = "Statystyki wyszukiwania frazy";
+$MESS ['SEARCH_TAGSTAT_ID'] = "ID";
+$MESS ['SEARCH_TAGSTAT_DATES'] = "Data (#DATE_FORMAT#)";
+$MESS ['SEARCH_TAGSTAT_SITE_ID'] = "Strona";
+$MESS ['SEARCH_TAGSTAT_SITE'] = "(strona)";
+$MESS ['SEARCH_TAGSTAT_TAGS'] = "Tagi";
+$MESS ['SEARCH_TAGSTAT_STAT_SESS_ID'] = "ID sesji";
+$MESS ['SEARCH_TAGSTAT_URL_TO'] = "Do";
+$MESS ['SEARCH_TAGSTAT_404'] = "(b³±d 404)";
+$MESS ['SEARCH_TAGSTAT_COUNT'] = "Ilo¶æ";
+?>

@@ -1,0 +1,30 @@
+<?
+$MESS ['STATUS_TITLE'] = "Statuts d'ordre";
+$MESS ['ERROR_DELETE'] = "Erreur en effaçant le statut";
+$MESS ['STATUS_DEL_CONF'] = "Êtes-vous sûrs que vous voulez effacer ce statut ? Si ce statut a des ordres attachés, il ne sera pas effacé.";
+$MESS ['STATUS_NAV'] = "Statuts";
+$MESS ['STATUS_ID'] = "Code";
+$MESS ['STATUS_SORT'] = "Sorte.";
+$MESS ['STATUS_UPD'] = "Sauver";
+$MESS ['STATUS_RESET'] = "Annuler";
+$MESS ['STATUS_F_DESCR'] = "Description:";
+$MESS ['STATUS_F_NAME'] = "Nom:";
+$MESS ['ERROR_ADD_REC'] = "Erreur ajoutant un statut";
+$MESS ['ERROR_EMPTY_NAME1'] = "Mettez s'il vous plaît le nom de statut";
+$MESS ['ERROR_EMPTY_NAME2'] = "pour la langue";
+$MESS ['ERROR_UPDATE_REC'] = "Erreur actualisant le statut";
+$MESS ['ERROR_EMPTY_NEW_NAME'] = "Mettez s'il vous plaît le nom du nouveau statut pour la langue";
+$MESS ['ERROR_ADD_NEW_REC'] = "Erreur ajoutant un nouveau statut";
+$MESS ['STATUS_DEL'] = "Effacer";
+$MESS ['ERROR_DEL_STATUS'] = "Erreur en effaçant le statut.";
+$MESS ['SALE_ADD_STATUS'] = "Ajouter";
+$MESS ['SALE_NAME'] = "Nom";
+$MESS ['SALE_ACTIONS'] = "Actions";
+$MESS ['SALE_EDIT_DESCR'] = "Modifiez des cadres de statut";
+$MESS ['SALE_EDIT'] = "Modifier";
+$MESS ['SALE_DELETE_DESCR'] = "Effacez le statut";
+$MESS ['SALE_NOTES1'] = "<b>N</b> est le statut d'ordre initial appliqué sur la création. Vous ne pouvez pas effacer ce statut.";
+$MESS ['SALE_NOTES2'] = "<b>F</b> est le statut d'ordre final appliqué sur l'ordre l'achèvement réussi. Vous ne pouvez pas effacer ce statut.";
+$MESS ['SSAN_ADD_NEW'] = "Nouveau statut";
+$MESS ['SSAN_ADD_NEW_ALT'] = "Faites un déclic pour ajouter un nouveau statut";
+?>

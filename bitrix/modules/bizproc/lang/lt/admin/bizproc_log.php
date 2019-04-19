@@ -1,0 +1,35 @@
+<?
+$MESS["BPABL_TYPE_5"] = "Veiksmas  '#ACTIVITY#'#NOTE#";
+$MESS["BPABL_TYPE_4"] = "Veiksmo '#ACTIVITY#'#NOTE# klaida";
+$MESS["BPABL_BACK"] = "Gráþti";
+$MESS["BPABL_STATUS_3"] = "Atðaukiama";
+$MESS["BPABL_WF_TAB"] = "Verslo procesas";
+$MESS["BPABL_TAB_TITLE"] = "Verslo procesas";
+$MESS["BPABL_TITLE"] = "Verslo proceso #ID#";
+$MESS["BPABL_STATE_NAME"] = "Verslo proceso dabartinë stadija";
+$MESS["BPABL_LOG"] = "Verslo proceso istorija";
+$MESS["BPABL_ID"] = "Verslo proceso ID";
+$MESS["BPABL_DESCRIPTION"] = "Verslo proceso ðablono apraðymas";
+$MESS["BPABL_NAME"] = "Verslo proceso ðablono pavadinimas";
+$MESS["BPABL_RES_3"] = "Atðaukta";
+$MESS["BPABL_TYPE_3"] = "Veiksmas atðauktas '#ACTIVITY#'#NOTE#";
+$MESS["BPABL_STATUS_4"] = "Atlikta";
+$MESS["BPABL_TYPE_2"] = "Atliktas veiksmas '#ACTIVITY#'	 gráþimo statusas: '#STATUS#'	rezultatas: '#RESULT#'#NOTE#";
+$MESS["BPABL_STATE_MODIFIED"] = "Dabartinës stadijos data";
+$MESS["BPABL_ERROR"] = "Klaida";
+$MESS["BPABL_STATUS_5"] = "Klaida";
+$MESS["BPABL_RES_4"] = "Klaida";
+$MESS["BPABL_STATUS_2"] = "Vykdoma";
+$MESS["BPABL_STATUS_1"] = "Inicializuota";
+$MESS["BPABL_TYPE_1"] = "Paleistas veiksmas '#ACTIVITY#'#NOTE#";
+$MESS["BPABL_RES_1"] = "Ne";
+$MESS["BPABL_RES_5"] = "Neinicializuotas";
+$MESS["BPABL_TYPE_6"] = "Atliktas neþinomas veiksmas, asocijuojamas su #ACTIVITY#'#NOTE# ";
+$MESS["BPABL_RES_2"] = "Sëkmë";
+$MESS["BPABL_INVALID_WF"] = "Verslo procesas nerastas";
+$MESS["BPABL_STATUS_6"] = "Nenurodyta";
+$MESS["BPABL_RES_6"] = "Nenurodyta";
+$MESS["BPABL_NO_PERMS"] = "Jûs neturite leidimo prieiti prie dokumentø verslo proceso";
+$MESS["BPABL_RES2ADMINMODE"] = "Paþangus reþimas";
+$MESS["BPABL_RES2SIMPLEMODE"] = "Paprastas reþimas";
+?>

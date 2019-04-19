@@ -1,0 +1,30 @@
+<?
+$MESS ['FILEMAN_ACCESS_TITLE'] = "Prawa dostêpu";
+$MESS ['FM_FOLDER_ACCESS_DENIED'] = "Brak dostêpu";
+$MESS ['FM_FOLDER_ACCESS_READ'] = "Odczyt";
+$MESS ['FM_FOLDER_ACCESS_WRITE'] = "Zapis";
+$MESS ['FM_FOLDER_ACCESS_FULL'] = "Pe³ny dostêp";
+$MESS ['FM_FOLDER_ACCESS_WORKFLOW'] = "Tok pracy";
+$MESS ['FILEMAN_FOLDER_ACCESS_INHERIT'] = "Inherit";
+$MESS ['FILEMAN_ACCESS_TO_DENIED'] = "Brak dostêpu do zmian praw dostêpu do";
+$MESS ['FILEMAN_ACCESS_CHANGE_TO'] = "Zmieñ prawa dostêpu do";
+$MESS ['FILEMAN_ACCESS_FOLDERS_FILES'] = "pliki/foldery:";
+$MESS ['FILEMAN_ACCESS_DIFFERENT'] = "Ustawienia dostêpu tej grupy dostarczaj± ró¿nych praw folderom! Potem oszczêdzaj, prawa dostêpu do wszystkich folderów bêd± zjednoczone.";
+$MESS ['FILEMAN_ACCESS_GROUP'] = "Grupa";
+$MESS ['FILEMAN_ACCESS_LEVEL'] = "Poziom dostêpu";
+$MESS ['FILEMAN_ACCESS_LEVEL_CUR'] = "Bie¿±cy poziom dostêpu";
+$MESS ['FILEMAN_ACCESS_LEVEL_NOTCH'] = "(opu¶æ niezmieniony)";
+$MESS ['FILEMAN_ACCESS_DIFF_GROUP'] = "Kilka plików albo foldery maj± ró¿ne poziomy dostêpu dla tej grupy:";
+$MESS ['FILEMAN_ACCESS_GROUP_INHERIT'] = "Wszystkie grupy z &quot;Inherit&quot; poziomem dostêpu";
+$MESS ['FILEMAN_ACCESS_DIFF_LEVEL'] = "Kilka plików albo foldery maj± ró¿ne poziomy dostêpu:";
+$MESS ['FILEMAN_ACCESS_SAVE'] = "Zapisz";
+$MESS ['FILEMAN_ACCESS_APPLY'] = "Zastosuj";
+$MESS ['FILEMAN_ACCESS_RESET'] = "Resetuj";
+$MESS ['FILEMAN_ACCESS_FOR_GROUP'] = "Dla grupy u¿ytkowników";
+$MESS ['FILEMAN_ACCESS_FOR_GROUP2'] = "pozwolenie zapisu zosta³o ustawione. Jakikolwiek zarejestrowany u¿ytkownik mo¿e zmieniæ te pliki i/lub foldery. Czy naprawdê chcesz zapisaæ zmiany?";
+$MESS ['FILEMAN_ACCESS_FILE'] = "Plik";
+$MESS ['FILEMAN_CMENU_CAT'] = "Folder";
+$MESS ['FILEMAN_TAB'] = "Prawa dostêpu";
+$MESS ['FILEMAN_TAB_ALT'] = "Ustawienia praw dostêpu";
+$MESS ['FILEMAN_FILE_OR_FOLDER'] = "Plik/Folder";
+?>

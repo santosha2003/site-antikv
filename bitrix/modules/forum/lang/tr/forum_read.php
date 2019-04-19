@@ -1,0 +1,36 @@
+<?
+$MESS ['FORUMS'] = "Forumlar";
+$MESS ['MESSAGES'] = "Mesaj";
+$MESS ['NEW_TOPIC'] = "Yeni konu";
+$MESS ['PREV'] = "Önceki konu";
+$MESS ['NEXT'] = "Sonraki konu";
+$MESS ['SUBSCRIBE'] = "Abone ol";
+$MESS ['REPLY2AUTHOR2'] = "!";
+$MESS ['AUTHOR_PROFILE'] = "Mesaj yazanýn profili";
+$MESS ['NUM_MESSAGES'] = "Toplam ileti";
+$MESS ['DATE_REGISTR'] = "Kayýt tarihi";
+$MESS ['CREATED'] = "Oluþturma";
+$MESS ['HIDE_DESCR'] = "Mesajyi server ziyaretçilerinden gizle";
+$MESS ['HIDE'] = "Gizle";
+$MESS ['SHOW_DESCR'] = "Server ziyaretçilerine mesajlarý göster";
+$MESS ['SHOW'] = "Göster";
+$MESS ['DEL_DESCR'] = "Mesajnin silinmesi. Þayet bu konudaki son mesja ise tüm konu silinecektir";
+$MESS ['DEL'] = "Sil";
+$MESS ['EDIT_DESCR'] = "Mesajyi yeniden düzenle.";
+$MESS ['EDIT'] = "Düzenle";
+$MESS ['QUOTE_DESCR'] = "Cevap formunda alýntý için, alýntý yapmak istediðiniz metni seçerek buraya týklayýn";
+$MESS ['QUOTE'] = "Alýntý yap";
+$MESS ['TO_TOP'] = "Yukarý";
+$MESS ['MOVE_TOPIC'] = "Konuyu taþý";
+$MESS ['OPEN_TOPIC'] = "Konu aç";
+$MESS ['CLOSE_TOPIC'] = "Konuyu kapat";
+$MESS ['GUEST_ID'] = "Ziyaretçi kimliði";
+$MESS ['AUTHOR_IP'] = "IP";
+$MESS ['DEL_TOPIC'] = "Sil";
+$MESS ['F_PRIVATE_DESCR'] = "Mesaj yazarýna özel mesaj yolla";
+$MESS ['F_PRIVATE'] = "E-Mail Yaz";
+$MESS ['F_PRIVATE_DESCR1'] = "Mesaj yazarýna özel mesaj yolla";
+$MESS ['F_PRIVATE1'] = "Mesaj yaz (ICQ)";
+$MESS ['F_PROFILE_DESCR'] = "Mesaj yazanýn profili";
+$MESS ['F_PROFILE'] = "Profil";
+?>

@@ -1,0 +1,30 @@
+<?
+$MESS ['IBLOCK_PRICES'] = "Fiyatlar";
+$MESS ['IBLOCK_LINK'] = "Baðlantýlý öðeler ayarlarý";
+$MESS ['T_IBLOCK_DESC_NEWS_PANEL'] = "Bu öðe için yönetim paneline buton ekle";
+$MESS ['IBLOCK_TYPE'] = "Bilgi-bloðu türü";
+$MESS ['IBLOCK_IBLOCK'] = "Bilgi Bloðu";
+$MESS ['IBLOCK_PROPERTY'] = "Özellikler";
+$MESS ['IBLOCK_SORT_ASC'] = "Artan sýra";
+$MESS ['IBLOCK_SORT_DESC'] = "Azalan sýra";
+$MESS ['IBLOCK_SECTION_URL'] = "Bölüm içeriði sayfasýna giden URL";
+$MESS ['IBLOCK_PRICE_CODE'] = "Fiyat türü";
+$MESS ['IBLOCK_VAT_INCLUDE'] = "Fiyata KDV ekle";
+$MESS ['IBLOCK_VAT_SHOW_VALUE'] = "KDV deðerini göster";
+$MESS ['IBLOCK_BASKET_URL'] = "Müþteri sepetinin bulunduðu sayfaya yönlendiren URL";
+$MESS ['IBLOCK_ELEMENT_ID'] = "Öðe kimliði";
+$MESS ['IBLOCK_SECTION_ID'] = "Bölüm kimliði";
+$MESS ['IBLOCK_LINK_IBLOCK_TYPE'] = "Öðeleri geçerli öðe ile baðlantýlý bilgi bloðunun türü";
+$MESS ['IBLOCK_LINK_IBLOCK_ID'] = "Öðeleri geçerli öðe ile baðlantýlý bilgi bloðunun kimliði";
+$MESS ['IBLOCK_LINK_ELEMENTS_URL'] = "Baðlantýlý öðelerin gösterileceði sayfanýn URL'si";
+$MESS ['IBLOCK_LINK_PROPERTY_SID'] = "Baðlantýnýn saklanacaðý özellik";
+$MESS ['IBLOCK_ACTION_VARIABLE'] = "Eylem parametre adý";
+$MESS ['IBLOCK_PRODUCT_ID_VARIABLE'] = "Ürün kodu parametre adý";
+$MESS ['IBLOCK_SECTION_ID_VARIABLE'] = "Grup kodu parametre adý";
+$MESS ['IBLOCK_USE_PRICE_COUNT'] = "Miktar aralýðý fiyat giriþi kullan";
+$MESS ['IBLOCK_SHOW_PRICE_COUNT'] = "Miktar için fiyat gir";
+$MESS ['IBLOCK_DETAIL_URL'] = "Bölüm öðesi içeriði sayfasýna giden URL";
+$MESS ['T_IBLOCK_DESC_KEYWORDS'] = "Özelliklerden sayfanýn anahtar kelimelerini ayarla";
+$MESS ['T_IBLOCK_DESC_DESCRIPTION'] = "Özelliklerden sayfanýn tanýmýný ayarla";
+$MESS ['CP_BCE_ADD_SECTIONS_CHAIN'] = "Bölümü gezgin zincirine ekle";
+?>

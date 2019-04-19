@@ -1,0 +1,34 @@
+<?
+$MESS ['SAPE1_NO_SITE'] = "Le site de plan n'est pas spécifié";
+$MESS ['SAPE1_NO_NAME'] = "Le nom de plan n'est pas spécifié";
+$MESS ['SAPE1_NO_RATE_CURRENCY'] = "La devise de taux de plan n'est pas spécifiée";
+$MESS ['SAPE1_NO_SECTION'] = "Aucun groupe de produit n'est spécifié";
+$MESS ['SAPE1_NO_MODULE'] = "Le module de groupe de produit n'est pas spécifié";
+$MESS ['SAPE1_ERROR_SAVE'] = "Erreur sauvant le plan";
+$MESS ['SAPE1_ERROR_SAVE_SECTION'] = "Erreur sauvant le groupe de produit de plan";
+$MESS ['SAPE1_TITLE_UPDATE'] = "Révisez le plan #ID#";
+$MESS ['SAPE1_TITLE_ADD'] = "Nouveau plan";
+$MESS ['SAPE1_LIST'] = "Plans";
+$MESS ['SAPE1_ADD'] = "Nouveau plan";
+$MESS ['SAPE1_DELETE'] = "Effacez le plan";
+$MESS ['SAPE1_DELETE_CONF'] = "Êtes-vous sûrs que vous voulez effacer ce plan ?";
+$MESS ['SAPE1_PLAN'] = "Plan";
+$MESS ['SAPE1_PLAN_PARAM'] = "Paramètres de plan";
+$MESS ['SAPE1_SECTIONS'] = "Groupes de produit";
+$MESS ['SAPE1_SECTIONS_ALT'] = "Groupes de produit de taux spéciaux";
+$MESS ['SAPE1_TIMESTAMP_X'] = "Dernière date de modification:";
+$MESS ['SAPE1_SITE'] = "Site:";
+$MESS ['SAPE1_NAME'] = "Nom : de plan";
+$MESS ['SAPE1_DESCR'] = "Description de plan :";
+$MESS ['SAPE1_ACTIVE'] = "Actif:";
+$MESS ['SAPE1_RATE'] = "Tarif:";
+$MESS ['SAPE1_LIMIT'] = "Le plan est actif pour les ventes sur (les PC).";
+$MESS ['SAPE1_LIMIT_HINT'] = "Le plan est actif pour les ventes avec la quantité sur <br> <small> dans le site basent la devise </small>";
+$MESS ['SAPE1_NO'] = "(Non)";
+$MESS ['SAPE1_DELETE1'] = "Effacer";
+$MESS ['SAPE1_MODULE'] = "Module";
+$MESS ['SAPE1_SECTION'] = "Groupe";
+$MESS ['SAPE1_RATE1'] = "Tarif";
+$MESS ['SAPE1_ADD1'] = "Ajouter";
+$MESS ['SAPE1_DELETE1_CONF'] = "Êtes-vous sûrs que vous voulez effacer ce record ?";
+?>

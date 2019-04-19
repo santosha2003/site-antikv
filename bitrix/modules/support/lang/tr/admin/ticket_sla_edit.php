@@ -1,0 +1,35 @@
+<?
+$MESS ['SUP_PAGE_TITLE_EDIT_RECORD'] = "Teknik destek seviyesi (SLA) # #ID#";
+$MESS ['SUP_PAGE_TITLE_NEW_RECORD'] = "Yeni teknik destek seviyesi (SLA)";
+$MESS ['SUP_NEW_RECORD'] = "Yeni seviye";
+$MESS ['SUP_RECORD'] = "Teknik destek seviyesi";
+$MESS ['SUP_ERROR'] = "Teknik destek seviyesinin kaydýnda hata";
+$MESS ['SUP_RECORD_S'] = "Teknik destek seviyesinin parametreleri";
+$MESS ['SUP_DELETE_RECORD'] = "Seviyeyi sil";
+$MESS ['SUP_DELETE_RECORD_CONFIRM'] = "Bu destek seviyesini silmek istediðinizden eminmisiniz?";
+$MESS ['SUP_RECORD_LIST'] = "Teknik destek seviyeleri  ";
+$MESS ['SUP_NAME'] = "Adý";
+$MESS ['SUP_PRIORITY'] = "Öncelik";
+$MESS ['SUP_RESPONSE_TIME'] = "Müþterinin iletisine tepki zamaný";
+$MESS ['SUP_DAYS'] = "gün.";
+$MESS ['SUP_HOURS'] = "s.";
+$MESS ['SUP_MINUTES'] = "dk.";
+$MESS ['SUP_WARNING_TIME'] = "Zamanýn sonun sona ermesine kadar kaç zaman içerisinde EMail üzerinden tepkinin hatýrlatýlmasý gönderilsin.";
+$MESS ['SUP_SHEDULE'] = "Bu SLA ile sorgu zamanlamasý";
+$MESS ['SUP_SHEDULE_S'] = "Zamanlama";
+$MESS ['SUP_24H'] = "24 saat";
+$MESS ['SUP_CLOSED'] = "çalýþmýyor";
+$MESS ['SUP_CUSTOM'] = "çalýþma saatleri:<br>(HH24:MI)";
+$MESS ['SUP_USER_ACCESS'] = "Bu SLA ile kim sorgu oluþturabilir";
+$MESS ['SUP_USER_GROUPS'] = "Kullanýcý gruplarý";
+$MESS ['SUP_USER_GROUPS_S'] = "Gruplar";
+$MESS ['SUP_WHAT_ACCESSIBLE'] = "Bu SLA ile sorgunun oluþturulmasýnda neyin mumkün olabileceði";
+$MESS ['SUP_WHAT_ACCESSIBLE_S'] = "Eriþim";
+$MESS ['SUP_CATEGORY'] = "Kategoriler";
+$MESS ['SUP_CRITICALITY'] = "Kritiklikler";
+$MESS ['SUP_MARK'] = "Yanýt deðerlendirilmeleri";
+$MESS ['SUP_ALL_CURRENT_FUTURE'] = "tüm mevcut ve gelecekteki";
+$MESS ['SUP_DESCRIPTION'] = "Tanýmý";
+$MESS ['SUP_SITE'] = "Siteler";
+$MESS ['SUP_RESPONSIBLE'] = "Varsayýlan sorumlusu";
+?>

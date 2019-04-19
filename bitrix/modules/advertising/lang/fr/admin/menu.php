@@ -1,0 +1,30 @@
+<?
+$MESS ['AD_MENU_MAIN_TITLE'] = "Gestion de la pub";
+$MESS ['AD_MENU_MAIN'] = "Publicité";
+$MESS ['AD_MENU_STATISTICS_ALT'] = "Diagrammes de bannière&nbsp;:";
+$MESS ['AD_MENU_BANNER_LIST_ALT'] = "Liste de bannières";
+$MESS ['AD_MENU_TYPE_LIST'] = "Types de bannières";
+$MESS ['AD_MENU_TYPE_LIST_DIAGRAM'] = "Types de bannières";
+$MESS ['AD_MENU_TYPE_LIST_GRAPH'] = "Types de bannières";
+$MESS ['AD_MENU_BANNER_LIST'] = "Bannières";
+$MESS ['AD_MENU_BANNER_LIST_DIAGRAM'] = "Bannières";
+$MESS ['AD_MENU_BANNER_LIST_GRAPH'] = "Bannières";
+$MESS ['AD_MENU_REPORTS_TITLE'] = "Graphique des bannières et contrats";
+$MESS ['AD_MENU_DIAG_BAN'] = "Diagrammes des bannières";
+$MESS ['AD_MENU_BAN_GR'] = "Graphes des bannières";
+$MESS ['AD_MENU_CONTRACT_LIST'] = "Contrats";
+$MESS ['AD_MENU_CONTRACT_LIST_DIAGRAM'] = "Contrats";
+$MESS ['AD_MENU_CONTRACT_LIST_GRAPH'] = "Contrats";
+$MESS ['AD_MENU_DIAG_CO'] = "Diagrammes des contrats";
+$MESS ['AD_MENU_DIAG_CO_TITLE'] = "Diagrammes des contrats";
+$MESS ['AD_MENU_BAN_CO'] = "Graphismes des contrats";
+$MESS ['AD_MENU_BAN_CO_TITLE'] = "Graphismes des contrats";
+$MESS ['AD_MENU_STATISTICS'] = "Diagrammes";
+$MESS ['AD_MENU_STATISTICS_DIAGRAM'] = "Diagrammes";
+$MESS ['AD_MENU_STATISTICS_ALT_DIAGRAM'] = "Diagrammes pour affichage de bannière et clics";
+$MESS ['AD_MENU_STATISTICS_GRAPH'] = "Graphes";
+$MESS ['AD_MENU_STATISTICS_ALT_GRAPH'] = "Graphes pour l'affichage et clics de bannières";
+$MESS ['AD_MENU_CONTRACT_LIST_ALT'] = "Liste des contrats publicitaires";
+$MESS ['AD_MENU_TYPE_LIST_ALT'] = "Liste des types de bannières";
+$MESS ['AD_MENU_REPORTS'] = "Rapports";
+?>

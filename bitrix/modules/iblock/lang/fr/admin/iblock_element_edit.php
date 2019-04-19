@@ -1,0 +1,33 @@
+<?
+$MESS ['IBLOCK_ELEMENT_EDIT_TAGS_TIP'] = "(Saisissez les mots ou phrases séparées par des virgules)";
+$MESS ['IBLOCK_ELEMENT_EDIT_NOT_SET'] = "(non indiqué)";
+$MESS ['IBLOCK_ELEMENT_EDIT_PROP_ADD'] = "Ajouter";
+$MESS ['IBLOCK_ELEMENT_NEW'] = "Ajouter un nouvel élément";
+$MESS ['IBLOCK_ELEMENT_DEL_CONF'] = "Toutes les infos liées à cet enregistrement seront supprimées&nbsp;! Continuer&nbsp;?";
+$MESS ['IBEL_E_BACK_TO_SECT'] = "Retour aux sections";
+$MESS ['IBLOCK_EL_CANC'] = "Annuler";
+$MESS ['IBEL_E_COPY_ELEMENT'] = "Copie";
+$MESS ['IBEL_E_COPY_ELEMENT_TITLE'] = "Copier l'élément";
+$MESS ['IBLOCK_ELEMENT_DEL_LINK'] = "Supprimer";
+$MESS ['IBLOCK_ELEMENT_EDIT_PROP_DESC_1'] = "Description&nbsp;:";
+$MESS ['IBEL_E_TAB_DET'] = "Détails";
+$MESS ['IBEL_E_IBLOCK_ELEMENT'] = "Élement";
+$MESS ['IBLOCK_ELEMENT_LIST'] = "Liste d'élements";
+$MESS ['IBLOCK_ELEMENT_EDIT_ELEMENTS'] = "Élements";
+$MESS ['IBEL_E_IBLOCK_MANAGE_HINT_HREF'] = "Page aux options du bloc d'information.";
+$MESS ['IBEL_E_TAB_DET_TITLE'] = "Information pour une vision détaillée";
+$MESS ['IBEL_E_TAB_PREV_TITLE'] = "Information pour l'aperçu";
+$MESS ['IBLOCK_ELEMENT_EDIT_LINKED'] = "Éléments liés";
+$MESS ['IBLOCK_EL_TAB_MO'] = "Plus";
+$MESS ['IBLOCK_EL_TAB_MO_TITLE'] = "Plus de paramètres d'élément";
+$MESS ['IBLIST_A_SEC_EDIT'] = "Ouvrir la page pour éditer une section";
+$MESS ['IBEL_E_TAB_PREV'] = "Aperçu";
+$MESS ['IBLOCK_ELEMENT_EDIT_PROP_DESC'] = "Description de la valeur de propriété";
+$MESS ['IBLOCK_EL_SAVE'] = "Enregistrer";
+$MESS ['IBEL_E_IBLOCK_SECTIONS'] = "Sections";
+$MESS ['IBEL_E_BASE_PRICE'] = "Le prix de base est obligatoire";
+$MESS ['IBLOCK_EL_TAB_WF'] = "Flux des tâches";
+$MESS ['IBLOCK_EL_TAB_WF_TITLE'] = "Réglages du flux des tâches";
+$MESS ['IBEL_E_IBLOCK_MANAGE_HINT'] = "Vous pouvez adapter les autorisations d'accès et les propriétés du bloc d'informations sous le";
+$MESS ['IBLOCK_WRONG_SESSION'] = "Expiration de votre session. Veuillez enregistrer votre document à nouveau.";
+?>

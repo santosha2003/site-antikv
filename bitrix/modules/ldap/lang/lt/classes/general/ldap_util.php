@@ -1,0 +1,29 @@
+<?
+$MESS["LDAP_FIELD_ACTIVE"] = "Aktyvus";
+$MESS["LDAP_FIELD_EMAIIL"] = "El.adresas";
+$MESS["LDAP_FIELD_NAME"] = "Vardas";
+$MESS["LDAP_FIELD_LAST_NAME"] = "Pavardë";
+$MESS["LDAP_FIELD_SECOND_NAME"] = "Tëvo vardas";
+$MESS["LDAP_FIELD_GENDER"] = "Lytis";
+$MESS["LDAP_FIELD_BIRTHDAY"] = "Gimimo data";
+$MESS["LDAP_FIELD_PROF"] = "Darbas";
+$MESS["LDAP_FIELD_WWW"] = "Svetainë";
+$MESS["LDAP_FIELD_PHONE"] = "Telefonas";
+$MESS["LDAP_FIELD_FAX"] = "Faksas";
+$MESS["LDAP_FIELD_MOB"] = "Mobilus";
+$MESS["LDAP_FIELD_PAGER"] = "Praneðimø gaviklis";
+$MESS["LDAP_FIELD_STREET"] = "Gatvë";
+$MESS["LDAP_FIELD_MAILBOX"] = "Paðto dëþutë";
+$MESS["LDAP_FIELD_CITY"] = "Miestas";
+$MESS["LDAP_FIELD_STATE"] = "Regionas/Valstybë";
+$MESS["LDAP_FIELD_ZIP"] = "Paðto kodas";
+$MESS["LDAP_FIELD_COUNTRY"] = "Ðalis";
+$MESS["LDAP_FIELD_COMPANY"] = "Ámonë";
+$MESS["LDAP_FIELD_DEP"] = "Skyrius";
+$MESS["LDAP_FIELD_POS"] = "Pareigos";
+$MESS["LDAP_FIELD_WORK_PHONE"] = "Darbo telefonas";
+$MESS["LDAP_FIELD_WORK_FAX"] = "Darbo faksas";
+$MESS["LDAP_FIELD_WORK_PAGER"] = "Darbo praneðimø gaviklis";
+$MESS["LDAP_FIELD_ADMIN_NOTES"] = "Administratoriaus pastabos";
+$MESS["LDAP_FIELD_PHOTO"] = "Nuotrauka";
+?>

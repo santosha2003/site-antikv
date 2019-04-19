@@ -1,0 +1,33 @@
+<?
+$MESS ['STAT_NOT_AUTH'] = "(non autorisé)";
+$MESS ['STAT_ID'] = "ID&nbsp;:";
+$MESS ['STAT_NOT_FOUND'] = "rien trouvé";
+$MESS ['STAT_FAVORITES'] = "(ajouté aux favoris)";
+$MESS ['STAT_NEW_GUEST'] = "(première fois)";
+$MESS ['STAT_OLD_GUEST'] = "(renvoyé)";
+$MESS ['STAT_ADD_TO_STOPLIST_TITLE'] = "ajouter l'IP à la liste d'interdits";
+$MESS ['STAT_ADV'] = "Campagne publicitaire&nbsp;:";
+$MESS ['STAT_CLOSE'] = "Fermer";
+$MESS ['STAT_DATE_LAST'] = "Fin&nbsp;:";
+$MESS ['STAT_IP_FIRST'] = "Première adresse IP&nbsp;:";
+$MESS ['STAT_URL_TO'] = "La Une&nbsp;:";
+$MESS ['STAT_REFERER'] = "De&nbsp;:";
+$MESS ['STAT_VIEW_HITS_LIST_2'] = "Liste des accès pour cet ID de session";
+$MESS ['STAT_VIEW_HITS_LIST_1'] = "Liste des accès pour cet ID de visiteur";
+$MESS ['STAT_NUM_PAGES'] = "Accès&nbsp;:";
+$MESS ['STAT_HOUR'] = "h";
+$MESS ['STAT_IP_LAST'] = "Dernière adresse IP&nbsp;:";
+$MESS ['STAT_LAST_PAGE'] = "Dernière page&nbsp;:";
+$MESS ['STAT_MIN'] = "min.";
+$MESS ['STAT_NOT_REGISTERED'] = "non-inscrit";
+$MESS ['STAT_REFERER1'] = "renvoi1&nbsp;:";
+$MESS ['STAT_REFERER2'] = "renvoi2&nbsp;:";
+$MESS ['STAT_SEC'] = "sec.";
+$MESS ['STAT_TITLE'] = "Détails de session";
+$MESS ['STAT_DATE_FIRST'] = "Départ&nbsp;:";
+$MESS ['STAT_ADD_TO_STOPLIST'] = "Liste de blocage";
+$MESS ['STAT_TIME'] = "Temps&nbsp;:";
+$MESS ['STAT_EDIT_USER'] = "Profil d'utilisateur";
+$MESS ['STAT_USER_AGENT'] = "Agent utilisateur&nbsp;:";
+$MESS ['STAT_USER'] = "Visiteur&nbsp;:";
+?>

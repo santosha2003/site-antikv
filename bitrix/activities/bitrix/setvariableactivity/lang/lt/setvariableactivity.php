@@ -1,0 +1,3 @@
+<?
+$MESS["BPSVA_EMPTY_VARS"] = "Visos kintamøjø reikðmës yra tuðèios.";
+?>

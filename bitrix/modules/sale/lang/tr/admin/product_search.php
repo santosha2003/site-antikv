@@ -1,0 +1,33 @@
+<?
+$MESS ['SPS_SEARCH_TITLE'] = "Ürün seçimi";
+$MESS ['SPS_CATALOG'] = "Katalog";
+$MESS ['SPS_ID_FROM_TO'] = "baþlangýç ve son";
+$MESS ['SPS_TIMESTAMP'] = "Deðiþiklik tarihi";
+$MESS ['SPS_CHANGER'] = "Deðiþtiren";
+$MESS ['SPS_ANY'] = "herhangi";
+$MESS ['SPS_STATUS'] = "Durum";
+$MESS ['SPS_SECTION'] = "Bölüm";
+$MESS ['SPS_TOP_LEVEL'] = "Üst düzey";
+$MESS ['SPS_INCLUDING_SUBS'] = "Alt bölümleri içererek";
+$MESS ['SPS_ACTIVE'] = "Etkin";
+$MESS ['SPS_YES'] = "Evet";
+$MESS ['SPS_NO'] = "Hayýr";
+$MESS ['SPS_NAME'] = "Ad";
+$MESS ['SPS_DESCR'] = "Tanýmý";
+$MESS ['SPS_SET'] = "Ayarla";
+$MESS ['SPS_UNSET'] = "Sýfýrla";
+$MESS ['SPS_ACT'] = "Etkinlik";
+$MESS ['SPS_SELECT'] = "Seç";
+$MESS ['SPS_NO_PERMS'] = "Bu kataloðu görüntülemek için yeterli hak sahibi deðilsiniz";
+$MESS ['SPS_CLOSE'] = "Kapat";
+$MESS ['sale_prod_search_nav'] = "Ürünler";
+$MESS ['prod_search_find'] = "Bul";
+$MESS ['prod_search_find_title'] = "Arama koþuluna göre kayýtlarý bul";
+$MESS ['prod_search_cancel'] = "Ýptal et";
+$MESS ['prod_search_cancel_title'] = "Tüm kayýtlarý görüntüle";
+$MESS ['SOPS_PRICE'] = "Bedel";
+$MESS ['SOPS_PRICE1'] = "#CNT# ad. alýþveriþte adet için";
+$MESS ['SOPS_COUPON'] = "Alýcý kuponlarý";
+$MESS ['SOPS_APPLY'] = "Uygula";
+$MESS ['SPS_XML_ID'] = "Dýþ anahtar";
+?>

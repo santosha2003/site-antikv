@@ -1,0 +1,32 @@
+<?
+$MESS ['IBSEC_A_CHANGE'] = "Modifier ";
+$MESS ['IBSEC_A_TIMESTAMP'] = "Modifié ";
+$MESS ['IBSEC_A_ACTIVE'] = "Actif";
+$MESS ['IBSEC_A_ELADD_TITLE'] = "Ajouter un élément à la section";
+$MESS ['IBSEC_A_SECTADD_TITLE'] = "Ajouter une sous-section";
+$MESS ['IBSEC_A_ADDEL_TITLE'] = "Cliquer pour ajouter un nouvel élément";
+$MESS ['IBSEC_A_SECTADD_PRESS'] = "Cliquer pour ajouter une nouvelle sous-section";
+$MESS ['IBSEC_A_LISTEL_TITLE'] = "Cliquer pour voir les éléments de section";
+$MESS ['IBSEC_A_DATE_CREATE'] = "Créé(e)";
+$MESS ['IBSEC_A_CREATED_BY'] = "Créé(e) par";
+$MESS ['IBSEC_A_DELETE'] = "Supprimer";
+$MESS ['IBSEC_A_EDIT'] = "Éditer";
+$MESS ['IBSEC_A_ELEMENT_CNT'] = "Élements";
+$MESS ['IBSEC_A_DELERR'] = "Erreur à la suppression de l'enregistrement #ID#&nbsp;:";
+$MESS ['IBSEC_A_UPDERR'] = "Erreur lors de la mise à jour de l'enregistrement&nbsp;:";
+$MESS ['IBSEC_A_XML_ID'] = "Code externe";
+$MESS ['IBSEC_A_IBLOCK_MANAGE_HINT_HREF'] = "Page aux options du bloc d'information.";
+$MESS ['IBSEC_A_MODIFIED_BY'] = "Modifié par";
+$MESS ['IBSEC_A_NAME'] = "Nom";
+$MESS ['IBSEC_A_SECTION'] = "Section";
+$MESS ['IBSEC_A_ID'] = "ID de section";
+$MESS ['IBSEC_A_SORT'] = "Tri";
+$MESS ['IBSEC_A_SECTION_CNT'] = "Abonnements";
+$MESS ['IBSEC_A_CODE'] = "Code symbolique";
+$MESS ['IBSEC_A_DELERR_REFERERS'] = "Il peut y avoir des objets qui transmettent.";
+$MESS ['IBSEC_A_ROOT_SECTION'] = "Niveau supérieur";
+$MESS ['IBSEC_A_ELLIST'] = "Voir la liste des éléments de section";
+$MESS ['IBSEC_A_LIST'] = "Voir la liste des sous-sections";
+$MESS ['IBSEC_A_USERINFO'] = "Voir les informations d'utilisateur";
+$MESS ['IBSEC_A_IBLOCK_MANAGE_HINT'] = "Vous pouvez adapter les autorisations d'accès et les propriétés du bloc d'informations sous le";
+?>

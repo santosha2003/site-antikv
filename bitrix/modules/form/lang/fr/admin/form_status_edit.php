@@ -1,0 +1,34 @@
+<?
+$MESS ['FORM_FORM_NAME'] = "Formulaire&nbsp;:";
+$MESS ['FORM_TIMESTAMP'] = "Modifié&nbsp;:";
+$MESS ['FORM_ACCESS_TITLE'] = "Gestion des accès";
+$MESS ['FORM_ACTIVE'] = "Actif&nbsp;:";
+$MESS ['FORM_CONFIRM_DELETE'] = "Sur de supprimer  ce statut&nbsp;?";
+$MESS ['FORM_DELETE_RIGHTS'] = "Résultats suppressibles<br>dans ce statut";
+$MESS ['FORM_EDIT_RIGHTS'] = "Résultats éditables<br>dans ce statut";
+$MESS ['FORM_MOVE_RIGHTS'] = "Permis de mettre ce statut<br>dans les résultats";
+$MESS ['FORM_VIEW_RIGHTS'] = "Possible de voir les résultats<br>dans ce statut";
+$MESS ['FORM_COPY'] = "Copier le statut";
+$MESS ['FORM_CSS'] = "Cette classe CSS sert à afficher <br>le titre de statut&nbsp;:";
+$MESS ['FORM_DELETE'] = "Supprimer le statut";
+$MESS ['FORM_DELETE_TITLE'] = "Supprimer le statut";
+$MESS ['FORM_DESCRIPTION'] = "Description&nbsp;:";
+$MESS ['FORM_EDIT_RECORD'] = "Éditer le statut # #ID#";
+$MESS ['FORM_HANDLER_IN'] = "Appel de la routine fichier suite au changement du statut de celui-ci (ou rajout au résultat)&nbsp;:";
+$MESS ['FORM_HANDLER_OUT'] = "Appel de la routine fichier suite au changement de statut ou suppression de résultat&nbsp;:";
+$MESS ['FORM_FORM_LIST'] = "Liste de formulaire";
+$MESS ['FORM_FORM_EDIT'] = "Paramètres de formulaire";
+$MESS ['FORM_FORM_EDIT_TITLE'] = "Modifier les paramètres de formulaire";
+$MESS ['FORM_CREATE'] = "Nouveau statut";
+$MESS ['FORM_CREATE_TITLE'] = "Nouveau statut";
+$MESS ['FORM_NEW'] = "Nouveau statut";
+$MESS ['FORM_NEW_RECORD'] = "Nouveau statut";
+$MESS ['FORM_RESULTS_TITLE'] = "Ouvrir la liste de résultats";
+$MESS ['FORM_FORGOT_TITLE'] = "Veuillez remplir le champ &laquo;&nbsp;Titre&nbsp;&raquo;";
+$MESS ['FORM_RESULTS_STATUS'] = "Résultats dans ce statut&nbsp;:";
+$MESS ['FORM_DEFAULT_VALUE'] = "Mettre ce statut<br>par défaut à tous les nouveaux documents&nbsp;:";
+$MESS ['FORM_SORTING'] = "Tri&nbsp;:";
+$MESS ['FORM_RECORDS_LIST'] = "ID de statut&nbsp;:";
+$MESS ['FORM_TITLE'] = "Titre&nbsp;:";
+$MESS ['FORM_NOT_FOUND'] = "Formulaire introuvable";
+?>

@@ -1,0 +1,5 @@
+<?
+$MESS["SONET_FORUM_M_VIEWS"] = "Perþiûrëta";
+$MESS["SONET_FORUM_M_NUM_COMMENTS"] = "Praneðimai";
+$MESS["SONET_FORUM_EMPTY"] = "Forume nëra áraðø";
+?>

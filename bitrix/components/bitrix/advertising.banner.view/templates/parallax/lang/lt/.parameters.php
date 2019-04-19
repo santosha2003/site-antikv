@@ -1,0 +1,31 @@
+<?
+$MESS["ADV_PARALL_PARAMETER_IMG"] = "Skaidrës nuotrauka";
+$MESS["ADV_PARALL_PARAMETER_NO"] = "(nenurodyta)";
+$MESS["ADV_PARALL_PARAMETER_LINK_URL"] = "Skaidrës nuoroda";
+$MESS["ADV_PARALL_PARAMETER_LINK_TITLE"] = "Uþuominos tekstas";
+$MESS["ADV_PARALL_PARAMETER_LINK_TARGET"] = "Kur atidaryti nuoroda";
+$MESS["ADV_PARALL_PARAMETER_LINK_TARGET_SELF"] = "dabartiniame lange";
+$MESS["ADV_PARALL_PARAMETER_LINK_TARGET_BLANK"] = "naujame lange";
+$MESS["ADV_PARALL_PARAMETER_LINK_TARGET_PARENT"] = "tame paèiame rëmelyje";
+$MESS["ADV_PARALL_PARAMETER_LINK_TARGET_TOP"] = "tame paèiame narðyklës lange";
+$MESS["ADV_PARALL_PARAMETER_HEADING"] = "Antraðtë";
+$MESS["ADV_PARALL_PARAMETER_PRESET"] = "Skaidrës ðablonas";
+$MESS["ADV_PARALL_PARAMETER_HEADING_SHOW"] = "Rodyti antraðtæ";
+$MESS["ADV_PARALL_PARAMETER_HEADING_TEXT"] = "Antraðtës tekstas";
+$MESS["ADV_PARALL_PARAMETER_FONT_SIZE"] = "Teksto dydis";
+$MESS["ADV_PARALL_PARAMETER_FONT_COLOR"] = "Teksto spalva";
+$MESS["ADV_PARALL_PARAMETER_BG_COLOR"] = "Fono spalva";
+$MESS["ADV_PARALL_PARAMETER_BG_OPACITY"] = "Fono skaidrumas";
+$MESS["ADV_PARALL_PARAMETER_ANNOUNCEMENT_SHOW"] = "Rodyti anonsà";
+$MESS["ADV_PARALL_PARAMETER_ANNOUNCEMENT_TEXT"] = "Anonso tekstas";
+$MESS["ADV_PARALL_PARAMETER_ANNOUNCEMENT"] = "Anonsas";
+$MESS["ADV_PARALL_PARAMETER_BUTTON"] = "Rodyti mygtukà";
+$MESS["ADV_PARALL_PARAMETER_BUTTON_TEXT"] = "Mygtuko tekstas";
+$MESS["ADV_PARALL_PARAMETER_BUTTON_TEXT_DEF"] = "Skaityti daugiau";
+$MESS["ADV_PARALL_PARAMETER_BUTTON_BG_COLOR"] = "Mygtuko spalva";
+$MESS["ADV_PARALL_PARAMETER_BUTTON_LINK_URL"] = "Mygtuko nuoroda";
+$MESS["ADV_PARALL_PARAMETER_OVERLAY"] = "Fonas";
+$MESS["ADV_PARALL_PARAMETER_OVERLAY_COLOR"] = "Fono spalva";
+$MESS["ADV_PARALL_PARAMETER_OVERLAY_OPACITY"] = "Fono skaidrumas";
+$MESS["ADV_PARALL_PARAMETER_FONT_SIZE_TOOLTIP"] = "Nurodytas tekstas gali bûti automatiðkai koreguojamas, kad atitiktø banerio matmenys";
+?>

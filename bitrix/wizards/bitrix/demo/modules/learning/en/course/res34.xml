@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>370</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153484895</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>138</chapter_id>
+<name>Managing title via the source code</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<h2>Page title management</h2>
+
+<p>The page title can be assigned the following ways:</p>
+
+<p></p>
+
+<ul>
+  <li>during the page editing in the embedded system editor by adding the following function in the page source code: 
+    <br />
+  
+    <br />
+  <font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+      <pre class="syntax">&lt;?
+$APPLICATION-&gt; SetTitle(&quot;About us;);
+?&gt;</pre>
+    </font></li>
+
+  <li>the page title can be assigned dynamically by one of the placed on the page components: 
+    <br />
+  
+    <br />
+  <font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+      <pre class="syntax">&lt;?
+$arIBlock = GetIBlock($ID, &quot;news&quot;)
+$APPLICATION-&gt;SetTitle($arIBlock[&quot;NAME&quot;]);
+&hellip;
+?&gt;</pre>
+    </font></li>
+</ul>
+
+<p>The document title displaying is implemented with use of the <code>ShowTitle()</code> function placed in the area intended for the page title showing:</p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">&lt;H1&gt;&lt;?$APPLICATION-&gt;ShowTitle()?&gt;&lt;/H1&gt;</pre>
+</font>
+<p>If the <code>ShowTitle()</code> function is used with the <code>false</code> parameter, it means that the <code>title</code> property value will not be used for page title assigning.</p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">&lt;H1&gt;&lt;?$APPLICATION-&gt;ShowTitle(false)?&gt;&lt;/H1&gt;
+</pre>
+</font>
+<p>In other words, in this case as the page title will be used a value assigned by the <code>SetTitle()</code> function.</p>
+
+<h2>Section title management</h2>
+
+<p>The document title displaying is implemented by the <code>ShowTitle()</code> function placed in the site template <b>header</b>: </p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">&lt;head&gt;&lt;title&gt;&lt;?$APPLICATION-&gt;ShowTitle()?&gt;&lt;/title&gt;&lt;/head&gt;</pre>
+</font>
+<p>The web-browser window title can be assigned using the different mechanisms. By default as the web-browser window title is used a value set for the page property <code>title</code>. If for this property were not set any value, the web-browser window title will be equivalent to the page title.</p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

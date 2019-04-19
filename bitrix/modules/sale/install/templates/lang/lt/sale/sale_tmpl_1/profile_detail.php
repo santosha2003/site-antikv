@@ -1,0 +1,15 @@
+<?
+$MESS["SALE_NO_PROFILE"] = "Profilis nerastas";
+$MESS["SALE_NO_NAME"] = "Nenurodytas profilio pavadinimas.";
+$MESS["SALE_NO_FIELD"] = "Laukas tuðèias:";
+$MESS["SALE_ERROR_EDIT_PROF"] = "Naujinant profilá ávyko klaida.";
+$MESS["SALE_RECORDS_LIST"] = "Á profiliø sàraðà";
+$MESS["SALE_SAVE"] = "Áraðyti";
+$MESS["SALE_APPLY"] = "Taikyti";
+$MESS["SALE_RESET"] = "Atðaukti";
+$MESS["SALE_ID"] = "Kodas";
+$MESS["SALE_PERS_TYPE"] = "Mokëtojo tipas";
+$MESS["SALE_PNAME"] = "Pavadinimas";
+$MESS["SALE_NO_MODULE_X"] = "Modulis neádiegtas";
+$MESS["SPD_TITLE"] = "Modifikuoti profilá #";
+?>

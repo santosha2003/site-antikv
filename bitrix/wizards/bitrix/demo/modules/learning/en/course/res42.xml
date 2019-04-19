@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>373</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153490029</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>139</chapter_id>
+<name>CSS examples</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p><strong>Left menu styles</strong>:</p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">.leftmenu, .leftmenuact {font-family: Arial, Helvetica, sans-serif;
+ font-size:12px; font-weight: bold; text-decoration: none;}
+.leftmenu {color: #3F3F3F;}
+.leftmenuact  {color:#FF5235;}</pre>
+</font>
+<p><strong>Top menu styles</strong>:</p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">.topmenu  {font-family: Arial, Helvetica, sans-serif; font-size:12px;
+ font-weight: bold; color: #FFFFFF; text-decoration: none;}
+.topmenuact  {font-family: Arial, Helvetica, sans-serif; font-size:12px; 
+ font-weight: bold; color: #FAC535; text-decoration: none;}</pre>
+</font>
+<p><strong>Table styles</strong>:</p>
+<font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+  <pre class="syntax">.tableborder  {background-color:#9C9A9C;}
+.tablehead  {background-color:#D8D9DA;}
+.tablebody  {background-color:#F8F8F8;}
+.tablebodytext, .tableheadtext {font-family: Arial, Helvetica, sans-serif;
+ font-size:12px;}
+.tablebodytext {color:#000000;}
+.tableheadtext {color:#000066;}</pre>
+</font>]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

@@ -1,0 +1,12 @@
+<?
+$MESS ['STATT_HITS'] = "ÅÔ§¤ì";
+$MESS ['STATT_HOSTS'] = "Hosts";
+$MESS ['STATT_VISITORS'] = "¼ÙéàÂÕèÂÁªÁ";
+$MESS ['STATT_VIEW_HITS'] = "ÅÔ§¤ì";
+$MESS ['STATT_VIEW_TODAY_HITS'] = "ÅÔ§¤ìÇÑ¹¹Õé";
+$MESS ['STATT_VIEW_HOSTS'] = "Hosts";
+$MESS ['STATT_VIEW_TODAY_HOSTS'] = "Today hosts";
+$MESS ['STATT_VIEW_GUESTS'] = "¼ÙéàÂÕèÂÁªÁàÇçºä«µì";
+$MESS ['STATT_VIEW_TODAY_GUESTS'] = "¼ÙéàÂÕèÂÁªÁàÇçºä«µìÇÑ¹¹Õé";
+$MESS ['STATT_VIEW_USERS_ONLINE'] = "¼ÙéàÂÕèÂÁªÁÍÍ¹äÅ¹ì";
+?>

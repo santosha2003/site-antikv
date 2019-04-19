@@ -1,0 +1,29 @@
+<?
+$MESS ['SUP_M_SUPPORT'] = "Teknik destek";
+$MESS ['SUP_M_TICKETS'] = "Sorgular";
+$MESS ['SUP_M_TICKETS_ALT'] = "Site yöneticisine yapýlan ziyaretçi sorgularý";
+$MESS ['SUP_M_REPORT_TABLE'] = "Masaüstü";
+$MESS ['SUP_M_REPORT_TABLE_ALT'] = "Çeþitli parametreler üzerinden kapalý ve açýk sorgularýn daðýtým tablosu";
+$MESS ['SUP_M_REPORT_GRAPH'] = "Çizimler";
+$MESS ['SUP_M_REPORT_GRAPH_ALT'] = "Çizim biçiminde teknik destek çalýþmalar raporu";
+$MESS ['SUP_M_CATEGORY'] = "Kategoriler";
+$MESS ['SUP_M_CRITICALITY'] = "Kritiklikler";
+$MESS ['SUP_M_STATUS'] = "Durumlar";
+$MESS ['SUP_M_MARK'] = "Yanýt deðerlendirilmeleri";
+$MESS ['SUP_M_FUA'] = "Sýk yanýtlar";
+$MESS ['SUP_M_SOURCE'] = "Kaynaklar";
+$MESS ['SUP_M_DIFFICULTY'] = "Zorluk";
+$MESS ['SUP_M_SLA'] = "Destek seviyeleri";
+$MESS ['SUP_M_DICT'] = "Kaynak kitaplarý";
+$MESS ['SUP_M_SUPPORT_TITLE'] = "Teknik destek yönetimi";
+$MESS ['SUP_M_DICT_TITLE'] = "Kaynak kitap ayarlarý";
+$MESS ['SUP_M_DIFFICULTY_TITLE'] = "Zorluk seviyesi";
+$MESS ['SUP_M_GROUPS'] = "Gruplar";
+$MESS ['SUP_M_GROUPS_TITLE'] = "Grup düzenlemeleri";
+$MESS ['SUP_M_USER_IN_GROUPS'] = "Grup içerisindeki kullanýcýlar";
+$MESS ['SUP_M_USER_IN_GROUPS_TITLE'] = "Grup içerisindeki kullanýcý listesi";
+$MESS ['SUP_M_COUPONS'] = "Özel sorgu kuponlarý";
+$MESS ['SUP_M_COUPONS_TITLE'] = "Ozel sorgu kuponlarýn dezenlenmesi ve oluþturulmasý";
+$MESS ['SUP_M_COUPONS_LOG'] = "Kupon kullaným günlüðü";
+$MESS ['SUP_M_COUPONS_LOG_TITLE'] = "Kupon kullaným günlüðü";
+?>

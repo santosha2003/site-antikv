@@ -1,0 +1,3 @@
+<?
+$MESS["IM_MODULE_MAN_INSTALL"] = "Jûs turite pridëti ðá kodà á svetainës ðablonà, norëdammi ájungti ðá modulá (patikrinkite  header.php failà, po þymës &lt;body&gt; ):";
+?>

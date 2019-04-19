@@ -1,0 +1,20 @@
+<?
+$MESS ['FLTR_NOT_SAVE'] = "Deðiþiklikler kaydedilmedi.";
+$MESS ['FLTR_NOT_ACTION'] = "Ýþlem belirtilmemiþ.";
+$MESS ['FLTR_NOT_WORDS'] = "Arama sözcüðü belirtilmemiþ.";
+$MESS ['FLTR_DEL_CONFIRM'] = "Kaydý gerçekten silmek istiyor musunuz?";
+$MESS ['FLTR_DEL'] = "Sil";
+$MESS ['FLTR_EDIT'] = "ID=#ID# Sözcüðünün düzenlenmesi";
+$MESS ['FLTR_NEW'] = "Ekle";
+$MESS ['FLTR_LIST'] = "Liste";
+$MESS ['FLTR_PATTERN'] = "Þablon";
+$MESS ['FLTR_REPLACEMENT'] = "Deðiþtir";
+$MESS ['FLTR_USE_IT'] = "Aktif";
+$MESS ['FLTR_DESCRIPTION'] = "Taným";
+$MESS ['FLTR_REQUIRED_FIELDS'] = "Bölümlerden en az biri doldurulmak zorundadýr.";
+$MESS ['FLTR_SEARCH'] = "Arama";
+$MESS ['FLTR_SEARCH_WHAT'] = "Þablon oluþturma tipi";
+$MESS ['FLTR_SEARCH_0'] = "Sözcük (transliterasyon sözlüðü kullanmadan)";
+$MESS ['FLTR_SEARCH_1'] = "Translit (transliterasyon sözlüðü kullanarak)";
+$MESS ['FLTR_SEARCH_2'] = "Deðiþmez ifade";
+?>

@@ -1,0 +1,32 @@
+<?
+$MESS ['SAE_NO_SITE_PLAN'] = "Le site de plan n'est pas spécifié";
+$MESS ['SAE_NO_USER'] = "L'utilisateur n'est pas spécifié";
+$MESS ['SAE_NO_PLAN'] = "Le plan n'est pas spécifié";
+$MESS ['SAE_NO_DATE_CREATE'] = "La date de création n'est pas spécifiée";
+$MESS ['SAE_AFFILIATE_ALREADY_EXISTS'] = "Une filiale pour l'utilisateur #USER_ID# existe déjà sur le site #SITE_ID#";
+$MESS ['SAE_ERROR_SAVE_AFF'] = "Une erreur s'est produite en sauvant la filiale";
+$MESS ['SAE_TITLE_UPDATE_AFF'] = "Révisez la filiale #ID#";
+$MESS ['SAE_TITLE_ADD_AFF'] = "Nouvelle filiale";
+$MESS ['SAE_AFF_LIST'] = "Affiliés";
+$MESS ['SAE_AFF_ADD'] = "Ajoutez la filiale";
+$MESS ['SAE_AFF_DELETE'] = "Effacez la filiale";
+$MESS ['SAE_AFF_DELETE_CONF'] = "Êtes-vous sûrs que vous voulez effacer cette filiale ?";
+$MESS ['SAE_AFF_TAB'] = "Filiale";
+$MESS ['SAE_AFF_TAB_TITLE'] = "Paramètres affiliés";
+$MESS ['SAE_DATE_UPDATE'] = "Dernière date de modification:";
+$MESS ['SAE_SITE'] = "Site:";
+$MESS ['SAE_USER'] = "Utilisateur:";
+$MESS ['SAE_PROFILE'] = "Profil d'utilisateur";
+$MESS ['SAE_AFFILIATE_REG'] = "Enregistré via la filiale :";
+$MESS ['SAE_NO_AFFILIATE'] = "La filiale n'a pas été trouvée";
+$MESS ['SAE_WAIT'] = "attendre";
+$MESS ['SAE_PLAN'] = "Plan:";
+$MESS ['SAE_ACTIVE'] = "Actif:";
+$MESS ['SAE_DATE_REG'] = "Date d'enregistrement (";
+$MESS ['SAE_PAYED_SUM'] = "Quantité payée :";
+$MESS ['SAE_PENDING_SUM'] = "Quantité en instance :";
+$MESS ['SAE_LAST_CALC'] = "Dernière date de calcul (";
+$MESS ['SAE_FIX_PLAN'] = "Plan de pétrin";
+$MESS ['SAE_AFF_SITE'] = "Site affilié";
+$MESS ['SAE_AFF_DESCRIPTION'] = "Description affiliée";
+?>

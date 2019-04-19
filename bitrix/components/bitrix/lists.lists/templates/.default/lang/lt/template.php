@@ -1,0 +1,10 @@
+<?
+$MESS["CT_BLL_TOOLBAR_ADD"] = "Pridëti";
+$MESS["CT_BLL_TOOLBAR_ADD_TITLE"] = "Pridëti naujà sàraðà";
+$MESS["CT_BLL_TOOLBAR_ADD_TITLE_LIST"] = "Sukurti naujà sàraðà";
+$MESS["CT_BLL_TOOLBAR_ADD_TITLE_PROCESS"] = "Sukurti naujà verslo procesà";
+$MESS["CT_BLL_TOOLBAR_ADD_NEW"] = "Sukurti naujà";
+$MESS["CT_BLL_TOOLBAR_SHOW_LIVE_FEED"] = "Rodyti Veiklos sraute";
+$MESS["CT_BLL_TOOLBAR_ADD_DEFAULT"] = "Sukurti standartinius verslo procesus";
+$MESS["CT_BLL_TOOLBAR_TRANSITION_PROCESSES"] = "Verslo procesø katalogas";
+?>

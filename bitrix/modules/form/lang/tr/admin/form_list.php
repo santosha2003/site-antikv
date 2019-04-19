@@ -1,0 +1,37 @@
+<?
+$MESS ['FORM_PAGE_TITLE'] = "Form listesi";
+$MESS ['FORM_F_NAME'] = "Baþlýk:";
+$MESS ['FORM_F_SID'] = "Simge tanýtýcýsý:";
+$MESS ['FORM_F_DESCRIPTION'] = "Açýklama:";
+$MESS ['FORM_F_SITE'] = "Siteler:";
+$MESS ['FORM_PAGES'] = "Formlar";
+$MESS ['FORM_TIMESTAMP'] = "Deðiþtirildi";
+$MESS ['FORM_SITE'] = "Siteler";
+$MESS ['FORM_NAME'] = "Baþlýk";
+$MESS ['FORM_SID'] = "Simgesel tanýtýcý";
+$MESS ['FORM_FIELDS'] = "Alanlar";
+$MESS ['FORM_EDIT_ALT'] = "Formun parametrelerini düzenle";
+$MESS ['FORM_RESULTS_ALT'] = "Form doldurma listesinin sonucu";
+$MESS ['FORM_RESULTS'] = "Sonuçlar";
+$MESS ['FORM_DELETE_ALT'] = "Formu ve ilgili tüm sonuçlarý sil ";
+$MESS ['FORM_CONFIRM_DELETE'] = "Formu ve ilgili tüm sonuçlarý silmek istediðinizden eminmisiniz?";
+$MESS ['FORM_DELETE'] = "Sil";
+$MESS ['FORM_DELETE_RESULTS'] = "Sýfýrla";
+$MESS ['FORM_DELETE_RESULTS_ALT'] = "Form doldurulmasýnýn tüm sonuçlarýný sil";
+$MESS ['FORM_CONFIRM_DELETE_RESULTS'] = "Form doldurulmasýnýn tüm sonuçlarýný silmek istediðinizden eminmisiniz?";
+$MESS ['FORM_QUESTIONS'] = "Sorular";
+$MESS ['FORM_QUESTIONS_ALT'] = "Form sorularýn listesi  ";
+$MESS ['FORM_FIELDS_ALT'] = "Formun ek alan listesi  ";
+$MESS ['FORM_ADD_FIELD'] = "Ek alan ekle";
+$MESS ['FORM_ADD_QUESTION'] = "Soru ekle";
+$MESS ['FORM_C_SORT'] = "Sýralama.";
+$MESS ['FORM_PREVIEW'] = "Görünüm";
+$MESS ['FORM_COPY'] = "Kopyala";
+$MESS ['FORM_COPY_ALT'] = "web formlarýn kopyalanmasý";
+$MESS ['FORM_FL_ID'] = "Formun ID ";
+$MESS ['FORM_FL_SITE'] = "Siteler";
+$MESS ['FORM_FL_SID'] = "Tanýmlayýcý";
+$MESS ['FORM_FL_DESCRIPTION'] = "Açýklama";
+$MESS ['FORM_SAVE_ERROR'] = "Veritabanýnda yazýlým hatasý";
+$MESS ['FORM_CREATE_TITLE'] = "Yeni form oluþtur";
+?>

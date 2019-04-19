@@ -1,0 +1,31 @@
+<?
+$MESS ['AD_DATE_MODIFY'] = "Modifié ";
+$MESS ['AD_F_DATE_MODIFY'] = "Modifié&nbsp;:";
+$MESS ['AD_F_ID'] = "ID&nbsp;:";
+$MESS ['AD_ACTIVE'] = "Act.";
+$MESS ['AD_F_ACTIVE'] = "Actif&nbsp;:";
+$MESS ['AD_ADD_TITLE'] = "Ajouter un nouveau type de bannière";
+$MESS ['AD_ADD'] = "Ajouter un type";
+$MESS ['DELETE_ERROR'] = "Une erreur a empêché la suppression.";
+$MESS ['SAVE_ERROR'] = "Une erreur a empêché la suppression.";
+$MESS ['MAIN_EDIT_ERROR'] = "Une erreur a empêché la mise à jour de l'élément";
+$MESS ['AD_DELETE_TYPE_CONFIRM'] = "Sur de supprimer le type de pub et toutes ses bannières&nbsp;?";
+$MESS ['AD_DELETE_TYPE'] = "Sur de supprimer ce type avec ses bannières&nbsp;?";
+$MESS ['AD_PAGE_TITLE'] = "Types de bannières";
+$MESS ['AD_PAGES'] = "Types de bannières";
+$MESS ['AD_BANNERS'] = "Bannières";
+$MESS ['AD_TYPE_STATISTICS_VIEW'] = "Graphique CTR de ce type de bannière";
+$MESS ['AD_DESCRIPTION'] = "Description";
+$MESS ['AD_F_DESCRIPTION'] = "Description&nbsp;:";
+$MESS ['ADV_EDIT_TITLE'] = "Éditer le type bannière";
+$MESS ['AD_TYPE_EDIT'] = "Éditer un type";
+$MESS ['ADV_FLT_SEARCH_TITLE'] = "Saississez le texte à chercher";
+$MESS ['ADV_BANNER_LIST'] = "Liste des bannières";
+$MESS ['AD_NAME'] = "Nom";
+$MESS ['AD_F_NAME'] = "Nom&nbsp;:";
+$MESS ['ADV_FLT_SEARCH'] = "Chercher";
+$MESS ['AD_SORT'] = "Tri.";
+$MESS ['AD_TYPE_STATISTICS_VIEW_TITLE'] = "Voir le graphe du taux des contrats cliqués";
+$MESS ['AD_TYPE_VIEW_SETTINGS'] = "Voir les paramètres de type";
+$MESS ['AD_TYPE_VIEW'] = "Voir les réglages de type";
+?>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>372</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153488274</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>139</chapter_id>
+<name>Work with CSS in HTML visual editor mode</name>
+<sort>200</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>It is recommended to add comments when building a stylesheet. You should add comments to the styles that you plan to utilize for visual editing of the pages in the WYSIWYG editor. Styles comments are attired in the <code>.styles.php</code> file in the corresponding template directory. </p>
+
+<p><font class="text" style="BACKGROUND-COLOR: #ffffff" face="Verdana">
+    <pre class="syntax">&lt;?
+$arStyles = Array(
+	&quot;text&quot; =&gt; &quot;Normal&quot;, 
+	&quot;smalltext&quot; =&gt; &quot;Small&quot;,	
+	&quot;smalltextwhite&quot; =&gt; &quot;Small grey&quot;,	
+	&quot;smalltextblack&quot; =&gt; &quot;Small black&quot;,	
+	&quot;newstext&quot; =&gt; &quot;News text&quot;,		
+	&quot;newsdata&quot; =&gt; &quot;News date&quot;,
+	&quot;titletext&quot; =&gt; &quot;Title&quot;,
+	&quot;subtitletext&quot; =&gt; &quot;Subtitle&quot;,
+	&quot;copy&quot; =&gt; &quot;Copyrights text&quot;,						
+	&quot;tableborder&quot; =&gt; &quot;Table border&quot;,
+	&quot;tablehead&quot; =&gt; &quot;Table heading&quot;,
+	&quot;tablebody&quot; =&gt; &quot;Main table text&quot;,
+	&quot;tablebodylink&quot; =&gt; &quot;Hyperlinks in table text&quot;,						
+	&quot;tableborders&quot; =&gt; &quot;Inc. area borders&quot;,	
+	);
+return $arStyles;
+?&gt;</pre>
+  </font></p>
+
+<p></p>
+
+<p>Styles with the comments will be available in WYSIWYG editor in the styles drop-down list with the names specified in comments.</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/css/styles_list.png',500,332,'Styles with description')"><img src="cid:resources/res41/OrTwS.rf0GN.styles_list_s.png" height="199" alt="Click to enlarge" hspace="0" width="300" border="0"/></a> </p>
+
+<p>If the option &quot;Allow using styles without names in visual HTML editor&quot;, located on the Site Explorer settings page, is enabled,</p>
+
+<p><img src="cid:resources/res41/yaD2L.ViZ6q.mod_set.png" height="193" width="350"/></p>
+
+<p>then in the styles drop-down list will be available all styles, including styles without comments.</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/css/untitled_styles.png',500,332,'Styles with description')"><img src="cid:resources/res41/E13Am.m4zJ6.untitled_styles_s.png" height="199" alt="Click to enlarge" hspace="0" width="300" border="0"/></a> </p>
+
+<p>Styles without comments will be available in the list with their names: <code>leftmenu</code>, <code>tablebodytext</code>, etc. </p>
+
+<p>Also the stylesheets can contain styles for exact page elements (for example, table borders and cells, images, and etc.). To display styles available for these elements choose the necessary element on the page. </p>
+
+<p>then in the styles drop-down list will be available all styles, including styles without comments.</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/css/table_styles.png',500,332,'Styles with description')"><img src="cid:resources/res41/iaxA7.6emn8.table_styles_s.png" height="199" alt="Click to enlarge" hspace="0" width="300" border="0"/></a> </p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

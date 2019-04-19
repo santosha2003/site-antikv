@@ -1,0 +1,52 @@
+<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
+<div class="context">
+<?
+$TOP_DEPTH = $arResult["SECTION"]["DEPTH_LEVEL"];
+$CURRENT_DEPTH = $TOP_DEPTH;
+// отладка
+ //[IBLOCK_CODE] => [IBLOCK_EXTERNAL_ID] => 4
+ print_r($arResult["SECTION"]);
+$IS_MUSEUM_SECTION = ($arResult["SECTION_PAGE_URL"] == "/museum/") ? TRUE : FALSE;
+$DISP_LEV_MAX = $TOP_DEPTH+1;
+$SECT_GREEN_STYLE = "411";
+foreach($arResult["SECTIONS"] as $arSection):
+       // do not display nested level не показывать вложеные уровни
+       //echo "\n","\t","<ul>";
+       //echo "</ul>";
+      // if ($arSection["DEPTH_LEVEL"] > $DISP_LEV_MAX)  continue;
+      if ($IS_MUSEUM_SECTION == TRUE)  continue;
+	$this->AddEditAction($arSection['ID'], $arSection['EDIT_LINK'], CIBlock::GetArrayByID($arSection["IBLOCK_ID"], "SECTION_EDIT"));
+	$this->AddDeleteAction($arSection['ID'], $arSection['DELETE_LINK'], CIBlock::GetArrayByID($arSection["IBLOCK_ID"], "SECTION_DELETE"), array("CONFIRM" => GetMessage('CT_BCSL_ELEMENT_DELETE_CONFIRM')));
+	if($CURRENT_DEPTH < $arSection["DEPTH_LEVEL"])
+		echo ""; //echo "\n",str_repeat("\t", $arSection["DEPTH_LEVEL"]-$TOP_DEPTH),"<ul>";
+	elseif($CURRENT_DEPTH == $arSection["DEPTH_LEVEL"]) 
+		echo ""; //echo "</li>";
+	else
+	{
+		while($CURRENT_DEPTH > $arSection["DEPTH_LEVEL"])
+		{
+			//echo "</li>";
+			//echo "\n",str_repeat("\t", $CURRENT_DEPTH-$TOP_DEPTH),"</ul>","\n",str_repeat("\t", $CURRENT_DEPTH-$TOP_DEPTH-1);
+			$CURRENT_DEPTH--;
+		}
+		echo "\n",str_repeat("\t", $CURRENT_DEPTH-$TOP_DEPTH),"</li>";
+	}
+
+	echo "\n",str_repeat("\t", $arSection["DEPTH_LEVEL"]-$TOP_DEPTH);
+	?><a id="<?=$this->GetEditAreaId($arSection['ID']); ?>" href="<?=$arSection["SECTION_PAGE_URL"];?>" <?=$arSection["NAME"];?></a><?
+	$CURRENT_DEPTH = $arSection["DEPTH_LEVEL"];
+	//echo "</ul>","\n","\t";
+	echo "\n","\t";
+
+endforeach;
+ //if ($arResult["ID"] == $SECT_GREEN_STYLE) { print_r($arResult["SECTION"]); echo "<ul><li><a>\n",str_repeat("\t", $CURRENT_DEPTH-$TOP_DEPTH),"</li>";  }
+// print_r($arResult["SECTION"]);
+// print_r($arResult["ID"]);
+while($CURRENT_DEPTH > $TOP_DEPTH)
+{
+	//echo "</li>";
+	//echo "\n",str_repeat("\t", $CURRENT_DEPTH-$TOP_DEPTH),"</ul>","\n",str_repeat("\t", $CURRENT_DEPTH-$TOP_DEPTH-1);
+	$CURRENT_DEPTH--;
+}
+?>
+</div>

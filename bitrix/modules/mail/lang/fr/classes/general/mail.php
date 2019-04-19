@@ -1,0 +1,36 @@
+<?
+$MESS ['MAIL_CL_LOGIN'] = "Connexion";
+$MESS ['MAIL_CL_ERR_PASSWORD'] = "Mot de passe erroné.";
+$MESS ['MAIL_CL_PASSWORD'] = "Mot de passe";
+$MESS ['MAIL_CL_WHEN_MANUAL'] = "(si exécuté manuellement)";
+$MESS ['MAIL_CL_WHEN_CONNECT'] = "(à la réception)";
+$MESS ['MAIL_CL_PHP_ACT'] = "Action en PHP";
+$MESS ['MAIL_CL_ERR_BAD_LANG'] = "Site erroné";
+$MESS ['MAIL_CL_PHP_COND'] = "Condition en langue PHP";
+$MESS ['MAIL_CL_CONNECT_TO'] = "Connexion à";
+$MESS ['MAIL_CL_TIMEOUT'] = "Délai de la connexion dépassé.";
+$MESS ['MAIL_CL_ERR_DELE'] = "Erreur à la suppression d'un message.";
+$MESS ['MAIL_CL_ERR_CHECK_MAIL'] = "Erreur à la réception de courrier en boîte";
+$MESS ['MAIL_CL_ERR_RETR'] = "Erreur à la réception de message.";
+$MESS ['MAIL_CL_ERR_APOP'] = "Erreur à l'exécution de la commande APOP";
+$MESS ['MAIL_CL_ERR_STAT'] = "Erreur à l'exécution de la commande STAT";
+$MESS ['MAIL_CL_ERR_UIDL'] = "Erreur à l'exécution de la commande UIDL";
+$MESS ['MAIL_CL_ERR_USER'] = "Erreur à l'exécution de la commande USER";
+$MESS ['MAIL_CL_ERR_DISCONNECT'] = "Erreur à la déconnexion";
+$MESS ['MAIL_CL_ERR_IN_PHP'] = "Erreur de code PHP dans le champ";
+$MESS ['MAIL_CL_ERR_NAME'] = "Champ non saisi&nbsp;:";
+$MESS ['MAIL_CL_SERVER'] = "Serveur du courrier";
+$MESS ['MAIL_CL_ERR_MAILBOX_NOT_FOUND'] = "Boîte introuvable.";
+$MESS ['MAIL_CL_ERR_MAILBOX_NA'] = "Boîte non-spécifiée";
+$MESS ['MAIL_CL_ACT_NOTSPAM'] = "Message indiqué comme non-pourri";
+$MESS ['MAIL_CL_ACT_SPAM'] = "Message indiqué comme non-pourri";
+$MESS ['MAIL_CL_NAME'] = "Nom";
+$MESS ['MAIL_CL_ERR_BAD_LANG_NX'] = "Prière d'indiquer le site de la boîte à courriel.";
+$MESS ['MAIL_CL_RULE_RUN'] = "Traitement selon règle";
+$MESS ['MAIL_CL_NEW_MESSAGE'] = "Réception du courrier&nbsp;:";
+$MESS ['MAIL_CL_RULE_ACT_CANC'] = "Processus de réglage&nbsp;: annuler, passer aux règles suivantes";
+$MESS ['MAIL_CL_RULE_ACT_DEL'] = "Processus de réglage&nbsp;: suppression d'un message";
+$MESS ['MAIL_CL_RULE_ACT_NOTSPAM'] = "Processus de réglage&nbsp;: un message annoncé acceptable";
+$MESS ['MAIL_CL_RULE_ACT_SPAM'] = "Processus de réglage&nbsp;: un message annoncé indésirable";
+$MESS ['MAIL_CL_RULE_ACT_PHP'] = "Processus de réglage&nbsp;: lancer un script PHP";
+?>

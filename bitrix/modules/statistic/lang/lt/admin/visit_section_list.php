@@ -1,0 +1,31 @@
+<?
+$MESS['STAT_RECORDS_LIST'] = 'Puslapiø ir skyriø lankomumas';
+$MESS['STAT_SECTION_PAGES'] = 'Áraðai';
+$MESS['STAT_F_SECTIONS'] = 'Puslapis / skyrius';
+$MESS['STAT_F_VIEW'] = 'Kà rodyti';
+$MESS['STAT_F_VIEW_SECTIONS'] = 'tik skyrius';
+$MESS['STAT_F_VIEW_FILES'] = 'tik puslapius';
+$MESS['STAT_SECTION_GRAPH'] = 'Nurodyto puslapio/skyriaus lankomumo grafikas';
+$MESS['STAT_SECTION_LINK_STAT'] = 'Paspaudimø ið nurodyto puslapio/skyriaus statistika';
+$MESS['STAT_GO'] = 'Nuoroda';
+$MESS['STAT_T_HITS_DIAGRAM'] = 'Lankomumas';
+$MESS['STAT_T_EXIT_DIAGRAM'] = 'Áejimo punktø sàraðas';
+$MESS['STAT_T_ENTER_DIAGRAM'] = 'Iðejimo punkø sàraðas';
+$MESS['STAT_GROUP_BY_HITS'] = 'Hitai';
+$MESS['STAT_GROUP_BY_EXITS'] = 'Iðejimo punkai';
+$MESS['STAT_GROUP_BY_ENTERS'] = 'Áejimo punktai';
+$MESS['STAT_PERCENT'] = 'Procentas';
+$MESS['STAT_NO_DATA'] = 'Truksta duomenø diagramoms';
+$MESS['STAT_OTHER'] = '(kiti)';
+$MESS['STAT_ATTENTION_GOTO'] = 'Pereiti á skyriø/puslapá bûtina paspausti simbolá \"»\". ';
+$MESS['STAT_F_ADV'] = 'Reklaminës kampanijos';
+$MESS['STAT_F_ADV_DATA_TYPE'] = 'Reklaminiø kampanijø duomenø tipas';
+$MESS['STAT_ADV_NO_BACK'] = 'per tiesioginá hità';
+$MESS['STAT_ADV_BACK'] = 'per gáþimà';
+$MESS['STAT_ADV_SUMMA'] = 'suma per tiesioginá ir per gráþimà';
+$MESS['STAT_PAGE'] = 'Skyrius/puslapis';
+$MESS['STAT_HITS'] = 'Hitø';
+$MESS['STAT_SESSIONS'] = 'Sesijø';
+$MESS['STAT_FILTER_PAGE_DIAGRAM_ALT'] = 'Rodyti nurodyto skyriaus lankomumo diagramà';
+$MESS['STAT_ATTENTION'] = 'Dëmesio!';
+?>

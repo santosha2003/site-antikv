@@ -1,0 +1,37 @@
+<?
+$MESS['SUP_CL_TITLE'] = 'Kuponø sàraðas';
+$MESS['SUP_CL_FLT_COUPON'] = 'Kuponas';
+$MESS['SUP_CL_EXACT_MATCH'] = 'Ieðkoti atitikmenys tiksliau';
+$MESS['SUP_CL_COUPON'] = 'Kuponas';
+$MESS['SUP_CL_COUNT_TICKETS'] = 'Panaudojimø kiekis';
+$MESS['SUP_CL_DELETE'] = 'Trinti';
+$MESS['SUP_CL_DELETE_CONFIRMATION'] = 'Tikrai ðalinti?';
+$MESS['SUP_CL_TIMESTAMP_X'] = 'Atnaujinta';
+$MESS['SUP_CL_DATE_CREATE'] = 'Sukurta';
+$MESS['SUP_CL_CREATED_USER_ID'] = 'Sukûrusio naudotojo ID';
+$MESS['SUP_CL_CREATED_LOGIN'] = 'Sukûrusio naudotojo prisijungimo vardas';
+$MESS['SUP_CL_CREATED_FIRST_NAME'] = 'Sukûrusio naudotojo vardas';
+$MESS['SUP_CL_CREATED_LAST_NAME'] = 'Sukûrusio naudotojo pavardë';
+$MESS['SUP_CL_UPDATED_USER_ID'] = 'Atnaujinusio naudotojo ID';
+$MESS['SUP_CL_UPDATED_LOGIN'] = 'Atnaujinusio naudotojo prisijungimo vardas';
+$MESS['SUP_CL_UPDATED_FIRST_NAME'] = 'Atnaujinusio naudotojo vardas';
+$MESS['SUP_CL_UPDATED_LAST_NAME'] = 'Atnaujinusio naudotojo pavardë';
+$MESS['SUP_CL_ADD'] = 'Pridëti kuponà';
+$MESS['SUP_CL_GENERATE_MESS_OK'] = 'Sugeneruotas naujas kuponas: %COUPON%';
+$MESS['SUP_CL_GENERATE_ERROR'] = 'Klaida generuojant kuponà';
+$MESS['SUP_CL_GENERATE_CONFIRM'] = 'Jus jau sugeneravote ðioje sesijoje kuponà. Norite dar?';
+$MESS['SUP_CL_ACTIVE'] = 'Aktyvus:';
+$MESS['SUP_CL_ACTIVE_FROM'] = 'Aktyvus nuo';
+$MESS['SUP_CL_ACTIVE_TO'] = 'Aktyvus iki';
+$MESS['SUP_CL_EDIT'] = 'redaguoti kuponà';
+$MESS['SUP_CL_ADD_TITLE'] = 'Generuoti naujà kuponà';
+$MESS['SUP_CL_SLA_ID'] = 'Palaikymo lygio ID';
+$MESS['SUP_CL_SLA_NAME'] = 'Palaikymo lygis';
+$MESS['SUP_CL_LOG'] = 'Panaudojimo þurnalas';
+$MESS['SUP_CL_PAGES'] = 'Kuponai';
+$MESS['SUP_CL_COUNT_USED'] = 'Panaudotas kartø';
+$MESS['SUP_GL_PAGES'] = 'Kuponai';
+$MESS["MAIN_ADMIN_LIST_SELECTED"] = "Pasirinkta:";
+$MESS["MAIN_ADMIN_LIST_CHECKED"] = "Paþymëta:";
+$MESS["MAIN_ADMIN_LIST_DELETE"] = "iðtrinti";
+?>

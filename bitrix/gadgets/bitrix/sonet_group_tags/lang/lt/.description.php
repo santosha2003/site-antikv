@@ -1,0 +1,4 @@
+<?
+$MESS["GD_SONET_GROUP_TAGS_NAME"] = "Þymës";
+$MESS["GD_SONET_GROUP_TAGS_DESC"] = "Grupës þymës";
+?>

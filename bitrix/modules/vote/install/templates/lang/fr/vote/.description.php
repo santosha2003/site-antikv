@@ -1,0 +1,30 @@
+<?
+$MESS ['VOTE_BY_DEFAULT'] = "<par défaut>";
+$MESS ['VOTE_TEMPLATE_FOR_QUESTION'] = "Composante pour la question  &laquo;&nbsp;#QUESTION#&nbsp;&raquo;";
+$MESS ['VOTE_NEW_DECSRIPTION'] = "Composantes utilisées à l'affichage d'un formulaire d'enquête";
+$MESS ['VOTE_RESULT_DESCRIPTION'] = "Diagrammes pour afficher les résultats d'enquête";
+$MESS ['VOTE_NEW_DEFAULT_TEMPLATE_NAME'] = "Afficher un formulaire d'enquête";
+$MESS ['VOTE_NEW_MAIN_PAGE_TEMPLATE_NAME'] = "Afficher un formulaire d'enquête (sans description, avec une bordure fine)";
+$MESS ['VOTE_LIST_DEFAULT_TEMPLATE_DESCRIPTION'] = "Affiche une liste des enquêtes";
+$MESS ['VOTE_LIST_DESCRIPTION'] = "Affiche une liste des enquêtes";
+$MESS ['VOTE_CURRENT_CHANNEL_TEMPLATE_DESCRIPTION'] = "Affiche un formulaire de surveillance pour le cas où le visiteur ne vote pas, sinon les résultats de cette enquête-ci pour le groupe indiqué";
+$MESS ['VOTE_NEW_DEFAULT_TEMPLATE_DESCRIPTION'] = "Affiche un formulaire vide pour  achèvement";
+$MESS ['VOTE_NEW_MAIN_PAGE_TEMPLATE_DESCRIPTION'] = "Affiche un formulaire vide pour  achèvement (sans description d'enquête,  formulaire à bordure fine)";
+$MESS ['VOTE_RESULT_DEFAULT_TEMPLATE_DESCRIPTION'] = "Affiche des diagrammes de résultats d'enquête";
+$MESS ['VOTE_RESULT_BORDER_TEMPLATE_DESCRIPTION'] = "Affiche des diagrammes de résultats d'enquête (sans description, formulaire à bordure fine)";
+$MESS ['VOTE_RESULT_MAIN_PAGE_TEMPLATE_DESCRIPTION'] = "Affiche des diagrammes de résultats d'enquête (sans description, formulaire à bordure fine)";
+$MESS ['VOTE_CURRENT_CHANNEL_TEMPLATE_NAME'] = "Affiche l'enquête en cours du canal indiqué";
+$MESS ['VOTE_LIST_DEFAULT_TEMPLATE_NAME'] = "Liste des  enquêtes";
+$MESS ['VOTE_REDIRECT_PAGE'] = "Page où rediriger l'utilisateur après qu'il ait rempli le formulaire d'enquête";
+$MESS ['VOTE_EMPTY_FORM_PAGE'] = "Page servant à afficher un formulaire d'enquête vide";
+$MESS ['VOTE_RESULT_PAGE'] = "Page servant à afficher les diagrammes de résultats d'enquête";
+$MESS ['VOTE_CHANNEL_SID'] = "Canal des enquêtes";
+$MESS ['VOTE_NEW_NAME'] = "Formulaire d'enquête";
+$MESS ['VOTE_POLL_ID'] = "ID d'enquête";
+$MESS ['VOTE_LIST_NAME'] = "Liste d'enquête";
+$MESS ['VOTE_RESULT_DEFAULT_TEMPLATE_NAME'] = "Résultats d'enquête";
+$MESS ['VOTE_RESULT_NAME'] = "Résultats d'enquête";
+$MESS ['VOTE_RESULT_MAIN_PAGE_TEMPLATE_NAME'] = "Résultats d'enquête (formulaire sans description, entouré d'une fine bordure)";
+$MESS ['VOTE_RESULT_BORDER_TEMPLATE_NAME'] = "Résultats d'enquête (formulaire avec description, entouré d'une fine bordure)";
+$MESS ['VOTE_TEMPLATE_SECTION_NAME'] = "Enquêtes et votations";
+?>

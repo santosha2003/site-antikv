@@ -1,0 +1,30 @@
+<?
+$MESS ['STPC_TITLE_UPDATE'] = "Kart parametrelerin deðiþtirilmesi ?#ID#";
+$MESS ['STPC_TITLE_ADD'] = "Yeni kartýn eklenmesi";
+$MESS ['STPC_TO_LIST'] = "Kart listesine dön";
+$MESS ['STPC_TIMESTAMP'] = "Son deðiþiklik tarihi:";
+$MESS ['STPC_ACTIV'] = "Etkinlik";
+$MESS ['STPC_SORT'] = "Sýralama dizini:";
+$MESS ['STPC_PAY_SYSTEM'] = "Ödeme sistemi:";
+$MESS ['STPC_CURRENCY'] = "Karttan çekebileceðiniz döviz: ";
+$MESS ['STPC_ANY'] = "(Herhangi)";
+$MESS ['STPC_TYPE'] = "Kart türü:";
+$MESS ['STPC_CNUM'] = "Kart numarasý:";
+$MESS ['STPC_CEXP'] = "Kart etkinliði tamamlamaktadýr:";
+$MESS ['STPC_MIN_SUM'] = "Karttan çekilebilecek minimum miktar:";
+$MESS ['STPC_MAX_SUM'] = "Karttan çekilebilecek maksimum miktar:";
+$MESS ['STPC_SUM_CURR'] = "Ödeme cinsi:";
+$MESS ['STPC_SAVE'] = "Kaydet";
+$MESS ['STPC_APPLY'] = "Uygula";
+$MESS ['STPC_CANCEL'] = "Ýptal";
+$MESS ['STPC_NO_AUTH'] = "Kart görüntülenmesi için, sitesinde yetkili olmalýsýnýz";
+$MESS ['STPC_NO_CARD'] = "Kart bulunamadý";
+$MESS ['STPC_EMPTY_PAY_SYS'] = "Ödeme sistemi alaný doldurulmamýþ";
+$MESS ['STPC_EMPTY_CARD_TYPE'] = "Plastik kart türü alaný doldurulmamýþ";
+$MESS ['STPC_EMPTY_CARDNUM'] = "Plastik kart numarasý alaný doldurulmamýþ";
+$MESS ['STPC_WRONG_CARDNUM'] = "Plastik kart numarasý  yanlýþ";
+$MESS ['STPC_WRONG_MONTH'] = "Kart sona erme ayý yanlýþ";
+$MESS ['STPC_WRONG_YEAR'] = "Kart sona erme yýlý yanlýþ";
+$MESS ['STPC_EMPTY_BCURRENCY'] = "Kart kullanýmýnda sýnýr tutarý için döviz belirtilmemiþtir";
+$MESS ['STPC_ERROR_SAVING_CARD'] = "Plastik kartýn kaydýnda hata";
+?>

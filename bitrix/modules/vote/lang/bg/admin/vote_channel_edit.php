@@ -1,0 +1,37 @@
+<?
+$MESS["VOTE_SORTING"] = "Ред на сортиране:";
+$MESS["VOTE_SITE"] = "Сайтове:";
+$MESS["VOTE_FORGOT_TITLE"] = "Вие сте забравили да попълнете \"Заглавие\".";
+$MESS["VOTE_FORGOT_SITE"] = "Не е избран сайт.";
+$MESS["VOTE_EDIT_RECORD"] = "Параметри на групи анкети # #ID#";
+$MESS["VOTE_NEW_RECORD"] = "Нова група анкети";
+$MESS["VOTE_SYMBOLIC_NAME_ALREADY_IN_USE"] = "Въведеният \"Символен идентификатор\" вече се използва в групата анкети # #ID#.";
+$MESS["VOTE_RECORDS_LIST"] = "Списък на групите";
+$MESS["VOTE_TIMESTAMP"] = "Променена:";
+$MESS["VOTE_ACTIVE"] = "Активна:";
+$MESS["VOTE_VOTE_SINGLE"] = "Разреши само една анкета в групата:";
+$MESS["VOTE_SYMBOLIC_NAME"] = "Символен идентификатор:";
+$MESS["VOTE_TITLE"] = "Заглавие:";
+$MESS["VOTE_VOTES"] = "Анкети:";
+$MESS["VOTE_RIGHTS"] = "Достъп на група потребители:";
+$MESS["VOTE_DENIED"] = "затворено";
+$MESS["VOTE_READ"] = "виж резултатите";
+$MESS["VOTE_WRITE"] = "приеми участие";
+$MESS["VOTE_FORGOT_SYMBOLIC_NAME"] = "Вие сте забравили да въведете \"Символен идентификатор\".";
+$MESS["VOTE_INCORRECT_SYMBOLIC_NAME"] = "Грешен символен идентификатор за групата анкети (допустими са само латински букви, цифри, или символите \"_\").";
+$MESS["VOTE_VOTE_ADD"] = "Добави анкета в текущата група ";
+$MESS["VOTE_CREATE_NEW_RECORD"] = "Нова група";
+$MESS["VOTE_DELETE_RECORD"] = "Премахни групата";
+$MESS["VOTE_DELETE_RECORD_CONFIRM"] = "Сигурни ли сте, че искате да изтриете групата и включените в нея анкети?";
+$MESS["VOTE_PROP"] = "Свойства";
+$MESS["VOTE_ACCESS"] = "Достъп";
+$MESS["VOTE_GRP_PROP"] = "Свойства на групата";
+$MESS["VOTE_SITE_EDIT"] = "Редактиране на сайта";
+$MESS["VOTE_GOT_ERROR"] = "Грешка при записването на групата";
+$MESS["VOTE_VOTES_TITLE"] = "Списък с анкети за текущата група";
+$MESS["VOTE_CREATE_VOTE"] = "Създай анкета";
+$MESS["VOTE_CREATE"] = "Създай";
+$MESS["VOTE_LIST"] = "Списък";
+$MESS["VOTE_DELETE"] = "Премахни";
+$MESS["VOTE_USE_CAPTCHA"] = "Включете CAPTCHA";
+?>

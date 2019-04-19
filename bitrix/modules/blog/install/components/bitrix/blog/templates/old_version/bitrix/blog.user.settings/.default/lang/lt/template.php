@@ -1,0 +1,15 @@
+<?
+$MESS['B_B_US_LIST_WANTED'] = 'Redaguoti norinèiøjø tapti draugais sàraðà';
+$MESS['B_B_US_VISIT'] = 'Lankytojas';
+$MESS['B_B_US_ACTIONS'] = 'Veiksmas';
+$MESS['B_B_US_EDIT'] = 'Redaguoti';
+$MESS['B_B_US_DELETE'] = 'Trinti';
+$MESS['B_B_US_EDIT_FR_LIST'] = 'Redaguoti draugø sàraðà';
+$MESS['B_B_US_FR_VISITOR'] = 'Lankytojas';
+$MESS['B_B_US_FR_GROUPS'] = 'grupës';
+$MESS['B_B_US_FR_ACTIONS'] = 'Veiksmas';
+$MESS['B_B_US_1_M_F'] = 'Pridëti laukø';
+$MESS['B_B_US_AD_NEW_FR'] = 'Pridëti naujø draugø';
+$MESS['B_B_US_AD_NEW_FR_BY'] = 'Pridëti draugø pagal pseudonimà, kodà ar blogo pavadinimà';
+$MESS['B_B_US_ADD'] = 'Pridëti';
+?>

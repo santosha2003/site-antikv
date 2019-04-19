@@ -1,0 +1,29 @@
+<?
+$MESS ['FORM_FILLING'] = "web- form doldurulmuþtur  ";
+$MESS ['FORM_FILLING_S'] = "web-form doldurulmuþtur";
+$MESS ['FORM_GENERATING_FINISHED'] = "Posta þablonlarýn oluþturulmasý tamamlanmýþtýr.";
+$MESS ['FORM_L_FORM_ID'] = "Formun ID  ";
+$MESS ['FORM_L_NAME'] = "Formun adý";
+$MESS ['FORM_L_SID'] = "formun SID  ";
+$MESS ['FORM_L_RESULT_ID'] = "ID sonucu";
+$MESS ['FORM_L_DATE_CREATE'] = "Formun doldurulma tarihi  ";
+$MESS ['FORM_L_USER_ID'] = "Kullanýcýnýn ID ";
+$MESS ['FORM_L_USER_EMAIL'] = "Kullanýcýnýn EMail  ";
+$MESS ['FORM_L_USER_NAME'] = "Kullanýcýnýn soyadý, adý";
+$MESS ['FORM_L_USER_AUTH'] = "Kullanýcý yetkilendirilmiþmidir?";
+$MESS ['FORM_L_STAT_GUEST_ID'] = "Ziyaretçinin ID ";
+$MESS ['FORM_L_STAT_SESSION_ID'] = "Oturumun ID  ";
+$MESS ['FORM_DATE_CREATE'] = "Tarih - ";
+$MESS ['FORM_RESULT_ID'] = "Sonuç- ";
+$MESS ['FORM_USER'] = "Kullanýcý - ";
+$MESS ['FORM_STAT_GUEST_ID'] = "Ziyaretçi - ";
+$MESS ['FORM_STAT_SESSION_ID'] = "Oturum - ";
+$MESS ['FORM_GENERATED_AUTOMATICALLY'] = "Ýleti otomatik olarak oluþturulmuþtur.";
+$MESS ['FORM_VIEW'] = "Görüntülemek için baðlantýyý kullanýnýz:";
+$MESS ['FORM_VIEW_TEMPLATE'] = "þablon görüntülemesi";
+$MESS ['FORM_PAGE_TITLE'] = "Posta þablonlarýn oluþturulmasý";
+$MESS ['FORM_NOT_REGISTERED'] = "kayýtlý deðildir";
+$MESS ['FORM_AUTHORIZED'] = "yetkilidir ";
+$MESS ['FORM_NOT_AUTHORIZED'] = "yetkili deðildir";
+$MESS ['FORM_WEB_FORMS'] = "[web formlar]";
+?>

@@ -1,0 +1,7 @@
+<?
+$MESS["CLUWIZ_ERROR_ACCESS_DENIED"] = "Klaida! Prieiga draudþiama.";
+$MESS["CLUWIZ_CONNECTION_ERROR"] = "Nepavyko uþmegzti ryðio du duomenø bazæ.";
+$MESS["CLUWIZ_TABLE_DROPPED"] = "Lentelë #table_name# iðtrinta.";
+$MESS["CLUWIZ_ALL_DONE"] = "Lentelës iðtrintos.";
+$MESS["CLUWIZ_TABLE_PROGRESS"] = "Lenteliø liko: #tables#";
+?>

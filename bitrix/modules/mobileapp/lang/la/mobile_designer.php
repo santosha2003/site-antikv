@@ -1,0 +1,37 @@
+<?
+$MESS["MOBILEAPP_ANDROID"] = "OS Android";
+$MESS["MOBILEAPP_IOS"] = "iOS";
+$MESS["MOBILEAPP_WP"] = "Windows Phone";
+$MESS["MOBILEAPP_GLOBAL"] = "Común";
+$MESS["MOBILEAPP_CONFIGNAME_ANDROID"] = "Configuración del sistema operativo Android";
+$MESS["MOBILEAPP_CONFIGNAME_GLOBAL"] = "Configuración común";
+$MESS["MOBILEAPP_CONFIGNAME_IOS"] = "Configuración de iOS";
+$MESS["MOBILEAPP_CONFIGNAME_WP"] = "Configuración de Windows Phone";
+$MESS["MOBILEAPP_ADD_IMAGE"] = "Agregar imagen";
+$MESS["MOBILEAPP_SELECT_IMAGE"] = "Seleccionar imagen";
+$MESS["MOBILEAPP_APP_PLATFORM"] = "Agregar plataforma";
+$MESS["MOBILEAPP_SAVE"] = "Guardar";
+$MESS["MOBILEAPP_CREATE"] = "Crear";
+$MESS["MOBILEAPP_CLOSE"] = "Cerrar";
+$MESS["MOBILEAPP_REMOVE"] = "eliminar";
+$MESS["MOBILEAPP_BACK"] = "volver";
+$MESS["MOBILEAPP_TITLE"] = "Título";
+$MESS["MOBILEAPP_NO_APPS"] = "Usted no tiene ninguna aplicación";
+$MESS["MOBILEAPP_CREATE_APP"] = "Crear aplicaciones";
+$MESS["MOBILEAPP_APP_NAME"] = "Nombre";
+$MESS["MOBILEAPP_LABEL_CODE"] = "Código de la aplicación";
+$MESS["MOBILEAPP_LABEL_APP_FOLDER"] = "Carpeta de aplicaciones";
+$MESS["MOBILEAPP_PREVIEW_MAIN"] = "Principal";
+$MESS["MOBILEAPP_PREVIEW_LOAD"] = "Cargando";
+$MESS["MOBILEAPP_PREVIEW_LISTS"] = "Red";
+$MESS["MOBILEAPP_CREATE_NEW_TEMPLATE"] = "Crear nueva plantilla";
+$MESS["MOBILEAPP_WITHOUT_TEMPLATE"] = "No crear plantilla";
+$MESS["MOBILEAPP_NEW_TEMPLATE_NAME"] = "Nombre de la plantilla";
+$MESS["MOBILEAPP_SELECT_TEMPLATE"] = "Seleccionar existente";
+$MESS["MOBILEAPP_APP_TEMPLATE"] = "Plantilla de aplicación";
+$MESS["MOBILEAPP_PREVIEW_HINT"] = "Haga clic en un control para editar propiedades";
+$MESS["MOBILEAPP_APP_SAVE_CONFIG_WAIT"] = "Guardar configuración";
+$MESS["MOBILEAPP_APP_REMOVE_CONFIG_WAIT"] = "Eliminar configuración";
+$MESS["MOBILEAPP_APP_CREATE_CONFIG_WAIT"] = "Crear configuración";
+$MESS["MOBILEAPP_APP_IS_ALREADY_EXISTS"] = "Una aplicación con este código simbólico ya existe!";
+?>

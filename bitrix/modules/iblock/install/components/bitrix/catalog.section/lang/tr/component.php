@@ -1,0 +1,5 @@
+<?
+$MESS ['IBLOCK_MODULE_NOT_INSTALLED'] = "Bilgi bloklarý modülü yüklü deðildir";
+$MESS ['CATALOG_SECTION_NOT_FOUND'] = "Bölüm bulunamadý.";
+$MESS ['CATALOG_ERROR2BASKET'] = "Ürünü sepete eklemede hata oluþtu";
+?>

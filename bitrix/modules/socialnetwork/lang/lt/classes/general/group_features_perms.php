@@ -1,0 +1,16 @@
+<?
+$MESS["SONET_GFP_EMPTY_GROUP_FEATURE_ID"] = "Funkcionalumas nenurodytas.";
+$MESS["SONET_GFP_ERROR_NO_GROUP_FEATURE_ID"] = "Funkcionalumas nurodytas neteisingai.";
+$MESS["SONET_GFP_EMPTY_OPERATION_ID"] = "Operacija nenurodyta.";
+$MESS["SONET_GFP_BAD_OPERATION_ID"] = "Operacija negali bûti patikrinta.";
+$MESS["SONET_GFP_NO_OPERATION_ID"] = "Parametrø operacija nurodyta neteisingai.";
+$MESS["SONET_GFP_EMPTY_ROLE"] = "Rolë nenurodyta.";
+$MESS["SONET_GFP_ERROR_NO_ROLE"] = "Rolë nurodyta neteisingai.";
+$MESS["SONET_GF_ERROR_SET"] = "Nepavyko sukurti áraðà.";
+$MESS["SONET_GF_EMPTY_ENTITY_ID"] = "Savybës ID nenurodyta.";
+$MESS["SONET_GF_ERROR_NO_ENTITY_ID"] = "Savybë nurodyta neteisingai.";
+$MESS["SONET_GF_EMPTY_FEATURE_ID"] = "Funkcionalumas nenurodytas.";
+$MESS["SONET_GF_ERROR_NO_FEATURE_ID"] = "Funkcionalumas nurodytas neteisingai.";
+$MESS["SONET_GF_EMPTY_ENTITY_TYPE"] = "Savybës tipas nenurodytas.";
+$MESS["SONET_GF_ERROR_NO_ENTITY_TYPE"] = "Nurodytas neteisingas savybës tipas .";
+?>

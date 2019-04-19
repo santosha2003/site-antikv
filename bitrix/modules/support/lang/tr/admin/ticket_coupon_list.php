@@ -1,0 +1,32 @@
+<?
+$MESS ['SUP_CL_TITLE'] = "Kupon listesi";
+$MESS ['SUP_CL_FLT_COUPON'] = "Kupon";
+$MESS ['SUP_CL_EXACT_MATCH'] = "Tam eþleþme ara";
+$MESS ['SUP_CL_COUPON'] = "Kupon";
+$MESS ['SUP_CL_COUNT_TICKETS'] = "Kullaným sayýsý";
+$MESS ['SUP_CL_DELETE'] = "Sil";
+$MESS ['SUP_CL_DELETE_CONFIRMATION'] = "Gerçekten silinsin mi?";
+$MESS ['SUP_CL_TIMESTAMP_X'] = "Deðiþiklik tarihi";
+$MESS ['SUP_CL_DATE_CREATE'] = "Oluþturma tarihi";
+$MESS ['SUP_CL_CREATED_USER_ID'] = "Oluþturan kullanýcýnýn ID ";
+$MESS ['SUP_CL_CREATED_LOGIN'] = "Oluþturan kullanýcýnýn Login ";
+$MESS ['SUP_CL_CREATED_FIRST_NAME'] = "Oluþturan kullanýcýnýn adý";
+$MESS ['SUP_CL_CREATED_LAST_NAME'] = "Oluþturan kullanýcýnýn soyadý";
+$MESS ['SUP_CL_UPDATED_USER_ID'] = "Yenileyen kullanýcýnýn ID";
+$MESS ['SUP_CL_UPDATED_LOGIN'] = "Yenileyen kullanýcýnýn Login";
+$MESS ['SUP_CL_UPDATED_FIRST_NAME'] = "Yenileyen kullanýcýnýn adý";
+$MESS ['SUP_CL_UPDATED_LAST_NAME'] = "Yenileyen kullanýcýnýn soyadý";
+$MESS ['SUP_CL_ADD'] = "Kupon ekle";
+$MESS ['SUP_CL_GENERATE_MESS_OK'] = "Yeni kupon oluþturuldu: %COUPON% ";
+$MESS ['SUP_CL_GENERATE_ERROR'] = "Kuponun oluþturulmasýnda hata";
+$MESS ['SUP_CL_GENERATE_CONFIRM'] = "Bu oturumda kuponu zaaten oluþturdunuz. Daha fazlasýný mý istiyorsunuz?";
+$MESS ['SUP_CL_ACTIVE'] = "Etkinlik";
+$MESS ['SUP_CL_ACTIVE_FROM'] = "den etkin";
+$MESS ['SUP_CL_ACTIVE_TO'] = "kadar etkin";
+$MESS ['SUP_CL_EDIT'] = "Kuponu düzenle";
+$MESS ['SUP_CL_ADD_TITLE'] = "Yeni kupon oluþtur";
+$MESS ['SUP_CL_SLA_ID'] = "Destek seviyesinin ID";
+$MESS ['SUP_CL_SLA_NAME'] = "Destek seviyesi";
+$MESS ['SUP_CL_LOG'] = "Kullaným günlüðü";
+$MESS ['SUP_GL_PAGES'] = "Kuponlar";
+?>

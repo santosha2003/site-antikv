@@ -1,0 +1,29 @@
+<?
+$MESS ['STAT_F_LOGIC'] = "Alanlar arasýnda mantýk";
+$MESS ['STAT_GUEST_ID'] = "Ziyaretçinin ID";
+$MESS ['STAT_EDIT_USER'] = "Kullanýcý profili";
+$MESS ['STAT_VIEW_SESSION_LIST'] = "Bu ziyeretçi oturumlarý";
+$MESS ['STAT_NEW_GUEST_1'] = "ilk defa";
+$MESS ['STAT_OLD_GUEST_1'] = "döndürdü";
+$MESS ['STAT_RECORDS_LIST'] = "Son #STATISTIC_DAYS# gün içerisinde ziyaretçi vuruþlarý";
+$MESS ['STAT_F_ID'] = "Vuruþlarýn ID ";
+$MESS ['STAT_F_SESSION'] = "Oturumlarýn ID";
+$MESS ['STAT_F_AUTH'] = "Kayýtlý";
+$MESS ['STAT_F_LOGIN'] = "ID, oturum, adý  soyadý";
+$MESS ['STAT_F_GUEST_ID'] = "Ziyaretçinin ID";
+$MESS ['STAT_F_NEW_GUEST'] = "Ýlk defa/ döndürüldü";
+$MESS ['STAT_F_IP'] = "IP adresi";
+$MESS ['STAT_F_PAGE'] = "Sayfa";
+$MESS ['STAT_HIT_PAGES'] = "Vuruþlar";
+$MESS ['STAT_NOT_REGISTERED'] = "kayýtlý deðil";
+$MESS ['STAT_DETAIL'] = "detaylý";
+$MESS ['STAT_SESSION'] = "Oturum";
+$MESS ['STAT_DATE'] = "Tarih";
+$MESS ['STAT_USER'] = "Ziyaretçi";
+$MESS ['STAT_IP'] = "IP adresi";
+$MESS ['STAT_PAGE'] = "Sayfa";
+$MESS ['STAT_NOT_AUTH'] = "(yetkili deðil)";
+$MESS ['STAT_F_USER_AGENT'] = "UserAgent";
+$MESS ['STAT_F_STOP_LIST_ID'] = "Baykot listesi kayýt ID";
+$MESS ['STAT_F_STOP'] = "Baykot listesine rastladýn";
+?>

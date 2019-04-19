@@ -1,0 +1,38 @@
+<?
+$MESS["VULNSCAN_SIMILAR"] = "Аналогічно";
+$MESS["VULNSCAN_REQUIRE"] = "Необхідні умови";
+$MESS["VULNSCAN_FILE"] = "Файл";
+$MESS["VULNSCAN_XSS_NAME"] = "Cross-Site Scripting";
+$MESS["VULNSCAN_XSS_HELP"] = "Зловмисник може виконати довільний HTML/JS код в контексті браузера жерт. Рекомендується фільтрувати змінні перед виведенням в HTML/JS код. <br> Докладніше: <a";
+$MESS["VULNSCAN_HEADER_NAME"] = "HTTP Response Splitting";
+$MESS["VULNSCAN_HEADER_HELP"] = "Зловмисник, впроваджуючи довільний заголовок в HTTP відповідь, може виконати атаку з використанням перенаправлення або ж вставкою довільного HTML/JS коду. Рекомендується фільтрувати переклади рядків перед виведенням в заголовок відповіді. Актуально для PHP <5.4. Докладніше: <a";
+$MESS["VULNSCAN_DATABASE_NAME"] = "SQL Injection";
+$MESS["VULNSCAN_DATABASE_HELP"] = "Зловмисник може впроваджувати довільні SQL команди, що передаються серверу. Це вкрай небезпечно, рекомендується фільтрувати дані користувача перед їх використанням. Докладніше: <a";
+$MESS["VULNSCAN_INCLUDE_NAME"] = "File Inclusion";
+$MESS["VULNSCAN_INCLUDE_HELP"] = "Зловмисник може підключати локальні / видалені файли або ж читати довільні файли ресурсу. Рекомендується робити нормалізацію шляху в призначених для користувача даних перед їх використанням. Докладніше: <a href=\"https://rdot.org/forum/showthread.php?t=343\"> https://rdot.org/forum/showthread.php?t=343 </a>";
+$MESS["VULNSCAN_EXEC_NAME"] = "Виконання довільних команд";
+$MESS["VULNSCAN_EXEC_HELP"] = "Зловмисник може виконувати довільні системні команди, це вкрай небезпечно. Докладніше: <a";
+$MESS["VULNSCAN_CODE_NAME"] = "Виконання довільного коду";
+$MESS["VULNSCAN_CODE_HELP"] = "Зловмисник може впровадити і виконати довільний PHP код. Докладніше: <a";
+$MESS["VULNSCAN_POP_NAME"] = "Серіалізация даних";
+$MESS["VULNSCAN_POP_HELP"] = "Десеріалізациі користувача даних може бути досить небезпечна. Докладніше: <a href=\"https://rdot.org/forum/showthread.php?t=950\"> https://rdot.org/forum/showthread.php?t=950 </ a>";
+$MESS["VULNSCAN_OTHER_NAME"] = "Потенційна зміна логіки роботи";
+$MESS["VULNSCAN_OTHER_HELP"] = "Опис відсутній";
+$MESS["VULNSCAN_UNKNOWN"] = "Підозра на вразливість";
+$MESS["VULNSCAN_UNKNOWN_HELP"] = "Опис відсутній";
+$MESS["VULNSCAN_HELP_INPUT"] = "Джерело";
+$MESS["VULNSCAN_HELP_FUNCTION"] = "Функція / метод";
+$MESS["VULNSCAN_HELP_VULNTYPE"] = "Тип уразливості";
+$MESS["VULNSCAN_FIULECHECKED"] = "Перевірено файлів:";
+$MESS["VULNSCAN_VULNCOUNTS"] = "Знайдено потенційних проблем:";
+$MESS["VULNSCAN_DYNAMIC_FUNCTION"] = "Виклик динамічної функції!";
+$MESS["VULNSCAN_EXTRACT"] = "Раніше ініційовані змінні можуть бути перевизначені!";
+$MESS["VULNSCAN_TOKENIZER_NOT_INSTALLED"] = "PHP розширення tokenizer не увімкнене, будь-ласка увімкніть його для завершення тестування.";
+$MESS["VULNSCAN_XSS_HELP_SAFE"] = "Використовувати <b> htmlspecialcharsbx </ b>. Параметри тегів з динамічними значеннями обмежувати подвійними лапками. Примусово додавати протокол (http), де це необхідно, для значень параметрів тегів, таких як href чи src.";
+$MESS["VULNSCAN_HEADER_HELP_SAFE"] = "Рекомендується фільтрувати переклади рядків перед виведенням в заголовок відповіді.";
+$MESS["VULNSCAN_DATABASE_HELP_SAFE"] = "Для числових даних, явно приводити значення до потрібного типу (int, float і т.п.), для строкових даних, обробляти дані за допомогою mysql_escape_string, \$ DB-> ForSQL () і т.п.. А також, контролювати довжину даних.";
+$MESS["VULNSCAN_INCLUDE_HELP_SAFE"] = "Рекомендується як мінімум робити нормалізацію шляху перед їх використанням.";
+$MESS["VULNSCAN_EXEC_HELP_SAFE"] = "Проводити явну перевірку допустимості значення таких змінних з явно визначеного дозволеного множини значень. Наприклад, дозволяти тільки латинські букви і цифри, і т.п. Множину повинно бути задано виходячи з поставлених завдань. Також, можна використовувати функції типу escapeshellcmd і escapeshellarg.";
+$MESS["VULNSCAN_CODE_HELP_SAFE"] = "Фільтрувати користувача введення, наприклад за допомогою <b> EscapePHPString </ b>";
+$MESS["VULNSCAN_HELP_SAFE"] = "Як захищатися";
+?>

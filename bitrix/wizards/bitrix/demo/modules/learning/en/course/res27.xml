@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>365</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153407736</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>136</chapter_id>
+<name>Site template developing</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>The site template developing process consists of two basis stages:</p>
+
+<ul>
+  <li>the template prototype developing; </li>
+
+  <li>the full-functional template creation. </li>
+</ul>
+
+<h2>The template prototype developing</h2>
+
+<p>The prototype is a site template in HTML format. During the page makeup there are defined all functional areas in future site template. For example:</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/templates/prototype.png',501,403,'Template prototype')"><img src="cid:resources/res27/ypEwp.uPsyL.prototype_s.png" style="CURSOR: pointer" height="161" alt="Click to enlarge" width="200" border="0"/></a> </p>
+
+<ul>
+  <li>page title; </li>
+
+  <li>menu; </li>
+
+  <li>navigation chain; </li>
+
+  <li>authorization form; </li>
+
+  <li>subscription form; </li>
+
+  <li>advertising areas; </li>
+
+  <li>etc. </li>
+</ul>
+
+<h2>The full-functional template creation</h2>
+
+<p>On this stage all HTML design elements are replaced with functional elements (such as programming code or components call).</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/templates/full_templ.png',556,434,'Full-functional template')"><img src="cid:resources/res27/gZ5mo.Voc9J.full_templ_s.png" style="CURSOR: pointer" height="156" alt="Click to enlarge" width="200" border="0"/></a> </p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

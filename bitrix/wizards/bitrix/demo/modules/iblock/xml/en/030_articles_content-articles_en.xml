@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<CommerceInformation SchemaVersion="2.021" CreationDate="2009-06-05T10:11:55">
+	<Metadata>
+		<Id>content-articles</Id>
+		<Title>Articles</Title>
+		<Description>Articles</Description>
+		<Properties>
+			<Property>
+				<Id>CML2_CODE</Id>
+				<Title>Code</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_SORT</Id>
+				<Title>Sort</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_ACTIVE_FROM</Id>
+				<Title>Start time</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_ACTIVE_TO</Id>
+				<Title>End time</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_PREVIEW_TEXT</Id>
+				<Title>Anons</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_PREVIEW_PICTURE</Id>
+				<Title>Preview picture</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>101</Id>
+				<Title>Author</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>100</BitrixSort>
+				<BitrixCode>AUTHOR</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>S</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>102</Id>
+				<Title>Keywords</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>200</BitrixSort>
+				<BitrixCode>KEYWORDS</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>S</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>103</Id>
+				<Title>Forum Topic ID</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>300</BitrixSort>
+				<BitrixCode>FORUM_TOPIC_ID</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>N</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>104</Id>
+				<Title>Number of comments</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>400</BitrixSort>
+				<BitrixCode>FORUM_MESSAGE_CNT</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>N</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>105</Id>
+				<Title>Number of votes</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>500</BitrixSort>
+				<BitrixCode>vote_count</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>S</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>106</Id>
+				<Title>Sum of votes</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>600</BitrixSort>
+				<BitrixCode>vote_sum</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>S</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>107</Id>
+				<Title>Rating</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>700</BitrixSort>
+				<BitrixCode>rating</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>S</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>108</Id>
+				<Title>Themes</Title>
+				<Multiple>true</Multiple>
+				<BitrixSort>800</BitrixSort>
+				<BitrixCode>THEMES</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>G</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock>services-themes</BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>true</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+		</Properties>
+	</Metadata>
+	<Catalog>
+		<Id>content-articles</Id>
+		<MetadataId>content-articles</MetadataId>
+		<Title>Articles</Title>
+		<Description>Articles</Description>
+		<BitrixCode>articles</BitrixCode>
+		<BitrixSort>300</BitrixSort>
+		<BitrixListURL>/content/articles/</BitrixListURL>
+		<BitrixDetailURL>/content/articles/index.php?article=#ID#</BitrixDetailURL>
+		<BitrixSectionURL></BitrixSectionURL>
+		<BitrixPicture></BitrixPicture>
+		<BitrixIndexElements>true</BitrixIndexElements>
+		<BitrixIndexSections>true</BitrixIndexSections>
+		<BitrixWorkflow>true</BitrixWorkflow>
+		<BitrixLabels>
+			<BitrixLabel>
+				<Id>ELEMENT_NAME</Id>
+				<Value>Article</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENTS_NAME</Id>
+				<Value>Articles</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_ADD</Id>
+				<Value>Add new article</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_EDIT</Id>
+				<Value>Edit article</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_DELETE</Id>
+				<Value>Delete article</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_NAME</Id>
+				<Value>Section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTIONS_NAME</Id>
+				<Value>Sections</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_ADD</Id>
+				<Value>Add new section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_EDIT</Id>
+				<Value>Edit section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_DELETE</Id>
+				<Value>Delete section</Value>
+			</BitrixLabel>
+		</BitrixLabels>
+		<Elements>
+			<Element>
+				<Id>1180</Id>
+				<Title>Composite components</Title>
+				<BitrixTags>MVC, components 2.0, Composite components</BitrixTags>
+				<Description>&lt;p&gt;&lt;b&gt;Simple &lt;/b&gt;(single page) components create an area in a given single page. For example, the news display component creates a news display area in which it renders the news title and body, in a page where it is placed.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Composite &lt;/b&gt;(multiple page) components create &lt;i&gt;site sections&lt;/i&gt;. For example, the catalog component creates the whole catalog section: catalog entries, catalog groups, product pages. In other words, a composite component form a set of pages. Composite components are built on the basis of simple components.&lt;/p&gt;
+
+&lt;h4&gt;&lt;b&gt;MVC&lt;/b&gt;&lt;/h4&gt;
+
+&lt;p&gt;The foundation of composite components is the MVC (Model View Controller) design pattern. This concept breaks application data model, user interface and logic into three separate, individual&amp;nbsp;parts in such a way that any change in one of the areas makes a minimum impact on others.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Model &lt;/b&gt;is the system core. The Model represents data and business logic, and can respond to requests of the &lt;b&gt;View&lt;/b&gt;.&lt;/p&gt;
+&lt;b&gt;View&lt;/b&gt; is a set of simple components (in reality, things are more complicated but we shall omit details to make the first insight easier). The &lt;b&gt;View&lt;/b&gt; displays data to a user, requests data from the Model, sends user actions to the Controller (usually via HTTP requests).
+&lt;p&gt;&lt;b&gt;Controller&lt;/b&gt; is a composite component. The &lt;b&gt;Controller&lt;/b&gt; selects an appropriate View based on user actions and the Model's response. &lt;/p&gt;
+
+&lt;p&gt;A typical flow of the MVC pattern is as follows.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The Controller reacts to user actions and selects a View to be displayed to a user, and passes control to a selected view. &lt;/li&gt;
+
+  &lt;li&gt;The View requests data from the Model, receives data and displays them to a user. &lt;/li&gt;
+
+  &lt;li&gt;A user sends new requests to the Controller by means of controls granted by the View. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;When applied to composite components, the MVC algorithm works in the following way.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The composite component (&lt;i&gt;controller&lt;/i&gt;) reacts to user actions (generally, HTTP requests) by&amp;nbsp;selecting an appropriate page (&lt;i&gt;view&lt;/i&gt;) to be displayed to a user, and activates (includes) the template for this page. &lt;/li&gt;
+
+  &lt;li&gt;The page template (&lt;i&gt;view&lt;/i&gt;) connects simple components and configures their settings as required. &lt;/li&gt;
+
+  &lt;li&gt;Simple components do what they are supposed to: request data from kernel (&lt;i&gt;model&lt;/i&gt;); format and render it to a user; display required controls (links, forms, buttons etc.). &lt;/li&gt;
+
+  &lt;li&gt;User sends new requests (HTTP requests) to the composite component (&lt;i&gt;controller&lt;/i&gt;) by activating the controls. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;BREAK /&gt;
+
+&lt;h4&gt;Example&lt;/h4&gt;
+
+&lt;p&gt;Consider a simple example of how a news composite component may function. Say we have the following simple components: &amp;quot;&lt;i&gt;list of news&lt;/i&gt;&amp;quot; and &amp;quot;&lt;i&gt;news details&lt;/i&gt;&amp;quot;, the latter takes the ID of news to be displayed as input parameter.&lt;/p&gt;
+
+&lt;p&gt;The news site section can be created, for example, by adding the &amp;quot;&lt;i&gt;list of news&lt;/i&gt;&amp;quot; component to a section index page, and creating a&amp;nbsp;&lt;b&gt;news.php&lt;/b&gt; page and adding the &amp;quot;&lt;i&gt;news details&lt;/i&gt;&amp;quot; component to it. The components must be properly configured: the list of news is to be able to build links to a news details page including the news ID; the news details component should have input parameters configured in such a way that it would be able to display a link to the list of news.&lt;/p&gt;
+
+&lt;p&gt;Configuring the components properly requires that we know the path to the news details page, the name of all parameters that the components can take on input, etc. Even in this example, configuring may be a headache. But imagine tenths of forum components!&lt;/p&gt;
+
+&lt;p&gt;An easier alternative that a web developer can take is using the news composite component. You can simply add this component to the index page. The component will take full control over maintaining correct links and parameters; this&amp;nbsp;will not require any additional actions on the developer side. Creating the news composite component requires that you check the news ID in URL's. If an URL contains the news ID, the component will activate the page that would display the news text. Otherwise, the component would display the list of news.&lt;/p&gt;
+
+&lt;p&gt;Pages of the composite component template would connect simple components and configure their input parameters properly. Simple components will carry out their functions as usual; the only important thing is configuring the input parameters correctly.&lt;/p&gt;
+
+&lt;p&gt;Thus, the MVC pattern flow works as follows:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;the composite component (&lt;i&gt;controller&lt;/i&gt;) receives HTTP requests (user actions); &lt;/li&gt;
+
+  &lt;li&gt;then, it verifies whether an HTTP request contains the news ID, and connects either the list of news template, or the news details template; &lt;/li&gt;
+
+  &lt;li&gt;the template, in its turn, connects an appropriate simple component and sets its input parameters as required; &lt;/li&gt;
+
+  &lt;li&gt;the simple component performs its functions: acquires data from the &lt;i&gt;model&lt;/i&gt;, formats and renders them; displays user controls; &lt;/li&gt;
+
+  &lt;li&gt;user sends new requests (HTTP requests) to the composite component (&lt;i&gt;controller&lt;/i&gt;) by activating the controls; &lt;/li&gt;
+
+  &lt;li&gt;the whole procedure loops as needed. &lt;/li&gt;
+&lt;/ul&gt;
+</Description>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-04-18 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>Introduction to a new Bitrix Site Manager technology.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>101</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>102</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>103</Id>
+						<Value>68</Value>
+						<PropertyValue>
+							<Value>68</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>104</Id>
+						<Value>1</Value>
+						<PropertyValue>
+							<Value>1</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>105</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>106</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>107</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>108</Id>
+						<Value>143</Value>
+						<PropertyValue>
+							<Value>143</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1329</Id>
+				<Title>Components 2.0: configuring SEF support</Title>
+				<BitrixTags>components 2.0, SEF, URL Rewrite</BitrixTags>
+				<Description>&lt;p&gt;&lt;b&gt;URL Rewrite&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;UrlRewrite is used to enable a script to be accessible not only at its physical address, but also at any other address. For example, you can define such a UrlRewrite rule that a script &lt;i&gt;/fld/c.php&lt;/i&gt; that can be accessed at &lt;i&gt;/fld/c.php?id=15 &lt;/i&gt;will be called when a page &lt;i&gt;/catalog/15.php&lt;/i&gt; is requested.&lt;/p&gt;
+
+&lt;p&gt;An address at which the script will be available may not physically exist on the server. In the address exists, the corresponding script will be called. URLRewrite will not be activated.&lt;/p&gt;
+
+&lt;p&gt;URL processing rules can be configured in the Control Panel (&lt;i&gt;Settings &lt;/i&gt;-&amp;gt; &lt;i&gt;System settings &lt;/i&gt;-&amp;gt; &lt;i&gt;URL processing, &lt;/i&gt;&lt;em&gt;/bitrix/admin/urlrewrite_list.php&lt;/em&gt;).&lt;/p&gt;
+
+&lt;p&gt;URLRewrite mechanism was created for use with Components 2.0 supporting SEF. However, it can be used to override any other URL's, not only with Components 2.0.&lt;/p&gt;
+
+&lt;p&gt;If a SEF-enabled component is added to a page and the page is saved using the editor API, a URL processing rule is created automatically. If the page is created otherwise (e.g. uploaded using FTP), you will have to create the rule manually.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Enabling URL processing&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;1&lt;/b&gt;. If you have the 404 error handler configured - for example, a &lt;i&gt;ErrorDocument &lt;/i&gt;directive is specified for Apache in &lt;i&gt;.htaccess&lt;/i&gt;:
+  &lt;br /&gt;
+&lt;span&gt;&lt;code&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; ErrorDocument 404 /404.php
+      &lt;br /&gt;
+    &lt;/code&gt;you will have to edit &lt;em&gt;/404.php&lt;/em&gt; by adding the following call at the beginning of the file:
+    &lt;br /&gt;
+  &lt;code&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp; include_once( $_SERVER['DOCUMENT_ROOT']. '/bitrix/modules/main/include/urlrewrite.php' );
+      &lt;br /&gt;
+    &lt;/code&gt;
+    &lt;p&gt;&lt;b&gt;2&lt;/b&gt;. If you use &lt;b&gt;mod_rewrite&lt;/b&gt; with Apache, you can specify the following settings (e.g. in &lt;i&gt;.htaccess&lt;/i&gt;):
+      &lt;br /&gt;
+    &lt;code&gt;&amp;lt;IfModule mod_rewrite.c&amp;gt;
+        &lt;br /&gt;
+      RewriteEngine On
+        &lt;br /&gt;
+      RewriteCond %{REQUEST_FILENAME} !-f
+        &lt;br /&gt;
+      RewriteCond %{REQUEST_FILENAME} !-l
+        &lt;br /&gt;
+      RewriteCond %{REQUEST_FILENAME} !-d
+        &lt;br /&gt;
+      RewriteCond %{REQUEST_FILENAME} !/bitrix/urlrewrite.php$
+        &lt;br /&gt;
+      RewriteRule ^(.*)$ /bitrix/urlrewrite.php [L]
+        &lt;br /&gt;
+      &amp;lt;/IfModule&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;The settings will enable the regular SEF support mechanism for new components.&lt;/p&gt;
+
+    &lt;p&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;BREAK /&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;b&gt;How to test your settings&lt;/b&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;b&gt;1&lt;/b&gt;. Open &lt;em&gt;Settings -&lt;/em&gt;&amp;gt;&lt;em&gt; System settings -&lt;/em&gt;&amp;gt;&lt;em&gt; URL processing&lt;/em&gt; in the Control Panel.
+      &lt;br /&gt;
+
+      &lt;br /&gt;
+    &lt;b&gt;2&lt;/b&gt;. Click &lt;b&gt;New record &lt;/b&gt;and add:
+      &lt;br /&gt;
+    &lt;em&gt;&amp;nbsp;&amp;nbsp; Condition&lt;/em&gt;: #^/sef_test/#
+      &lt;br /&gt;
+    &lt;em&gt;&amp;nbsp;&amp;nbsp; Compoment&lt;/em&gt;: empty
+      &lt;br /&gt;
+    &lt;em&gt;&amp;nbsp;&amp;nbsp; File&lt;/em&gt;: /index.php (physically existing file)
+      &lt;br /&gt;
+    &lt;em&gt;&amp;nbsp;&amp;nbsp; Rule&lt;/em&gt;: empty.
+      &lt;br /&gt;
+    Save changes.
+      &lt;br /&gt;
+
+      &lt;br /&gt;
+    &lt;b&gt;3&lt;/b&gt;. Open any page in /sef_test/ (e.g. http://localhost/sef_test/test.html). &lt;/p&gt;
+
+    &lt;p&gt;If SEF functions properly, you should see the page specified in the &lt;b&gt;File &lt;/b&gt;field of the rule.&lt;/p&gt;
+
+    &lt;p&gt;&lt;b&gt;Examples&lt;/b&gt;&lt;/p&gt;
+
+    &lt;p&gt;1. Adding the rule:
+      &lt;br /&gt;
+    &amp;nbsp;&amp;nbsp; &lt;em&gt;Condition&lt;/em&gt;: #^/gallery/#&amp;nbsp;
+      &lt;br /&gt;
+    &amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;i&gt;File:&lt;/i&gt; /max/images/index.php
+      &lt;br /&gt;
+    will activate the script &lt;i&gt;/max/images/index.php&lt;/i&gt; if a visitor requests a non-existing page &lt;i&gt;/gallery/38.php&lt;/i&gt;.&lt;/p&gt;
+  &lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;2. If the following rule exists:
+  &lt;br /&gt;
+&amp;nbsp;&amp;nbsp;&amp;nbsp; &lt;span&gt;&lt;em&gt;Condition&lt;/em&gt;: #^/index/([0-9]+)/([0-9]+)/#
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp; &lt;i&gt;Rule:&lt;/i&gt; mode=read&amp;amp;CID=$1&amp;amp;GID=$2
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp; &lt;i&gt;File:&lt;/i&gt; /newforum/index.php
+    &lt;br /&gt;
+  and a visitor requests a page &lt;i&gt;/index/5/48/&lt;/i&gt;, the following URL will be activated: /newforum/index.php?mode=read&amp;amp;CID=5&amp;amp;GID=48.
+    &lt;p&gt;3. The rule:
+      &lt;br /&gt;
+    &amp;nbsp;&amp;nbsp;&amp;nbsp; &lt;em&gt;Condition:&lt;/em&gt; = #(.+?)\\.html(.*)#
+      &lt;br /&gt;
+    &amp;nbsp;&amp;nbsp;&amp;nbsp; &lt;em&gt;Rule:&lt;/em&gt; = $1.php$2
+      &lt;br /&gt;
+    will activate the script &lt;i&gt;/about/company.php?show&lt;/i&gt; if a visitor requests a page &lt;i&gt;/about/company.html?show&lt;/i&gt;.&lt;/p&gt;
+  &lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;
+</Description>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-05-15 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>You will have to configure SEF support manually only for existing projects (the Kernel module must be updated to version 5.1.8 or higher which enables UrlRewrite). New installations will have SEF support automatically configured.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>101</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>102</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>103</Id>
+						<Value>67</Value>
+						<PropertyValue>
+							<Value>67</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>104</Id>
+						<Value>1</Value>
+						<PropertyValue>
+							<Value>1</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>105</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>106</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>107</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>108</Id>
+						<Value>143</Value>
+						<PropertyValue>
+							<Value>143</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1330</Id>
+				<Title>Custom template engines</Title>
+				<BitrixTags>components 2.0, template engines, Smarty</BitrixTags>
+				<Description>&lt;p&gt;To define a new template engine,&amp;nbsp; add the following code to &lt;b&gt;/bitrix/php_interface/init.php&lt;/b&gt;.&lt;/p&gt;
+
+&lt;p&gt;1. Create or edit a global variable &lt;b&gt;$arCustomTemplateEngines&lt;/b&gt; - an associated array with the following format: &lt;/p&gt;
+&lt;code&gt;&amp;quot;template engine ID&amp;quot; =&amp;gt; array( &amp;quot;templateExt&amp;quot; =&amp;gt; array(&amp;quot;file_ext_1&amp;quot;[, &amp;quot;file_ext_2&amp;quot;...]), &amp;quot;function&amp;quot; =&amp;gt; &amp;quot;engine control function&amp;quot; )&lt;/code&gt;
+&lt;p&gt;here: &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&amp;quot;&lt;b&gt;template engine ID&lt;/b&gt;&amp;quot; - an arbitrary unique name; &lt;/li&gt;
+
+  &lt;li&gt;&amp;quot;&lt;b&gt;file_extN&lt;/b&gt;&amp;quot; - file extension associated with the engine; &lt;/li&gt;
+
+  &lt;li&gt;&amp;quot;&lt;b&gt;engine control function&lt;/b&gt;&amp;quot; - the function that will be called if a component template extension is &lt;b&gt;file_extN&lt;/b&gt;. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;2. Create the engine control function:&lt;/p&gt;
+&lt;code&gt;function EngineControlFunction($templateFile, $arResult, $arParams, $arLangMessages, $templateFolder, $parentTemplateFolder, $template)&lt;/code&gt;
+&lt;p&gt;Parameters: &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;b&gt;$templateFile&lt;/b&gt; &amp;ndash; path to the template relative to the site root; &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;$arResult&lt;/b&gt; &amp;ndash; a component result output array; &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;$arParams&lt;/b&gt; &amp;ndash; a component&amp;nbsp;input array; &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;$arLangMessages&lt;/b&gt; &amp;ndash; language-dependent messages (array); &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;$templateFolder&lt;/b&gt; &amp;ndash; path to the template folder relative to the site root (can be empty if the template does not occupy a separate folder); &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;$parentTemplateFolder&lt;/b&gt; &amp;ndash; path to the template folder of a parent composite component, relative to the site root (can be empty if a simple component is plugged alone); &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;$template&lt;/b&gt; &amp;ndash; template object. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Let us consider some useful examples.&lt;/p&gt;
+
+&lt;p&gt;&lt;BREAK /&gt;&lt;/p&gt;
+
+&lt;h4&gt;Example: adding Smarty engine&lt;/h4&gt;
+
+&lt;p&gt;Register Smarty in &lt;b&gt;$arCustomTemplateEngines&lt;/b&gt;: &lt;code&gt;global $arCustomTemplateEngines; $arCustomTemplateEngines = array( &amp;quot;smarty&amp;quot; =&amp;gt; array( &amp;quot;templateExt&amp;quot; =&amp;gt; array(&amp;quot;tpl&amp;quot;), &amp;quot;function&amp;quot; =&amp;gt; &amp;quot;SmartyEngine&amp;quot; ), );&lt;/code&gt; &lt;/p&gt;
+
+&lt;p&gt;The function &lt;b&gt;SmartyEngine&lt;/b&gt; initializes its parameters according to Smarty requirements. Then, variables with component's output, input parameters, language messages etc.&amp;nbsp;are passed to Smarty. Finally, Smarty is launched and the output is displayed: &lt;code&gt;function SmartyEngine($templateFile, $arResult, $arParams, $arLangMessages, $templateFolder, $parentTemplateFolder, $template) {
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  if (!defined(&amp;quot;SMARTY_DIR&amp;quot;))
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp; define(&amp;quot;SMARTY_DIR&amp;quot;, &amp;quot;&amp;lt;absolute path to Smarty&amp;gt;/libs/&amp;quot;);
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  require_once( '&amp;lt;absolute path to Smarty&amp;gt;/libs/Smarty.class.php' );
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  $smarty = new Smarty;
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  $smarty-&amp;gt;compile_dir = &amp;quot;&amp;lt;absolute path to Smarty&amp;gt;/templates_c/&amp;quot;;
+    &lt;br /&gt;
+  $smarty-&amp;gt;config_dir = &amp;quot;&amp;lt;absolute path to Smarty&amp;gt;/configs/&amp;quot;;
+    &lt;br /&gt;
+  $smarty-&amp;gt;template_dir = &amp;quot;&amp;lt;absolute path to Smarty&amp;gt;/templates/&amp;quot;;
+    &lt;br /&gt;
+  $smarty-&amp;gt;cache_dir = &amp;quot;&amp;lt;absolute path to Smarty&amp;gt;/cache/&amp;quot;;
+    &lt;br /&gt;
+  $smarty-&amp;gt;compile_check = true;
+    &lt;br /&gt;
+  $smarty-&amp;gt;debugging = false;
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  $smarty-&amp;gt;assign(&amp;quot;arResult&amp;quot;, $arResult);
+    &lt;br /&gt;
+  $smarty-&amp;gt;assign(&amp;quot;arParams&amp;quot;, $arParams);
+    &lt;br /&gt;
+  $smarty-&amp;gt;assign(&amp;quot;MESS&amp;quot;, $arLangMessages);
+    &lt;br /&gt;
+  $smarty-&amp;gt;assign(&amp;quot;templateFolder&amp;quot;, $templateFolder);
+    &lt;br /&gt;
+  $smarty-&amp;gt;assign(&amp;quot;parentTemplateFolder&amp;quot;, $parentTemplateFolder);
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  $smarty-&amp;gt;display( $_SERVER[&amp;quot;DOCUMENT_ROOT&amp;quot;].$templateFile ); }&lt;/code&gt;&lt;/p&gt;
+&lt;BREAK /&gt;
+&lt;h4&gt;Example: plugging in a XML/XSLT engine&lt;/h4&gt;
+
+&lt;p&gt;Register the engine: &lt;code&gt;global $arCustomTemplateEngines; $arCustomTemplateEngines = array( &amp;quot;xslt&amp;quot; =&amp;gt; array( &amp;quot;templateExt&amp;quot; =&amp;gt; array(&amp;quot;xsl&amp;quot;), &amp;quot;function&amp;quot; =&amp;gt; &amp;quot;XSLTEngine&amp;quot; ), );&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Engine initialization function: &lt;code&gt;function CreateXMLFromArray($xDoc, $xNode, $ar) {&amp;nbsp;
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;foreach($ar as $key=&amp;gt;$val) {
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; if(!is_string($key) || strlen($key)&amp;lt;=0)
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; $key = &amp;quot;value&amp;quot;;
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; $xElement = $xDoc-&amp;gt;createElement($key);
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; if(is_array($val)) {
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; CreateXMLFromArray($xDoc, $xElement, $val); }&amp;nbsp;
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;else {
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; $xElement-&amp;gt;appendChild($xDoc-&amp;gt;createTextNode(iconv(SITE_CHARSET, &amp;quot;utf-8&amp;quot;, $val))); }
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; $xNode-&amp;gt;appendChild($xElement); }&amp;nbsp;
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;return $xNode; }&lt;/code&gt; &lt;/p&gt;
+
+&lt;p&gt;Engine control function: &lt;code&gt;function XSLTEngine($templateFile, $arResult, $arParams, $arLangMessages, $templateFolder, $parentTemplateFolder, $template) {
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp; $arResult[&amp;quot;PARAMS&amp;quot;] = array(
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &amp;quot;templateFolder&amp;quot; =&amp;gt; $templateFolder,
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &amp;quot;parentTemplateFolder&amp;quot; =&amp;gt; $parentTemplateFolder,
+    &lt;br /&gt;
+  &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &amp;quot;arParams&amp;quot; =&amp;gt; $arParams,
+    &lt;br /&gt;
+  &amp;nbsp; &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &amp;quot;arLangMessages&amp;quot; =&amp;gt; $arLangMessages );
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp; $xDoc = new DOMDocument(&amp;quot;1.0&amp;quot;, SITE_CHARSET);
+    &lt;br /&gt;
+  &amp;nbsp; $xRoot = $xDoc-&amp;gt;createElement('result');
+    &lt;br /&gt;
+  &amp;nbsp; CreateXMLFromArray($xDoc, $xRoot, $arResult);
+    &lt;br /&gt;
+  &amp;nbsp; $xDoc-&amp;gt;appendChild($xRoot);
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp; $xXsl = new DOMDocument();
+    &lt;br /&gt;
+  &amp;nbsp; $xXsl-&amp;gt;load( $_SERVER&amp;nbsp; [&amp;quot;DOCUMENT_ROOT&amp;quot;].$templateFile );
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp; $xProc = new XSLTProcessor;
+    &lt;br /&gt;
+  &amp;nbsp; $xProc-&amp;gt;importStyleSheet($xXsl);
+    &lt;br /&gt;
+
+    &lt;br /&gt;
+  &amp;nbsp; echo $xProc-&amp;gt;transformToXML($xDoc); }&lt;/code&gt;&lt;/p&gt;
+</Description>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-05-15 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>Definition a new template engine.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>101</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>102</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>103</Id>
+						<Value>63</Value>
+						<PropertyValue>
+							<Value>63</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>104</Id>
+						<Value>1</Value>
+						<PropertyValue>
+							<Value>1</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>105</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>106</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>107</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>108</Id>
+						<Value>149</Value>
+						<PropertyValue>
+							<Value>149</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1331</Id>
+				<Title>Profiling tools</Title>
+				<BitrixTags>Profiling tools, SQL query statistics</BitrixTags>
+				<Description>&lt;p&gt;The system empowers web developers with a useful tool to estimate performance of components or the whole site. To use it, you can simply add the following parameters to a URL: &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;b&gt;show_page_exec_time=Y&lt;/b&gt; - displays the total page execution time; &lt;/li&gt;
+
+  &lt;li&gt;&lt;b&gt;show_include_exec_time=Y&lt;/b&gt; - displays the time of execution of each component, and the menu building time. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In addition to these parameters, you can use &lt;b&gt;show_sql_stat=Y&lt;/b&gt;, which displays the number of SQL queries and the total SQL query execution time. This allows to analyze queries of a whole page as well as queries of components and menus, individually.&lt;/p&gt;
+
+&lt;br /&gt;
+Now all the parameters can be applied simultaneously just by clicking toolbar button &amp;quot;Show/Hide debug information&amp;quot;&amp;nbsp;&lt;img src=&quot;images/but_sql.png&quot; height=&quot;15&quot; width=&quot;14&quot;/&gt;.
+&lt;br /&gt;
+
+&lt;p&gt;Example&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/sql1_sm.png&quot; height=&quot;318&quot; width=&quot;357&quot;/&gt; &lt;/p&gt;
+
+&lt;p&gt;The figure above illustrates the SQL query statistics for the &lt;b&gt;News &lt;/b&gt;component on the main page. The indications shows 2 queries; the total execution time of the component is 0.0173 sec. The SQL query execution time is 0.0081 sec., which amounts to 46.82% of the component execution time. The percentage can help diagnose resource consuming PHP code, or laborious queries. Each query highlights the count of variations of queries with similar parameters, and the execution time. The statistics indicates the query source and parameters.&lt;/p&gt;
+&lt;BREAK /&gt;
+&lt;p&gt;Now consider an example of a&amp;nbsp;user profile&amp;nbsp;page.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/sql2_sm.png&quot; height=&quot;366&quot; width=&quot;357&quot;/&gt; &lt;/p&gt;
+
+
+&lt;p&gt;Here we can see&amp;nbsp;8 queries. However, they consume less than 14% of the component execution time (which is 0.0132 sec.) It is important to bear in mind that the number of queries is not the point: their execution time is more important.
+&lt;/p&gt;
+
+&lt;p&gt;Practically, the profiling parameters can help you to:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;diagnose weak points in the PHP code; &lt;/li&gt;
+
+  &lt;li&gt;find programming errors that lead to massive queries (or few but very slow queries); &lt;/li&gt;
+
+  &lt;li&gt;recognize defects in the SQL configuration of the server or individual tables. &lt;/li&gt;
+&lt;/ul&gt;
+</Description>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-05-15 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>The system empowers web developers with a useful tool to estimate performance of components or the whole site.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>101</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>102</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>103</Id>
+						<Value>66</Value>
+						<PropertyValue>
+							<Value>66</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>104</Id>
+						<Value>1</Value>
+						<PropertyValue>
+							<Value>1</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>105</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>106</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>107</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>108</Id>
+						<Value>149</Value>
+						<PropertyValue>
+							<Value>149</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+		</Elements>
+	</Catalog>
+</CommerceInformation>

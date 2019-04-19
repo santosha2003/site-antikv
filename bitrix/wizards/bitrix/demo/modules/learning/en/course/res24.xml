@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="CHA"><id>136</id>
+<timestamp_x>1183550301</timestamp_x>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id></chapter_id>
+<name>Templates management</name>
+<code></code>
+<sort>120</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>This section contains information about site templates developing technology, structure and usage. Also this section describes the possibility of utilizing templates for work and editable page areas. </p>]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

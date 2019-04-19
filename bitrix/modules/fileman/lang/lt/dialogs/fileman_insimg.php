@@ -1,0 +1,14 @@
+<?
+$MESS['FILEMAN_D_INSIMG_ERROR'] = 'Áraðykite bylos pavadinimà!';
+$MESS['FILEMAN_D_INSIMG_FOLDER'] = 'Kelias:';
+$MESS['FILEMAN_D_INSIMG_UP'] = 'Pakilti vienu lygiu aukðèiau';
+$MESS['FILEMAN_D_INSIMG_REFRESH'] = 'Atnaujinti katalogø ir bylø sàraðà';
+$MESS['FILEMAN_D_INSIMG_ROOT'] = 'Svetainës pradþia';
+$MESS['FILEMAN_D_INSIMG_OPEN_FROM_SITE'] = 'Atidaryti ið svetainës';
+$MESS['FILEMAN_D_INSIMG_UPLOAD_TO_SERV'] = 'Ákelti á tarnybinæ stotá';
+$MESS['FILEMAN_D_INSIMG_FROM_WF'] = 'Pasirinkti ið dokumentø apyvartos';
+$MESS['FILEMAN_D_INSIMG_FILENAME'] = 'Bylos pavadinimas:';
+$MESS['FILEMAN_D_INSIMG_UPLOAD_FILEPATH'] = '	
+Ákelti bylà';
+$MESS['FILEMAN_D_INSIMG_UPLOAD_FILENAME'] = 'Pavadinimas';
+?>

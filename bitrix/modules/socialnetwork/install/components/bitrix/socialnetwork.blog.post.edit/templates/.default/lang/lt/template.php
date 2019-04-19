@@ -1,0 +1,29 @@
+<?
+$MESS["BLOG_BUTTON_SEND"] = "Siøsti";
+$MESS["BLOG_BUTTON_CANCEL"] = "Atðaukti";
+$MESS["BLOG_BUTTON_DRAFT"] = "Iðsaugoti kaip juodraðtá";
+$MESS["BLOG_TITLE"] = "Tema";
+$MESS["BLOG_P_PHOTO"] = "Nuotrauka:";
+$MESS["BLOG_GRATMEDAL_1"] = "Pridëti darbuotojus";
+$MESS["BLOG_GRATMEDAL_2"] = "Pridëti daugiau";
+$MESS["BLOG_TITLE_GRAT"] = "Gavëjas:";
+$MESS["BLOG_TITLE_GRAT_OTHER"] = "kiti";
+$MESS["BLOG_GRAT_POPUP_TITLE"] = "Pasirinkite vienà";
+$MESS["BLOG_TAB_POST"] = "Praneðimas";
+$MESS["BLOG_TAB_FILE"] = "Failas";
+$MESS["BLOG_TAB_LISTS"] = "Procesai";
+$MESS["BLOG_TAB_VOTE"] = "Apklausa";
+$MESS["BLOG_TAB_GRAT"] = "Padëka";
+$MESS["BLOG_LINK_SHOW_NEW"] = "Siøsti praneðimà";
+$MESS["BLOG_UPLOAD"] = "Ákelti failà ar paveikslëlá";
+$MESS["BLOG_PICKUP"] = "Pasirinkite failà savo kompiuteryje";
+$MESS["BLOG_DIALOG"] = "Pasirinkite dokumentà ið bibliotekos";
+$MESS["BLOG_DRAG"] = "arba vilkite ir numeskite failà á ðià vietà";
+$MESS["BLOG_DIALOG_ALT"] = "atverskite Bitrix24 dokumentø bibliotekø sàraðà";
+$MESS["SBPE_MORE"] = "Daugiau";
+$MESS["SBPE_CALENDAR_EVENT"] = "Ávykis";
+$MESS["SBPE_IMPORTANT_MESSAGE"] = "Praneðimas";
+$MESS["BLOG_POST_AUTOSAVE"] = "Tinklaraðèio duomenys nebuvo iðsaugoti.";
+$MESS["BLOG_POST_AUTOSAVE2"] = "Gràþinti automatiðkai iðsaugotas vertes?";
+$MESS["LISTS_CATALOG_PROCESSES_ACCESS_DENIED"] = "Nëra prieigos";
+?>

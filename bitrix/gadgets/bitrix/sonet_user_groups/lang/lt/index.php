@@ -1,0 +1,8 @@
+<?
+$MESS["GD_SONET_USER_GROUPS_ALL_GROUPS"] = "Visos grupës";
+$MESS["GD_SONET_USER_GROUPS_NO_GROUPS"] = "Grupiø nëra.";
+$MESS["GD_SONET_USER_GROUPS_GR_UNAVAIL"] = "Grupiø sàraðo nëra.";
+$MESS["GD_SONET_USER_GROUPS_CREATE_GROUP"] = "Kurti grupæ";
+$MESS["GD_SONET_USER_GROUPS_SEARCH_GROUP"] = "Ieðkoti grupiø";
+$MESS["GD_SONET_USER_GROUPS_LOG"] = "Atnaujinimai";
+?>

@@ -1,0 +1,33 @@
+<?
+$MESS["BLB_GROUP_NAV"] = "Коментари";
+$MESS["BLB_DATE_CREATE"] = "Дата на създаване";
+$MESS["BLB_AUTHOR_ID"] = "Автор";
+$MESS["BLB_TITLE"] = "Коментари";
+$MESS["BLB_F_ALL"] = "(Всички)";
+$MESS["BLB_YES"] = "Да";
+$MESS["BLB_NO"] = "Не";
+$MESS["BLB_DELETE_ALT"] = "Изтрий";
+$MESS["BLB_DELETE_CONF"] = "Сигурни ли сте, че искате да изтриете този коментар?";
+$MESS["BLB_HIDE_ALT"] = "Скрий";
+$MESS["BLB_SHOW_ALT"] = "Покажи";
+$MESS["BLB_DELETE_ERROR"] = "Грешка при изтриване на коментара";
+$MESS["BLB_HIDE_ERROR"] = "Грешка при скриване на коментара";
+$MESS["BLB_SHOW_ERROR"] = "Грешка при показване на коментара";
+$MESS["BLB_VIEW_ALT"] = "Виж коментарите на сайта";
+$MESS["BLB_AUTHOR_NAME"] = "Име на автора";
+$MESS["BLB_AUTHOR_EMAIL"] = "Email на автора";
+$MESS["BLB_AUTHOR_IP"] = "IP на автора";
+$MESS["BLB_AUTHOR_IP1"] = "IP1 на автора";
+$MESS["BLB_PUBLISH_STATUS"] = "Публикуван";
+$MESS["BLB_POST_TEXT"] = "Текст на коментара";
+$MESS["BLB_BLOG_ID"] = "Блог";
+$MESS["BLB_POST_ID"] = "Съобщение";
+$MESS["BLB_BLOG_OWNER_ID"] = "Собственик на блога";
+$MESS["BLB_BLOG_SOCNET_GROUP_ID"] = "Група-собственик на блога";
+$MESS["BLB_BLOG_ACTIVE"] = "Блог е активен";
+$MESS["BLB_BLOG_GROUP_ID"] = "Група блогове";
+$MESS["BLB_BLOG_GROUP_SITE_ID"] = "Сайт";
+$MESS["BLB_COMMENT"] = "Коментар";
+$MESS["BLB_AUTHOR_ANONYM"] = "Анонимен автор";
+$MESS["BLB_STOP_LIST"] = "стоп-лист";
+?>

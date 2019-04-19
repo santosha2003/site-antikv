@@ -1,0 +1,25 @@
+<?
+$MESS ['P_PAY_SYS'] = "Ödeme yöntemi:";
+$MESS ['P_DELIVERY'] = "Teslimat yöntemi:";
+$MESS ['STPOL_CUR_ORDERS'] = "Mevcut sipariþleri görüntüle";
+$MESS ['STPOL_ORDERS_HISTORY'] = "Sipariþ özgeçmiþini görüntüle";
+$MESS ['STPOL_STATUS'] = "Durum içerisindeki sipariþler";
+$MESS ['STPOL_ORDER_NO'] = "Sipariþ No:";
+$MESS ['STPOL_DETAIL_ALT'] = "Sipariþin ayrýntýlý tanýmýný görüntülemesi";
+$MESS ['STPOL_FROM'] = "den";
+$MESS ['STPOL_CANCELED'] = "- Deðiþtirildi";
+$MESS ['STPOL_SUM'] = "Miktar:";
+$MESS ['STPOL_STATUS_T'] = "Durum:";
+$MESS ['STPOL_STATUS_FROM'] = "den";
+$MESS ['STPOL_CONTENT'] = "Sipariþ içeriði:";
+$MESS ['STPOL_SHT'] = "adt.";
+$MESS ['STPOL_DETAILS'] = "Ayrýntýlý";
+$MESS ['STPOL_REORDER'] = "Sipariþi tekrarla (ayný ürünleri sipariþ et)";
+$MESS ['STPOL_REORDER1'] = "Sipariþi tekrarla";
+$MESS ['STPOL_CANCEL'] = "Sipariþi iptal et";
+$MESS ['STPOL_NO_ORDERS'] = "Sipariþler bulunamadý";
+$MESS ['STPOL_HINT'] = "Sipariþ içeriðini görüntülemek için, numarasýna týklatýnýz.";
+$MESS ['STPOL_HINT1'] = "Eðer bu listede hatalarý tespit ettiyseniz, lütfen müþteri bölümüne bildiriniz. ";
+$MESS ['STPOL_PAYED_Y'] = "(ödendi)";
+$MESS ['STPOL_PAYED_N'] = "(ödenmedi)";
+?>

@@ -1,0 +1,14 @@
+<?
+$MESS['STAT_TITLE'] = '';
+$MESS['STAT_F_KEYWORDS'] = 'Pavadinimas, apraðymas:';
+$MESS['STAT_F_GROUP_BY'] = 'Grupavimas pagal:';
+$MESS['STAT_ADV_EVENTS_PAGES'] = 'Ávykiø tipai';
+$MESS['STAT_SORT'] = 'Rûðiavimas';
+$MESS['STAT_NAME'] = 'Vardas';
+$MESS['STAT_DESCRIPTION'] = 'Apraðymas';
+$MESS['STAT_COUNTER'] = '';
+$MESS['STAT_COUNTER_BACK'] = '';
+$MESS['STAT_F_PERIOD'] = 'Laikotarpis';
+$MESS['STAT_TOTAL_EVENT_TYPES'] = 'Ið viso ávykio tipø:';
+$MESS['STAT_TOTAL_RECORDS'] = 'Viso áraðø:';
+?>

@@ -1,0 +1,34 @@
+<?
+$MESS ['FM_FLT_SEARCH_TITLE'] = "Arama hanesini doldurun";
+$MESS ['FM_FLT_SEARCH'] = "Bul";
+$MESS ['FM_FLT_LOGIN'] = "Kullanýcý adý";
+$MESS ['FM_FLT_EMAIL'] = "E-Mail";
+$MESS ['FM_FLT_FIO'] = "soyadý, adý";
+$MESS ['FM_FLT_FORUM'] = "Forum";
+$MESS ['FM_FLT_TOPIC'] = "Konu";
+$MESS ['FM_FLT_START_DATE'] = "Abonelik baþlama tarihi";
+$MESS ['FM_FLT_START_DATE_ALT'] = "Abonelik baþlama tarihi";
+$MESS ['FM_FLT_FORUM_ALT'] = "Forum";
+$MESS ['FM_FLT_SUBSCR_TYPE'] = "Abnelik türü";
+$MESS ['FM_FLT_SUBSCR_TYPE_ALT'] = "Abnelik türü";
+$MESS ['FM_Y'] = "evet";
+$MESS ['FM_NO'] = "yok";
+$MESS ['FM_LIST_USER'] = "Kullanýcýlar listesi";
+$MESS ['FM_ACT_DELETE'] = "Sil";
+$MESS ['FM_TITLE'] = "Kullanýcýnýn abonelikleri ";
+$MESS ['FM_TITLE_PAGE'] = "Kullanýcýnýn abonelikleri";
+$MESS ['FM_HEAD_ID'] = "Kimlik";
+$MESS ['FM_HEAD_FORUM'] = "Forum";
+$MESS ['FM_HEAD_TOPIC'] = "Konu";
+$MESS ['FM_HEAD_START_DATE'] = "Aboneliðin baþlangýcý";
+$MESS ['FM_HEAD_LAST_SEND'] = "Son mesaj";
+$MESS ['FM_NEW_TOPIC_ONLY'] = "Yalnýzca yeni konular";
+$MESS ['FM_ALL_MESSAGE'] = "Forumun tüm mesajlarý";
+$MESS ['FM_TYPICAL'] = "Konunun yeni mesjalarý";
+$MESS ['FM_WRONG_DATE_FROM'] = "Filtre'de doðru \"den itibaren\" \"Oluþturma tarihi\" girin";
+$MESS ['FM_WRONG_DATE_TO'] = "Filtre'de doðru \"-e kadar\" \"Oluþturma tarihi\" girin";
+$MESS ['FM_WRONG_PERIOD'] = "Süre yanlýþ belirtilmiþ";
+$MESS ['FM_WRONG_USER_ID'] = "Kullanýcýnýn Kimliði Yok";
+$MESS ['FM_ACT_DEL_CONFIRM'] = "Gerçekten aboneliði silmek istiyor musunuz?";
+$MESS ['FM_SPACE'] = "seçilmedi";
+?>

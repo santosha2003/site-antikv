@@ -1,0 +1,29 @@
+<?
+$MESS["FORM_MODULE_NAME"] = "Web formos";
+$MESS["FORM_MODULE_DESCRIPTION"] = "Ðis modulis valdo ávairias web formas, leidþia saugoti ir filtruoti duomenis uþpildytose formose.";
+$MESS["FORM_INSTALL_TITLE"] = "Web formø modulio diegimas";
+$MESS["FORM_UNINSTALL_TITLE"] = "Web formø modulio ðalinimas";
+$MESS["FORM_SELECT_INITITAL"] = "Praðome pasirinkti aplankà demo failams:";
+$MESS["FORM_NO"] = "ne";
+$MESS["FORM_ATTENTION"] = "Dëmesio! Modulis bus paðalintas.";
+$MESS["FORM_YOU_CAN_SAVE_TABLES"] = "Norëdami iðsaugoti duomenis, saugomus duomenø bazës lentelëse, paþymëkyte &quot;Save Tables&quot; checkbox";
+$MESS["FORM_SAVE_TABLES"] = "Iðsaugoti lenteles";
+$MESS["FORM_DELETE"] = "Paðalinti";
+$MESS["FORM_DELETE_COMLETE"] = "Ðalinimas atliktas.";
+$MESS["FORM_BACK"] = "Gráþti";
+$MESS["FORM_ERRORS"] = "Klaidos:";
+$MESS["FORM_INSTALL"] = "Ádiegti";
+$MESS["FORM_COMPLETE"] = "Diegimas atliktas. ";
+$MESS["FORM_WRONG_MAIN_VERSION"] = "Norëdami ádiegti ðá modulá, jûs turite atnaujinti sistemos branduolá iki versijos #VER#";
+$MESS["FORM_DENIED"] = "Uþdrausti prieigà";
+$MESS["FORM_OPENED"] = "prieiga suteikiama";
+$MESS["FORM_FULL"] = "pilna prieiga ";
+$MESS["FORM_URL_PUBLIC"] = "Aplankas demo failams:";
+$MESS["FORM_DEMO_DIR"] = "Sekite ðià nuorodà, norëdami perþiûrëti demo failø veikymà:";
+$MESS["FORM_RESET"] = "Atstatyti";
+$MESS["FORM_SITE"] = "Svetainë";
+$MESS["FORM_LINK"] = "Nuoroda";
+$MESS["COPY_PUBLIC_FILES"] = "Kopijuoti vieðuosius failus";
+$MESS["COPY_FOLDER"] = "Aplankas, kur failai bus kopijuojami (susijæs su svetainës ðakniniu aplanku):";
+$MESS["INSTALL_PUBLIC_REW"] = "Perraðyti esamus failus";
+?>

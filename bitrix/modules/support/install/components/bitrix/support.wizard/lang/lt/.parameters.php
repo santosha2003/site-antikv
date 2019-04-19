@@ -1,0 +1,31 @@
+<?
+$MESS["SUP_LIST_TICKETS_PER_PAGE"] = "Uþklausimø skaièius viename puslapyje";
+$MESS["SUP_SET_PAGE_TITLE"] = "Nustatyti puslapio antraðtæ";
+$MESS["SUP_EDIT_MESSAGES_PER_PAGE"] = "Praneðimø skaièius viename puslapyje";
+$MESS["SUP_DESC_YES"] = "Taip";
+$MESS["SUP_DESC_NO"] = "Ne";
+$MESS["SUP_TICKET_ID_DESC"] = "Uþklausimo ID";
+$MESS["SUP_TICKET_LIST_DESC"] = "Uþklausimø sàraðas";
+$MESS["SUP_TICKET_EDIT_DESC"] = "Uþklausimo redagavimas";
+$MESS["SUP_SHOW_COUPON_FIELD"] = "Atvaizduoti kupono ávedimo laukà";
+$MESS["SUP_MESSAGE_SORT_ORDER"] = "Bilietø praneðimø rûðiavimo tvarkà";
+$MESS["SUP_MESSAGE_MAX_LENGTH"] = "Maksimalus nelauþtos eilutës ilgis";
+$MESS["SUP_MESSAGE_MAX_LENGTH_TIP"] = "Didþiausias nesuvyniotos teksto eilutës ilgis, kurioje nëra tarpø ar skyrybos þenklø; ilgesnës eilutës bus suvyniotos.";
+$MESS["SUP_SORT_ASC"] = "didëjanèia tvarka";
+$MESS["SUP_SORT_DESC"] = "maþëjanèia tvarka";
+$MESS["SUP_SORT_FIELD_ID"] = "ID";
+$MESS["SUP_SORT_FIELD_NUMBER"] = "Praneðimo numeris";
+$MESS["WZ_PROPERTY_VALUES"] = "Keliø laukø sàvybë, kurioje jaugomos iðkrentanèio ðàraðo reikðmës";
+$MESS["WZ_INCLUDE_INTO_CHAIN"] = "Pridëti vedlio skyrius á navigacijos grandinæ";
+$MESS["WZ_PROPERTY"] = "Savybë kurioje saugomas klausymo tipas";
+$MESS["WZ_IBLOCK"] = "Informacinis blokas";
+$MESS["WZ_IBTYPE"] = "Informacinio bloko tipas";
+$MESS["WZ_SHOW_RESULT"] = "Rodyti vedlio darbo rezultatus";
+$MESS["WZ_TEMPLATE"] = "Vedlio ðablonas";
+$MESS["WZ_STANDARD"] = "Grieþtas";
+$MESS["WZ_DEFAULT"] = "Elegantiðkas";
+$MESS["WZ_SELECT_SECTIONS"] = "Skyriø sàraðas sàsajai";
+$MESS["SECTIONS_TO_CATEGORIES"] = "ájungti sàsajà";
+$MESS["WZ_GRP_SECTIONS_TO_CATEGORIES"] = "Vedlio skyriø susiejimas su techninës pagalbos kategorijomis";
+$MESS["SUP_SHOW_USER_FIELD"] = "Rodyti pasirinktinius laukus";
+?>

@@ -1,0 +1,13 @@
+<?
+$MESS ['FILEMAN_D_MENUSEL_ENTER_NAME'] = "Lütfen yeni öðenin adýný girin!";
+$MESS ['FILEMAN_D_MENUSEL_TYPE'] = "Menü tipi:";
+$MESS ['FILEMAN_D_MENUSEL_LAST'] = "(son öðe)";
+$MESS ['FILEMAN_D_MENUSEL_ITEM'] = "Menü öðesi:";
+$MESS ['FILEMAN_D_MENUSEL_ADD_NEW'] = "Yeni ekle";
+$MESS ['FILEMAN_D_MENUSEL_INTO'] = "Mevcut bir öðeye ekle";
+$MESS ['FILEMAN_D_MENUSEL_NAME'] = "Yeni öðe adý:";
+$MESS ['FILEMAN_D_MENUSEL_INSERT_BEFORE'] = "Öðeden önce ekle:";
+$MESS ['FILEMAN_D_MENUSEL_EXISTS'] = "Mevcut öðe:";
+$MESS ['FILEMAN_D_MENUSEL_LEFT'] = "Sol menü";
+$MESS ['FILEMAN_D_MENUSEL_TOP'] = "Üst menü";
+?>

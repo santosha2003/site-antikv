@@ -1,0 +1,32 @@
+<?
+$MESS ['STAT_TITLE'] = "Olaylarýn yüklenmesi";
+$MESS ['STAT_CHARGEBACK'] = "Para araçlarýn iadesi";
+$MESS ['STAT_EVENT_TYPE'] = "ID türü<br> olaylar";
+$MESS ['STAT_DATE'] = "Tarih<br>";
+$MESS ['STAT_PARAM'] = "Ek. parametre<br>(#GROUP_SITE_ID#.oturum.<br>ziyaretçi.ülke.<br>reklam_kampanyasý.<br> dönüþ.site)";
+$MESS ['STAT_COPY'] = "Alt satýrýna kopyala";
+$MESS ['STAT_CALENDAR'] = "Takvim";
+$MESS ['STAT_SELECT_EVENT'] = "Olay türü seçimi";
+$MESS ['STAT_LOAD'] = "Yükle";
+$MESS ['STAT_FILE'] = "CSV dosyasý:";
+$MESS ['STAT_MONEY'] = "Para miktarý";
+$MESS ['STAT_PREVIEW'] = "Önizleme:";
+$MESS ['STAT_STEP'] = "Yükleme adýmý (sn.):";
+$MESS ['STAT_HANDLER'] = "CSV dosya iþleyicisi :";
+$MESS ['STAT_LOADING_FROM_TABLE'] = "Olaylarýn manuel giriþi";
+$MESS ['STAT_LOADING_FROM_CSV'] = "CSV dosyasýndan olaylarýn yüklenmesi";
+$MESS ['STAT_UNIQUE'] = "Sadece benzersiz olaylarý yükle";
+$MESS ['STAT_UNIQUE_ALT'] = "benzersizilik tüm yüklenen alanlarýn kombinasyonu ile kontrol edilmektedir (para araçlarýn dýþýnda)";
+$MESS ['STAT_CURRENCY'] = "Döviz";
+$MESS ['STAT_NEXT_STEP'] = "sonraki adým";
+$MESS ['STAT_EVENTS_LOADING'] = "Olaylar yüklenmektedir. Lütfen bekleyiniz...";
+$MESS ['STAT_LOADED'] = "Yüklenenler:";
+$MESS ['STAT_PROCESSED'] = "Ýþlenmiþ:";
+$MESS ['STAT_ON_STEP'] = "Adýmada";
+$MESS ['STAT_TOTAL_CSV'] = "CSV'de toplam satýr:";
+$MESS ['STAT_DUPLICATE'] = "Kopyalar:";
+$MESS ['STAT_CONVERT_TO_DEFAULT_CUR'] = "Yüklemeden önce, tüm para miktarý döviz bazýna dönüþtürülecektir. ";
+$MESS ['STAT_FROM_FILE'] = "Dosyadan";
+$MESS ['STAT_FROM_FORM'] = "Manuel giriþ";
+$MESS ['STAT_ATTENTION_1'] = "Dikkat";
+?>

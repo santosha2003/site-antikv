@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>382</id>
+<timestamp_x>1170144215</timestamp_x>
+<date_create>1153494732</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>142</chapter_id>
+<name>Localization</name>
+<sort>300</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>The message files localization can be implemented the following ways:</p>
+
+<ul>
+  <li>manually (when the site administrator searches and translates necessary message files); </li>
+
+  <li>with use of the <b>Localization</b> module tools. </li>
+</ul>
+
+<p>The <b>Localization</b> module provides users with the handy interface for text messages search and translation. The <b>Localization</b> module allows:</p>
+
+<ul>
+  <li>to look through the message files distribution among the system files; </li>
+
+  <li>define the number of not translated text messages for every file; </li>
+
+  <li>proceed to the necessary text messages translation. </li>
+</ul>
+
+<p>To look through the message files distribution among the system files open the <b>Interface localization</b> page: </p>
+
+<p><i>Settings -&gt; Localization</i></p>
+
+<p><img src="cid:resources/res67/WDNT8.localization.png" height="194" width="370" border="0"/></p>
+
+<p>The number of not translated text messages used in file or directory is displayed with red color. To implement a text message translation choose the file, where the message is used, and input the message translation for necessary language:</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course/messages/phrase.png',657,343,'Text messages localization')"><img src="cid:resources/res67/AV2F7.skLaE.cdNeq.phrase_s.png" height="200" alt="Click to enlarge" hspace="0" width="384" border="0"/></a> </p>
+
+<div class="hint"><b>Note</b>: Only messages available for displaying in the same (current) encoding are shown in the form. </div>
+
+<p>The system allows to proceed to translation of displaying on a page messages directly from this page (both in administrative or public section). To do so add the <code>show_lang_files=Y</code> parameter in the page URL (authorization is required). </p>
+
+<p><img src="cid:resources/res67/cdo5i.Qwh6J.uIe58.param.png" height="22" alt="" hspace="0" width="560" border="0"/></p>
+
+<p>As the result at the bottom of the page will be displayed list of message files used on the page. </p>
+
+<p><img src="cid:resources/res67/dWTId.80OeT.Dh7uk.lang_files.png" height="319" alt="" hspace="0" width="463" border="0"/></p>
+
+<p>The files names are displayed as links allowing to proceed to these files messages translation. Also at the end of the list is shown the field intended for text messages exact fit search. </p>
+
+<p>For example, let&rsquo;s try to search the &laquo;Site search&raquo; phrase used in the search form. </p>
+
+<p><img src="cid:resources/res67/iZTbs.F9d5I.search.png" height="92" alt="" hspace="0" width="149" border="0"/></p>
+
+<p>To do so type the phrase in the search field.</p>
+
+<p><img src="cid:resources/res67/fNzW1.goAds.site_search.png" height="112" alt="" hspace="0" width="273" border="0"/></p>
+
+<p>As the result there will be shown a list of files containing the search phrase.</p>
+
+<p><img src="cid:resources/res67/ncmAq.BHH4S.site_search_res.png" height="82" alt="" hspace="0" width="345" border="0"/></p>
+
+<p>Search phrase is displayed as link allowing to proceed to this phrase translation.</p>
+
+<p><img src="cid:resources/res67/562Zf.search.png" height="160" width="461" border="0"/></p>
+
+<div class="hint"><b>Information</b>: All localized phrases can be collected with use of the special script. Collected files can be placed in the <b>Update system</b> for downloading by other users.</div>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

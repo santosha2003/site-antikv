@@ -1,0 +1,30 @@
+<?
+$MESS ['SEF_MODE_TIP'] = "SET modunu ve URL ayar alanlarýný aktive etmek için bu seçeneði seçin.";
+$MESS ['IBLOCK_TYPE_TIP'] = "Açýlan listeden sistemde oluþturulan bilgi bloðu tiplerinden birisi seçilir. ?? tuþuna basýldýðýnda seçilen tip için oluþturulan bilgi bloklarý yüklenecektir. (??????)-> seçeneði seçildiðinde Bilgi bloðu tür kimliðinin yandaki alana girilmesi gerekir.";
+$MESS ['IBLOCK_ID_TIP'] = "Bilgi bloklarýndan biri seçilir <i>diðer</i> seçeneði seçildiðinde Bilgi bloðunun kimliðinin yandaki alana girilmesi gerekir.";
+$MESS ['PROPERTY_CODES_TIP'] = "Öðe ekleme þeklinde düzenlemede gösterilecek bilgi bloðu öðe alanlarý ve özellikleri seçilir.";
+$MESS ['PROPERTY_CODES_REQUIRED_TIP'] = "Bu alan ve özelliklerden doldurulmasý zorunlu olanlar seçilebilir.";
+$MESS ['GROUPS_TIP'] = "Öðeleri düzenleyebilecek veya ekleyebilecek kullanýcý gruplarý seçilir.";
+$MESS ['STATUS_NEW_TIP'] = "Ýþ akýþý olmadýðý durumda kayýt sonrasý düzenleme veya deðiþiklik yapýlýp yapýlmayacaðý seçilebilir.<br />Ýþ akýþý olmasý durumunda listeden öðelerin aktarýlacaðý veya kullanýcýlar tarafýndan düzenlenebilecekler seçilebilir. ";
+$MESS ['STATUS_TIP'] = "Ýþ akýþý olmadýðý durumda herhangi bir öðe ile veya sadece aktif olmayanlarla çalýþýlýp çalýþmayacaðý seçilir.<br />Ýþ akýþý olmaýs durumunda kullanýcýnýn görebileceði öðeler seçilebilir.";
+$MESS ['LIST_URL_TIP'] = "<i>Kendi öðe listesi</i> bileþeni yardýmýyla oluþturulabilen kullanýcýnýn kiþisel öðelerinin bulunduðu .sayfaya giden yolun belirtilmesi.";
+$MESS ['ELEMENT_ASSOC_TIP'] = "all elements will be available to all users";
+$MESS ['MAX_USER_ENTRIES_TIP'] = "Bu alan bir kullanýcý tarafýndan eklenecek öðe sayýsýný kýsýtlar";
+$MESS ['MAX_LEVELS_TIP'] = "Buradaki rakam bilgi bloðunun bölümlerinin sayýsýný kýsýtlar";
+$MESS ['LEVEL_LAST_TIP'] = "n seçilmesi durumunda kullanýcýlar alt seviyede bilgi bloðuna öðe ekleyebilir.";
+$MESS ['USE_CAPTCHA_TIP'] = "Bu seçeneðin seçilmesi durumunda görüntü ve CAPTCHA giriþ alaný gösterilir.";
+$MESS ['USER_MESSAGE_EDIT_TIP'] = "Bu bölümdeki mesaj kullanýcýya düzenlenen öðeyi kaydederken gösterilecek.";
+$MESS ['USER_MESSAGE_ADD_TIP'] = "Buradaki mesaj kullanýcýya ekleme yaptýktan sonra gösterilir.";
+$MESS ['MAX_FILE_SIZE_TIP'] = "Bu alan yüklenecek dosya boyutunu sýnýrlandýrmayý saðlar.";
+$MESS ['CUSTOM_TITLE_NAME_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_DATE_ACTIVE_FROM_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_DATE_ACTIVE_TO_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_IBLOCK_SECTION_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_PREVIEW_TEXT_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_PREVIEW_PICTURE_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_DETAIL_TEXT_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['CUSTOM_TITLE_DETAIL_PICTURE_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['SEF_FOLDER_TIP'] = "Bileþenin çalýþtýðý klasöre giden yol. Bu yol fiziksel yol ile eþleþebilir veya eþleþmeye de bilir.";
+$MESS ['CUSTOM_TITLE_TAGS_TIP'] = "Kullanýcýlara gösterilecek alan adý belirtilir.";
+$MESS ['DEFAULT_INPUT_SIZE_TIP'] = "Veri giriþ alaný boyutu";
+?>

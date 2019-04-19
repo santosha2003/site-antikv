@@ -1,0 +1,29 @@
+<?
+$MESS["SONET_GL_EMPTY_ENTITY_TYPE"] = "Savybës tipas nenurodytas.";
+$MESS["SONET_GL_ERROR_NO_ENTITY_TYPE"] = "Savybës tipas nurodytas neteisingas.";
+$MESS["SONET_GL_EMPTY_ENTITY_ID"] = "Savybës ID nenurodyta.";
+$MESS["SONET_GL_ERROR_CALC_ENTITY_TYPE"] = "Nepavyko nustatyti savybës tipà.";
+$MESS["SONET_GL_ERROR_NO_ENTITY_ID"] = "Neteisingas savybës ID.";
+$MESS["SONET_GL_ERROR_NO_USER_ID"] = "Neteisingas naudotojo ID.";
+$MESS["SONET_GL_EMPTY_EVENT_ID"] = "Ávykis nenurodytas";
+$MESS["SONET_GL_ERROR_NO_FEATURE_ID"] = "Nurodytas ávykis neteisingas.";
+$MESS["SONET_GL_EMPTY_DATE_CREATE"] = "Sukûrimo data neteisinga.";
+$MESS["SONET_GL_EMPTY_TITLE"] = "Nenurodyta antraðtë.";
+$MESS["SONET_GL_WRONG_PARAMETER_ID"] = "Neteisingas ID.";
+$MESS["SONET_GL_TITLE_JOIN1"] = "Naujas narys #TITLE# prisijungë prie grupës";
+$MESS["SONET_GL_TITLE_JOIN2"] = "Nauji nariai #TITLE# prisijungë prie grupës";
+$MESS["SONET_GL_TITLE_UNJOIN1"] = "Narys #TITLE# iðëjo ið grupës";
+$MESS["SONET_GL_TITLE_UNJOIN2"] = "Nariai #TITLE# iðëjo ið grupës";
+$MESS["SONET_GL_TITLE_MODERATE1"] = "Grupei priskirtas moderatorius #TITLE#.";
+$MESS["SONET_GL_TITLE_MODERATE2"] = "Grupei priskirti moderatoriai #TITLE#.";
+$MESS["SONET_GL_TITLE_OWNER1"] = "Grupei #TITLE# priskirtas naujas savininkas.";
+$MESS["SONET_GL_TITLE_UNMODERATE1"] = "#TITLE# paðalintas ið grupës moderatoriø.";
+$MESS["SONET_GL_TITLE_UNMODERATE2"] = "#TITLE# paðalinti ið grupës moderatoriø.";
+$MESS["SONET_GL_TITLE_FRIEND1"] = "Á draugø sàraðà pridëtas naudotojas #TITLE#.";
+$MESS["SONET_GL_TITLE_UNFRIEND1"] = "Naudotojas #TITLE# paðalintas ið draugø.";
+$MESS["SONET_GL_TITLE_GROUP1"] = "Naudotojas tapo grupës #TITLE# nariu.";
+$MESS["SONET_GL_TITLE_UNGROUP1"] = "Naudotojas iðëjo ið grupës #TITLE#.";
+$MESS["SONET_GL_TITLE_EXCLUDE_USER1"] = "Naudotojas paðalintas ið #TITLE# grupës.";
+$MESS["SONET_GL_TITLE_EXCLUDE_GROUP1"] = "Naudotojas #TITLE# paðalintas ið grupës.";
+$MESS["SONET_GL_SEND_EVENT_LINK"] = "Pereiti:";
+?>

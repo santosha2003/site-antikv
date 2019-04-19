@@ -1,0 +1,10 @@
+<?
+$PERM["pub"]["8"]="T_8";
+$PERM["upload"]["8"]="T_8";
+$PERM["personal"]["5"]="W";
+$PERM["catalog"]["5"]="W";
+$PERM["news"]["5"]="W";
+$PERM["about"]["5"]="W";
+$PERM["index.php"]["*"]="W";
+$PERM["/"]["*"]="R";
+?>

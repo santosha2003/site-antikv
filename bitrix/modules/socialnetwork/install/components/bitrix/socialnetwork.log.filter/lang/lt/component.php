@@ -1,0 +1,16 @@
+<?
+$MESS["SONET_MODULE_NOT_INSTALL"] = "Socialinio tinklo modulis neádiegtas.";
+$MESS["SONET_C30_DATE_FILTER_NO_NO_NO_1"] = "(nepasirinkta)";
+$MESS["SONET_C30_DATE_FILTER_TODAY"] = "ðiandien";
+$MESS["SONET_C30_DATE_FILTER_YESTERDAY"] = "vakar";
+$MESS["SONET_C30_DATE_FILTER_WEEK"] = "ðià savaitæ";
+$MESS["SONET_C30_DATE_FILTER_WEEK_AGO"] = "praeità savaitæ";
+$MESS["SONET_C30_DATE_FILTER_MONTH"] = "ðá mënesá";
+$MESS["SONET_C30_DATE_FILTER_MONTH_AGO"] = "praeità mënesá";
+$MESS["SONET_C30_DATE_FILTER_LAST"] = "naujausi";
+$MESS["SONET_C30_DATE_FILTER_EXACT"] = "tiksliai";
+$MESS["SONET_C30_DATE_FILTER_LATER"] = "po";
+$MESS["SONET_C30_DATE_FILTER_EARLIER"] = "prieð";
+$MESS["SONET_C30_DATE_FILTER_INTERVAL"] = "datø diapazonas";
+$MESS["SONET_C30_DATE_FILTER_DAYS"] = "dienos";
+?>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>384</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153727291</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>144</chapter_id>
+<name>Menu building</name>
+<sort>200</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>In general the process of menu creation consists of the following stages: </p>
+
+<ul>
+  <li>defining HTML elements used in menu template; </li>
+
+  <li>menu template creating; </li>
+
+  <li>including function for menu call in site template (in template prolog or epilog); </li>
+
+  <li>creating menu description file (file with menu items). </li>
+</ul>
+
+<h3>Menu structure</h3>
+
+<p>Any menu of a site is built based on the two components:</p>
+
+<ul>
+  <li>array of data provided in the administrative section (the product ships with the demo menu); </li>
+
+  <li>menu design template. </li>
+</ul>
+
+<p>Array of data defines the menu composition, text and links of all the menu items. A menu template is the PHP code that describes the menu design. Menu template processes the data array and generates the HTML code.</p>
+
+<h4>Array of data </h4>
+
+<p>Files with menu items are located in those sections (directories) where they are to be used for the menu display. This files have the following names: <code>.&lt;menu_type&gt;.menu.php</code>.</p>
+
+<p>For example, for storing data of menu with type &quot;left&quot; will be used file <code>.left.menu.php</code>, and for data of menu with type &quot;top&quot; will be used file <code>.top.menu.php</code>.</p>
+
+<p>If a given section does not contain a menu description file, the system will search a section of upper level for such files.</p>
+
+<p>E.g. usually the main site menu is considered to be displayed in all site sections (in the product demonstrational version it is menu with type &quot;top&quot;). That is why this menu description file is stored only in the site root directory. </p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/menu/menu_top.png',581,549,'Main menu')"><img src="cid:resources/res71/zRw2C.OYkFV.menu_top_s.png" style="CURSOR: pointer" height="200" alt="Click to enlarge" width="212" border="0"/></a> </p>
+
+<p>Also usually it is supposed that every site section should have its own complementary menu. For this purpose description file for complementary menu is created in every site section:</p>
+
+<p>
+  <table>
+    <tbody>
+      <tr><td><a href="javascript:ShowImg('/images/integration_course_en/menu/menu_left1.png',583,442,'Complementary menu')"><img src="cid:resources/res71/ze0th.lWMu4.menu_left1_s.png" style="CURSOR: pointer" height="200" alt="Click to enlarge" width="264" border="0"/></a> </td><td>&nbsp;</td><td><a href="javascript:ShowImg('/images/integration_course_en/menu/menu_left2.png',583,355,'Complementary menu')"><img src="cid:resources/res71/H6NYf.I7Pei.menu_left2_s.png" style="CURSOR: pointer" height="200" alt="Click to enlarge" width="328" border="0"/></a> </td></tr>
+    </tbody>
+  </table>
+</p>
+
+<p>The Bitrix Site Manager allows using dynamic menu. The data array for such menu is generated automatically accordingly to data get wit use of the special program script. This scrip must be stored in file with the mane <code>.<menu_type></menu_type>.menu_ext.php</code> in folder of the corresponding site section. An example of such menu can be found in the product demonstrational version. The dynamic menu is used for &quot;Phone&quot; and &quot;Accessories&quot; sections.</p>
+
+<p>
+  <table>
+    <tbody>
+      <tr><td><a href="javascript:ShowImg('/images/integration_course_en/menu/left_menu1.png',492,351,'Dynamic menu')"><img src="cid:resources/res71/UnGFg.jyNX8.left_menu1_s.png" style="CURSOR: pointer" height="150" alt="Click to enlarge" width="201" border="0"/></a> </td><td>&nbsp;</td><td><a href="javascript:ShowImg('/images/integration_course_en/menu/left_menu2.png',557,350,'Dynamic menu')"><img src="cid:resources/res71/ZiyIm.as7TY.left_menu2_s.png" style="CURSOR: pointer" height="150" alt="Click to enlarge" width="239" border="0"/></a></td></tr>
+    </tbody>
+  </table>
+</p>
+
+<p>In this case the &quot;Mobile phones&quot; and &quot;Accessories&quot; information block section names are used as menu item. A program script collecting data for dynamic menu is stored in the file <code>.left.menu_ext.php</code> in folders of the corresponding site sections.</p>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/menu/menu_ext.png',529,424,'Script for dynamic menu')"><img src="cid:resources/res71/XoKWr.meoG2.menu_ext_s.png" style="CURSOR: pointer" height="200" alt="Click to enlarge" width="250" border="0"/></a></p>
+
+<h4>Menu design template</h4>
+
+<h6>Template developing</h6>
+
+<p>The first thing you need to do to customize the template is to choose the repeating parts of a menu.</p>
+
+<p><img src="cid:resources/res71/jkG87.1ODtQ.template.png" height="201" width="378"/></p>
+
+<p>For instance, the horizontal menu is comprised of table cells, while the vertical menu consists of rows.</p>
+
+<h6>Menu template creating</h6>
+
+<p>All menu templates share the common structure:</p>
+
+<ul>
+  <li>menu template header part; </li>
+
+  <li>description of substitutions for different processing conditions; </li>
+
+  <li>menu template body; </li>
+
+  <li>menu template footer part. </li>
+</ul>
+
+<p>Let us consider how a template can be constructed by the example of left menu:</p>
+
+<pre class="syntax">&lt;?
+//--- The following variables can be used when creating a menu template:
+//--- $TEXT &ndash; menu item text;
+//--- $LINK – link URL of the menu item;
+//--- $ITEM_TYPE – menu item type. Can have the following values:
+//---   &quot;D&quot; – directory, &quot;P&quot; - page, &quot;U&quot; – parametrized page.
+//--- $ITEM_INDEX – menu item index.
+//--- $SELECTED – set to true if the menu item is selected.
+//--- $PERMISSION – access permissions for the current page. 
+//--- Can have the following values: &quot;D&quot; – access denied, &quot;R&quot; – read, 
+//--- &quot;W&quot; – write, &quot;X&quot; – write and permission modification.
+//--- $PARAMS[&quot;&lt;parameter&gt;&quot;] – array of parameter values
+//--- set in the extended editing mode.
+
+//------------- Menu Header -------------------------------------
+//--- Upper constant part of the table.
+
+$sMenuProlog=&quot;&lt;table width='100%' border='0' cellspacing='0' cellpadding='0' background=''&gt;n&quot;;
+
+//--- Description of substitutions for different processing conditions
+//--- Template elements are altered according to the display conditions.
+//--- If any menu item is set to display as the separator,
+//--- a corresponding parameter  value is checked:
+//---     $PARAMS[&quot;SEPARATOR&quot;]==&quot;Y&quot;. 
+//--- Parameter &quot;SEPARATOR&quot; can be assigned 
+//--- when editing the menu in the extended mode. 
+//--- Other parameters are optional and can be set as desired.
+//--- Please note that a parameter named &quot;SEPARATOR&quot; 
+//--- is also checked when building a site map. 
+//--- Certain alterations are made to template elements 
+//--- according to conditions.
+
+if ($PARAMS[&quot;SEPARATOR&quot;]==&quot;Y&quot;)
+{
+	$clrbg = &quot; class=&rsquo;menuborder’&quot;;
+	$clrtext = &quot;leftmenub&quot;;
+}
+else
+{
+	$clrbg = &quot;&quot;;
+	$clrtext = &quot;leftmenu&quot;;
+}
+if($SELECTED)
+{
+	$clrtext = &quot;leftmenuact&quot;;
+} 
+else
+{ 
+	$clrtext = &quot;leftmenu&quot;;
+}
+if ($ITEM_TYPE==&quot;D&quot;)
+{
+	$clrimg = &quot;&nbsp;&lt;img src=’/images/arrows_r.gif’ width=’11’ height=’9’ border=’0’&gt;&quot;;
+}
+else
+{
+	$clrimg = &quot;&quot;;
+}
+
+//------------- Menu template body -------------------------------------
+//--- This section describes a single element of the common structure,
+//--- i.e. a single menu item. All menu items are generated in a loop. 
+//--- Template elements that can vary depending on conditions, 
+//--- are represented by variables, e.g. $clrbg, $clrimg, $clrtext.
+//--- The mandatory parameters (menu item text and link)
+//--- are described by the variables $TEXT and $LINK, respectively. 
+//--- Vriable $PARAMS[&quot;ALT&quot;] contains the value of the &quot;ALT&quot; attribute 
+//--- specified in the extended editing mode.
+//--- User permissions are checked before generating a menu item.
+if ($PERMISSION&gt;&quot;D&quot;)
+{
+$sMenuBody =
+  &quot;&lt;tr&gt;n&quot;.
+  &quot;&lt;td width='0%' &quot;. $clrbg .&quot; nowrap valign=&quot;top&quot; &gt;&lt;img src='/images/1.gif' width='2' height='8'&gt;&lt;img src='/images/1.gif' width='30' height='15'&gt;&lt;/td&gt;n&quot;.
+  &quot;&lt;td width=’100%’ &quot;. $clrbg .&quot;&gt;&lt;a href='&quot;.$LINK.&quot;' class='&quot;.$clrtext.&quot;' title='&quot;.$PARAMS[&quot;ALT&quot;].&quot;'&gt;&quot;.$TEXT.&quot;&quot;. $clrimg .&quot;&lt;/a&gt;&lt;/td&gt;n&quot;.
+  &quot;&lt;td width='0%' &quot;. $clrbg .&quot;&gt;&lt;img src='/images/1.gif' width='5' height='1'&gt;&lt;/td&gt;n&quot;.
+  &quot;&lt;/tr&gt;n&quot;;
+}
+else
+{
+$sMenuBody =
+  &quot;&lt;tr&gt;n&quot;.
+  &quot;&lt;td width='0%' &quot;. $clrbg .&quot; nowrap valign=&quot;top&quot; &gt;&lt;img src='/images/1.gif' width='2' height='8'&gt;&lt;img src=’/images/1.gif' width='30' height='15'&gt;&lt;/td&gt;n&quot;.
+  &quot;&lt;td width='100%' &quot;. $clrbg .&quot;&gt;&quot;.$TEXT.&quot;&quot;. $clrimg .&quot;&lt;/td&gt;n&quot;.
+  &quot;&lt;td width=’0%’ &quot;. $clrbg .&quot;&gt;&lt;img src='/images/1.gif' width='5' height='1'&gt;&lt;/td&gt;n&quot;.
+  &quot;&lt;/tr&gt;n&quot;;
+}
+//------------- Menu template footer -------------------------------------
+//--- Table closing tag. Bottom constant part.
+
+$sMenuEpilog=&quot;&lt;/table&gt;&quot;;
+?&gt;
+</pre>
+
+<p>The repeating portion of a menu defined on the previous step is placed in the template body. </p>
+
+<p>Developing a menu template you may need to create additional stylesheets (CSS). For example, for text menu additional CSS can define menu items color, color of the current menu item, and etc. </p>
+
+<p>Also some menu items (for example, section titles) can be displayed in a special way. More over there can be used graphical or text element for indication active or unavailable menu items, or designation that the menu item refers to subsections or document of the current section.</p>
+
+<p><img src="cid:resources/res71/jaUyn.FCnzo.examp.png" height="180" width="479"/></p>
+
+<p>Templates for top and left menu, included in the system distributive, are stored in the directory <code>/bitrix/templates/&lt;site_id&gt;/</code> in files <code>top.menu_template.php</code> and <code>left.menu_template.php</code> correspondingly.</p>
+
+<h3>Menu show</h3>
+
+<p>Resulting menus can be incorporated in the design template by calling the following functions:</p>
+
+<pre class="syntax">&lt;?
+//--- Upper menu inclusion code 
+echo $APPLICATION-&gt;GetMenuHtml(&quot;top&quot;);
+?&gt;
+&hellip;
+&lt;?
+//--- Left menu inclusion code
+echo $APPLICATION-&gt;GetMenuHtml(&quot;left&quot;);
+?&gt;</pre>
+
+<p>This function is placed in the template areas assigned for menu show.</p>
+
+<p>Menu is built in the following way. A common design template calls the function that generates the code responsible for the menu display. When a page is being loaded, this function checks for presence of a menu description file in the given section; calls the template of the corresponding type to build the menu; generates the HTML code of the menu</p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

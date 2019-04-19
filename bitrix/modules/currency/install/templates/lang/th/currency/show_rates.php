@@ -1,0 +1,5 @@
+<?
+$MESS ['RATES_HEADER'] = "Ê¡ØÅà§Ô¹";
+$MESS ['CURRENCY_CBRF'] = "Central Bank of Russia";
+$MESS ['CURRENCY_SITE'] = "àÇçºä«µì";
+?>

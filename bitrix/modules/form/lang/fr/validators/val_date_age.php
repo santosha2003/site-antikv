@@ -1,0 +1,7 @@
+<?
+$MESS ['FORM_VALIDATOR_VAL_DATE_AGE_ERROR_LESS'] = "#FIELD_NAME#: l'âge est en-dessous de la limite";
+$MESS ['FORM_VALIDATOR_VAL_DATE_AGE_ERROR_MORE'] = "#FIELD_NAME# &nbsp;: l'âge dépasse la limite";
+$MESS ['FORM_VALIDATOR_VAL_DATE_AGE_DESCRIPTION'] = "Âge";
+$MESS ['FORM_VALIDATOR_VAL_DATE_AGE_SETTINGS_DATE_TO'] = "Âge maximal";
+$MESS ['FORM_VALIDATOR_VAL_DATE_AGE_SETTINGS_DATE_FROM'] = "Âge minimal";
+?>

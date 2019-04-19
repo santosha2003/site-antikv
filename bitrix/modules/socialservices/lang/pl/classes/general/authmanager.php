@@ -1,0 +1,3 @@
+<?
+$MESS["socserv_controller_error"] = "B³±d autoryzacji wyst±pi³ w #SERVICE_NAME#.";
+?>

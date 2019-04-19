@@ -1,0 +1,984 @@
+* {
+  outline: none;
+}
+
+.flexBlock {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+}
+
+.inline-flexBlock {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+}
+
+.style-blocks {
+  background: #f8f2e4;
+  border: 2px solid #c18a31;
+  border-radius: 5px;
+  padding: 20px;
+  -webkit-box-shadow: 0px 0px 15px 3px rgba(193, 138, 49, 0.7);
+  box-shadow: 0px 0px 15px 3px rgba(193, 138, 49, 0.7);
+}
+
+/*Devise width sections - START*/
+$DevWidthXXXExtralarge: 2000px;
+$DevWidthXXExtralarge: 1650px;
+$DevWidthXExtralarge: 1439px;
+$DevWidthExtralarge: 1199px;
+$DevWidthLarge: 991px;
+$DevWidthMedium: 767px;
+$DevWidthSmall: 575px;
+$DevWidthSmallLast: 400px;
+/*Devise width sections - END*/
+
+a {
+  color: #008000;
+  &:hover {
+    color: #e46c0a;
+  }
+}
+
+.content-bl {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  @media screen and (max-width: $DevWidthXXXExtralarge) {
+
+  }
+  @media screen and (max-width: $DevWidthXXExtralarge) {
+
+  }
+  @media screen and (max-width: $DevWidthExtralarge) {
+
+  }
+  @media screen and (max-width: $DevWidthLarge) {
+    width: calc(100% - 20px);
+    padding: 0 10px;
+  }
+  @media screen and (max-width: $DevWidthMedium) {
+
+  }
+  @media screen and (max-width: $DevWidthSmall) {
+
+  }
+}
+
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  -ms-border-radius: $radius;
+  border-radius: $radius;
+}
+
+@mixin flexJustifyContent($param) {
+  -webkit-justify-content: $param;
+  justify-content: $param;
+}
+
+@mixin flexWrapItems($param) {
+  -webkit-flex-wrap: $param;
+  flex-wrap: $param;
+}
+
+@mixin flexAlignItems($param) {
+  align-items: $param;
+  -webkit-align-items: $param;
+}
+
+@mixin transition($type, $t1, $typeEffect, $t2) {
+  -webkit-transition: $type $t1 $typeEffect $t2;
+  -moz-transition: $type $t1 $typeEffect $t2;
+  -o-transition: $type $t1 $typeEffect $t2;
+  transition: $type $t1 $typeEffect $t2;
+}
+
+@mixin transformTranslate($x, $y) {
+  -moz-transform: translate($x, $y);
+  -ms-transform: translate($x, $y);
+  -webkit-transform: translate($x, $y);
+  -o-transform: translate($x, $y);
+  transform: translate($x, $y);
+}
+
+@mixin transformRotateScale($deg, $x, $y) {
+  -moz-transform: rotate($deg) scale($x, $y);
+  -ms-transform: rotate($deg) scale($x, $y);
+  -webkit-transform: rotate($deg) scale($x, $y);
+  -o-transform: rotate($deg) scale($x, $y);
+  transform: rotate($deg) scale($x, $y);
+}
+
+@mixin blur($blur) {
+  -webkit-filter: blur($blur);
+  -moz-filter: blur($blur);
+  -o-filter: blur($blur);
+  -ms-filter: blur($blur);
+  filter: blur($blur);
+}
+
+html, body {
+  width: 100%;
+  height: auto;
+  background: url('../img/bg.jpg') repeat left top;
+  font-family: "tahoma";
+  font-size: 14px;
+  color: #330000;
+}
+
+h1 {
+  text-transform: uppercase;
+  color: #c00113;
+  font-size: 18px;
+  margin: 0 0 10px 0 !important;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 100;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+  line-height: 20px;
+}
+
+header {
+  position: relative;
+  z-index: 30;
+  .header-top {
+    background: #e4b16561;
+    margin-bottom: 20px;
+    position: relative;
+    @extend .flexBlock;
+    @include flexJustifyContent(space-between);
+    @include flexAlignItems(center);
+    @include flexWrapItems(wrap);
+    @media screen and (max-width: $DevWidthMedium) {
+      @include flexJustifyContent(space-around);
+      .logo {
+        img {
+          width: 100%;
+        }
+      }
+    }
+    padding: 5px 25px;
+    .icons {
+      @extend .flexBlock;
+      a {
+        display: block;
+        width: 20px;
+        height: 19px;
+        margin: 0 6px 0 0;
+        &.ico1 {
+          background: url('../img/ico.png') no-repeat left top;
+        }
+        &.ico2 {
+          background: url('../img/ico.png') no-repeat -25px top;
+        }
+        &.ico3 {
+          background: url('../img/ico.png') no-repeat -50px top;
+        }
+      }
+    }
+    .cartauth {
+      font-size: 13px;
+      font-family: Tahoma;
+      a {
+        color: #a3792f;
+        font-size: 13px;
+      }
+    }
+    .profile {
+      @extend .flexBlock;
+      @include flexWrapItems(wrap);
+      @include flexJustifyContent(space-between);
+      @include flexAlignItems(center);
+      flex-direction: row-reverse;
+      .rega {
+        font-size: 12px;
+        color: #a3792f;
+      }
+      .vhod {
+        font-size: 14px;
+        color: #fff;
+        display: block;
+        width: 46px;
+        height: 26px;
+        background: url('../img/auth.png') no-repeat left top;
+        padding: 3px 0 0 26px;
+        text-decoration: none
+      }
+    }
+    .basketSmall {
+      display: block;
+      width: 115px;
+      height: 35px;
+      background: url('../img/incart.png') no-repeat left top;
+      font-size: 12px;
+      color: #330000;
+      padding: 6px 0 0 45px;
+      margin: 5px 0px 0 0;
+      b {
+        font-size: 18px;
+        font-weight: 100;
+        color: #af0000;
+      }
+      a {
+        color: #330000;
+        text-decoration: none
+      }
+    }
+
+  }
+  .header-menu {
+    ul {
+      border-bottom: 5px solid #a3792f;
+      list-style: none;
+      position: relative;
+      padding: 0;
+      margin: 0;
+      @extend .flexBlock;
+      @include flexJustifyContent(space-between);
+      @include flexAlignItems(center);
+      @include flexWrapItems(wrap);
+      width: calc(100% - 50px);
+      padding: 0 25px;
+      @media screen and (max-width: $DevWidthLarge) {
+        @include flexWrapItems(wrap);
+      }
+      li {
+        padding: 0 0 0 0;
+        a {
+          display: block;
+          padding: 10px 0 10px 0px;
+          font-weight: bold;
+          line-height: 1.1;
+          text-align: left;
+          font-size: 18px;
+          font-family: tahoma;
+          color: #6f3508;
+          text-decoration: none;
+          @media screen and (max-width: $DevWidthLarge) {
+            text-align: center;
+          }
+        }
+        &.forum {
+          position: fixed;
+          right: 0;
+          top: 93px;
+          a {
+            color: #e46c0a;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 5px 10px;
+            overflow: hidden;
+            border-radius: 5px 0 0 5px;
+
+          }
+          @media screen and (max-width: $DevWidthLarge) {
+            position: relative;
+            top: auto;
+            right: auto;
+            text-align: center;
+            a {
+              border-radius: 5px;
+            }
+          }
+        }
+        @media screen and (max-width: $DevWidthLarge) {
+          width: calc(100% / 3);
+        }
+        @media screen and (max-width: $DevWidthSmall) {
+          width: calc(100% / 2);
+          margin-bottom: 10px;
+          a {
+            font-size: 14px;
+          }
+        }
+        &.active, &:hover {
+          a {
+            color: #e46c0a;
+          }
+        }
+      }
+    }
+    .uzor {
+      width: 100%;
+      height: 19px;
+      margin-top: -19px;
+      position: relative;
+      top: 24px;
+      text-align: center;
+      background: url('../img/topMenuUzor.png') no-repeat center top;
+      @media screen and (max-width: $DevWidthLarge) {
+        top: 15px;
+      }
+    }
+  }
+}
+
+main {
+  position: relative;
+  z-index: 20;
+}
+
+.content-wrap {
+  @extend .flexBlock;
+  @include flexWrapItems(wrap);
+  padding: 0px 0 25px 0;
+  @media screen and (max-width: $DevWidthMedium) {
+    flex-direction: column-reverse;
+  }
+  .content-left {
+    width: calc(38% - 25px);
+    margin-right: 25px;
+    .content-left-top, .content-left-bottom {
+      @extend .style-blocks;
+      &.content-left-top {
+        margin-bottom: 25px;
+      }
+    }
+    @media screen and (max-width: $DevWidthMedium) {
+      width: calc(100%);
+      margin-right: 0;
+      margin-top: 25px;
+    }
+  }
+  .content-right {
+    width: calc(62%);
+    .content-right-top, .content-right-bottom {
+      @extend .style-blocks;
+      &.content-right-top {
+        margin-bottom: 25px;
+      }
+    }
+    @media screen and (max-width: $DevWidthMedium) {
+      width: calc(100%);
+    }
+  }
+}
+
+.sections-menu {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  & > li {
+    & > a {
+      text-transform: uppercase;
+      color: #c00113;
+      font-size: 18px;
+    }
+    margin-bottom: 20px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  ul[level-depth] {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    margin-top: 10px;
+    & > li {
+      margin-bottom: 15px;
+      & > a {
+        font-size: 18px;
+        color: #6f3508;
+      }
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  a {
+    text-decoration: none;
+    font-weight: bold;
+    &:hover {
+      color: #e46c0a !important;
+    }
+  }
+}
+
+.title-list-novinki {
+  text-transform: uppercase;
+  color: #c00113;
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.items-list {
+  @extend .flexBlock;
+  @include flexWrapItems(wrap);
+  .item-list {
+    background: url("../img/svitok-top.png") left top no-repeat, url("../img/svitok-bottom.png") left bottom no-repeat, url("../img/svitok-center.png") center repeat-y;
+    background-size: 100% auto;
+    width: calc(100% / 3 - 50px);
+    margin: 0 5px 20px 5px;
+    padding: 20px 20px;
+    @media screen and (max-width: $DevWidthSmall) {
+      width: calc(100% / 2 - 50px);
+    }
+    @media screen and (max-width: $DevWidthSmall) {
+      width: calc(100% / 2 - 50px);
+    }
+    @media screen and (max-width: $DevWidthSmallLast) {
+      width: calc(100% / 1 - 50px);
+    }
+    .prTitle {
+      min-height: 45px;
+      font-size: 12px;
+      text-align: center;
+      @extend .inline-flexBlock;
+      @include flexAlignItems(center);
+      a {
+        color: #330000;
+        text-decoration: none;
+      }
+    }
+    .prImg {
+      text-align: center;
+      img {
+        max-width: 100%;
+        max-height: 90px;
+        border: 1px solid #c18a31;
+        overflow: hidden;
+      }
+    }
+    .prPrice {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 12px;
+      color: #af0000;
+      font-weight: bold;
+    }
+    .podr {
+
+    }
+    &:hover {
+      a {
+        color: #e46c0a;
+      }
+    }
+  }
+}
+
+.paginator {
+  font-size: 12px !important;
+  a {
+    color: #008000 !important;
+    &:hover {
+      color: #e46c0a !important;
+    }
+  }
+}
+
+.list-advice {
+  padding: 10px 0 25px 0;
+  .title {
+    text-transform: uppercase;
+    color: #c00113;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 25px;
+  }
+  .list-advice-slider {
+    margin: 0 15px;
+    .advice-item {
+      text-align: center;
+      a {
+        font-size: 18px;
+        color: #6f3508;
+        text-decoration: none;
+        font-weight: bold;
+        &:hover {
+          color: #e46c0a;
+        }
+      }
+    }
+  }
+}
+
+.title-newsItems {
+  text-transform: uppercase;
+  color: #c00113;
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.newsItems {
+  @extend .flexBlock;
+  @include flexWrapItems(wrap);
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+  .newsItem {
+    margin-bottom: 5px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+    color: #330000;
+    font-size: 14px;
+    @extend .flexBlock;
+    @include flexWrapItems(wrap);
+    @include flexAlignItems(center);
+    .data {
+      padding-right: 25px;
+      margin-right: 10px;
+      display: inline-block;
+      background: url('../img/arr1.png') right center no-repeat;
+      font-weight: bold;
+    }
+    a {
+      color: #008000;
+      &:hover {
+        color: #e46c0a;
+      }
+    }
+  }
+}
+
+footer {
+  position: relative;
+  z-index: 10;
+  padding: 0 0 25px 0;
+  .copy {
+    padding: 25px 0 0 0;
+    background: url("../img/footer.png") center top no-repeat;
+    margin: 10px 0 0 0;
+    font-size: 12px;
+    color: #330000;
+    text-align: center;
+    font-family: Tahoma;
+    .copy-year {
+      font-size: 10px;
+    }
+  }
+  p {
+    margin: 0;
+  }
+  .content-bl {
+    position: relative;
+    &:before {
+      display: block;
+      position: absolute;
+      left: 35px;
+      bottom: 0;
+      background: url("../img/cvetok.png") left top no-repeat;
+      width: 244px;
+      height: 425px;
+      content: '';
+    }
+  }
+}
+
+.filter-out {
+  @extend .flexBlock;
+  @include flexWrapItems(wrap);
+  flex-direction: column;
+  .filter-title {
+    font-size: 12px;
+    color: #330000;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .filter-fields {
+    @extend .flexBlock;
+    @include flexWrapItems(wrap);
+    .filter-field {
+      margin-bottom: 5px;
+      width: calc(100% / 4 - 10px);
+      margin-right: 10px;
+      input {
+        width: calc(100% - 20px);
+        padding: 0px 5px;
+        height: 18px;
+        font-size: 12px;
+      }
+      .name {
+        font-size: 12px;
+        color: #330000;
+      }
+      .field {
+        font-size: 12px;
+        color: #330000;
+      }
+      &.range {
+        width: calc(100% / 2 - 10px);
+        .field {
+          @extend .flexBlock;
+          @include flexWrapItems(wrap);
+          @include flexJustifyContent(space-between);
+        }
+        input {
+          width: calc(80% / 2 - 10px);
+          &:last-child {
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+  }
+  .filter-btns {
+    margin-top: 5px;
+    input {
+      color: #FFF;
+      background-color: #ddab5a;
+      border: 1px solid #a3792f;
+      border-radius: 5px;
+    }
+  }
+}
+
+.breadcrumbs {
+  .content-left {
+    margin-top: 0;
+  }
+  margin-top: 15px;
+  padding-bottom: 15px;
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    @extend .flexBlock;
+    @include flexWrapItems(wrap);
+    @include flexAlignItems(center);
+    li {
+      margin-right: 5px;
+      color: #af0000;
+      font-size: 12px;
+      line-height: 1;
+      &:last-child {
+        margin-right: 0;
+      }
+      a {
+        color: #330000;
+        &:hover {
+          color: #e46c0a;
+        }
+      }
+    }
+  }
+}
+
+.sort {
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #330000;
+  @extend .flexBlock;
+  @include flexWrapItems(wrap);
+  @include flexAlignItems(center);
+  .sort-list {
+    @extend .flexBlock;
+    @include flexWrapItems(wrap);
+    @include flexAlignItems(center);
+    font-size: 12px;
+    a {
+      color: #008000;
+      &:hover {
+        color: #e46c0a;
+      }
+    }
+  }
+}
+
+.catalog-section-list {
+  ul {
+    list-style-type: decimal;
+    font-size: 16px;
+    padding-left: 16px;
+    li {
+      margin-bottom: 10px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+      a {
+        color: #333;
+        text-decoration: none;
+        .catalog-list-gr {
+          color: green;
+        }
+        &:hover {
+          color: #e46c0a;
+          .catalog-list-gr {
+            color: #e46c0a;
+          }
+        }
+      }
+    }
+  }
+}
+
+.news-list {
+  ul {
+    list-style-type: decimal;
+    font-size: 16px;
+    padding-left: 16px;
+    li {
+      margin-bottom: 10px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+      a {
+        color: green;
+        text-decoration: none;
+        &:hover {
+          color: #e46c0a;
+        }
+      }
+    }
+  }
+}
+
+.product-detail {
+  padding-top: 15px;
+  .product-info {
+    font-size: 12px;
+    .top {
+      @extend .flexBlock;
+      @include flexWrapItems(wrap);
+      .left {
+        width: calc(65% - 25px);
+        padding-right: 25px;
+        @media screen and (max-width: $DevWidthSmall) {
+          width: calc(100%);
+        }
+        .name-ptoduct {
+          h2 {
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 100;
+            font-family: Tahoma;
+            margin: 0 0 20px 0;
+          }
+        }
+        .property {
+          p {
+            margin-top: 0;
+            margin-bottom: 10px;
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+      .right {
+        width: 35%;
+        @media screen and (max-width: $DevWidthSmall) {
+          width: calc(100%);
+        }
+        .price {
+          background: url("../img/svitok-top.png") left top no-repeat, url("../img/svitok-bottom.png") left bottom no-repeat, url("../img/svitok-center.png") center repeat-y;
+          background-size: 100% auto;
+          width: calc(100% - 50px);
+          padding: 50px 25px;
+          text-align: center;
+          @media screen and (max-width: $DevWidthSmall) {
+            max-width: 150px;
+            margin: 25px auto;
+          }
+          .prPrice {
+            font-size: 24px;
+            font-weight: bold;
+            color: #af0000;
+            margin-bottom: 10px;
+          }
+          .prCart {
+            @extend .flexBlock;
+            @include flexJustifyContent(center);
+            @include flexAlignItems(center);
+            padding: 15px 25px 15px 35px;
+            background: url("../img/tocart.png") no-repeat center;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px #fff;
+            line-height: 1;
+            a {
+              padding-left: 20px;
+            }
+          }
+        }
+      }
+    }
+    .bottom {
+      .description {
+
+      }
+    }
+    hr {
+      margin: 15px 0;
+      border-color: rgba(191, 134, 43, 0.30);
+    }
+  }
+  .product-imgs {
+    background: url("../img/tovarBG.png") left top no-repeat;
+    background-size: 100%;
+    padding: 60px 25px 40px 25px;
+    @media screen and (max-width: $DevWidthLarge) {
+      background-size: 100% 100%;
+    }
+    img {
+      max-width: 100%;
+    }
+    .slaider {
+      @extend .flexBlock;
+      @media screen and (max-width: $DevWidthSmall) {
+        @include flexWrapItems(wrap);
+      }
+      .bigFOTO {
+        overflow: hidden;
+        width: calc(60% - 25px);
+        padding: 25px;
+        min-height: calc(350px - 50px);
+        max-height: calc(350px - 50px);
+        min-width: calc(350px - 50px);
+        border: 1px solid #bf862b;
+        @extend .flexBlock;
+        @include flexJustifyContent(center);
+        @include flexAlignItems(center);
+        @media screen and (max-width: $DevWidthLarge) {
+          max-height: calc(250px - 50px);
+          max-width: calc(250px - 50px);
+          min-height: auto;
+          min-width: auto;
+          width: calc(50% - 25px);
+        }
+        @media screen and (max-width: $DevWidthMedium) {
+          min-height: calc(300px - 50px);
+          min-width: calc(300px - 50px);
+          width: calc(60% - 25px);
+          max-height: 100%;
+          max-width: 100%;
+        }
+        @media screen and (max-width: $DevWidthSmall) {
+          max-height: calc(100% - 50px);
+          max-width: calc(250px - 50px);
+          min-height: auto;
+          min-width: auto;
+          width: calc(100% - 25px);
+          margin: 25px auto;
+        }
+      }
+      .slick-track {
+        @extend .flexBlock;
+        flex-direction: column;
+        @include flexAlignItems(flex-end);
+        @media screen and (max-width: $DevWidthSmall) {
+          flex-direction: row;
+          @include flexAlignItems(flex-start);
+          @include flexJustifyContent(space-between)
+        }
+      }
+      .slick-list.draggable {
+        width: 100%;
+      }
+      #mycarousel {
+        width: calc(40% - 25px);
+        @media screen and (max-width: $DevWidthLarge) {
+          width: calc(50% - 25px);
+        }
+        @media screen and (max-width: $DevWidthMedium) {
+          width: calc(40% - 25px);
+        }
+        @media screen and (max-width: $DevWidthSmall) {
+          width: calc(100% - 25px);
+        }
+        padding: 0 0 0 25px;
+        margin: 0;
+        list-style: none;
+        @extend .flexBlock;
+        flex-direction: column;
+        @include flexAlignItems(flex-end);
+        @include flexJustifyContent(center);
+        li {
+          overflow: hidden;
+          margin-bottom: 3px;
+          margin-top: 3px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+          position: relative;
+          border: 1px solid #bf862b;
+          background: #fff;
+          @extend .flexBlock;
+          height: 100px;
+          max-width: 100px;
+          & > div {
+            border: 1px solid transparent;
+            @extend .flexBlock;
+            @include flexJustifyContent(center);
+            @include flexAlignItems(center);
+            height: calc(100% - 2px);
+            width: calc(100% - 2px);
+            &.active {
+              border: 1px solid #bf862b;
+            }
+          }
+          span {
+            &.active {
+              position: absolute;
+              z-index: 1000;
+              right: 100%;
+              top: 27px;
+              display: block;
+              width: 45px;
+              height: 47px;
+              background: url("../img/arr2.png") no-repeat right center;
+              background-size: 100% auto;
+              @media screen and (max-width: $DevWidthSmall) {
+                display: none;
+              }
+            }
+          }
+        }
+        .slick-prev {
+          left: 48%;
+          top: 5px;
+          @media screen and (max-width: $DevWidthLarge) {
+            display: none !important;
+          }
+          &:before {
+            content: '';
+            display: inline-block;
+            width: 77px;
+            height: 13px;
+            background: transparent url("../img/arrTop.png") no-repeat 0 0;
+          }
+        }
+        .slick-next {
+          bottom: -13px;
+          left: 48%;
+          top: auto;
+          @media screen and (max-width: $DevWidthLarge) {
+            display: none !important;
+          }
+          &:before {
+            content: '';
+            display: inline-block;
+            width: 77px;
+            height: 13px;
+            background: transparent url("../img/arrBott.png") no-repeat 0 0;
+          }
+        }
+      }
+    }
+  }
+  .product-section {
+
+  }
+}
+
+.table-content {
+  max-width: 100%;
+  overflow-x: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

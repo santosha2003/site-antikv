@@ -1,0 +1,11 @@
+<?
+$PERM["awards_rus"]["*"]="R";
+$PERM["0news"]["7"]="W";
+$PERM["auth"]["*"]="R";
+$PERM["news"]["8"]="W";
+$PERM["/"]["*"]="R";
+$PERM["personal"]["8"]="W";
+$PERM["catalog"]["8"]="W";
+$PERM["about"]["8"]="W";
+$PERM["index.php"]["8"]="W";
+?>

@@ -1,0 +1,26 @@
+<?
+$MESS["CC_BLL_MODULE_NOT_INSTALLED"] = "Bendrø sàraðø modulis nëra ádiegtas.";
+$MESS["CC_BLL_WRONG_IBLOCK_TYPE"] = "Neteisingas informacijos bloko tipas.";
+$MESS["CC_BLL_WRONG_IBLOCK"] = "Nurodytas sàraðas yra neteisingas.";
+$MESS["CC_BLL_LISTS_FOR_SONET_GROUP_DISABLED"] = "Sàraðas iðjungtas ðiai grupei. ";
+$MESS["CC_BLL_UNKNOWN_ERROR"] = "Neþinoma klaida.";
+$MESS["CC_BLL_ACCESS_DENIED"] = "Nepakanmi leidimai perþiûrëti ir redaguoti ðá sàraðà. ";
+$MESS["CC_BLL_TITLE"] = "Sàraðas: #NAME#";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_EDIT"] = "Redaguoti";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_DELETE"] = "Paðalinti";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_START_BP"] = "Paleisti verslo procesà";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_DELETE_CONF"] = "Ar tikrai norite paðalinti ðá elementà?";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_VIEW"] = "Perþiûra";
+$MESS["CC_BLL_SECTION"] = "Skyrius";
+$MESS["CC_BLL_ANY"] = "(bet kuris)";
+$MESS["CC_BLL_UPPER_LEVEL"] = "Virðutinis lygis";
+$MESS["CC_BLL_COLUMN_SECTION"] = "Skyriai";
+$MESS["CC_BLL_COLUMN_BIZPROC"] = "Verslo procesai";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_COPY"] = "Kopijuoti";
+$MESS["CC_BLL_DELETE_ERROR"] = "Klaida trinant";
+$MESS["CC_BLL_TITLE_PROCESS"] = "Procesas: #NAME#";
+$MESS["CC_BLL_COMMENTS"] = "Komentarai";
+$MESS["CC_BLL_ELEMENT_ACTION_MENU_RUNNING_BP"] = "Vykdomi verslo procesai";
+$MESS["CT_BLL_BIZPROC_DELETE"] = "Iðtrinti verslo procesà";
+$MESS["CT_BLL_BIZPROC_STOP"] = "Stabdyti verslo procesà";
+?>

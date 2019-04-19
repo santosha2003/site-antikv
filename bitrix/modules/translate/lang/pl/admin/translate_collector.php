@@ -1,0 +1,34 @@
+<?
+$MESS["TRANS_TITLE"] = "Zbierz stringi";
+$MESS["TRANS_TITLE_TITLE"] = "Zbierz stringi";
+$MESS["TRANS_DOWNLOAD"] = "Import lokalizacji";
+$MESS["TRANS_DOWNLOAD_TITLE"] = "Import lokalizacji";
+$MESS["TRANS_UPLOAD"] = "Zbierz i eksportuj stringi";
+$MESS["TRANS_UPLOAD_TITLE"] = "Zbierz i eksportuj stringi";
+$MESS["TR_SELECT_LANGUAGE"] = "Wybierz jêzyk";
+$MESS["TR_SELECT_LANGUAGE_DESCRIPTION"] = "(je¶li nie mo¿esz znale¼æ odpowiedniego jêzyka, musisz go najpierw <a href=\"lang_edit.php?lang=en\">dodaæ</a>)";
+$MESS["TR_COLLECT_DATE"] = "Data wersji lokalizacji (YYYYMMDD)";
+$MESS["TR_COLLECT_LOADING"] = "Budowa...";
+$MESS["TR_PACK_FILES"] = "Paczka plików (tar.gz)";
+$MESS["TR_COLLECT_LANGUAGE"] = "Buduj lokalizacjê";
+$MESS["TR_DOWNLOAD_LANGUAGE"] = "Import lokalizacji";
+$MESS["TR_CONVERT_UTF8"] = "Konwersja na UTF-8";
+$MESS["TR_CONVERT_FROM_UTF8"] = "Konwersja z UTF-8";
+$MESS["TR_CONVERT_NATIONAL"] = "Konwersja do kodowania narodowego";
+$MESS["TR_CONVERT_FROM_NATIONAL"] = "Konwersja z kodowania narodowego";
+$MESS["TR_CONVERT_ENCODING"] = "Wybierz kodowanie";
+$MESS["TR_ERROR_LANGUAGE_DATE"] = "Data lokalizacji jest wymagana.";
+$MESS["TR_ERROR_CREATE_TARGET_FOLDER"] = "Katalog docelowy \"%PATH%\" nie utworzony.";
+$MESS["TR_ERROR_DELETE_TARGET_FOLDER"] = "Katalog docelowy \"%PATH%\" nie skasowany.";
+$MESS["TR_ERROR_CREATE_TEMP_FOLDER"] = "Nie mo¿na utworzyæ katalogu tymczasowego.";
+$MESS["TR_ERROR_DELETE_TEMP_FOLDER"] = "Nie mo¿na usun±æ katalogu tymczasowego \"%PATH%\".";
+$MESS["TR_ERROR_SELECT_LANGUAGE"] = "Lokalizacja jêzyka jest wymagana.";
+$MESS["TR_ERROR_TARFILE"] = "Brak lokalizacji podanego pliku.";
+$MESS["TR_ERROR_ENCODING"] = "Kodowanie jest nieprawid³owe lub nie jest okre¶lone.";
+$MESS["TR_ERROR_OPEN_FILE"] = "Nie mo¿na otworzyæ pliku \"%FILE%\".";
+$MESS["TR_ERROR_ARCHIVE"] = "B³±d archiwum";
+$MESS["TR_LANGUAGE_COLLECTED_ARCHIVE"] = "Lokalizacja \"%LANG%\" zosta³a opracowana do archiwum pliku \"%FILE%\". <br> Pobierz: %LINK%";
+$MESS["TR_LANGUAGE_COLLECTED_FOLDER"] = "Lokalizacja \"%LANG%\" zosta³a opracowana do folderu \"%PATH%\".";
+$MESS["TR_UPLOAD_FILE"] = "Plik lokalizacji (tar.gz)";
+$MESS["TR_LANGUAGE_DOWNLOADED"] = "Lokalizacja nie zosta³a za³adowana";
+?>

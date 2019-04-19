@@ -1,0 +1,33 @@
+<?
+$MESS["VOTE_ADD_QUESTION"] = "Добави въпрос";
+$MESS["VOTE_PAGE_TITLE"] = "Списък на въпросите";
+$MESS["VOTE_VOTE_LIST"] = "Списък на анкетите";
+$MESS["VOTE_F_ACTIVE"] = "Активена:";
+$MESS["VOTE_F_DIAGRAM"] = "Включена в диаграмата:";
+$MESS["VOTE_F_QUESTION"] = "Въпрос:";
+$MESS["VOTE_PAGES"] = "Въпроси";
+$MESS["VOTE_TIMESTAMP_X"] = "Променено";
+$MESS["VOTE_C_SORT"] = "Сорт.";
+$MESS["VOTE_DIAGRAM"] = "Диагр.";
+$MESS["VOTE_QUESTION"] = "Въпрос";
+$MESS["VOTE_CONFIRM_DEL_QUESTION"] = "Сигурни ли сте, че искате да изтриете въпроса?";
+$MESS["VOTE_FLT_ID"] = "ID на въпроса";
+$MESS["VOTE_FLT_ACTIVE"] = "Активена";
+$MESS["VOTE_FLT_DIAGRAM"] = "Включена в диаграмата";
+$MESS["VOTE_FLT_REQUIRED"] = "Задължителен въпрос";
+$MESS["VOTE_DELETE"] = "премахни";
+$MESS["VOTE_ACTIVATE"] = "активирай";
+$MESS["VOTE_DEACTIVATE"] = "деактивирай";
+$MESS["VOTE_SAVE_ERROR"] = "Грешка при записа от базата данни";
+$MESS["VOTE_NOT_FOUND"] = "ID на анкетата е грешно";
+$MESS["VOTE_YES"] = "да";
+$MESS["VOTE_NO"] = "не";
+$MESS["VOTE_ALL"] = "(всички)";
+$MESS["VOTE_EXACT_MATCH"] = "Търси точно съвпадение при филтрирането";
+$MESS["VOTE_CREATE"] = "Създай";
+$MESS["VOTE_ACTIVE"] = "Акт.";
+$MESS["SAVE_ERROR"] = "Възникна грешка при записа на този обект.";
+$MESS["DELETE_ERROR"] = "Възникна грешка при премахването на този обект.";
+$MESS["VOTE_F_REQUIRED"] = "Задължително";
+$MESS["VOTE_REQUIRED"] = "Задължително";
+?>

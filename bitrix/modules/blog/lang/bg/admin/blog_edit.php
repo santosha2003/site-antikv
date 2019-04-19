@@ -1,0 +1,34 @@
+<?
+$MESS["BLBE_SAVE_ERROR"] = "Грешка при записа на настройките на блога";
+$MESS["BLBE_UPDATING"] = "Настройка на блога";
+$MESS["BLBE_ADDING"] = "Добавяне на нов блог";
+$MESS["BLBE_2FLIST"] = "Списък на блоговете";
+$MESS["BLBE_NEW_BLOG"] = "Нов блог";
+$MESS["BLBE_DELETE_BLOG"] = "Изтриване на блога";
+$MESS["BLBE_DELETE_BLOG_CONFIRM"] = "Сигурни ли сте, че искате да изтриете този блог?";
+$MESS["BLBE_TAB_BLOG"] = "Настройка на блога";
+$MESS["BLBE_TAB_BLOG_DESCR"] = "Настройка на блога";
+$MESS["BLBE_NAME"] = "Име";
+$MESS["BLBE_DESCRIPTION"] = "Описание";
+$MESS["BLBE_URL"] = "Име (латински букви)";
+$MESS["BLBE_URL_HINT"] = "Позволени са само латински букви, цифри и тирета. ";
+$MESS["BLBE_REAL_URL"] = "Относителен път към папката с форумите";
+$MESS["BLBE_ACTIVE"] = "Активни";
+$MESS["BLBE_OWNER_ID"] = "Собственик на блога";
+$MESS["BLBE_GROUP"] = "Група блогове";
+$MESS["BLBE_ENABLE_COMMENTS"] = "Разреши коментари в блоговете";
+$MESS["BLBE_ENABLE_IMG_VERIF"] = "Включена защита от роботи (CAPTCHA)";
+$MESS["BLBE_ENABLE_RSS"] = "Включен експорт в RSS .92, RSS 2.0 и Atom .03";
+$MESS["BLBE_TAB_BLOG_PERMS"] = "Права за достъп";
+$MESS["BLBE_TAB_BLOG_PERMS_DESCR"] = "Редактиране правата за достъп към блога";
+$MESS["BLBE_P_POST"] = "Права за съобщения";
+$MESS["BLBE_P_ALL"] = "Всички посетители";
+$MESS["BLBE_P_AUTH"] = "Авторизирани посетители";
+$MESS["BLBE_P_COMMENT"] = "Права за коментари";
+$MESS["BLBE_EMAIL_NOTIFY"] = "Изпращане на съобщения по email";
+$MESS["BLBE_ALLOW_HTML"] = "Разреши използването на визуалният редактор и HTML";
+$MESS["BLBE_SEARCH_INDEX"] = "Индексирай  блога с модула за търсене";
+$MESS["BLBE_SEARCH_INDEX_HINT"] = "При включване на индексирането за блога,не забравяйте да индексирате модула. ";
+$MESS["BLBE_SOCNET_GROUP_ID"] = "Група собственици на блога";
+$MESS["BLBE_USE_SOCNET"] = "Блога се използва в рамките на социалната мрежа";
+?>

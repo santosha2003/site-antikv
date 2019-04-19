@@ -1,0 +1,9 @@
+<?
+$MESS["WIKI_ACCESS_DENIED"] = "Prieiga uþdrausta.";
+$MESS["WIKI_MODULE_NOT_INSTALLED"] = "Wiki modulis neádiegtas.";
+$MESS["IBLOCK_MODULE_NOT_INSTALLED"] = "Informacinio bloko modulis neádiegtas.";
+$MESS["IBLOCK_NOT_ASSIGNED"] = "Informacinis blokas nepasirinktas.";
+$MESS["SOCNET_MODULE_NOT_INSTALLED"] = "Socialinio tinklo modulis neádiegtas.";
+$MESS["WIKI_DEFAULT_PAGE_NAME"] = "Pagrindinis puslapis";
+$MESS["CATEGORY_NAME"] = "Kategorija";
+?>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>380</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153491562</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>142</chapter_id>
+<name>Using message files</name>
+<sort>100</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<P>
+
+The Bitrix Site Manager allows using the same template for several sites on different languages. This opportunity is realized by means of the message files mechanism:
+
+</P>
+<UL>
+
+<LI>
+in the template HTML prototype are defined areas intended for text displaying (for example, titles, ALT attributes, controls text etc.); </li>
+<li>then in these areas should be placed special source code that calls language files containing necessary text messages on corresponding language. 
+</LI></UL>
+
+
+
+<P><A href="javascript:ShowImg('/images/integration_course/messages/messag3.png',631,449,'Использование языковых сообщений в публичном разделе сайта')"><IMG height=200 alt="Нажмите на рисунок, чтобы увеличить" hspace=0 src="cid:resources/res65/ILBIk.dfLYc.8SmF6.messag3_s.png" width=270 border=0></A>&nbsp;</P>
+
+
+<P>
+The message files mechanism also is used in the administrative section:
+</P>
+
+<P>
+<TABLE>
+
+<TR>
+<TD><A href="javascript:ShowImg('/images/integration_course/messages/messag1.png',505,139,'Заголовки столбцов таблицы')"><IMG height=56 alt="Нажмите на рисунок, чтобы увеличить" hspace=0 src="cid:resources/res65/hRRiu.zzUY5.OmjnX.messag1_s.png" width=200 border=0></A> </TD>
+<TD>&nbsp;</TD>
+<TD><A href="javascript:ShowImg('/images/integration_course/messages/messag2.png',505,139,'Заголовки столбцов таблицы')"><IMG height=56 alt="Нажмите на рисунок, чтобы увеличить" hspace=0 src="cid:resources/res65/PlTSh.f8V0G.Bvkv2.messag2_s.png" width=200 border=0></A> </TD></TR></TABLE></P>]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

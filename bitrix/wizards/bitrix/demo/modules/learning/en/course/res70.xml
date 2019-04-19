@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>383</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153721386</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>144</chapter_id>
+<name>Menu types</name>
+<sort>100</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>A common page contains the following menus:</p>
+
+<ul>
+  <li><strong>main menu</strong> (usually at the top), used to guide visitors through the site sections; </li>
+
+  <li><strong>complementary menu</strong> (usually at the left or right), used to navigate through pages and subsections of a site section. </li>
+</ul>
+
+<p><a href="javascript:ShowImg('/images/integration_course_en/chain/menu_types.png',583,351,'Menu types')"><img src="cid:resources/res70/jYijg.gKm6O.menu_types_s.png" style="CURSOR: pointer" height="181" alt="Click to enlarge" width="300" border="0"/></a> </p>
+
+<p>Sites may have other types of menu, for example, bottom menu.</p>
+
+<div class="hint"><strong>Note</strong>: The Bitrix Site Manager does not put any restrictions on the site menus. Number and types of menus are defined by the site design template. The design of the public section menus is defined by the menu template which is created when preparing the site design. The system allows using more than one template for a single menu type.</div>
+
+<p>Types of used on a site menu are defined in the administrative section on the <strong>Site Explorer</strong> module page. 
+  <br />
+
+  <br />
+<img src="cid:resources/res70/DErdA.HfeIp.menu_adm.png" height="108" width="486"/></p>
+
+<p>A menu type (defined on this page) will be utilized as prefix both for file with the menu template (e.g., top.menu_template.php) and for file with section menu items (e.g., <code>.top.menu.php</code>). Besides the menu type is used calling necessary menu in site template.</p>
+
+<div class="hint"><b>Note</b>: Menu types can be defined for every site individually. 
+  <br />
+
+  <br />
+<img src="cid:resources/res70/GFsQE.qkNMn.menu_site.png" height="202" width="499"/></div>
+
+<p>The menu types are assigned arbitrarily. But to make work with menu more convenient it is recommended to use meaningful designations for menu types. For example, <code>top</code>, <code>left</code>, <code>bottom</code>.</p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

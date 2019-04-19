@@ -1,0 +1,6 @@
+<?
+$MESS ['FORM_VALIDATOR_INN_ERROR'] = "#FIELD_NAME#&nbsp;: TIN non valable";
+$MESS ['FORM_VALIDATOR_VAL_INN_SETTINGS_TYPE_BOTH'] = "les deux types";
+$MESS ['FORM_VALIDATOR_VAL_INN_SETTINGS_TYPE_PHYS'] = "personne naturelle";
+$MESS ['FORM_VALIDATOR_VAL_INN_DESCRIPTION'] = "Validation TIN (Russie)";
+?>

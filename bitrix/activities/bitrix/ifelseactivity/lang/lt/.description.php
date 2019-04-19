@@ -1,0 +1,4 @@
+<?
+$MESS["BPIEA_DESCR_DESCR"] = "Bûklë";
+$MESS["BPIEA_DESCR_NAME"] = "Bûklë";
+?>

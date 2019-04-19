@@ -1,0 +1,34 @@
+<?
+$MESS ['STAT_PAGE_TITLE'] = "Ghi chú của khách viếng thăm";
+$MESS ['STAT_F_SITE'] = "Site";
+$MESS ['STAT_F_PERIOD'] = "Khoảng thời gian";
+$MESS ['STAT_TIME_GRAPH'] = "Biểu đồ thời gian trung bình các phiên làm việc (đơn vị: phút)";
+$MESS ['STAT_TIME_DIAGRAM'] = "Biểu đồ thời gian các phiên làm việc";
+$MESS ['STAT_HITS_GRAPH'] = "Đồ thị số lượng hit trung bình trong các phiên";
+$MESS ['STAT_HITS_DIAGRAM'] = "Biểu đồ số lượng hit trong các phiên làm việc";
+$MESS ['STAT_NOT_ENOUGH_DATA'] = "Không đủ dữ liệu để vẽ đồ thị.";
+$MESS ['STAT_AM_1'] = "nhỏ hơn 1 giây.";
+$MESS ['STAT_AM_1_3'] = "2 tới 3 giây.";
+$MESS ['STAT_AM_3_6'] = "3 tới 6 giây.";
+$MESS ['STAT_AM_6_9'] = "6 tới 9 giây.";
+$MESS ['STAT_AM_9_12'] = "9 tới 12 giây.";
+$MESS ['STAT_AM_12_15'] = "12 tới 15 giây.";
+$MESS ['STAT_AM_15_18'] = "15 tới 18 giây.";
+$MESS ['STAT_AM_18_21'] = "18 tới 21 giây.";
+$MESS ['STAT_AM_21_24'] = "21 tới 24 giây.";
+$MESS ['STAT_AM_24'] = "lớn hơn 24 giây.";
+$MESS ['STAT_AH_1'] = "1 hit";
+$MESS ['STAT_AH_2_5'] = "2 tới 5 hit";
+$MESS ['STAT_AH_6_9'] = "6 tới 9 hit";
+$MESS ['STAT_AH_10_13'] = "10 tới 13 hit";
+$MESS ['STAT_AH_14_17'] = "14 tới 17 hit";
+$MESS ['STAT_AH_18_21'] = "18 tới 21 hit";
+$MESS ['STAT_AH_22_25'] = "22 tới 25 hit";
+$MESS ['STAT_AH_26_29'] = "26 tới 29 hit";
+$MESS ['STAT_AH_30_33'] = "30 tới 33 hit";
+$MESS ['STAT_AH_34'] = "hơn 34 hit";
+$MESS ['STAT_FILTER_ERROR'] = "Bộ lọc lỗi";
+$MESS ['STAT_WRONG_DATE_FROM'] = "Vui lòng nhập chính xác ngày bắt đầu (\"bắt đầu\").";
+$MESS ['STAT_WRONG_DATE_TILL'] = "Vui lòng nhập đúng ngày tới (\"tới\").";
+$MESS ['STAT_FROM_TILL_DATE'] = "Ngày \"tới\" phải lớn hơn ngày \"bắt đầu\".";
+?>

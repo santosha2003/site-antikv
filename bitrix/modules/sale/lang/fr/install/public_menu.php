@@ -1,0 +1,7 @@
+<?
+$MESS ['SALE_INSTALL_MENU_ORDER'] = "Ordres";
+$MESS ['SALE_INSTALL_MENU_BASKET'] = "Chariot";
+$MESS ['SALE_INSTALL_MENU_REGULAR_PAYMENT'] = "Paiement régulier";
+$MESS ['SALE_INSTALL_MENU_SALE_PROFILES'] = "Informations de client";
+$MESS ['SALE_INSTALL_MENU_SALE_ACCOUNT'] = "Compte";
+?>

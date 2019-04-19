@@ -1,0 +1,31 @@
+<?
+$MESS["rub_title"] = "Kategorie newslettera";
+$MESS["rub_del_err"] = "Nie mo¿na usun±æ kategorii.";
+$MESS["rub_nav"] = "Kategorie";
+$MESS["rub_name"] = "Nazwa";
+$MESS["rub_sort"] = "Sort.";
+$MESS["rub_act"] = "Aktywny";
+$MESS["rub_edit"] = "Modyfikuj";
+$MESS["rub_del"] = "Usuñ";
+$MESS["rub_site"] = "Strona";
+$MESS["rub_auto"] = "Auto.";
+$MESS["rub_visible"] = "Publiczny";
+$MESS["rub_last_exec"] = "Generacja";
+$MESS["rub_check"] = "Sprawd¼, czy szablon";
+$MESS["rub_wrong_generation_from"] = "Proszê podaæ poprawn± \"Od\" datê generacji w filtrze";
+$MESS["rub_wrong_generation_till"] = "Proszê podaæ poprawn± \"Do\" datê generacji w filtrze";
+$MESS["rub_wrong_generation_from_till"] = "\"Do\" data generacji musi byæ wiêksza ni¿ \"Od\" daty w filtrze";
+$MESS["rub_save_error"] = "B³±d podczas zapisywania subskrypcji:";
+$MESS["rub_no_rubric"] = "Brak kategorii";
+$MESS["POST_ADD_TITLE"] = "Kliknij, aby dodaæ nowy temat subskrypcji";
+$MESS["rub_f_site"] = "Strona";
+$MESS["rub_f_active"] = "Aktywna";
+$MESS["rub_f_public"] = "Publiczna";
+$MESS["rub_f_auto"] = "Automatyczna";
+$MESS["rub_f_find"] = "Znajd¼";
+$MESS["rub_f_find_title"] = "Wpisz zapytanie";
+$MESS["rub_del_conf"] = "Czy usun±æ kategoriê?";
+$MESS["rub_f_name"] = "Nazwa";
+$MESS["POST_U_YES"] = "Tak";
+$MESS["POST_U_NO"] = "Nie";
+?>

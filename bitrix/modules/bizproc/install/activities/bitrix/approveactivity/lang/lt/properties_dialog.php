@@ -1,0 +1,29 @@
+<?
+$MESS["BPAA_PD_TYPE_ALL"] = "Visi asmenys";
+$MESS["BPAA_PD_TYPE_ANY"] = "Keli asmenys";
+$MESS["BPAA_PD_APPROVERS"] = "Tvirtinantys rinkëjai";
+$MESS["BPAA_PD_PERCENT"] = "Minimalus dalyvaujanèiø vartotojø procentas, reikalingas priëmimui";
+$MESS["BPAA_PD_DESCR"] = "Paskyrimo apraðymas";
+$MESS["BPAA_PD_NAME"] = "Paskyrimo pavadinimas";
+$MESS["BPAA_PD_TYPE"] = "Patvirtinimo tipas";
+$MESS["BPAA_PD_TYPE_VOTE"] = "Balsuoti";
+$MESS["BPAA_PD_WAIT"] = "Laukti atsakymo ið visø dalyviø";
+$MESS["BPAA_PD_SET_STATUS_MESSAGE"] = "Nustatyti statuso praneðimà";
+$MESS["BPAA_PD_YES"] = "Taip";
+$MESS["BPAA_PD_NO"] = "Ne";
+$MESS["BPAA_PD_STATUS_MESSAGE"] = "Statuso tekstas";
+$MESS["BPAA_PD_STATUS_MESSAGE_HINT"] = "Galimi ðie makrosai: #PERC# - procentas, #REV# - ðiuo metu paþástami asmenys , #TOT# - ið viso asenø, turinèiu susipaþinti.";
+$MESS["BPAA_PD_TIMEOUT_DURATION"] = "Laiko limitas";
+$MESS["BPAA_PD_TIMEOUT_DURATION_HINT"] = "Jei dokumentas nëra patvirtintas arba atmestas prieð baigiantis ðiam terminui, jis bus automatiðkai atmestas. Tuðèia arba nulinë reikðmë nurodo, kad nepateiktas joks terminas.";
+$MESS["BPAA_PD_TIME_D"] = "dienos";
+$MESS["BPAA_PD_TIME_H"] = "valandos";
+$MESS["BPAA_PD_TIME_M"] = "minutës";
+$MESS["BPAA_PD_TIME_S"] = "sekundës";
+$MESS["BPAA_PD_STATUS_MESSAGE_HINT1"] = "Galimi ðie makrosai:  #PERCENT# - atsakymø santykis, #VOTED# - atsakymø skaièius, #TOTAL# - Ið viso paskirti asmenys, #APPROVERS# - naudotojai, kurie patvirtino, #REJECTERS# - naudotojai, kurie atmetë objektà.";
+$MESS["BPAR_PD_SHOW_COMMENT"] = "Rodyti komentaro ávesties laukà";
+$MESS["BPAR_PD_COMMENT_LABEL_MESSAGE"] = "Komentaro ávesties lauko etiketë";
+$MESS["BPAR_PD_TASK_BUTTON1_MESSAGE"] = "Pritarimo mygtuko tekstas";
+$MESS["BPAR_PD_TASK_BUTTON2_MESSAGE"] = "Atsisakymo mygtuko tekstas";
+$MESS["BPAR_PD_ACCESS_CONTROL"] = "Apriboti prieigà";
+$MESS["BPAA_PD_TIMEOUT_LIMIT"] = "Minimalus patvirtinimo laikas";
+?>
