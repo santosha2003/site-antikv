@@ -9,6 +9,11 @@ works - some errors - no php72-mcrypt - no images, php session set (better) into
 Rename String class - now reserve name (php7+), mysqli 
 _construct function  , new .. more changes in the template 
 
+git filter-branch --tree-filter 'rm path/to/your/bigfile' HEAD
+
+git push origin master --force
+
+
 xml import iblock ok now. rewrite php / data .
 template - move to ng folder, edit links into main template (local/templates/)
 switch sale order make to full component ,small ajax throw error - no parameter or no data in the Mysql
