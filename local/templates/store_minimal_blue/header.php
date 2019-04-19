@@ -189,19 +189,26 @@ IncludeTemplateLangFile(__FILE__);
                         <div id="content"<?$APPLICATION->ShowProperty("TEMPLATE_SIDEBAR_MODE", "");?>>
                                 <div id="left-column">
                                         <?
-                                        $APPLICATION->IncludeComponent("bitrix:menu", "tree1", Array(
-        "ROOT_MENU_TYPE" => "left",     // Тип меню для первого уровня
-        "MENU_CACHE_TYPE" => "A",       // Тип кеширования
-        "MENU_CACHE_TIME" => "36000",   // Время кеширования (сек.)
-        "MENU_CACHE_USE_GROUPS" => "Y", // Учитывать права доступа
-        "MENU_CACHE_GET_VARS" => "Y",   // Значимые переменные запроса
-        "MAX_LEVEL" => "4",     // Уровень вложенности меню
-        "CHILD_MENU_TYPE" => "left",    // Тип меню для остальных уровней
-        "USE_EXT" => "Y",       // Подключать файлы с именами вида .тип_меню.menu_ext.php
-        "DELAY" => "Y", // Откладывать выполнение шаблона меню
-        "ALLOW_MULTI_SELECT" => "N",    // Разрешить несколько активных пунктов одновременно
-        ),
-        false
+                                        $APPLICATION->IncludeComponent(
+	"bitrix:menu", 
+	"tree1", 
+	array(
+		"ROOT_MENU_TYPE" => "left",
+		"MENU_CACHE_TYPE" => "A",
+		"MENU_CACHE_TIME" => "36000",
+		"MENU_CACHE_USE_GROUPS" => "Y",
+		"MENU_CACHE_GET_VARS" => array(
+			0 => "Y",
+			1 => "",
+		),
+		"MAX_LEVEL" => "2",
+		"CHILD_MENU_TYPE" => "left",
+		"USE_EXT" => "Y",
+		"DELAY" => "Y",
+		"ALLOW_MULTI_SELECT" => "N",
+		"COMPONENT_TEMPLATE" => "tree1"
+	),
+	false
 );
                                         ?>
                                 </div>

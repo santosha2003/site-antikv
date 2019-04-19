@@ -22,7 +22,7 @@ site Captcha rewrite for php7.2 - gd ttf font - resize rotate skew picture, use 
 non-trivial cipher - change from 9999 variants to 16M
 
 to do - load logo picture into Media lirary? set link into php include code
-
+url edit SEF #SITE_DIR#/catalog/#SECTION_CODE#/#ELEMENT_CODE#/    catalog-product name or id
 
 edit mysql table - phpmyadmin , get table structure from install parts of code
 
