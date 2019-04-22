@@ -1,4 +1,4 @@
-<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+<?php if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 if($USER->IsAuthorized() || $arParams["ALLOW_AUTO_REGISTER"] == "Y")
 {
 	if($arResult["USER_VALS"]["CONFIRM_ORDER"] == "Y" || $arResult["NEED_REDIRECT"] == "Y")
@@ -10,7 +10,7 @@ if($USER->IsAuthorized() || $arParams["ALLOW_AUTO_REGISTER"] == "Y")
 			<script type="text/javascript">
 				window.top.location.href='<?=CUtil::JSEscape($arResult["REDIRECT_URL"])?>';
 			</script>
-			<?
+			<?php
 			die();
 		}
 
@@ -28,7 +28,7 @@ $APPLICATION->SetAdditionalCSS($templateFolder."/style.css");
 	<div class="errortext"><?=GetMessage("SOA_NO_JS")?></div>
 </NOSCRIPT>
 
-<?
+<?php
 if (!function_exists("getColumnName"))
 {
 	function getColumnName($arHeader)
@@ -57,7 +57,7 @@ if (!function_exists("cmpBySort"))
 ?>
 
 <div class="bx_order_make">
-	<?
+<?php
 	if(!$USER->IsAuthorized() && $arParams["ALLOW_AUTO_REGISTER"] == "N")
 	{
 		if(!empty($arResult["ERROR"]))
@@ -87,25 +87,25 @@ if (!function_exists("cmpBySort"))
 			?>
 			<script type="text/javascript">
 
-			<?if(CSaleLocation::isLocationProEnabled()):?>
+<?php if(CSaleLocation::isLocationProEnabled()):?>
 
-				<?
-				// spike: for children of cities we place this prompt
-				$city = \Bitrix\Sale\Location\TypeTable::getList(array('filter' => array('=CODE' => 'CITY'), 'select' => array('ID')))->fetch();
-				?>
+	<?php
+	// spike: for children of cities we place this prompt
+	$city = \Bitrix\Sale\Location\TypeTable::getList(array('filter' => array('=CODE' => 'CITY'), 'select' => array('ID')))->fetch();
+	?>
 
-				BX.saleOrderAjax.init(<?=CUtil::PhpToJSObject(array(
-					'source' => $this->__component->getPath().'/get.php',
-					'cityTypeId' => intval($city['ID']),
-					'messages' => array(
-						'otherLocation' => '--- '.GetMessage('SOA_OTHER_LOCATION'),
-						'moreInfoLocation' => '--- '.GetMessage('SOA_NOT_SELECTED_ALT'), // spike: for children of cities we place this prompt
-						'notFoundPrompt' => '<div class="-bx-popup-special-prompt">'.GetMessage('SOA_LOCATION_NOT_FOUND').'.<br />'.GetMessage('SOA_LOCATION_NOT_FOUND_PROMPT', array(
-							'#ANCHOR#' => '<a href="javascript:void(0)" class="-bx-popup-set-mode-add-loc">',
-							'#ANCHOR_END#' => '</a>'
-						)).'</div>'
-					)
-				))?>);
+	BX.saleOrderAjax.init(<?=CUtil::PhpToJSObject(array(
+		'source' => $this->__component->getPath().'/get.php',
+		'cityTypeId' => intval($city['ID']),
+		'messages' => array(
+		'otherLocation' => '--- '.GetMessage('SOA_OTHER_LOCATION'),
+		'moreInfoLocation' => '--- '.GetMessage('SOA_NOT_SELECTED_ALT'), // spike: for children of cities we place this prompt
+		'notFoundPrompt' => '<div class="-bx-popup-special-prompt">'.GetMessage('SOA_LOCATION_NOT_FOUND').'.<br />'.GetMessage('SOA_LOCATION_NOT_FOUND_PROMPT', array(
+		'#ANCHOR#' => '<a href="javascript:void(0)" class="-bx-popup-set-mode-add-loc">',
+		'#ANCHOR_END#' => '</a>'
+		)).'</div>'
+		)
+		))?>);
 
 			<?endif?>
 

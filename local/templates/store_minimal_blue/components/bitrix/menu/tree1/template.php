@@ -1,5 +1,5 @@
-<?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
-<?
+<?php if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
+<?php
 //echo '<pre>'; print_r($arResult); echo '</pre>';
 if (count($arResult) < 1)
 	return;
@@ -8,7 +8,7 @@ $bManyIblock = array_key_exists("IBLOCK_ROOT_ITEM", $arResult[0]["PARAMS"]);
 ?>
 
 	<ul id="left-menu">
-<?
+<?php
 	$previousLevel = 0;
 	foreach($arResult as $key => $arItem):
  //if ($arItem["TEXT"]= " ") $arItem["TEXT"] = "???";
@@ -108,7 +108,7 @@ $bManyIblock = array_key_exists("IBLOCK_ROOT_ITEM", $arResult[0]["PARAMS"]);
 		 </td>
          </tr></table>
         </li>
-<?
+<?php
 			endif;
 		endif;
 

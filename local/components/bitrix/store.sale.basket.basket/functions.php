@@ -1,4 +1,4 @@
-<?
+<?php
 use Bitrix\Iblock;
 use Bitrix\Highloadblock as HL;
 use Bitrix\Main\Loader;

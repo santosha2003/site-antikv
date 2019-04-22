@@ -1,4 +1,4 @@
-<?
+<?php
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
 use Bitrix\Main\Localization\Loc;
@@ -17,7 +17,7 @@ class CBitrixBasketComponent extends CBitrixComponent
 	public $priceVatShowValue = "N";
 	public $hideCoupon = "N";
 	public $usePrepayment = "N";
-	public $pathToOrder = "/personal/order.php";
+	public $pathToOrder = "/ng/personal/order.php";
 	public $columns = array();
 	public $offersProps = array();
 	protected static $iblockIncluded = null;

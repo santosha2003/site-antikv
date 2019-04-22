@@ -1,5 +1,5 @@
 <?
-$MESS ['CT_BSAC_CONFIRM'] = "РџРѕРґС‚РІРµСЂРґРёС‚СЊ";
-$MESS ['CT_BSAC_LOGIN'] = "Р›РѕРіРёРЅ";
-$MESS ['CT_BSAC_CONFIRM_CODE'] = "РљРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ";
+$MESS ['CT_BSAC_CONFIRM'] = "Подтвердить";
+$MESS ['CT_BSAC_LOGIN'] = "Логин";
+$MESS ['CT_BSAC_CONFIRM_CODE'] = "Код подтверждения";
 ?>
