@@ -8,9 +8,9 @@
 
                <?php
  if (function_exists('iconv')) {
-        $str1=iconv("Windows-1251","Новая Игра");
-         $str2=iconv("Windows-1251","разработка сайтов");
-         $str3=iconv("Windows-1251","UTF-8","от Soft Media Group, продвижение, хостинг, техподдержка");
+        $str1=iconv("UTF-8","Windows-1251","Новая Игра");
+         $str2=iconv("UTF-8","Windows-1251","разработка сайтов");
+         $str3=iconv("UTF-8","Windows-1251","от Soft Media Group, продвижение, хостинг, техподдержка");
  }
 
 

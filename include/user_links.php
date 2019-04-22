@@ -1,5 +1,5 @@
 <ul>
-	<li><a href="/personal/order/">Мои заказы</a></li>
-	<li><a href="/personal/">Мой кабинет</a></li>
-	<li><a href="/about/faq/">Нужна помощь?</a></li>
+	<li><a href="/personal/order/">РњРѕРё Р·Р°РєР°Р·С‹</a></li>
+	<li><a href="/personal/">РњРѕР№ РєР°Р±РёРЅРµС‚</a></li>
+	<li><a href="/about/faq/">РќСѓР¶РЅР° РїРѕРјРѕС‰СЊ?</a></li>
 </ul>

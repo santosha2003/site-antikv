@@ -54,15 +54,15 @@ IncludeTemplateLangFile(__FILE__);
                                         <tr>
                                                 <td id="logo-image"><?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/company_logo.php"), false);?></td>
                                                 <td id="logo-text"><a href="<?=SITE_DIR?>" title="<?=GetMessage("HEADER_TO_MAIN_PAGE")?>"><?$APPLICATION->IncludeComponent(
-	"bitrix:main.include", 
-	"sidebar", 
-	array(
-		"AREA_FILE_SHOW" => "file",
-		"PATH" => SITE_DIR."include/company_name.php",
-		"COMPONENT_TEMPLATE" => "sidebar",
-		"EDIT_TEMPLATE" => ""
-	),
-	false
+    "bitrix:main.include", 
+    ".default", 
+    array(
+	"AREA_FILE_SHOW" => "file",
+	"PATH" => SITE_DIR."include/company_name.php",
+	"COMPONENT_TEMPLATE" => ".default",
+	"EDIT_TEMPLATE" => ""
+    ),
+    false
 );?></a></td>
                                         </tr>
                                 </table>
@@ -76,35 +76,33 @@ IncludeTemplateLangFile(__FILE__);
                                 </table>
                                 <div id="top-menu">
                 <table width="100%" cellpadding="0" cellspacing="0"><tr><td>
-                                <?
-                                $APPLICATION->IncludeComponent(
-	"bitrix:menu", 
-	"horizontal", 
-	array(
-		"ROOT_MENU_TYPE" => "top",
-		"MENU_CACHE_TYPE" => "Y",
-		"MENU_CACHE_TIME" => "1900",
-		"MENU_CACHE_USE_GROUPS" => "Y",
-		"MENU_CACHE_GET_VARS" => array(
-		),
-		"MAX_LEVEL" => "1",
-		"USE_EXT" => "N",
-		"ALLOW_MULTI_SELECT" => "N",
-		"COMPONENT_TEMPLATE" => "horizontal",
-		"CHILD_MENU_TYPE" => "left",
-		"DELAY" => "N"
-	),
-	false
+<?$APPLICATION->IncludeComponent(
+      "bitrix:menu", 
+      "horizontal", 
+      array(
+       "ROOT_MENU_TYPE" => "top",
+       "MENU_CACHE_TYPE" => "Y",
+       "MENU_CACHE_TIME" => "1900",
+       "MENU_CACHE_USE_GROUPS" => "Y",
+       "MENU_CACHE_GET_VARS" => array(
+),
+       "MAX_LEVEL" => "1",
+       "USE_EXT" => "N",
+       "ALLOW_MULTI_SELECT" => "N",
+       "COMPONENT_TEMPLATE" => "horizontal",
+       "CHILD_MENU_TYPE" => "left",
+       "DELAY" => "N"
+),
+       false
 );
                                 ?>
                 </td>
 
-                <td height="33px;" align="center"  style='float:right; background:url("http://www.newgame.ru/bitrix/templates/store_minimal_blue/images/3.PNG") repeat-x;'>
-               <img src="http://www.newgame.ru/bitrix/templates/store_minimal_blue/images/shopping_cartblue.png" align="middle">
+                <td height="33px;" align="center"  style='float:right; background:url("<?=SITE_TEMPLATE_PATH?>/images/3.PNG") repeat-x;'>
+               <img src="<?=SITE_TEMPLATE_PATH?>/images/shopping_cartblue.png" align="middle"> 
                 <span id="cart_line">
-                            <?
-                            $APPLICATION->IncludeComponent(
-        "bitrix:sale.basket.basket.line",
+<?$APPLICATION->IncludeComponent(
+    "bitrix:sale.basket.basket.line",
         ".default",
         array(
                 "PATH_TO_BASKET" => SITE_DIR."personal/cart/",
@@ -129,19 +127,18 @@ IncludeTemplateLangFile(__FILE__);
         )
 );
                             ?>
+
                         </span>
-        
 
                 </td></tr></table>
-                        
+
                                 </div>
 
-              
-                        
+
                                 <div id="cart">
                                         <div class="block-content">
                                                 <p class="auth">
-                                                        <?$APPLICATION->IncludeComponent("bitrix:system.auth.form", "store", array(
+<?$APPLICATION->IncludeComponent("bitrix:system.auth.form", "store", array(
         "REGISTER_URL" => SITE_DIR."login/",
         "FORGOT_PASSWORD_URL" => "",
         "PROFILE_URL" => SITE_DIR."personal/profile/",
@@ -150,12 +147,11 @@ IncludeTemplateLangFile(__FILE__);
         false
 );?>
                                                 </p>
-
-                    <?$APPLICATION->IncludeFile(
-                        SITE_DIR."include/user_links.php",
-                        Array(),
-                        Array("MODE"=>"text")
-                    );?>
+<?$APPLICATION->IncludeFile(
+        SITE_DIR."include/user_links.php",
+        Array(),
+        Array("MODE"=>"text")
+);?>
                                         </div>
                                         <div class="corners"><div class="corner left-bottom"></div><div class="corner right-bottom"></div></div>
                                 </div>
@@ -167,31 +163,28 @@ IncludeTemplateLangFile(__FILE__);
                 <div id="content-wrapper">
 
                         <div id="breadcrumb-search">   <br><br><br>
-                        <?$APPLICATION->IncludeComponent("bitrix:search.form", "store", Array(
-                                "PAGE" => SITE_DIR."search/",
-                                ),
-                                false,
-                                Array('HIDE_ICONS' => 'Y')
-                        );?>
+<?$APPLICATION->IncludeComponent("bitrix:search.form", "store", Array(
+            "PAGE" => SITE_DIR."search/",
+            ),
+            false,
+            Array('HIDE_ICONS' => 'Y')
+);?>
 
-                        <?
-                        $APPLICATION->IncludeComponent("bitrix:breadcrumb", ".default", array(
+<?$APPLICATION->IncludeComponent("bitrix:breadcrumb", ".default", array(
                                 "START_FROM" => "0",
                                 "PATH" => "",
                                 "SITE_ID" => "-"
                                 ),
                                 false,
                                 Array('HIDE_ICONS' => 'Y')
-                        );
-                        ?>
+);?>
                         </div>
 
                         <div id="content"<?$APPLICATION->ShowProperty("TEMPLATE_SIDEBAR_MODE", "");?>>
                                 <div id="left-column">
-                                        <?
-                                        $APPLICATION->IncludeComponent(
-	"bitrix:menu", 
-	"tree1", 
+<?$APPLICATION->IncludeComponent(
+	"bitrix:menu",
+	"tree1",
 	array(
 		"ROOT_MENU_TYPE" => "left",
 		"MENU_CACHE_TYPE" => "A",
@@ -212,18 +205,18 @@ IncludeTemplateLangFile(__FILE__);
 );
                                         ?>
                                 </div>
-                                <?$APPLICATION->IncludeComponent(
-                                        "bitrix:main.include",
-                                        "sidebar",
-                                        Array(
-                                                "AREA_FILE_SHOW" => "sect",
-                                                "AREA_FILE_SUFFIX" => "inc",
-                                                "AREA_FILE_RECURSIVE" => "N",
-                                                "EDIT_MODE" => "html",
-                                        ),
-                                        false,
-                                        Array('HIDE_ICONS' => 'Y')
-                                );?>
+<?$APPLICATION->IncludeComponent(
+        "bitrix:main.include",
+        "sidebar",
+        Array(
+        "AREA_FILE_SHOW" => "sect",
+        "AREA_FILE_SUFFIX" => "inc",
+        "AREA_FILE_RECURSIVE" => "N",
+        "EDIT_MODE" => "html",
+        ),
+        false,
+        Array('HIDE_ICONS' => 'Y')
+);?>
 
                                 <div id="workarea">
                                         <h1 id="pagetitle"><?$APPLICATION->ShowTitle(false);?><?$APPLICATION->ShowProperty("ADDITIONAL_TITLE", "");?></h1>
