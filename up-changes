@@ -1,12 +1,66 @@
 
 echo "# template antikvar site php5.6" >> README.md
-git branch antikv-php56
+#git branch antikv-php56
 #git init
 git add README.md
 git add .
 git commit -m "first commit"
 #git remote add origin https://github.com/santosha2003/site-antikv
-git push -u origin antikv_php56
+#git push -u origin antikv_php56
 
 git commit
 git status
+
+
+ 581  ./arch-ftp
+  582  env LANG=ru_RU.UTF-8 mc
+  583  exit
+  584  ln -s 
+  585  ln -s /var/www/html/local local 
+  586  ln -s /var/www/html/awards_rus awards_rus
+  587  ln -s /var/www/html/bitrix bitrix
+  588  git init
+  589  git remote add origin https://github.com/santosha2003/site-antikv
+  590  git branch antikv_php56
+  591  git status
+  592  git add .
+  593  git status
+  594  git branch 
+  595  git branch -b antikv_php56
+  596  git branch --set-upstream antikv_php56
+  597  git status
+  598  git remote add origin https://github.com/santosha2003/site-antikv/tree/antikv-php56
+  599  git remote remove origin https://github.com/santosha2003/site-antikv/tree/antikv-php56
+  600  git remote rm origin 
+  601  git remote remove origin https://github.com/santosha2003/site-antikv/tree/antikv-php56
+  602  git remote add origin https://github.com/santosha2003/site-antikv/tree/antikv-php56
+  603  git status
+  604  git diff
+  605  git commit -m "first"
+  606  git diff
+  607  git branch
+  608  git branch -?
+  609  git branch -a
+  610  git branch -m antikv-php56
+  611  git branch -a
+  612  git branch --set-upstream antikv-php56
+  613  git branch -a
+  614  git branch -t
+  615  git push
+  616  git remote rm origin 
+  617  git branch --set-upstream antikv-php56
+  618  git branch --set-upstream origin antikv-php56
+  619  git remote add origin https://github.com/santosha2003/site-antikv
+  620  git push
+  621  git diff
+  622  git branch --set-upstream origin antikv-php56
+  623  git remote add origin https://github.com/santosha2003/site-antikv
+  624  git diff
+  625  git commit -m "first"
+  626  git add .
+  627  git commit -m "first"
+  628  git push
+  629  git push -?
+  630  git push --set-upstream origin antikv-php56
+  631  h
+  632  history
