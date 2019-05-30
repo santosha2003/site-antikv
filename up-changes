@@ -1,0 +1,12 @@
+
+echo "# template antikvar site php5.6" >> README.md
+git branch antikv-php56
+#git init
+git add README.md
+git add .
+git commit -m "first commit"
+#git remote add origin https://github.com/santosha2003/site-antikv
+git push -u origin antikv_php56
+
+git commit
+git status
