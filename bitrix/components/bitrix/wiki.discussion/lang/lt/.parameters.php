@@ -1,0 +1,37 @@
+<?
+$MESS["WIKI_PATH_TO_POST"] = "Wiki puslapio kelioðablonas";
+$MESS["WIKI_PATH_TO_POST_EDIT"] = "Wiki puslapio redaktoriaus kelioðablonas";
+$MESS["WIKI_PATH_TO_PAGES"] = "Puslapiø sàraðo kelioðablonas";
+$MESS["WIKI_PATH_TO_CATEGORY"] = "Wiki kategorijø puslapio apraðymo kelioðablonas";
+$MESS["WIKI_PATH_TO_CATEGORIES"] = "Wiki kategorijø puslapio kelioðablonas";
+$MESS["WIKI_PATH_TO_HISTORY"] = "Kelias á Wiki puslapio ðablonà su puslapio keitimo istorija";
+$MESS["WIKI_PATH_TO_HISTORY_DIFF"] = "Kelias á Wiki puslapio ðablonà su puslapio versijø palyginimu";
+$MESS["WIKI_PATH_TO_DISCUSSION"] = "Kelias á Wiki diskusijø puslapio ðablonà";
+$MESS["WIKI_PATH_TO_USER"] = "Kelias á Wiki naudotojo puslapio ðablonà";
+$MESS["WIKI_PAGE_VAR"] = "Puslapio kintamojo pavadinimas";
+$MESS["WIKI_OPER_VAR"] = "Operacijos kintamojo pavadinimas";
+$MESS["WIKI_VARIABLE_ALIASES"] = "Kintamøjø pavadinimai";
+$MESS["CP_BND_ELEMENT_NAME"] = "Wiki puslapio pavadinimas";
+$MESS["CP_BND_ELEMENT_CODE"] = "Wiki puslapio kodas";
+$MESS["CP_BND_ELEMENT_ID"] = "Wiki puslapio ID";
+$MESS["CP_BND_SET_STATUS_404"] = "Neradus elemento ar sekcijos, nustatyti 404 bûsenà";
+$MESS["T_IBLOCK_DESC_ADD_SECTIONS_CHAIN"] = "Átraukti skyriø á navigacijos grandinæ";
+$MESS["T_IBLOCK_DESC_INCLUDE_IBLOCK_INTO_CHAIN"] = "Add Information Block To Breadcrumbs";
+$MESS["T_IBLOCK_DESC_LIST_ID"] = "Informacinis blokas ID";
+$MESS["T_IBLOCK_DESC_LIST_TYPE"] = "Informacinio bloko tipas (tik patikrinimui)";
+$MESS["F_FORUM_ID"] = "Forumo ID";
+$MESS["F_USE_CAPTCHA"] = "Naudoti CAPTCHA";
+$MESS["F_MESSAGES_PER_PAGE"] = "Praneðimø skaièius puslapyje";
+$MESS["F_PATH_TO_SMILE"] = "Kelias á ðypsenëliø aplankà (ðaknis)";
+$MESS["F_READ_TEMPLATE"] = "Temos skaitymo puslapis";
+$MESS["F_SHOW_LINK_TO_FORUM"] = "Rodyti nuorodà á forumà";
+$MESS["F_POST_FIRST_MESSAGE"] = "Pradëti temà elemento tekstu";
+$MESS["SHOW_RATING"] = "Ájungti reitingà";
+$MESS["SHOW_RATING_CONFIG"] = "numatytasis";
+$MESS["RATING_TYPE"] = "Reitingo mygtuko dizainas";
+$MESS["RATING_TYPE_CONFIG"] = "numatytasis";
+$MESS["RATING_TYPE_STANDART_TEXT"] = "Patinka/nepatinka (tekstas)";
+$MESS["RATING_TYPE_STANDART_GRAPHIC"] = "Patinka/nepatinka (vaizdas)";
+$MESS["RATING_TYPE_LIKE_TEXT"] = "Patinka (tekstas)";
+$MESS["RATING_TYPE_LIKE_GRAPHIC"] = "Patinka (vaizdas)";
+?>

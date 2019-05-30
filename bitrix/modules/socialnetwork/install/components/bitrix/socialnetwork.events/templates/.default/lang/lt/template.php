@@ -1,0 +1,15 @@
+<?
+$MESS["SONET_C1_FR_TITLE"] = "Kvietimas draugauti!";
+$MESS["SONET_C1_ONLINE"] = "Ðiuo metu tinklapyje";
+$MESS["SONET_C1_FR_TEXT"] = "nori Jus átraukti á savo draugø sàraðà";
+$MESS["SONET_C1_FR_ADD"] = "Draugauti";
+$MESS["SONET_C1_REJECT"] = "Atmesti";
+$MESS["SONET_C1_GR_TITLE"] = "Kvietimas prisijungti prie grupës!";
+$MESS["SONET_C1_GR_INV"] = "Kvieèia";
+$MESS["SONET_C1_GR_ADD"] = "Priimti";
+$MESS["SONET_C1_MS_TITLE"] = "Jûs turite naujà praneðimà!";
+$MESS["SONET_C1_ANSWER"] = "Atsakyti";
+$MESS["SONET_C1_CLOSE"] = "Uþdaryti";
+$MESS["SONET_C1_CHAT"] = "Atidaryti pokalbá";
+$MESS["SONET_C1_BAN"] = "Á juodà sàraðà";
+?>

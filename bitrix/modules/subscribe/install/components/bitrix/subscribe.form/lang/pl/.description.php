@@ -1,0 +1,5 @@
+<?
+$MESS["CD_BSF_NAME"] = "Formularz subskrypcji";
+$MESS["CD_BSF_DESCRIPTION"] = "Formularzu subskrypcji do w³±czenia w uk³ad witryny.";
+$MESS["CD_BSF_SERVICE"] = "Newsletter";
+?>

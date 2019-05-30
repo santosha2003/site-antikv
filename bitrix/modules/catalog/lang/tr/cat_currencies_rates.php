@@ -1,0 +1,30 @@
+<?
+$MESS ['curr_rates_flt_date'] = "Tarih:";
+$MESS ['curr_rates_flt_btn'] = "Yükle";
+$MESS ['curr_rates_nav'] = "Kurlar ";
+$MESS ['curr_rates_rate'] = "Kur ";
+$MESS ['curr_rates_rate_cnt'] = "Miktar";
+$MESS ['curr_rates_del'] = "Sil";
+$MESS ['curr_rates_query'] = "Sorgu.";
+$MESS ['curr_rates_reset'] = "Sýfýrla";
+$MESS ['curr_rates_title'] = "Döviz kurlarý";
+$MESS ['curr_rates_list'] = "Dövizler";
+$MESS ['curr_rates_err1'] = "Süre baþlangýç tarihin formatý yanlýþtýr.";
+$MESS ['curr_rates_err2'] = "Sürenin sona erme tarih formatý yanlýþtýr.";
+$MESS ['curr_rates_curr'] = "Döviz:";
+$MESS ['curr_rates_all'] = "(tümü)";
+$MESS ['curr_rates_date1'] = "Tarih";
+$MESS ['curr_rates_curr1'] = "Döviz";
+$MESS ['curr_rates_upd'] = "Kaydet";
+$MESS ['CURRENCY_TITLE'] = "Döviz kurlarý";
+$MESS ['ERROR_ADD_REC'] = "Kayýt eklemesinde hata oluþtu";
+$MESS ['ERROR_ADD_REC2'] = "Bu tarih için kur ayarlanmýþ olabilir.";
+$MESS ['ERROR_UPDATE_REC'] = "Kayýt deðiþtirilmesinde hata oluþtu";
+$MESS ['ERROR_QUERY_RATE'] = "Kur sorgulamasýnda hata oluþtu";
+$MESS ['ERROR_EMPTY_ANSWER'] = "Sunucunun cevabý boþ.";
+$MESS ['ERROR_SAVING_RATE'] = "Kur kaydýnda hata oluþtu";
+$MESS ['ERROR_SAVING_RATE1'] = "Kur belirtilmemiþtir";
+$MESS ['ERROR_SAVING_RATE2'] = "Nominal belirtilmemiþtir.";
+$MESS ['ERROR_DATE_RATE'] = "Kur tarihi belirtilmemiþtir";
+$MESS ['CATALOG_F_DEL'] = "Sýfýrla";
+?>

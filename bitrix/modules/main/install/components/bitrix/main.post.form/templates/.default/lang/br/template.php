@@ -1,0 +1,30 @@
+<?
+$MESS["MPF_INSERT_FILE"] = "Clique para inserir arquivo";
+$MESS["MPF_IMAGE_LINK"] = "Inserir link da imagem";
+$MESS["MPF_TAGS"] = "Tags:";
+$MESS["MPF_SPOILER"] = "Inserir spoiler";
+$MESS["FPF_VIDEO"] = "Inserir vídeo";
+$MESS["BPC_VIDEO_P"] = "Caminho de vídeo";
+$MESS["MPF_VIDEO_SIZE"] = "Tamanho (W/H)";
+$MESS["BPC_VIDEO_PATH_EXAMPLE"] = "Exemplo: <i> http://www.youtube.com/watch?v=lWbjWfTttWU </i> <br/> ou <i> www.mysite.com/video/my_video.mp4 </i>";
+$MESS["MPF_ADD_TAG"] = "Adicionar mais";
+$MESS["MPF_DESTINATION"] = "Para:";
+$MESS["MPF_DESTINATION_1"] = "Adicionar pessoas, grupos ou departamentos";
+$MESS["MPF_DESTINATION_2"] = "Adicionar mais";
+$MESS["MPF_DESTINATION_3"] = "Todos os empregados";
+$MESS["MPF_DESTINATION_4"] = "Todos os usuários";
+$MESS["MPF_EDITOR"] = "Editor visual";
+$MESS["MPF_FILES"] = "Arquivos:";
+$MESS["MPF_FILE_TITLE"] = "Enviar arquivos";
+$MESS["MPF_MORE"] = "Mais";
+$MESS["MPF_TAG_TITLE"] = "Adicionar tag";
+$MESS["MPF_ADD_TAG1"] = "Adicionar";
+$MESS["MPF_MENTION_TITLE"] = "Adicionar menção";
+$MESS["MPF_IMAGE_TITLE"] = "Inserir imagem";
+$MESS["MPF_FILE_INSERT_IN_TEXT"] = "Inserir<br /> no texto";
+$MESS["MPF_FILE_IN_TEXT"] = "No texto";
+$MESS["MPF_BUTTON_SEND"] = "Enviar";
+$MESS["MPF_BUTTON_CANCEL"] = "Cancelar";
+$MESS["MPF_SMILE_SET"] = "conjuntos";
+$MESS["BLOG_LINK_SHOW_NEW"] = "Enviar mensagem";
+?>

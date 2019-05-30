@@ -1,0 +1,34 @@
+<?
+$MESS ['FILEMAN_ACCESS_LEVEL_NOTCH'] = "(laissez inchangé)";
+$MESS ['FILEMAN_ACCESS_LEVEL'] = "Niveau d'accès";
+$MESS ['FILEMAN_TAB_ALT'] = "Options des autorisations d'accès";
+$MESS ['FILEMAN_TAB'] = "Autorisations d'accès";
+$MESS ['FILEMAN_ACCESS_TITLE'] = "Droits d'accès ";
+$MESS ['FILEMAN_ACCESS_DIFFERENT'] = "Les droits d'accès de ce groupe varient suivant les dossiers&nbsp;! Après sauvegarde, les droits à tous les dossiers seront les mêmes.";
+$MESS ['FILEMAN_ACCESS_GROUP_INHERIT'] = "Tous les groupes &quot;héritant&quot; le niveau d'accès";
+$MESS ['FILEMAN_ACCESS_APPLY'] = "Appliquer";
+$MESS ['FILEMAN_ACCESS_CHANGE_TO'] = "Modifier les droits d'accès à";
+$MESS ['FILEMAN_ACCESS_LEVEL_CUR'] = "Niveau courant d'accès";
+$MESS ['FILEMAN_ACCESS_DENY'] = "Refuser";
+$MESS ['FM_FOLDER_ACCESS_DENIED'] = "Refuser";
+$MESS ['FILEMAN_ACCESS_FILE'] = "Fichier";
+$MESS ['FILEMAN_FILE_OR_FOLDER'] = "Fichier / dossier";
+$MESS ['FILEMAN_ACCESS_FOLDERS_FILES'] = "fichiers/dossiers&nbsp;:";
+$MESS ['FILEMAN_CMENU_CAT'] = "Dossier";
+$MESS ['FILEMAN_ACCESS_FOR_GROUP'] = "Pour ler groupe d'utilisateurs";
+$MESS ['FILEMAN_ACCESS_FULL'] = "Accès complet";
+$MESS ['FM_FOLDER_ACCESS_FULL'] = "Accès complet";
+$MESS ['FILEMAN_ACCESS_GROUP'] = "Groupe";
+$MESS ['FILEMAN_FOLDER_ACCESS_INHERIT'] = "Hériter";
+$MESS ['FILEMAN_ACCESS_INHERIT'] = "Hérité";
+$MESS ['FILEMAN_ACCESS_TO_DENIED'] = "Droits insuffisants pour changer les droits d'accès de";
+$MESS ['FM_FOLDER_ACCESS_READ'] = "Lire";
+$MESS ['FILEMAN_ACCESS_RESET'] = "Réinitialiser";
+$MESS ['FILEMAN_ACCESS_SAVE'] = "Enregistrer";
+$MESS ['FILEMAN_ACCESS_DIFF_GROUP'] = "Certains dossiers et fichiers ont des niveaux d'accès différents pour ce groupe&nbsp;:";
+$MESS ['FILEMAN_ACCESS_DIFF_LEVEL'] = "Certains dossiers et fichiers ont des niveaux d'accès différents&nbsp;:";
+$MESS ['FM_FOLDER_ACCESS_WORKFLOW'] = "Flux des tâches";
+$MESS ['FILEMAN_ACCESS_WRITE'] = "Écrire";
+$MESS ['FM_FOLDER_ACCESS_WRITE'] = "Écrire";
+$MESS ['FILEMAN_ACCESS_FOR_GROUP2'] = "les autorisations d'ècitures ont été établies. Chaque utilisateur inscrit peut modifier ses fichiers et/ou dossiers. Désirez-vous vraiment enregistrer ce changement&nbsp;?";
+?>

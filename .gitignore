@@ -2,3 +2,9 @@
 /bitrix/.settings.php
 /bitrix/error.log
 /bitrix/log.txt
+/bitrix/cache
+/bitrix/managed_cache
+/bitrix/stack_cache
+/bitrix/catalog_export
+/bitrix/php_interface/dbconn.php
+/bitrix/license_key.php

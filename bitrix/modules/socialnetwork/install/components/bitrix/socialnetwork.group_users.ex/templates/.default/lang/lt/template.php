@@ -1,0 +1,30 @@
+<?
+$MESS["SONET_GUE_T_MODS_SUBTITLE"] = "Moderatoriai";
+$MESS["SONET_GUE_T_USERS_SUBTITLE"] = "Nariai";
+$MESS["SONET_GUE_T_BAN_SUBTITLE"] = "Uþblokuoti naudotojai";
+$MESS["SONET_GUE_T_ACTIONS_TITLE"] = "Veiksmai";
+$MESS["SONET_GUE_T_OWNER"] = "savininkas";
+$MESS["SONET_GUE_T_ACTION_ADDTOUSERS"] = "Pakviesti naudotojus";
+$MESS["SONET_GUE_T_ACTION_ADDTOMODERATORS"] = "Paskirti moderatorium";
+$MESS["SONET_GUE_T_ACTION_EXCLUDEFROMGROUP"] = "Paðalinti ið grupës";
+$MESS["SONET_GUE_T_ACTION_EXCLUDEFROMGROUP_CONFIRM"] = "Ar tikrai norite paðalinti visus ðiuos naudotojus ið grupës?";
+$MESS["SONET_GUE_T_ACTION_BANFROMGROUP"] = "Blokuoti";
+$MESS["SONET_GUE_T_ACTION_EXCLUDEFROMMODERATORS"] = "Paðalinti ið moderatoriø";
+$MESS["SONET_GUE_T_ACTION_UNBANFROMGROUP"] = "Atblokuoti";
+$MESS["SONET_GUE_T_ACTION_SETGROUPOWNER"] = "Pakeisti savininkà";
+$MESS["SONET_GUE_T_ACTION_SETGROUPOWNER_CONFIRM"] = "Ar tikrai norite pakeisti grupës savininkà?";
+$MESS["SONET_GUE_T_USER_ID_NOT_DEFINED"] = "Nepasirinkote jokio naudotojo.";
+$MESS["SONET_GUE_T_USER_ID_INCORRECT"] = "Pasirinkite naudotojà.";
+$MESS["SONET_GUE_T_OWNER_CANT_EXCLUDE_HIMSELF"] = "Savininkas negali paðalinti savæs ið grupës.";
+$MESS["SONET_GUE_T_GROUP_ID_NOT_DEFINED"] = "Grupë nerasta.";
+$MESS["SONET_GUE_T_NOT_ATHORIZED"] = "Jûs nesate prisijungæs.";
+$MESS["SONET_GUE_T_MODULE_NOT_INSTALLED"] = "Socialinio tinklo modulis neádiegtas.";
+$MESS["SONET_GUE_T_NO_PERMS"] = "Jûs neturite teisiø valdyti ðià grupæ.";
+$MESS["SONET_GUE_T_SESSION_WRONG"] = "Jûsø sesijos laikas baigësi, praðome pakartoti veiksmus.";
+$MESS["SONET_GUE_T_ACTION_FAILED"] = "Veiksmas gràþino neteisingo uþbaigimo poþymá: #ERROR#";
+$MESS["SONET_GUE_T_WAIT"] = "Praðome palaukti&hellip;";
+$MESS["SONET_GUE_T_SAME_OWNER"] = "Nurodytas naudotojas jau yra grupës savinikas";
+$MESS["SONET_GUE_T_FIRED"] = "atleistas(-)";
+$MESS["SONET_GUE_T_FIRED_M"] = "atleistas";
+$MESS["SONET_GUE_T_FIRED_F"] = "atleista";
+?>

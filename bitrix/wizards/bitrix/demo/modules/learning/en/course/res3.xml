@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>355</id>
+<timestamp_x>1163172170</timestamp_x>
+<date_create>1153377249</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>133</chapter_id>
+<name>The product structure</name>
+<sort>100</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>html</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>The Bitrix Site Manager consists of two sections. These sections differ by their functions and management tools sets: </p>
+
+<table>
+  <tbody>
+    <tr valign="top"><td>
+        <ul>
+          <li><u>Administrative section</u>: this section contains tools for system general parameters management, site and content management, and other operations. </li>
+        </ul>
+      </td><td><a href="javascript:ShowImg('/images/integration_course_en/features/admin_sect.png',597,376,'Adminictrative section')"><img src="cid:resources/res3/p4L9J.PFNOl.admin_sect_s.png" height="88" alt="Click to enlarge" hspace="0" width="140" border="0"/></a> </td></tr>
+  
+    <tr valign="top"><td>
+        <ul>
+          <li><u>Public section</u>: this section is intended for displaying all public pages and materials to site visitors. </li>
+        </ul>
+      </td><td><img src="cid:resources/res3/4OjmC.I1bjG.publ_sect_s.png" height="86" alt="Click to enlarge" hspace="0" width="140" border="0" res3="" 10="" learning="" upload="" i1bjg.publ_sect_s.png?="" href="javascript:ShowImg('/images/integration_course_en/features/publ_sect.png',599,368,'Public section')<img src="/></td></tr>
+  </tbody>
+</table>
+
+<p>The Bitrix Site Manager has module structure. Each module is &quot;responsible&quot; for the management of definite data and implementing exact set of operations. The number of modules available for exact copy of product is defined by using license. More detailed information about the system modules is available in <a href="http://www.bitrixsoft.com/help/" target="_blank">product documentation</a>. </p>
+
+<p>The Bitrix Site Manager framework is designed to separate the visual aspect from the software kernel of a site. This feature allows: </p>
+
+<ul>
+  <li>to avoid unexpected kernel modification during work with the system files; </li>
+
+  <li>to exclude the possibility of public file modification during the product update. </li>
+</ul>
+
+<p>The software kernel is located in the folder <code>/bitrix/</code> relative to the site root. Subdirectories of this folder contain the following files:</p>
+
+<table>
+  <tbody>
+    <tr valign="top"><td><code>/bitrix/templates/</code></td><td>site design templates; components used by the templates. Basically, the integration process affects files in this directory only;</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/admin/</code></td><td>administrative interface. Provides forms for managing the system modules;</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/cache/</code></td><td>cache files created while caching the dynamic information;</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/php_interface/</code></td><td>auxiliary system files (database connection preferences, other information);</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/modules/</code></td><td>class libraries of the system modules;</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/images/</code></td><td>images for the system modules; </td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/tools/</code></td><td>auxiliary files;</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/updates/</code></td><td>used for the updates downloads;</td></tr>
+  
+    <tr valign="top"><td><code>/bitrix/</code></td><td>administrative files.</td></tr>
+  </tbody>
+</table>
+
+<p><a href="javascript:ShowSwf('/images/movies/admin_panel.swf',774,551)" title="" target=""><img src="cid:resources/res3/c5okw.44cf72d43fe1b.flash_movie_2.png" height="61" alt="How to Work with the Administrative Section (Flash)" width="70" align="absMiddle" border="0"/><b>How to Work with the Administrative Section (Flash)</b></a></p>
+
+<p><a href="javascript:ShowSwf('/images/movies/visualtheme.swf',716,444)" title="" target=""><img src="cid:resources/res3/U4hbJ.44cf72d43fe1b.flash_movie_2.png" height="61" alt="How to Change the Administrative Interface (Flash)" width="70" align="absMiddle" border="0"/><b>How to Change the Administrative Interface (Flash)</b></a></p>
+
+<p><a href="javascript:ShowSwf('/images/movies/mouse.swf',649,460)" title="" target=""><img src="cid:resources/res3/VPutx.44cf72d43fe1b.flash_movie_2.png" height="61" alt="How to Manage the Administrative Section Settings (Flash)" width="70" align="absMiddle" border="0"/><b>How to Manage the Administrative Section Settings (Flash)</b></a></p>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

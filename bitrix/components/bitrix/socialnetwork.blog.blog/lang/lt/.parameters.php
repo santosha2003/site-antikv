@@ -1,0 +1,35 @@
+<?
+$MESS["BB_MESSAGE_COUNT"] = "Þinutës viename puslapyje";
+$MESS["BB_PATH_TO_BLOG"] = "Ðablono kelias á dienoraðèio puslapá";
+$MESS["BB_PATH_TO_BLOG_CATEGORY"] = "Ðablono kelias á dienoraðèio puslapá su þymiø filtru";
+$MESS["BB_PATH_TO_POST"] = "Dienoraðèio puslapio ðablonas";
+$MESS["BB_PATH_TO_POST_EDIT"] = "Ðablono kelias á praneðimo redagavimo puslapá";
+$MESS["BB_PATH_TO_USER"] = "Ðablono kelias á naudotojo puslapá";
+$MESS["BB_PATH_TO_GROUP"] = "Ðablono kelias á grupës puslapá";
+$MESS["BB_PATH_TO_SMILE"] = "Kelias á aplankà su ðypsenëlëmis, nuo tinklapio root'o";
+$MESS["BB_BLOG_VAR"] = "Kintamojo pavadinimas identifikatoriui";
+$MESS["BB_POST_VAR"] = "Kintamojo pavadinimas praneðimo identifikatoriui";
+$MESS["BB_USER_VAR"] = "Kintamojo pavadinimas naudotojo identifikatoriui";
+$MESS["BB_PAGE_VAR"] = "Puslapio kintamasis";
+$MESS["BB_CACHE_TIME_LONG"] = "Puslapio keðavimo trukmë";
+$MESS["BB_YEAR"] = "Filtruoti pagal metus";
+$MESS["BB_MONTH"] = "Filtruoti pagal mënesá";
+$MESS["BB_DAY"] = "Filtruoti pagal dienà";
+$MESS["BB_CATEGORY_ID"] = "Filtruoti pagal þymës ID";
+$MESS["BB_SET_NAV_CHAIN"] = "Átraukti elementà á navigacijos grandinæ";
+$MESS["POST_PROPERTY_LIST"] = "Rodyti papildomas praneðimo savybes";
+$MESS["BB_FILTER_NAME_IN"] = "Masyvo pavadinimas su filtro reikðmëmis praneðimams filtruoti";
+$MESS["B_VARIABLE_ALIASES"] = "Kintamøjø pavadinimai";
+$MESS["BC_DATE_TIME_FORMAT"] = "Datos ir laiko formatas";
+$MESS["BB_NAV_TEMPLATE"] = "Pavadinimas ðablono puslapiø navigacijai";
+$MESS["SHOW_RATING"] = "Ájungti reitingà";
+$MESS["SHOW_RATING_CONFIG"] = "numatytasis";
+$MESS["RATING_TYPE"] = "Reitingo mygtukø dizainas";
+$MESS["RATING_TYPE_CONFIG"] = "numatytasis";
+$MESS["RATING_TYPE_STANDART_TEXT"] = "Patinka / Nepatinka (tekstas)";
+$MESS["RATING_TYPE_STANDART_GRAPHIC"] = "Patinka / Nepatinka (paveikslëlis)";
+$MESS["RATING_TYPE_LIKE_TEXT"] = "Patinka (tekstas)";
+$MESS["RATING_TYPE_LIKE_GRAPHIC"] = "Patinka (paveikslëlis)";
+$MESS["BPC_IMAGE_MAX_WIDTH"] = "Maks. Vaizdo plotis";
+$MESS["BPC_IMAGE_MAX_HEIGHT"] = "Maks. Vaizdo aukðtis";
+?>

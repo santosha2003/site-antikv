@@ -1,0 +1,32 @@
+<?
+$MESS["SONET_MODULE_NOT_INSTALL"] = "Socialinis tinklas modulis neádiegtas.";
+$MESS["SONET_WORKGROUPS_FEATURE_DISABLED"] = "Darbo grupës funkcionalas yra iðjungtas.";
+$MESS["SONET_LOADING"] = "Kraunasi...";
+$MESS["FL_FORUM_CHAIN"] = "Forumas";
+$MESS["FL_FORUM_USER_CHAIN"] = "Forumas";
+$MESS["FL_FORUM_GROUP_CHAIN"] = "Diskusijos";
+$MESS["SONET_PANEL_REINDEX_TITLE"] = "Perindeksuoti socialinio tinklo duomenø paieðkà";
+$MESS["SONET_PANEL_REINDEX"] = "Perindeksuoti";
+$MESS["SONET_LOG_TEMPLATE_AUTHOR_MAIL"] = "Autorius: #AUTHOR_NAME# (#AUTHOR_URL#)";
+$MESS["SONET_LOG_TEMPLATE_AUTHOR"] = "Autorius: <a href=\"#AUTHOR_URL#\">#AUTHOR_NAME#</a>.";
+$MESS["SONET_LOG_TEMPLATE_GUEST"] = "Autorius: #AUTHOR_NAME#.";
+$MESS["SONET_CREATE_WEBDAV"] = "Sukurti biblioteka";
+$MESS["IBLOCK_DEFAULT_UF"] = "Numatytoji Galerija";
+$MESS["SONET_FILES"] = "Failai";
+$MESS["SONET_GROUP"] = "Grupës";
+$MESS["SONET_GROUP_PREFIX"] = "Grupë: ";
+$MESS["SONET_WEBDAV_NOT_EXISTS"] = "Nëra dokumentø.";
+$MESS["SONET_GALLERY_NOT_FOUND"] = "Nëra nuotraukø.";
+$MESS["SONET_PHOTO"] = "Nuotraukos";
+$MESS["SONET_FILES_IS_NOT_ACTIVE"] = "\"Failai\" funkcionalumas nëra ájungtas.";
+$MESS["SONET_PHOTO_IS_NOT_ACTIVE"] = "\"Nuotraukos\" funkcionalumas nëra ájungtas.";
+$MESS["SONET_WD_MODULE_IS_NOT_INSTALLED"] = "Dokumentø bibliotekos modulis neádiegtas.";
+$MESS["SONET_GROUP_NOT_EXISTS"] = "Grupë neegzistuoja.";
+$MESS["SONET_IBLOCK_ID_EMPTY"] = "Informacinis blokas nenurodytas.";
+$MESS["SONET_IB_MODULE_IS_NOT_INSTALLED"] = "Informaciniø blokø modulis nëra ádiegtas.";
+$MESS["SONET_P_MODULE_IS_NOT_INSTALLED"] = "Nuotraukø galerijos modulis nëra ádiegtas.";
+$MESS["SONET_GALLERIES_IS_NOT_ACTIVE"] = "Jûsø foto galerijos ðiuo metu yra neaktyvios. Praðome susisiekti su administratoriumi.";
+$MESS["SONET_GALLERY_IS_NOT_ACTIVE"] = "Jûsø foto galerija ðiuo metu yra neaktyvi. Praðome susisiekti su administratoriumi.";
+$MESS["SONET_NAME_TEMPLATE_DEFAULT"] = "#NOBR##NAME# #LAST_NAME##/NOBR#";
+$MESS["SONET_CONTENT_SEARCH_CHAIN"] = "Ieðkoti";
+?>

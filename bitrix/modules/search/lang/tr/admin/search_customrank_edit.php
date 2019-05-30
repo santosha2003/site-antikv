@@ -1,0 +1,30 @@
+<?
+$MESS ['customrank_param1'] = "Parametre 1:";
+$MESS ['customrank_param2'] = "Prametre 2:";
+$MESS ['customrank_param3'] = "Parametre 3:";
+$MESS ['customrank_site'] = "Site:";
+$MESS ['customrank_module'] = "Modül:";
+$MESS ['customrank_no'] = "(yok)";
+$MESS ['customrank_sort'] = "Aðýrlýk:";
+$MESS ['customrank_edit_rule'] = "# kuralýn düzenlenmesi";
+$MESS ['customrank_add_rule'] = "Kuralýn eklenmesi";
+$MESS ['customrank_list_rule'] = "Liste ";
+$MESS ['customrank_list_rule_title'] = "Kural listesi";
+$MESS ['customrank_add_new'] = "Ekle";
+$MESS ['customrank_add_new_title'] = "Yeni kýral ekle";
+$MESS ['customrank_delete'] = "Sil";
+$MESS ['customrank_delete_title'] = "Bu kuralý sil";
+$MESS ['customrank_delete_conf'] = "Kural silinsin mi?";
+$MESS ['customrank_param3_main'] = "Parametre 3 (dosyaya giden tam yol):";
+$MESS ['customrank_param1_iblock'] = "Parametre 1 (bilgi blog türü):";
+$MESS ['customrank_param2_iblock'] = "Parametre 2 (bilgi bloðu):";
+$MESS ['customrank_param3_iblock'] = "Parametre 3 (bilgi blog öðesi):";
+$MESS ['customrank_param1_forum'] = "Parametre 1 (forum):";
+$MESS ['customrank_param2_forum'] = "Parametre 2 (forum konusu):";
+$MESS ['customrank_param3_forum'] = "Parametre 3 (forum iletisi):";
+$MESS ['customrank_rule'] = "Kural";
+$MESS ['customrank_rule_title'] = "Sýralama kurallarýn parametreleri";
+$MESS ['customrank_iblocks'] = "Bilgi bloglarý";
+$MESS ['customrank_forum'] = "Forum";
+$MESS ['customrank_files'] = "Statik dosyalar";
+?>

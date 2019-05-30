@@ -1,0 +1,35 @@
+<?
+$MESS ['BLOG_SMILE_ICON'] = "Image";
+$MESS ['SMILE_ID'] = "ID";
+$MESS ['BLOG_ACTIONS'] = "Actions";
+$MESS ['BLOG_ADD_SMILE'] = "Ajouter un émoticon";
+$MESS ['SMILE_DEL_CONF'] = "Sur de supprimer l'émoticône&nbsp;?";
+$MESS ['SMILE_TITLE'] = "Émoticônes de blog";
+$MESS ['SMILE_RESET'] = "Annuler";
+$MESS ['FSAN_ADD_NEW_ALT'] = "Cliquer pour ajouter une nouvelle émoticône";
+$MESS ['SMILE_DEL'] = "Supprimer";
+$MESS ['BLOG_DELETE_DESCR'] = "Supprimer l'émoticône";
+$MESS ['SMILE_F_DESCR'] = "Description&nbsp;:";
+$MESS ['BLOG_EDIT'] = "Éditer";
+$MESS ['BLOG_EDIT_DESCR'] = "Éditer les paramètres d'émoticône";
+$MESS ['ERROR_ADD_NEW_REC'] = "Erreur à l'ajout d'une émoticône nouvelle";
+$MESS ['ERROR_ADD_REC'] = "Erreur à l'ajout d'une émoticône.";
+$MESS ['ERROR_DELETE'] = "Erreur à la suppression d'une émoticône";
+$MESS ['ERROR_DEL_SMILE'] = "Erreur à la suppression d'une émoticône.";
+$MESS ['ERROR_UPDATE_REC'] = "Erreur lors de la mise à jour de l'émoticône";
+$MESS ['ERROR_EMPTY_NAME2'] = "pour langue";
+$MESS ['SMILE_TYPE_ICON'] = "Icône";
+$MESS ['BLOG_NAME'] = "Nom";
+$MESS ['ERROR_EMPTY_NAME1'] = "Nom de l'émoticône";
+$MESS ['ERROR_EMPTY_NEW_NAME'] = "Veuillez donner un nom à la nouvelle émoticône de langue";
+$MESS ['SMILE_F_NAME'] = "Nom&nbsp;:";
+$MESS ['FSAN_ADD_NEW'] = "Nouvelle émoticône";
+$MESS ['SMILE_UPD'] = "Enregistrer";
+$MESS ['PAGES'] = "Sourires";
+$MESS ['SMILE_TYPE_SMILE'] = "Émoticône";
+$MESS ['FS_SUCCESS_DEL'] = "L'émoticône a été supprimée avec succès";
+$MESS ['SMILE_NAV'] = "Émoticônes";
+$MESS ['SMILE_SORT'] = "Tri.";
+$MESS ['SMILE_TYPE'] = "Type";
+$MESS ['BLOG_TYPING'] = "En saisie";
+?>

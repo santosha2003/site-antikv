@@ -1,0 +1,32 @@
+<?
+$MESS ['SAE_NO_SITE_PLAN'] = "Plan sitesi belirtilmemiþtir";
+$MESS ['SAE_NO_USER'] = "Kullanýcý belirtilmemiþtir";
+$MESS ['SAE_NO_PLAN'] = "Plan belirtilmemiþtir";
+$MESS ['SAE_NO_DATE_CREATE'] = "Oluþturma tarihi belirtilmemiþtir";
+$MESS ['SAE_AFFILIATE_ALREADY_EXISTS'] = "#USER_ID#  No'lu kullanýcý için katýlýmcý #SITE_ID# sitesinde zaaten mevcuttur";
+$MESS ['SAE_ERROR_SAVE_AFF'] = "Katýlýmcýnýn kaydýnda hata";
+$MESS ['SAE_TITLE_UPDATE_AFF'] = "#ID# No'lu katýlýmcý deðiþikliði";
+$MESS ['SAE_TITLE_ADD_AFF'] = "Yeni baþlý þirketin eklenmesi";
+$MESS ['SAE_AFF_LIST'] = "Katýlýmcýlar listesi";
+$MESS ['SAE_AFF_ADD'] = "Katýlýmcý ekle";
+$MESS ['SAE_AFF_DELETE'] = "Katýlýmcýyý sil";
+$MESS ['SAE_AFF_DELETE_CONF'] = "Bu katýlýmcýyý silmek istediðinizden eminmisiniz?";
+$MESS ['SAE_AFF_TAB'] = "Katýlýmcý";
+$MESS ['SAE_AFF_TAB_TITLE'] = "Katýlýmcý parametreleri";
+$MESS ['SAE_DATE_UPDATE'] = "Son deðiþiklik tarihi:";
+$MESS ['SAE_SITE'] = "Site:";
+$MESS ['SAE_USER'] = "Kullanýcý:";
+$MESS ['SAE_PROFILE'] = "Kullanýcý profiline geç";
+$MESS ['SAE_AFFILIATE_REG'] = "Üzerinden kaydýný yaptýran katýlýmcý:";
+$MESS ['SAE_NO_AFFILIATE'] = "Katýlýmcý býulunamadý";
+$MESS ['SAE_WAIT'] = "bekleyiniz";
+$MESS ['SAE_PLAN'] = "Plan:";
+$MESS ['SAE_ACTIVE'] = "Etkinlik";
+$MESS ['SAE_DATE_REG'] = "Kayýt tarihi (";
+$MESS ['SAE_PAYED_SUM'] = "Ödenen miktar:";
+$MESS ['SAE_PENDING_SUM'] = "Deðerlendirilen miktar:";
+$MESS ['SAE_LAST_CALC'] = "Son hesaplama tarihi (";
+$MESS ['SAE_FIX_PLAN'] = "Planý düzelt";
+$MESS ['SAE_AFF_SITE'] = "Katýlýmcý sitesi";
+$MESS ['SAE_AFF_DESCRIPTION'] = "Katýlýmcý tanýmý";
+?>

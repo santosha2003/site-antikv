@@ -1,0 +1,29 @@
+<?
+$MESS ['FORM_USER'] = "Utilisateur - ";
+$MESS ['FORM_WEB_FORMS'] = "formulaires WEB";
+$MESS ['FORM_AUTHORIZED'] = "inscrit";
+$MESS ['FORM_DATE_CREATE'] = "Date - ";
+$MESS ['FORM_L_USER_NAME'] = "Prénom et nom  des utilisateurs";
+$MESS ['FORM_VIEW'] = "Suivez ce lien pour voir&nbsp;:";
+$MESS ['FORM_L_DATE_CREATE'] = "Date de saisie ";
+$MESS ['FORM_L_FORM_ID'] = "ID du formulaire";
+$MESS ['FORM_L_NAME'] = "Nom de formulaire";
+$MESS ['FORM_L_SID'] = "SID du formulaire";
+$MESS ['FORM_GENERATING_FINISHED'] = "Le modèle de courrier est créé.";
+$MESS ['FORM_PAGE_TITLE'] = "Gérérer des modèles de courrier";
+$MESS ['FORM_GENERATED_AUTOMATICALLY'] = "Message généré automatiquement.";
+$MESS ['FORM_NOT_AUTHORIZED'] = "non autorisé";
+$MESS ['FORM_NOT_REGISTERED'] = "non-inscrit";
+$MESS ['FORM_RESULT_ID'] = "Résultat -";
+$MESS ['FORM_L_RESULT_ID'] = "ID du résultat";
+$MESS ['FORM_STAT_SESSION_ID'] = "Session - ";
+$MESS ['FORM_L_STAT_SESSION_ID'] = "ID de session";
+$MESS ['FORM_L_USER_AUTH'] = "Utilisateur autorisé&nbsp;?";
+$MESS ['FORM_L_USER_EMAIL'] = "Courriel de l'utilisateur";
+$MESS ['FORM_L_USER_ID'] = "ID d'utilisateur";
+$MESS ['FORM_VIEW_TEMPLATE'] = "voir le modèle";
+$MESS ['FORM_STAT_GUEST_ID'] = "Visiteur -";
+$MESS ['FORM_L_STAT_GUEST_ID'] = "ID du visiteur";
+$MESS ['FORM_FILLING'] = "Formulaire rempli";
+$MESS ['FORM_FILLING_S'] = "Formulaire rempli";
+?>

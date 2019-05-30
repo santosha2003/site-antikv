@@ -1,0 +1,5 @@
+<?
+$MESS ['SONET_GRULIST_TEMPLATE_NAME'] = "Grupiø sàraðas";
+$MESS ['SONET_GRULIST_TEMPLATE_DESCRIPTION'] = "Rodyti grupiø sàraðà";
+$MESS ['SONET_NAME'] = "Socialinis tinklas";
+?>

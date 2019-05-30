@@ -1,0 +1,65 @@
+<?
+$MESS ['SEF_MODE_TIP'] = "Umo¿liwia poparcie SEF.";
+$MESS ['IBLOCK_TYPE_TIP'] = "Wybierz jeden z istniej±cych typów bloku informacji z listy i kliknij <B>OK</B>. To bêdzie ³adowaæ bloki informacji wybranego typu.";
+$MESS ['IBLOCK_ID_TIP'] = "Wybierz blok informacji wybranego typu. Je¿eli wybra³e¶ <i>inny</i>, wyszczególniasz ID bloku informacji w nastêpnym polu.
+";
+$MESS ['USE_RATING_TIP'] = "Je¿eli zaznaczony, go¶cie mog± zag³osowaæ za fotografiami w widoku fotografii strony.";
+$MESS ['USE_REVIEW_TIP'] = "Wyszczególnia pokazaæ formularz zwrotny w stronie widoku.";
+$MESS ['USE_FILTER_TIP'] = "Wyszczególnia pokazaæ filtr.";
+$MESS ['SECTION_COUNT_TIP'] = "Maksymalna liczba sekcji czyje \"TOP\" fotografie bêd± pokazane.";
+$MESS ['TOP_ELEMENT_COUNT_TIP'] = "Maksymalna liczba fotografii by byæ pokazana jak \"TOP\" elementy w ka¿dej sekcji.";
+$MESS ['TOP_LINE_ELEMENT_COUNT_TIP'] = "Liczba fotografii w rzêdzie \"TOP\" tabeli.";
+$MESS ['SECTION_SORT_FIELD_TIP'] = "Pole, przez które sortowanie \"TOP\" elementu sekcji ma byæ wykonane.";
+$MESS ['SECTION_SORT_ORDER_TIP'] = "Definiuje sekcjê sortuj±c± kierunek.";
+$MESS ['TOP_ELEMENT_SORT_FIELD_TIP'] = "Pole, przez które sortowanie \"TOP\" fotografii ma byæ wykonane.
+";
+$MESS ['TOP_ELEMENT_SORT_ORDER_TIP'] = "Kierunek, w którym sortowanie \"TOP\" fotografii ma byæ wykonane.";
+$MESS ['TOP_FIELD_CODE_TIP'] = "Wybierz tutaj dodatkowe pola, które chcesz ¿eby by³y pokazane w TOP tabeli. Je¿eli nie wybierasz <i><B>¿adnego</B></i> i nie definiujesz wyra¿eñ pola poni¿ej, pola domy¶lne bêd± pokazane.
+";
+$MESS ['TOP_PROPERTY_CODE_TIP'] = "Wybierz tutaj w³asno¶ci, które chcesz ¿eby by³y pokazane w TOP tabeli. Je¿eli nie wybierasz <i><B>¿adnego</B></i> i nie definiujesz wyra¿eñ pola poni¿ej, ¿adne w³asno¶ci nie bêd± pokazane.";
+$MESS ['SECTION_PAGE_ELEMENT_COUNT_TIP'] = "Definiuje liczbê elementów na stronie. Inne elementy bêd± dostêpne przez ³±cza nawigacji.";
+$MESS ['SECTION_LINE_ELEMENT_COUNT_TIP'] = "Wyszczególnia liczbê fotografii przez rz±d w stronie indeksowej sekcji.";
+$MESS ['ELEMENT_SORT_FIELD_TIP'] = "Pola, przez które fotografie maj± byæ posortowane w granicach sekcji.";
+$MESS ['ELEMENT_SORT_ORDER_TIP'] = "Definiuje kierunek sortowania.";
+$MESS ['LIST_FIELD_CODE_TIP'] = "Wybierz tutaj pola, które chcesz ¿eby by³y pokazane w li¶cie elementów sekcji. Je¿eli nie wybierasz <i><B>¿adnego</B></i> i nie definiujesz wyra¿eñ pola poni¿ej, pola domy¶lne bêd± pokazane.";
+$MESS ['LIST_PROPERTY_CODE_TIP'] = "Wybierz w³asno¶ci bloku informacji, które chcesz pokazaæ w li¶cie elementu. Wybieranie <i>¿adnego</i> i nie wyszczególnianie kodów w³asno¶ci poni¿ej spowoduj±, ¿e w³asno¶ci nie bêd± pokazane.";
+$MESS ['META_KEYWORDS_TIP'] = "Ta rozwijana lista pokazuje w³asno¶ci dostêpne dla tego bloku informacji. Wybierz jeden, który zawiera s³owa kluczowe.";
+$MESS ['META_DESCRIPTION_TIP'] = "Ta rozwijana lista pokazuje w³asno¶ci dostêpne dla tego bloku informacji. Wybierz jeden, który zawiera opis.";
+$MESS ['DETAIL_FIELD_CODE_TIP'] = "Wybierz tutaj pola, które chcesz pokazaæ w szczegó³ach elementu. Je¿eli nie wybierasz <i><B>¿adnego</B></i> i nie definiujesz wyra¿eñ pola poni¿ej, pola domy¶lne bêd± pokazane.";
+$MESS ['DETAIL_PROPERTY_CODE_TIP'] = "Wybierz w³asno¶ci bloku informacji, które chcesz pokazaæ w szczegó³ach elementu. Wybieranie <i>¿adnego</i> i nie wyszczególniaj±c kodów w³asno¶ci poni¿ej spowoduj±,¿e w³asno¶ci nie bêd± pokazane.";
+$MESS ['DISPLAY_PANEL_TIP'] = "Je¿eli zaznaczony, przyciski narzêdzia bêd± pokazane na pasku narzêdziowym administracji i sk³adowym pasku narzêdziowym obszaru edycji w trybie edycji strony.";
+$MESS ['SET_TITLE_TIP'] = "Zaznaczaj±c t± opcjê umie¶cisz tytu³ strony do <B>Galerii Fotografii</B>.";
+$MESS ['USE_PERMISSIONS_TIP'] = "Wyszczególnia ograniczenie dostêpu do szczegó³ów elementu bloku informacji.";
+$MESS ['CACHE_TYPE_TIP'] = "<i>Auto</i>: schowek obowi±zuje podczas czasu predefiniowany w ustawieniach schowka;<br /><i>Schowek</i>: zawsze schowek dla okresu wyszczególnionego w nastêpnym polu;<br /><i>Nie stosuj schowka</i>: ¿adne buforowanie podrêczne nie jest wykonane.";
+$MESS ['CACHE_TIME_TIP'] = "Wyszczególnij tutaj okres czasu, podczas którego obowi±zuje schowek.";
+$MESS ['CACHE_FILTER_TIP'] = "Naucza chowaæ ka¿dy wynik otrzymany od filtru.";
+$MESS ['DISPLAY_TOP_PAGER_TIP'] = "Wyszczególnia pokazanie ³±cza nawigacji nad stron±.";
+$MESS ['DISPLAY_BOTTOM_PAGER_TIP'] = "Wyszczególnia pokazanie ³±cza nawigacji na dole strony.";
+$MESS ['PAGER_TITLE_TIP'] = "Nazwa jednostki pozycji dla nawigacji. Na przyk³ad: fotografia, obraz i tak dalej";
+$MESS ['PAGER_SHOW_ALWAYS_TIP'] = "Je¿eli niezaznaczony, ³±cza nawigacji nie bêd± obecne je¿eli wszystkie pozycje wstawisz na pojedyncz± stronê. Inaczej, ³±cza nawigacji bêd± pokazywane zawsze.";
+$MESS ['PAGER_TEMPLATE_TIP'] = "Nazwa szablonu nawigacji. Mo¿esz zostawiæ pole puste by u¿yæ domy¶lnego szablonu (<B><i>.brak</i></B>. (System dostarcza alternatywnego szablonu: <i>pomarañczowy</i>.)";
+$MESS ['PAGER_DESC_NUMBERING_TIP'] = "U¿yj tej opcji je¿eli chcesz, ¿eby nowe elementy ulokowa³y siê na szczycie. Tak, tylko ostatnia strona w strukturze nawigacji jest zmodyfikowana. Wszystko inne strony mog± byæ chowane dla znacznie d³ugiego czasu.";
+$MESS ['PAGER_DESC_NUMBERING_CACHE_TIME_TIP'] = "Czas by chowaæ pierwsze strony, w sekundach, dla wstecznej nawigacji.";
+$MESS ['VARIABLE_ALIASES_SECTION_ID_TIP'] = "Nazwa zmiennej, w której sekcji ID bêdzie zastosowany, e.g. <b>SECTION_ID</b>.";
+$MESS ['VARIABLE_ALIASES_ELEMENT_ID_TIP'] = "Nazwa zmiennej, w której element ID bêdzie zastosowany, e.g. <b>ELEMENT_ID</b>.";
+$MESS ['SEF_FOLDER_TIP'] = "¦cie¿ka do sk³adowego katalogu roboczego. ¦cie¿ka mo¿e istnieæ, albo to mo¿e byæ wirtualna.";
+$MESS ['SEF_URL_TEMPLATES_sections_top_TIP'] = "Wyszczególnia ¶cie¿kê do sk³adowej strony indeksowej - lista \"TOP\" fotografii sekcji. Je¿eli aktualna strona jest stron± indeksow±, mo¿esz pomin±æ tê opcjê.";
+$MESS ['SEF_URL_TEMPLATES_section_TIP'] = "¦cie¿ka do strony zawieraj±cej elementy sekcji. ¦cie¿ka powinna zawieraæ sekcji ID; domy¶lnie to jest <b>#SECTION_ID#/</b>.";
+$MESS ['SEF_URL_TEMPLATES_detail_TIP'] = "¦cie¿ka do strony zawieraj±cej detale elementów. ¦cie¿ka powinna zawieraæ element ID; e.g. <b>#SECTION_ID#/#ELEMENT_ID#/</b>.";
+$MESS ['MAX_VOTE_TIP'] = "Wyszczególnia maksymalny mo¿liwy wynik (liczba g³osów).";
+$MESS ['VOTE_NAMES_TIP'] = "Tutaj mo¿esz dostarczyæ tytu³y wyniku, które bêd± u¿ywane zamiast numerycznych wyników. Na przyk³ad: doskona³y dla 5, dobry dla 4 i tak dalej";
+$MESS ['MESSAGES_PER_PAGE_TIP'] = "Wyszczególnia liczbê wiadomo¶ci zwrotnych na stronie.";
+$MESS ['USE_CAPTCHA_TIP'] = "Je¿eli zaznaczony, pola CAPTCHA bêd± pokazane w formularzu zwrotnym w publicznej sekcji.";
+$MESS ['PATH_TO_SMILE_TIP'] = "¦cie¿ka do folderu emotionek.";
+$MESS ['FORUM_ID_TIP'] = "Wybierz tutaj forum, w którym go¶cie mog± tworzyæ ich wiadomo¶ci zwrotne.";
+$MESS ['URL_TEMPLATES_READ_TIP'] = "¦cie¿ka do forum strony (e.g. <b>/communication/forum/index.php?PAGE_NAME=read&FID=#FORUM_ID#&TID=#TOPIC_ID#</b>). Je¿eli puste, szablon ¶cie¿ki bêdzie wziêty od ustawieñ forum.";
+$MESS ['FILTER_NAME_TIP'] = "Nazwa zmiennej, w której ustawienia filtru bêd± zastosowane. Mo¿esz zostawiæ pole puste by u¿yæ domy¶lnej nazwy.";
+$MESS ['FILTER_FIELD_CODE_TIP'] = "Tutaj mo¿esz wybraæ pola elementu bloku informacji, przez który filtr mo¿e byæ stosowany. Mo¿esz dodaæ zwyczajowe pola jak kody w wej¶ciowych polach poni¿ej.";
+$MESS ['FILTER_PROPERTY_CODE_TIP'] = "To pole pokazuje blok informacji element w³asno¶æ dostêpny by byæ u¿ywane dla filtrowania siê. Mo¿esz dodaæ zwyczajowe pola jak kod w wej¶ciowych polach poni¿ej.";
+$MESS ['GROUP_PERMISSIONS_TIP'] = "Wybierz tutaj grupy u¿ytkowników, którzy mog± obejrzeæ szczegó³y elementu.";
+$MESS ['AJAX_MODE_TIP'] = "Zezwalaj na AJAX dla komponentu.";
+$MESS ['AJAX_OPTION_SHADOW_TIP'] = "Zezwalaj na zacienienie przy przej¶ciach AJAXa.";
+$MESS ['AJAX_OPTION_JUMP_TIP'] = "Zezwalaj na skrolowanie do komponentu na przej¶ciach AJAX.";
+$MESS ['AJAX_OPTION_STYLE_TIP'] = "Zezwalaj na pobieranie i przetwarzanie styli CSS komponentu na przejsciach AJAX.";
+$MESS ['AJAX_OPTION_HISTORY_TIP'] = "Zezwalaj na przyciski \"Wstecz\" i \"Dalej\" w przegl±darce na przej¶ciach AJAX.";
+?>

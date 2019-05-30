@@ -1,0 +1,16 @@
+<?
+$MESS["AD_USE_HTML_EDIT"] = "Naudoti HTML redaktoriø (tik IE 5.0 arba Firefox 1.0 ir aukðèiau):";
+$MESS["AD_DONT_USE_CONTRACT"] = "Netaikyti kontraktø apribojimus atvaizduojant banerá:";
+$MESS["MAIN_RESTORE_DEFAULTS"] = "Pagal nutylëjimà";
+$MESS["AD_BANNER_DAYS"] = "Kiek dienø laikyti dinamikà apie banerá?";
+$MESS["AD_CLEAR"] = "Trinti";
+$MESS["AD_RECORDS"] = "áraðø:";
+$MESS["AD_BANNER_GRAPH_WEIGHT"] = "Grafiko plotis:";
+$MESS["AD_BANNER_GRAPH_HEIGHT"] = "Grafiko aukðtis:";
+$MESS["AD_BANNER_DIAGRAM_DIAMETER"] = "Skritulinës diagramos skersmuo";
+$MESS["AD_COOKIE_DAYS"] = "Kiek dienø prisiminti, kad lankytojas perþiûrëjo banerá:";
+$MESS["AD_REDIRECT_FILENAME"] = "Pilnas failo apdorojanèio banerio paspaudimus pavadinimas:";
+$MESS["AD_UPLOAD_SUBDIR"] = "Pakatalogis nusiøstø baneriø saugojimui";
+$MESS["AD_OPT_DONT_FIX_BANNER_SHOWS"] = "Nesekti banerio parodymø niekur";
+$MESS["AD_SHOW_COMPONENT_PREVIEW"] = "Banerio perþiûra ðablono pasirinkimo metu";
+?>

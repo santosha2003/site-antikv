@@ -1,0 +1,29 @@
+<?
+$MESS["LEARNING_EDIT_TITLE1"] = "Sukurti naujà kursà";
+$MESS["LEARNING_EDIT_TITLE2"] = "Redaguoti kursà ##ID# ";
+$MESS["LEARNING_ADD"] = "Pridëti kursà";
+$MESS["LEARNING_ERROR"] = "Klaida iðsaugojant kursà";
+$MESS["LEARNING_ADMIN_TAB1"] = "Kursas";
+$MESS["LEARNING_ADMIN_TAB1_EX"] = "Kurso nustatymai";
+$MESS["LEARNING_ADMIN_TAB2"] = "Prieiga";
+$MESS["LEARNING_ADMIN_TAB2_EX"] = "Kurso prieigos teisës ";
+$MESS["LEARNING_ADMIN_TAB3"] = "Anonsas";
+$MESS["LEARNING_ADMIN_TAB3_EX"] = "Anonso apraðymas";
+$MESS["LEARNING_ADMIN_TAB4"] = "Apraðymas";
+$MESS["LEARNING_ADMIN_TAB4_EX"] = "Detalus apraðymas";
+$MESS["LEARNING_CONFIRM_DEL_MESSAGE"] = "Ar tikrai norite iðtrinti ðá kursà?";
+$MESS["LEARNING_GROUP_ID_TITLE"] = "Redaguoti naudotojø grupæ";
+$MESS["LEARNING_PREVIEW_TEXT"] = "Perþiûra";
+$MESS["LEARNING_DESCRIPTION"] = "Apraðymas";
+$MESS["LEARNING_ACCESS"] = "Prieiga";
+$MESS["LEARNING_RATING"] = "Ájungti vertinimà";
+$MESS["LEARNING_RATING_CONFIG"] = "pagal nutylëjimà";
+$MESS["LEARNING_RATING_TYPE"] = "Ávertinimo mygtuko dizainas";
+$MESS["LEARNING_RATING_TYPE_CONFIG"] = "numatytasis";
+$MESS["LEARNING_RATING_TYPE_LIKE"] = "Patinka (tektas)";
+$MESS["LEARNING_RATING_TYPE_STANDART_TEXT"] = "Patinka/Nepatinka (tektas)";
+$MESS["LEARNING_RATING_TYPE_STANDART"] = "Patinka/Nepatinka (vaizdas)";
+$MESS["LEARNING_RATING_TYPE_LIKE_GRAPHIC"] = "Patinka (vaizdas)";
+$MESS["LEARNING_ADMIN_TAB5"] = "Priklausomybës";
+$MESS["LEARNING_ADMIN_TAB5_EX"] = "Kurso priklausomybës";
+?>

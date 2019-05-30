@@ -1,0 +1,35 @@
+<?
+$MESS["SEARCH_ALL"] = "(visi)";
+$MESS["SEARCH_GO"] = "Ieðkoti";
+$MESS["SEARCH_ERROR"] = "Klaida paieðkos frazëje:";
+$MESS["SEARCH_CORRECT_AND_CONTINUE"] = "Iðtaisykite paieðkos frazæ ir pabandyti dar kartà.";
+$MESS["SEARCH_SINTAX"] = "<b>Search query syntax:</b><br /><br />A common search query is one or more words, for example:<br /><i>contact information</i><br />This query will find pages containing both query words.<br /><br />Logical operators allow building more complex queries, for example: <br /><i>contact information or phone</i><br />This query will find pages containing either words &quot;contact&quot; and &quot;information&quot; or &quot;phone&quot;.<br /><br /> <i>contact information not phone</i><br /> This query will find pages containing words &quot;contact&quot; and &quot;information&quot; but not &quot;phone&quot;.<br /> You can use brackets to build more complex queries.<br />";
+$MESS["SEARCH_LOGIC"] = "Loginiai operatoriai:";
+$MESS["SEARCH_OPERATOR"] = "Operatorius";
+$MESS["SEARCH_SYNONIM"] = " Sinonimai";
+$MESS["SEARCH_DESCRIPTION"] = "Apraðymas";
+$MESS["SEARCH_AND"] = "ir";
+$MESS["SEARCH_AND_ALT"] = "Operatorius <i>loginis ir</i> numanoma ir gali bûti praleidþiamas: uþklausà &quot;Kontaktinë informacija&quot; yra visiðkai lygiavertë &quot;Kontaktai ir informacija&quot;.";
+$MESS["SEARCH_OR"] = "or";
+$MESS["SEARCH_OR_ALT"] = "Operatorius <i>loginis arba</i> leidþia ieðkoti subjektø, kuriø sudëtyje yra bent vienas ið operandø.";
+$MESS["SEARCH_NOT"] = "not";
+$MESS["SEARCH_NOT_ALT"] = "Operatorius <i>loginis ne</i> riboja paieðkø á puslapius, kuriø sudëtyje nëra operando.";
+$MESS["SEARCH_BRACKETS_ALT"] = "<i>Lenktiniai skliaustai</i> apibrëþia loginio operatoriaus pirmenybæ.";
+$MESS["SEARCH_MODIFIED"] = "Modifikuotas:";
+$MESS["SEARCH_NOTHING_TO_FOUND"] = "Deja, Jûsø paieðka neatitiko jokiø dokumentø.";
+$MESS["SEARCH_PATH"] = "Kelias:";
+$MESS["SEARCH_SORT_BY_RANK"] = "Rûðiuoti pagal atitikimà";
+$MESS["SEARCH_SORTED_BY_DATE"] = "Rûðiuota pagal datà";
+$MESS["SEARCH_SORTED_BY_RANK"] = "Surûðiuota pagal atitikimà";
+$MESS["SEARCH_SORT_BY_DATE"] = "Rûðiuoti pagal datà";
+$MESS["SEARCH_CONTENT_TYPE_FILES"] = "Failai";
+$MESS["SEARCH_CONTENT_TYPE_CALENDAR"] = "Kalendorius";
+$MESS["SEARCH_CONTENT_TYPE_TASKS"] = "Uþduotys";
+$MESS["SEARCH_CONTENT_TYPE_PHOTO"] = "Nuotraukos";
+$MESS["SEARCH_CONTENT_TYPE_BLOG"] = "Blogas";
+$MESS["SEARCH_CONTENT_TYPE_FORUM"] = "Forumas";
+$MESS["SEARCH_ADDITIONAL_FILTER"] = "Iðplëstinë Paieðka";
+$MESS["SEARCH_ADDITIONAL_FILTER_FEATURE"] = "Pagal funkcionalà";
+$MESS["SEARCH_ADDITIONAL_FILTER_DATE"] = "Pagal datà";
+$MESS["CT_BSP_KEYBOARD_WARNING"] = "Uþklausos ávesties kalba pakeista á \"#query#\".";
+?>

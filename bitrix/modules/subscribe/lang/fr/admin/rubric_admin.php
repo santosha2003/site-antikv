@@ -1,0 +1,29 @@
+<?
+$MESS ['rub_edit'] = "Modifier ";
+$MESS ['POST_U_NO'] = "non";
+$MESS ['rub_no'] = "non";
+$MESS ['rub_lang'] = "Langue ";
+$MESS ['rub_deny'] = "accès refusé";
+$MESS ['rub_act'] = "Actif";
+$MESS ['rub_f_active'] = "Actif";
+$MESS ['rub_auto'] = "Automatisme.";
+$MESS ['rub_f_auto'] = "Automatique";
+$MESS ['rub_del_err'] = "Impossible de supprimer la catégorie";
+$MESS ['rub_nav'] = "Catégories";
+$MESS ['rub_del'] = "Supprimer";
+$MESS ['rub_del_conf'] = "Supprimer la catégorie&nbsp;?";
+$MESS ['rub_f_find_title'] = "Saisissez la requête de recherche";
+$MESS ['rub_save_error'] = "Erreur à la modification de l'enregistrement&nbsp;:";
+$MESS ['rub_f_find'] = "Trouver";
+$MESS ['rub_last_exec'] = "Génération";
+$MESS ['rub_f_name'] = "Nom";
+$MESS ['rub_name'] = "Nom";
+$MESS ['rub_title'] = "Catégories de bulletins";
+$MESS ['rub_f_public'] = "Public";
+$MESS ['rub_visible'] = "Public";
+$MESS ['rub_f_site'] = "Site";
+$MESS ['rub_site'] = "Site";
+$MESS ['rub_sort'] = "Tri.";
+$MESS ['rub_no_rubric'] = "thème introuvable";
+$MESS ['POST_U_YES'] = "Oui";
+?>

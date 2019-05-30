@@ -1,0 +1,6 @@
+<?
+$sSectionName = "Communication";
+$arDirProperties = array(
+
+);
+?>

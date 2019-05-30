@@ -1,0 +1,8 @@
+<?
+$MESS ['SUP_FILTER_ERROR'] = "¾º¢éÍ¼Ô´¾ÅÒ´ã¹µÑÇ¡ÃÍ§";
+$MESS ['SUP_ERROR_ATTACH_NOT_FOUND'] = "äÁè¾ºä¿Åì";
+$MESS ['SUP_ERROR_INCORRECT_EMAIL'] = "¢éÍ¼Ô´¾ÅÒ´ã¹ÍÕàÁÅì";
+$MESS ['SUP_ERROR_REQUIRED_NAME'] = "The \"ª×èÍ\" field isn't filled.";
+$MESS ['SUP_ERROR_DELETE'] = "Åº¢éÍ¼Ô´¾ÅÒ´";
+$MESS ['SUP_ERROR_SAVE'] = "ºÑ¹·Ö¡¢éÍ¼Ô´¾ÅÒ´ã¹¡ÒÃ»ÃÑº»ÃØ§ ##ID#";
+?>

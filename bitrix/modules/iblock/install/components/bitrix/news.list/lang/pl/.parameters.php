@@ -1,0 +1,32 @@
+<?
+$MESS["IBLOCK_CACHE_FILTER"] = "Aktywne cache dla filtra";
+$MESS["T_IBLOCK_DESC_ASC"] = "Rosn±co";
+$MESS["T_IBLOCK_DESC_DESC"] = "Malej±co";
+$MESS["T_IBLOCK_DESC_FID"] = "ID";
+$MESS["T_IBLOCK_DESC_FNAME"] = "Nazwa";
+$MESS["T_IBLOCK_DESC_FACT"] = "Data aktywacji";
+$MESS["T_IBLOCK_DESC_FSORT"] = "Sortowanie";
+$MESS["T_IBLOCK_DESC_FTSAMP"] = "Data ostatniej zmiany";
+$MESS["T_IBLOCK_DESC_IBORD1"] = "Pole dla wiadomo¶ci po pierwsze sortuj±ca ";
+$MESS["T_IBLOCK_DESC_IBBY1"] = "Kierunek dla wiadomo¶ci po pierwsze sortuj±ca ";
+$MESS["T_IBLOCK_DESC_IBORD2"] = "Pole dla wiadomo¶ci po drugie sortuj±ca ";
+$MESS["T_IBLOCK_DESC_IBBY2"] = "Kierunek dla wiadomo¶ci po drugie sortuj±ca ";
+$MESS["T_IBLOCK_DESC_LIST_ID"] = "Kod bloku informacyjnego";
+$MESS["T_IBLOCK_DESC_LIST_TYPE"] = "Typ bloku informacyjnego (u¿ywany dla sprawdzania tylko)";
+$MESS["T_IBLOCK_DESC_LIST_CONT"] = "Wiadomo¶ci na stronie";
+$MESS["T_IBLOCK_DESC_DETAIL_PAGE_URL"] = "URL do strony detali (dla domy¶lnych ustawieñ bloku informacyjnego)";
+$MESS["T_IBLOCK_DESC_INCLUDE_IBLOCK_INTO_CHAIN"] = "Do³±cz blok informacyjny do nawigacji";
+$MESS["T_IBLOCK_PROPERTY"] = "W³a¶ciwo¶ci";
+$MESS["T_IBLOCK_FILTER"] = "Filtr";
+$MESS["IBLOCK_FIELD"] = "Pola";
+$MESS["T_IBLOCK_DESC_ACTIVE_DATE_FORMAT"] = "Pokazuje format daty";
+$MESS["T_IBLOCK_DESC_PAGER_NEWS"] = "Wiadomo¶ci";
+$MESS["T_IBLOCK_DESC_PREVIEW_TRUNCATE_LEN"] = "Maksymalna d³ugo¶æ tekstu wstêpu (tylko dla typu tekst)";
+$MESS["T_IBLOCK_DESC_HIDE_LINK_WHEN_NO_DETAIL"] = "Ukryj link je¿eli brakuje szczegó³ów";
+$MESS["IBLOCK_SECTION_ID"] = "ID sekcji";
+$MESS["IBLOCK_SECTION_CODE"] = "Kod sekcji";
+$MESS["T_IBLOCK_DESC_ADD_SECTIONS_CHAIN"] = "Dodaj nazwê sekcji w nawigacji";
+$MESS["T_IBLOCK_DESC_CHECK_DATES"] = "Poka¿ tylko aktualnie aktywne elementy";
+$MESS["CP_BNL_SET_STATUS_404"] = "Ustaw status 404 je¿eli jest brak elementu lub sekcji";
+$MESS["CP_BNL_CACHE_GROUPS"] = "Respektuj uprawnienia dostêpu";
+?>

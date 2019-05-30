@@ -1,0 +1,37 @@
+<?
+$MESS ['BLOG_EDIT_RECORD'] = "N#ID# gülen yüzün deðiþtirilmesi";
+$MESS ['BLOG_NEW_RECORD'] = "Yeni gülen yüz";
+$MESS ['BLOG_RECORDS_LIST'] = "Gülen yüz listesine";
+$MESS ['BLOG_SAVE'] = "Kaydet";
+$MESS ['BLOG_ADD'] = "Ekle";
+$MESS ['BLOG_APPLY'] = "Uygula";
+$MESS ['BLOG_RESET'] = "Ýptal";
+$MESS ['ERROR_NO_NAME'] = "Dil için gülen yüz adý belirtilmemiþtir";
+$MESS ['ERROR_EDIT_SMILE'] = "Gülen yüz deðiþtirme hatasý";
+$MESS ['ERROR_ADD_SMILE'] = "Gülen yüz ekleme hatasý";
+$MESS ['BLOG_SORT'] = "Sýralama";
+$MESS ['BLOG_CODE'] = "???";
+$MESS ['BLOG_NAME'] = "Ad";
+$MESS ['BLOG_DESCR'] = "Tanýmlama";
+$MESS ['BLOG_PT_PROPS'] = "Parametreler";
+$MESS ['ERROR_NO_TYPE'] = "Gülen yüz tipini belirtiniz";
+$MESS ['ERROR_NO_IMAGE'] = "Gülen yüz için görüntü belirtiniz";
+$MESS ['ERROR_COPY_IMAGE'] = "Görüntü yükleme hatasý. Yazýlým için yeterli hak sahibi deðilsiniz";
+$MESS ['ERROR_EXISTS_IMAGE'] = "Bu isimde görüntü zaaten var";
+$MESS ['BLOG_TYPE'] = "Gülen yüz türü";
+$MESS ['BLOG_TYPING'] = "Gülen yüz yazýlýmý";
+$MESS ['BLOG_TYPING_NOTE'] = "(boþluk arasý birkaç seçenek sýralayabilirsiniz)";
+$MESS ['BLOG_IMAGE'] = "Gülen yüz görüntüsü";
+$MESS ['BLOG_IMAGE_NOTE'] = "(gülen yüzlerin tavsiye edildiði boyut: 16x16, simgelerin: 15x15)";
+$MESS ['FSE_ERROR_EXT'] = "Geçersiz resim dosya uzantýsý";
+$MESS ['FSE_SMILE'] = "Gülen yüz";
+$MESS ['FSE_ICON'] = "Simge";
+$MESS ['ERROR_NO_MIN_NUM_POSTS'] = "Bu baþlýk için en az ileti sayýsýný belirtiniz. ";
+$MESS ['BLOG_CODE_LEN'] = "harf";
+$MESS ['FSN_2FLIST'] = "Gülen yüz listesi";
+$MESS ['FSN_NEW_SMILE'] = "Yeni gülen yüz ekle";
+$MESS ['FSN_DELETE_SMILE'] = "Gülen yüzü sil";
+$MESS ['FSN_DELETE_SMILE_CONFIRM'] = "Bu gülen yüzü silmek istediðinizden eminmisiniz?";
+$MESS ['FSN_TAB_SMILE'] = "Blog gülen yüzü";
+$MESS ['FSN_TAB_SMILE_DESCR'] = "Blog gülen yüzü";
+?>

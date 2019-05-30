@@ -1,0 +1,37 @@
+<?
+$MESS["STAT_F_LOGIC"] = "Logika tarp laukø";
+$MESS["STAT_GUEST_ID"] = "Lankytojo ID";
+$MESS["STAT_EDIT_USER"] = "Naudotojo anketa";
+$MESS["STAT_VIEW_SESSION_LIST"] = "Lankytojo sesijos";
+$MESS["STAT_NEW_GUEST_1"] = "pirmas kartas";
+$MESS["STAT_OLD_GUEST_1"] = "gráþo";
+$MESS["STAT_RECORDS_LIST"] = "Lankytojø statistika per paskutiniasias #STATISTIC_DAYS# dienas";
+$MESS["STAT_F_ID"] = "Hito ID";
+$MESS["STAT_F_SESSION"] = "Sesijos ID";
+$MESS["STAT_F_AUTH"] = "Uþsiregistruotas";
+$MESS["STAT_F_LOGIN"] = "ID, prisijungimo vardas, vardas, pavardë";
+$MESS["STAT_F_GUEST_ID"] = "Lankytojo ID";
+$MESS["STAT_F_NEW_GUEST"] = "Pirmà kartà/gráþo";
+$MESS["STAT_F_IP"] = "IP adresas";
+$MESS["STAT_F_PAGE"] = "Puslapis";
+$MESS["STAT_HIT_PAGES"] = "Hitai";
+$MESS["STAT_NOT_REGISTERED"] = "neregistruotas";
+$MESS["STAT_DETAIL"] = "Apraðymas";
+$MESS["STAT_SESSION"] = "Sesija";
+$MESS["STAT_DATE"] = "data";
+$MESS["STAT_USER"] = "Lankytojas";
+$MESS["STAT_IP"] = "IP adresas";
+$MESS["STAT_PAGE"] = "Puslapis";
+$MESS["STAT_NOT_AUTH"] = "(neautorizuotas)";
+$MESS["STAT_F_USER_AGENT"] = "UserAgent";
+$MESS["STAT_F_STOP_LIST_ID"] = "Stop sàraðo áraðo ID";
+$MESS["STAT_F_STOP"] = "Ðiuo metu stop sàraðe";
+$MESS["STAT_COUNTRY"] = "Ðalis";
+$MESS["STAT_CITY"] = "Miestas";
+$MESS["STAT_F_COUNTRY"] = "Ðalis";
+$MESS["STAT_F_REGION"] = "Regionas";
+$MESS["STAT_F_CITY"] = "Miestas";
+$MESS["STAT_F_COOKIE"] = "Slapukai";
+$MESS["STAT_REGION"] = "Regionas";
+$MESS["STAT_SITE"] = "Svetainë";
+?>

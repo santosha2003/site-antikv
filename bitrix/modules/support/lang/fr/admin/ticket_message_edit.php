@@ -1,0 +1,34 @@
+<?
+$MESS ['SUP_TIMESTAMP'] = "Modifié&nbsp;:";
+$MESS ['SUP_EXTERNAL_FIELD_1'] = "Champ supplémentaire de la source externe (entête de message etc.):";
+$MESS ['SUP_DELETE_MESSAGE_CONFIRM'] = "Sur de supprimer ce message&nbsp;?";
+$MESS ['SUP_ATTACH_NEW_FILES'] = "Joindre de nouveaux fichiers&nbsp;:";
+$MESS ['SUP_ATTACHED_FILES'] = "fichiers joints&nbsp;:";
+$MESS ['SUP_CREATE'] = "Créé(e)&nbsp;:";
+$MESS ['SUP_DELETE_MESSAGE'] = "Supprimer le message";
+$MESS ['CHANGE_STATUS'] = "Ne pas modifier le statut du tiquet";
+$MESS ['SUP_DOWNLOAD'] = "télécharger";
+$MESS ['SUP_EDIT_ALT'] = "Éditer les option de message";
+$MESS ['SUP_ERROR'] = "Erreur à l'enregistrement du message";
+$MESS ['SUP_MAX_FILE_SIZE_EXCEEDING'] = "Erreur&nbsp;! La taille maximal du fichier &laquo;&nbsp;#FILE_NAME#&nbsp;&raquo; est dépassée.";
+$MESS ['SUP_FROM'] = "De&nbsp;:";
+$MESS ['SUP_IS_HIDDEN'] = "caché&nbsp;:";
+$MESS ['SUP_EXTERNAL_ID'] = "ID de la source initiale (message, etc.)&nbsp;:";
+$MESS ['SUP_IS_LOG'] = "Journal&nbsp;:";
+$MESS ['SUP_EDIT_RECORD'] = "Message # #ID# (tiquet # #TID#)";
+$MESS ['SUP_MESSAGE_NOT_FOUND'] = "Message introuvable";
+$MESS ['SUP_IS_OVERDUE'] = "Le message était arriéré&nbsp;:";
+$MESS ['SUP_MESSAGE'] = "Message&nbsp;:";
+$MESS ['SUP_TICKET_EDIT'] = "Modifier le tiquet # #TID#";
+$MESS ['SUP_MORE'] = "Plus …";
+$MESS ['SUP_NUMBER'] = "Numéro&nbsp;:";
+$MESS ['SUP_POSSIBLE_SPAM'] = "Pourriel éventuel";
+$MESS ['SUP_RESET'] = "Réinitialiser";
+$MESS ['SUP_SAVE'] = "Enregistrer";
+$MESS ['SUP_CERTAIN_SPAM'] = "pourriel";
+$MESS ['SUP_SPAM_MARK'] = "Marque de pourriel&nbsp;:";
+$MESS ['SUP_TASK_TIME'] = "Temps de la tâche (min.)&nbsp;:";
+$MESS ['SUP_TICKETS_LIST'] = "Liste de tiquet";
+$MESS ['SUP_USER_PROFILE'] = "Profil d'utilisateur";
+$MESS ['SUP_VIEW_ALT'] = "Voir le fichier";
+?>

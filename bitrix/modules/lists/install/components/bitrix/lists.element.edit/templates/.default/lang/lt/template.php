@@ -1,0 +1,35 @@
+<?
+$MESS["CT_BLEE_TOOLBAR_LIST_TITLE"] = "Perþiûrëti visus elementus";
+$MESS["CT_BLEE_TOOLBAR_DELETE_TITLE"] = "Paðalinti visus elementus ir gráþti á sàraðà";
+$MESS["CT_BLEE_TOOLBAR_DELETE_WARNING"] = "Ar tikrai norite paðalinti visus elementus?";
+$MESS["CT_BLEE_ADD_BUTTON"] = "Pridëti";
+$MESS["CT_BLEE_NO_VALUE"] = "(nenustatyta)";
+$MESS["CT_BLEE_BIZPROC_TAB"] = "Verslo procesai";
+$MESS["CT_BLEE_BIZPROC_PUBLISHED"] = "Dokumentas paskelbtas";
+$MESS["CT_BLEE_BIZPROC_NA_LABEL"] = "Statusas";
+$MESS["CT_BLEE_BIZPROC_NA"] = "Nëra paleistø verslo procesø.";
+$MESS["CT_BLEE_BIZPROC_NEW"] = "Naujas verslo procesas";
+$MESS["CT_BLEE_BIZPROC_START"] = "Paleisti naujà verslo procesà";
+$MESS["CT_BLEE_BIZPROC_STOP_LABEL"] = "Veiskmas";
+$MESS["CT_BLEE_BIZPROC_STOP"] = "Sustabdyti verslo procesà";
+$MESS["CT_BLEE_BIZPROC_NAME"] = "Verslo proceso pavadinimas";
+$MESS["CT_BLEE_BIZPROC_DESC"] = "Verslo proceso apraðymas";
+$MESS["CT_BLEE_BIZPROC_DATE"] = "Dabartinio statuso data";
+$MESS["CT_BLEE_BIZPROC_STATE"] = "Dabartinis statusas";
+$MESS["CT_BLEE_BIZPROC_RUN_CMD"] = "Paleisti komandà";
+$MESS["CT_BLEE_BIZPROC_RUN_CMD_NO"] = "Nepaleisti";
+$MESS["CT_BLEE_BIZPROC_TASKS"] = "Verslo proceso uþduotys";
+$MESS["CT_BLEE_FORM_CANCEL"] = "Atðaukti";
+$MESS["CT_BLEE_FORM_CANCEL_TITLE"] = "Neiðsaugoti ir gráþti";
+$MESS["CT_BLEE_CHOOSE_ELEMENT"] = "Pasirinkti ið sàraðo";
+$MESS["CT_BLEE_START_TEXT"] = "(ávesti elemento pavadinimà)";
+$MESS["CT_BLEE_NO_SEARCH_RESULT_TEXT"] = "nëra paieðkos rezultatø";
+$MESS["CT_BLEE_ENLARGE"] = "Padidinti";
+$MESS["CT_BLEE_DOWNLOAD"] = "Parsisiøsti";
+$MESS["CT_BLEE_TAB_ACCESS"] = "Prieiga";
+$MESS["CT_BLEE_ACCESS_RIGHTS"] = "Naudotojø grupës, kurioms leidþiama prieiti prie sàraðo";
+$MESS["CT_BLEE_TOOLBAR_COPY_ELEMENT"] = "Kopijuoti";
+$MESS["CT_BLEE_TOOLBAR_COPY_ELEMENT_TITLE"] = "Kopijuoti elementà";
+$MESS["CT_BLEE_BIZPROC_DELETE_LABEL"] = "Veiksmas";
+$MESS["CT_BLEE_BIZPROC_DELETE"] = "Paðalinti verslo procesà";
+?>

@@ -1,0 +1,11 @@
+<?
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_DESCRIPTION'] = "Görüntü boyutu";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_SETTINGS_WIDTH_FROM'] = "Minimum geniþlik";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_SETTINGS_WIDTH_TO'] = "Maksimum geniþlik";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_SETTINGS_HEIGHT_FROM'] = "Minimum yükseklik";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_SETTINGS_HEIGHT_TO'] = "Maksimým yükseklik";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_ERROR_WIDTH_LESS'] = "#FIELD_NAME#: görüntünün geniþliði çok küçük";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_ERROR_WIDTH_MORE'] = "#FIELD_NAME#:görüntünün geniþliði çok büyük";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_ERROR_HEIGHT_LESS'] = "#FIELD_NAME#: görüntünün yüksekliði çok küçük";
+$MESS ['FORM_VALIDATOR_IMAGE_SIZE_ERROR_HEIGHT_MORE'] = "#FIELD_NAME#: görüntünün yüksekliði çok büyük ";
+?>

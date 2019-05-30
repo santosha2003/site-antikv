@@ -1,0 +1,10 @@
+<?
+$MESS["LISTS_CPAC_NOT_SELECTED_PROCESSES"] = "Praðome pasirinkti procesus, kurie bus ádiegti";
+$MESS["LISTS_CPAC_INCORRECT_DATA"] = "Neteisingi duomenys";
+$MESS["LISTS_CPAC_MESSAGE_SUCCESS"] = "Sëkmë";
+$MESS["LISTS_CPAC_WRONG_IBLOCK_TYPE"] = "Neteisingas infobloko tipas.";
+$MESS["LISTS_CPAC_WRONG_IBLOCK"] = "Nurodytas sàraðas yra neteisingas.";
+$MESS["LISTS_CPAC_SONET_GROUP_DISABLED"] = "Sàraðai yra iðjungti ðiai grupei.";
+$MESS["LISTS_CPAC_UNKNOWN_ERROR"] = "Neþinoma klaida.";
+$MESS["LISTS_CPAC_ACCESS_DENIED"] = "Nepakanka prieigos teisiø perþiûrëti ir redaguoti sàraðà.";
+?>

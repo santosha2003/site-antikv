@@ -1,0 +1,35 @@
+<?
+$MESS['STAT_RECORDS_LIST'] = 'Paieðkos raktaþodþiai';
+$MESS['STAT_F_SEARCH_SYSTEM'] = '';
+$MESS['STAT_F_ID'] = 'ID:';
+$MESS['STAT_F_SESSION'] = 'Sesijos ID:';
+$MESS['STAT_F_REFERER'] = '';
+$MESS['STAT_F_SEARCH_PHRASE'] = 'Paieðkos raktaþodis:';
+$MESS['STAT_F_PAGE_TO'] = '';
+$MESS['STAT_PHRASE'] = 'Paieðkos raktaþodis';
+$MESS['STAT_SERVER'] = 'Paieðkos sistema';
+$MESS['STAT_REFERER'] = '';
+$MESS['STAT_QUANTITY'] = 'Kiekis';
+$MESS['STAT_DATE_INSERT'] = 'Data';
+$MESS['STAT_PAGE_TO'] = '';
+$MESS['STAT_SESSION'] = 'Sesija';
+$MESS['STAT_PHRASE_PAGES'] = 'Áraðai';
+$MESS['STAT_REFERRING_SITE'] = '';
+$MESS['STAT_AVERAGE_HITS'] = '';
+$MESS['STAT_SEARCHER_INDEXING'] = '';
+$MESS['STAT_SEARCHER_PHRASES'] = '';
+$MESS['STAT_NAME'] = 'Vardas';
+$MESS['STAT_PHRASES'] = '';
+$MESS['STAT_FL_ID'] = '';
+$MESS['STAT_FL_SEARCHER'] = '';
+$MESS['STAT_FL_DATE'] = 'Data';
+$MESS['STAT_FL_PAGE'] = '';
+$MESS['STAT_FL_ID_REF'] = '';
+$MESS['STAT_FL_ID_SESS'] = 'Sesijos ID';
+$MESS['STAT_PHRASE_SORT'] = '';
+$MESS['STAT_LINK_OPEN'] = '';
+$MESS['STAT_FIND_SESSION'] = 'Pereiti prie sesijø sàraðo';
+$MESS['STAT_SITE_EDIT'] = 'Redaguoti svetainës nustatymus';
+$MESS['STAT_NUM'] = 'Numeris';
+$MESS['STAT_GRAPH'] = 'Grafikas';
+?>

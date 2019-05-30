@@ -1,0 +1,31 @@
+<?
+$MESS["FORM_FORM_LIST"] = "Списък на формите";
+$MESS["FORM_NOT_FOUND"] = "Уеб формата не е намерена";
+$MESS["FORM_ERROR"] = "Грешка!";
+$MESS["FORM_STATUS_DELETE_ERROR"] = "Грешка при премахването на статуса";
+$MESS["FORM_STATUS_ACTIVE_ERROR"] = "Грешка при активирането/деактивирането на статуса";
+$MESS["FORM_PAGE_TITLE"] = "Списък на статусите за резултатите на формата # #ID#";
+$MESS["FORM_FORM_EDIT"] = "Параметри на формата";
+$MESS["FORM_EDIT_ALT"] = "Смени параметрите на статуса";
+$MESS["FORM_FORM_NAME"] = "Форма:";
+$MESS["FORM_F_ACTIVE"] = "Активен:";
+$MESS["FORM_F_TITLE"] = "Заглавие:";
+$MESS["FORM_F_DESCRIPTION"] = "Описание:";
+$MESS["FORM_F_RESULTS"] = "Резултати:";
+$MESS["FORM_PAGES"] = "Статуси";
+$MESS["FORM_TIMESTAMP"] = "Сменен";
+$MESS["FORM_C_SORT"] = "Сорт.";
+$MESS["FORM_DESCRIPTION"] = "Описание";
+$MESS["FORM_DELETE_STATUS_CONFIRM"] = "Сигурни ли сте, че искате да изтриете този статут:";
+$MESS["FORM_DEFAULT"] = "По подр.";
+$MESS["FORM_COPY_ALT"] = "Копиране на статута";
+$MESS["FORM_COPY"] = "Копиране";
+$MESS["FORM_RESULT_TITLE"] = "Отвори резултати на формата";
+$MESS["FORM_FL_ID"] = "Статус ID";
+$MESS["FORM_FL_ACTIVE"] = "Активен";
+$MESS["FORM_FL_DESCR"] = "Описание";
+$MESS["FORM_FL_RESULTS"] = "Брой резултати";
+$MESS["FORM_FORM_EDIT_TITLE"] = "Промени параметрите на формата";
+$MESS["FORM_STATUS_DELETE"] = "Премахни";
+$MESS["FORM_STATUS_DELETE_ALT"] = "Премахни статуса";
+?>

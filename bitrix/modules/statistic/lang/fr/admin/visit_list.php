@@ -1,0 +1,30 @@
+<?
+$MESS ['STAT_ALL'] = "(tout)";
+$MESS ['STAT_APRIL'] = "Avril ";
+$MESS ['STAT_NOVEMBER'] = "Novembre ";
+$MESS ['STAT_OCTOBER'] = "Octobre ";
+$MESS ['STAT_SATURDAY'] = "Samedi";
+$MESS ['STAT_SEPTEMBER'] = "Septembre ";
+$MESS ['STAT_SUNDAY'] = "Dimanche";
+$MESS ['STAT_4_WEEKDATE'] = "Jour de la semaine";
+$MESS ['STAT_4_PAGES'] = "Jours";
+$MESS ['STAT_EVENTS'] = "Événements";
+$MESS ['STAT_2_HITS'] = "Accès";
+$MESS ['STAT_4_HITS'] = "Accès";
+$MESS ['STAT_HITS'] = "Accès";
+$MESS ['STAT_F4_HITS'] = "Accès&nbsp;:";
+$MESS ['STAT_2_HOSTS'] = "Serveur";
+$MESS ['STAT_4_HOSTS'] = "Serveur";
+$MESS ['STAT_F4_HOSTS'] = "Serveurs&nbsp;:";
+$MESS ['STAT_2_NOT_ENOUGH_DATA'] = "Données insuffisantes pour établir un graphe.";
+$MESS ['STAT_4_NEW_GUESTS'] = "Nouveau";
+$MESS ['STAT_NEW_COUNT_1'] = "Nouveau";
+$MESS ['STAT_2_NEW_GUESTS'] = "Nouveaux visiteurs";
+$MESS ['STAT_NEW_GUESTS'] = "Nouveaux visiteurs";
+$MESS ['STAT_F4_NEW_GUESTS'] = "Nouveaux visiteurs&nbsp;:";
+$MESS ['STAT_2_F_PERIOD'] = "Période";
+$MESS ['STAT_2_SESSIONS'] = "Sessions";
+$MESS ['STAT_4_SESSIONS'] = "Sessions";
+$MESS ['STAT_SESSIONS'] = "Sessions";
+$MESS ['STAT_RECORDS_LIST'] = "Trafic du site";
+?>

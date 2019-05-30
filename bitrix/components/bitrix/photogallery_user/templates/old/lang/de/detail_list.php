@@ -1,0 +1,36 @@
+<?
+$MESS ['P_UP'] = "Galerie";
+$MESS ['P_UP_TITLE'] = "Galerie-Startseite";
+$MESS ['P_PHOTO_SORT_ID'] = "Neu";
+$MESS ['P_PHOTO_SORT_ID_TITLE'] = "nach Erstellungsdatum";
+$MESS ['P_PHOTO_SORT_SHOWS'] = "Populär";
+$MESS ['P_PHOTO_SORT_SHOWS_TITLE'] = "nach Anzahl der Zugriffe";
+$MESS ['P_PHOTO_SORT_RATING'] = "Beste";
+$MESS ['P_PHOTO_SORT_RATING_TITLE'] = "nach Anzahl der Stimmen";
+$MESS ['P_PHOTO_SORT_COMMENTS'] = "Am meisten kommentiert";
+$MESS ['P_PHOTO_SORT_COMMENTS_TITLE'] = "nach Anzahl der Kommentare";
+$MESS ['P_FILTER_SHOW'] = "Anzeigen";
+$MESS ['P_FILTER_RESET'] = "Zurücksetzen";
+$MESS ['P_PHOTO_ORDER_BY_DATE_CREATE'] = "Neue Fotos";
+$MESS ['P_PHOTO_ORDER_BY_SHOWS'] = "Populäre Fotos";
+$MESS ['P_PHOTO_ORDER_BY_RATING'] = "Beste Fotos";
+$MESS ['P_PHOTO_ORDER_BY_COMMENTS'] = "Am meisten kommentierte Fotos";
+$MESS ['P_SELECT_PHOTO_FROM_PERIOD'] = "Fotos, die in dem Zeitraum hizugefügt wurden, wählen";
+$MESS ['P_GROUP_BY_DATE_CREATE'] = "Fotos nach dem Uploaddatum gruppieren";
+$MESS ['P_SHOW_FILTER'] = "Editorfilter";
+$MESS ['P_SHOW_ONLY_NOT_ACTIVE'] = "Nicht genehmigte Fotos";
+$MESS ['P_SHOW_ONLY_NOT_ACTIVE_TILTE'] = "Nicht genehmigte Fotos sind diejenigen, die nicht moderiert sind. Sie sind nur für den Eigentümer und den Moderator sichtbar.";
+$MESS ['P_SHOW_ONLY_NOT_PUBLIC'] = "Unveröffentliche Bilder";
+$MESS ['P_SHOW_ONLY_NOT_PUBLIC_TITLE'] = "Unveröffentlichte Fotos sind diejenigen, die auf der Hauptseite und in den Listen platziert werden, jedoch nicht genehmigt sind.";
+$MESS ['P_SHOW_ONLY_NOT_PUBLIC_TITLE1'] = "Unveröffentlichte Fotos sind diejenigen, die auf der Hauptseite und in den Listen platziert werden, jedoch nicht genehmigt sind.";
+$MESS ['P_SHOW_SIMPLE'] = "Veröffentlichte und bestätigte Fotos";
+$MESS ['P_SHOW_SIMPLE_TITLE'] = "Alle Fotos anzeigen, die für den Besucher sichtbar sind.";
+$MESS ['P_OPEN_FILTER'] = "Filter anzeigen";
+$MESS ['P_CLOSE_FILTER'] = "Filter verbergen";
+$MESS ['P_NO_PHOTO'] = "Keine Fotos gefunden.";
+$MESS ['P_DELETE_CONFIRM'] = "Wollen Sie die Fotos wirklich unwiderruflich löschen?";
+$MESS ['P_PUBLIC'] = "Veröffentlichen";
+$MESS ['P_NOT_PUBLIC'] = "Nicht veröffentlichen";
+$MESS ['P_SHOW'] = "Anzeigen";
+$MESS ['P_DELETE'] = "Löschen";
+?>

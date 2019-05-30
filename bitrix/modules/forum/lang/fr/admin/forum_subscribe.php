@@ -1,0 +1,33 @@
+<?
+$MESS ['FM_FLT_LOGIN'] = "Connexion";
+$MESS ['FM_HEAD_LOGIN'] = "Connexion";
+$MESS ['FM_HEAD_USER_ID'] = "ID";
+$MESS ['FM_NO'] = "non";
+$MESS ['FM_ALL_MESSAGE'] = "Tous les messages du forum";
+$MESS ['FM_ACT_DEL_CONFIRM'] = "Sur de supprimer TOUTES lesabonnements d'utilisateuts&nbsp;?";
+$MESS ['FM_ACT_DELETE'] = "Supprimer";
+$MESS ['FM_ACT_EDIT'] = "Éditer";
+$MESS ['FM_FLT_EMAIL'] = "Courriel";
+$MESS ['FM_HEAD_EMAIL'] = "Courriel";
+$MESS ['FM_FLT_SEARCH_TITLE'] = "Saisissez votre texte de recherche";
+$MESS ['FM_HEAD_FORUM_USER_ID'] = "FID";
+$MESS ['FM_FLT_FORUM'] = "Forum";
+$MESS ['FM_FLT_FORUM_ALT'] = "Forum";
+$MESS ['FM_TITLE_PAGE'] = "Utilisateurs du forum";
+$MESS ['FM_HEAD_LAST_NAME'] = "Patronyme";
+$MESS ['FM_FLT_FIO'] = "Nom, prénom";
+$MESS ['FM_HEAD_NAME'] = "Nom";
+$MESS ['FM_TYPICAL'] = "Nouvelles contributions au thème";
+$MESS ['FM_SPACE'] = "Sans sélection";
+$MESS ['FM_HEAD_SUBSC'] = "Nombre d'abonnés";
+$MESS ['FM_NEW_TOPIC_ONLY'] = "Nouveaux thèmes seulement";
+$MESS ['FM_WRONG_PERIOD'] = "La durée est mal spécifiée";
+$MESS ['FM_FLT_SEARCH'] = "Chercher";
+$MESS ['FM_TITLE'] = "Gestion des abonnements";
+$MESS ['FM_FLT_START_DATE'] = "Date de la souscription";
+$MESS ['FM_FLT_START_DATE_ALT'] = "Date de la souscription";
+$MESS ['FM_HEAD_START_DATE'] = "Date de la souscription";
+$MESS ['FM_FLT_SUBSCR_TYPE'] = "Type d'abonnement";
+$MESS ['FM_FLT_SUBSCR_TYPE_ALT'] = "Type d'abonnement";
+$MESS ['FM_Y'] = "Oui";
+?>

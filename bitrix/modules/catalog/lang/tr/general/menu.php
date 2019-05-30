@@ -1,0 +1,30 @@
+<?
+$MESS ['CATALOG_CONTROL'] = "Ticari katalog";
+$MESS ['CURRENCY'] = "Dövizler";
+$MESS ['CURRENCY_ALT'] = "Dövizler";
+$MESS ['CURRENCY_RATES'] = "Döviz kurlarý";
+$MESS ['CURRENCY_RATES_ALT'] = "Döviz kurlarý";
+$MESS ['EXTRA'] = "Ekstralar";
+$MESS ['EXTRA_ALT'] = "Ekstra türleri";
+$MESS ['GROUP'] = "Fiyat türleri";
+$MESS ['GROUP_ALT'] = "Fiyat türleri";
+$MESS ['LOAD_1C'] = "1?'den içeri aktarým";
+$MESS ['LOAD_1C_ALT'] = "CommerceML formatýnda 1 C'den veri içeri aktarýmý";
+$MESS ['LOAD_DATA'] = "Ýçeri aktarým";
+$MESS ['LOAD_DATA_ALT'] = "CSV dosyasýndan veri içeri aktarýmý";
+$MESS ['UNLOAD_DATA'] = "Dýþarý aktarým";
+$MESS ['UNLOAD_DATA_ALT'] = "CSV dosyasýnda veri dýþarý aktarýmý ";
+$MESS ['SETUP_UNLOAD_DATA'] = "Dýþarý aktarým verileri";
+$MESS ['SETUP_UNLOAD_DATA_ALT'] = "Katalog içerisinden veri dýþarý aktarým ayarlarý ";
+$MESS ['CAM_EXPORT_DESCR'] = "Dýþarý aktarýmçý ile dýþarý aktarým verileri";
+$MESS ['CM_DISCOUNTS'] = "Ýndirimler";
+$MESS ['CM_DISCOUNTS_ALT'] = "Hizmet ve ürün indirimi";
+$MESS ['CM_IMPORT_NEW'] = "Ýçeri aktarým (????? ??????)";
+$MESS ['CM_IMPORT_NEW_ALT'] = "Ýçeri aktarým ?????? ? ????? CSV ???????";
+$MESS ['SETUP_LOAD_DATA'] = "Veri içeri aktarýmý";
+$MESS ['SETUP_LOAD_DATA_ALT'] = "????????? ??????? ?????? ? ???????";
+$MESS ['CAM_IMPORT_DESCR'] = "Ýçeri aktarýmçý ile veri içeri aktarýmý";
+$MESS ['CATALOG_MNU_TITLE'] = "Ticari katalog yönetimi";
+$MESS ['CM_COUPONS'] = "Ýndirim kuponlarý";
+$MESS ['CM_COUPONS_ALT'] = "Ýndirim kuponlarý";
+?>

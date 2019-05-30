@@ -1,0 +1,34 @@
+<?
+$MESS ['IBSEC_A_DELERR_REFERERS'] = "Baðlantýlý objeler olabilir";
+$MESS ['IBSEC_A_DELERR'] = "Kayýtsilme hatasý #ID#:";
+$MESS ['IBSEC_A_UPDERR'] = "Kayýt deðiþtirilmesinde hata oluþtu";
+$MESS ['IBSEC_A_NAME'] = "Adý";
+$MESS ['IBSEC_A_ACTIVE'] = "Aktivite";
+$MESS ['IBSEC_A_SORT'] = "Sýralama";
+$MESS ['IBSEC_A_CODE'] = "Sembol kod";
+$MESS ['IBSEC_A_XML_ID'] = "Dýþ kod";
+$MESS ['IBSEC_A_ELEMENT_CNT'] = "Öðeler";
+$MESS ['IBSEC_A_SECTION_CNT'] = "alt bölümler";
+$MESS ['IBSEC_A_TIMESTAMP'] = "Deðiþiklik tarihi";
+$MESS ['IBSEC_A_MODIFIED_BY'] = "Kimin tarafýndan deðiþtirildi";
+$MESS ['IBSEC_A_DATE_CREATE'] = "Oluþturma tarihi";
+$MESS ['IBSEC_A_CREATED_BY'] = "Oluþturan:";
+$MESS ['IBSEC_A_ID'] = "Bölüm kimliði";
+$MESS ['IBSEC_A_LIST'] = "alt bölümler listesine geç";
+$MESS ['IBSEC_A_EDIT'] = "Düzenlemeye geç:";
+$MESS ['IBSEC_A_ELLIST'] = "Bu bölümün öðe listesine git";
+$MESS ['IBSEC_A_ELLIST_TITLE'] = "Bu bölümdeki alt bölümler de dahil öðe listesine git";
+$MESS ['IBSEC_A_ELADD_TITLE'] = "Bu bölüme öðe ekle";
+$MESS ['IBSEC_A_SECTADD_TITLE'] = "Alt bölüm ekle";
+$MESS ['IBSEC_A_CHANGE'] = "Deðiþtir";
+$MESS ['IBSEC_A_DELETE'] = "Sil";
+$MESS ['IBSEC_A_LISTEL_TITLE'] = "Bu bölümün öðelerini görmek için týklayýn";
+$MESS ['IBSEC_A_SECTADD_PRESS'] = "Yeni alt bölüm eklemek için týklayýn";
+$MESS ['IBSEC_A_ADDEL_TITLE'] = "Yeni öðe eklemek için týklayýn";
+$MESS ['IBSEC_A_PARENT'] = "Ebeveyn Bölümü";
+$MESS ['IBSEC_A_SECTION'] = "Bölüm";
+$MESS ['IBSEC_A_ROOT_SECTION'] = "Üst düzey";
+$MESS ['IBSEC_A_IBLOCK_MANAGE_HINT'] = "Bilgi bloðu özelliklerini ve eriþim hakkýný þuradan deðiþtirebilirsiniz:";
+$MESS ['IBSEC_A_IBLOCK_MANAGE_HINT_HREF'] = "Bilgi bloðu ayarlarý";
+$MESS ['IBSEC_A_USERINFO'] = "Kullanýcý parametrelerini gözden geçir";
+?>

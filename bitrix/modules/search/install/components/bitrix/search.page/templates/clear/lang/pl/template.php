@@ -1,0 +1,36 @@
+<?
+$MESS["CT_BSP_ALL"] = "(wszystko)";
+$MESS["CT_BSP_GO"] = "Szukaj";
+$MESS["CT_BSP_ITEM_TAGS"] = "Tagi";
+$MESS["CT_BSP_DATE_CHANGE"] = "Modyfikacja";
+$MESS["CT_BSP_FOUND"] = "Znalezionych";
+$MESS["CT_BSP_ORDER"] = "Sortuj wg";
+$MESS["CT_BSP_ORDER_BY_RANK"] = "znaczenie";
+$MESS["CT_BSP_ORDER_BY_DATE"] = "data";
+$MESS["CT_BSP_ADVANCED_SEARCH"] = "Zaawansowane wyszukiwanie";
+$MESS["CT_BSP_WHERE_LABEL"] = "Gdzie";
+$MESS["CT_BSP_TAGS"] = "tagi";
+$MESS["CT_BSP_WHERE"] = "sekcja";
+$MESS["CT_BSP_EVERYWHERE"] = "wszystko";
+$MESS["CT_BSP_WHEN"] = "data";
+$MESS["CT_BSP_DATES_FROM_TO"] = "od #FROM# do #TO#";
+$MESS["CT_BSP_DATES_FROM"] = "od #FROM#";
+$MESS["CT_BSP_DATES_TO"] = "do #TO#";
+$MESS["CT_BSP_DATES_ALL"] = "wszystko";
+$MESS["CT_BSP_ERROR"] = "B³±d w szukanej frazie:";
+$MESS["CT_BSP_CORRECT_AND_CONTINUE"] = "Popraw szukan± frazê i spróbuj ponownie.";
+$MESS["CT_BSP_SINTAX"] = "<b>Szukania zapytania sk³adnia:</b><br /><br />Wspólne wyszukiwania jest jedno lub kilka s³ów, na przyk³ad:<br /><i>informacje kontaktowe</i><br />To zapytanie spowoduje wy¶wietlenie stron zawieraj±cych zarówno wyrazy.<br /><br />Operatory logiczne pozwalaj± budowania bardziej z³o¿onych zapytañ, na przyk³ad: <br /><i> informacje kontaktowe lub telefon</i><br/>To zapytanie spowoduje wy¶wietlenie stron, zawieraj±cych s³owa &quot;kontakt&quot; i &quot;informacje&quot; lub &quot;telefon&quot;<br />Mo¿esz u¿yæ nawiasów do budowania bardziej z³o¿onych zapytañ.";
+$MESS["CT_BSP_LOGIC"] = "Operatory logiczne:";
+$MESS["CT_BSP_OPERATOR"] = "Operator";
+$MESS["CT_BSP_SYNONIM"] = " Synonimy";
+$MESS["CT_BSP_DESCRIPTION"] = "Opis";
+$MESS["CT_BSP_AND"] = "i";
+$MESS["CT_BSP_AND_ALT"] = "Operator <li>logiczny i</i> zak³ada siê i mog± byæ pominiête: zapytanie &quot;dane kontaktowe&quot; jest w pe³ni równowa¿ne z &quot;kontaktów i informacji&quot;.";
+$MESS["CT_BSP_OR"] = "lub";
+$MESS["CT_BSP_OR_ALT"] = "Operator <li>logiczny lub</i> umo¿liwia wyszukiwanie podmiotów zawieraj±cych co najmniej jeden z operandów.";
+$MESS["CT_BSP_NOT"] = "nie";
+$MESS["CT_BSP_NOT_ALT"] = "Operator <li>logiczny brak</i> ogranicza wyszukiwanie do stron zawieraj±cych nie argument.";
+$MESS["CT_BSP_BRACKETS_ALT"] = "<i>Nawiasy okr±g³e</i> definiuj± logiczne pierwszeñstwo operatora.";
+$MESS["CT_BSP_NOTHING_TO_FOUND"] = "Niestety, wyszukiwanie nie zwróci³o ¿adnych dokumentów.";
+$MESS["CT_BSP_KEYBOARD_WARNING"] = "Jêzyk zapytañ wej¶ciowych zmieniony dla \"#query#\".";
+?>

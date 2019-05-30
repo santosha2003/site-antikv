@@ -1,0 +1,37 @@
+<?
+$MESS ['SPCR1_ON_LOGIN'] = "Kayýtlý kullanýcýnýn yetkilendirmesinde hata: login giriniz";
+$MESS ['SPCR1_ERR_REG'] = "Kayýtlý kullanýcýnýn yetkilendirmesinde hata";
+$MESS ['SPCR1_NO_NAME'] = "Yeni kullanýcý kaydýnda hata: kendi adýnýzý giriniz";
+$MESS ['SPCR1_NO_LASTNAME'] = "Yeni kullanýcý kaydýnda hata: kendi soyadýnýzý giriniz";
+$MESS ['SPCR1_NO_EMAIL'] = "Yeni kullanýcý kaydýnda hata: E-Mail adresinizi giriniz";
+$MESS ['SPCR1_BAD_EMAIL'] = "Yeni kullanýcý kaydýnda hata: E-Mail adresin doðruluðunu kontrol ediniz";
+$MESS ['SPCR1_NO_LOGIN'] = "Yeni kullanýcý kaydýnda hata: istediðiniz login giriniz";
+$MESS ['SPCR1_NO_PASSWORD'] = "Yeni kullanýcý kaydýnda hata: istediðiniz þifre giriniz";
+$MESS ['SPCR1_NO_PASSWORD_CONF'] = "Yeni kullanýcý kaydýnda hata: þifre onayýný giriniz";
+$MESS ['SPCR1_NO_CONF'] = "Yeni kullanýcý kaydýnda hata: þifre onayý þifre ile eþleþmiyor";
+$MESS ['SPCR1_ERR_REGISTER'] = "Yeni kullanýcý kaydýnda hata";
+$MESS ['SPCR1_UNACTIVE_AFF'] = "Siz zaaten dükkanýn katýlýmcýyýsiniz, fakat sizin hesabýnýz etkin deðildir.  Daha fazla bilgi için dükkan idaresine danýþýnýz lütfen.";
+$MESS ['SPCR1_REGISTER_AFF'] = "Katýlýmcý kaydý";
+$MESS ['SPCR1_NO_AGREE'] = "Kaydýn devam edilmesi için sözleþme koþullarýný kabul etmelisiniz";
+$MESS ['SPCR1_NO_SITE'] = "Site adresinizi belirtiniz";
+$MESS ['SPCR1_NO_DESCR'] = "Site tanýmýný belirtiniz";
+$MESS ['SPCR1_NO_PLANS'] = "Site içerisinde etkin katýlýmcý komisyon planlarý bulunmamaktadýr. Lütfen site yöneticisine baþvurunuz";
+$MESS ['SPCR1_ERR_AFF'] = "Katýlýmcý kaydýnda hata";
+$MESS ['SPCR1_IF_REG'] = "Eðer sitesinde zaaten kayýtlysanýz";
+$MESS ['SPCR1_IF_NOT_REG'] = "Eðer sitesinde henüz kayýtlý deðilseniz";
+$MESS ['SPCR1_IF_REMEMBER'] = "Eðer kullanýcý adýný ve þifrenizi hatýrlýyorsanýz, bunlarý ilgili alanlara giriniz";
+$MESS ['SPCR1_LOGIN'] = "Kullanýcý adý";
+$MESS ['SPCR1_PASSWORD'] = "Þifre";
+$MESS ['SPCR1_FORG_PASSWORD'] = "Þifrenizi unuttunuz mu?";
+$MESS ['SPCR1_NEXT'] = "Devam et";
+$MESS ['SPCR1_NAME'] = "Ad";
+$MESS ['SPCR1_LASTNAME'] = "Soyad";
+$MESS ['SPCR1_PASS_CONF'] = "Tekrar þifre";
+$MESS ['SPCR1_CAPTCHA'] = "Otomatik kayýda karþý koruma";
+$MESS ['SPCR1_CAPTCHA_WRD'] = "Resimdeki kelimeyi giriniz:";
+$MESS ['SPCR1_SITE_URL'] = "Site adresiniz:";
+$MESS ['SPCR1_SITE_DESCR'] = "Site tanýmý:";
+$MESS ['SPCR1_I_AGREE'] = "Katýlýmcý sözleþmenin koþullarýný kabul ediyorum";
+$MESS ['SPCR1_REGISTER'] = "Kaydol";
+$MESS ['SPCR1_NO_SHOP'] = "Dükkan modülü yüklü deðildir";
+?>

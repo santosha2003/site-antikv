@@ -1,0 +1,37 @@
+<?
+$MESS ['FORM_TIMESTAMP'] = "Modifié ";
+$MESS ['FORM_ADD_FIELD'] = "Ajouter un champ supplémentaire";
+$MESS ['FORM_ADD_QUESTION'] = "Ajouter une question";
+$MESS ['FORM_CONFIRM_DELETE_RESULTS'] = "Sur de vouloir supprimer tous les résultats acquis du formulaire&nbsp;?";
+$MESS ['FORM_CONFIRM_DELETE'] = "Sur de supprimer  le formulaire et ses résultats&nbsp;?";
+$MESS ['FORM_COPY'] = "Copie";
+$MESS ['FORM_CREATE_TITLE'] = "Créer un nouveau formulaire";
+$MESS ['FORM_DELETE'] = "Supprimer";
+$MESS ['FORM_DELETE_RESULTS_ALT'] = "Supprimer au formulaire toutes les cases remplies";
+$MESS ['FORM_DELETE_ALT'] = "Supprimer le formulaire avec ses résultats";
+$MESS ['FORM_FL_DESCRIPTION'] = "Description";
+$MESS ['FORM_F_DESCRIPTION'] = "Description&nbsp;:";
+$MESS ['FORM_EDIT_ALT'] = "Éditer les options de formulaire";
+$MESS ['FORM_DELETE_RESULTS'] = "Supprimer";
+$MESS ['FORM_SAVE_ERROR'] = "Erreur à l'écriture dans la BdD";
+$MESS ['FORM_FIELDS'] = "Champs";
+$MESS ['FORM_FL_ID'] = "ID du formulaire";
+$MESS ['FORM_PAGES'] = "Formulaires";
+$MESS ['FORM_FL_SID'] = "Identificateur";
+$MESS ['FORM_FIELDS_ALT'] = "Liste de champs supplémentaires pour ce formulaire";
+$MESS ['FORM_PAGE_TITLE'] = "Liste des formulaires";
+$MESS ['FORM_QUESTIONS_ALT'] = "Liste des questions pour le formulaire";
+$MESS ['FORM_RESULTS_ALT'] = "Liste des résultats de formulaire";
+$MESS ['FORM_PREVIEW'] = "Aperçu";
+$MESS ['FORM_QUESTIONS'] = "Questions";
+$MESS ['FORM_RESULTS'] = "Résultats";
+$MESS ['FORM_FL_SITE'] = "Sites";
+$MESS ['FORM_SITE'] = "Sites";
+$MESS ['FORM_F_SITE'] = "Sites&nbsp;:";
+$MESS ['FORM_C_SORT'] = "Tri.";
+$MESS ['FORM_SID'] = "Identificateur symbolique";
+$MESS ['FORM_F_SID'] = "Identificateur symbolique&nbsp;:";
+$MESS ['FORM_NAME'] = "Titre";
+$MESS ['FORM_F_NAME'] = "Titre&nbsp;:";
+$MESS ['FORM_COPY_ALT'] = "Copie du formulaire";
+?>

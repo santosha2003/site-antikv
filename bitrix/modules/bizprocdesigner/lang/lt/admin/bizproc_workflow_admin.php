@@ -1,0 +1,37 @@
+<?
+$MESS["BPATT_NO_ENTITY"] = "Nëra dokumento objekto.";
+$MESS["BPATT_NO_DOC_TYPE"] = "Dokumento tipas yra privalomas.";
+$MESS["BPATT_NO_EDIT_PAGE"] = "Ðablono pakeitimo puslapio nëra. ";
+$MESS["BPATT_NO_PERMS"] = "Jûs neturite leidimo prieiti prie ðio dokumento tipo ðablonø.";
+$MESS["BPATT_ERROR"] = "Klaida";
+$MESS["BPATT_NAV"] = "Verslo proceso ðablonai";
+$MESS["BPATT_NAME"] = "Pavadinimas";
+$MESS["BPATT_MODIFIED"] = "Pakeista";
+$MESS["BPATT_USER"] = "Pakeitë";
+$MESS["BPATT_AUTO_EXECUTE"] = "Auto paleidimas";
+$MESS["BPATT_DO_EDIT"] = "Redaguoti verslo proceso ðablonà";
+$MESS["BPATT_AE_NONE"] = "Ne";
+$MESS["BPATT_AE_CREATE"] = "Sukurti";
+$MESS["BPATT_AE_EDIT"] = "Atnaujinti";
+$MESS["BPATT_AE_DELETE"] = "Paðalinti";
+$MESS["BPATT_DO_EDIT1"] = "Redaguoti";
+$MESS["BPATT_DO_DELETE1"] = "Paðalinti";
+$MESS["BPATT_DO_DELETE1_CONFIRM"] = "Ar tikrai norite paðalinti ðá ðablonà?";
+$MESS["BPATT_SUBMENU1_TEXT"] = "Verslo procesas su statusais";
+$MESS["BPATT_SUBMENU1_TEXT_TITLE"] = "Verslo procesas su statusais yra tæstinis verslo procesas su prieigos leidimo paskisrtymu, skirtu tvarkyti ávairiø statusø dokumentus ";
+$MESS["BPATT_SUBMENU2_TEXT"] = "Nuoseklus verslo procesas";
+$MESS["BPATT_SUBMENU2_TEXT_TITLE"] = "Nuoseklus verslo procesas yra paprastas verslo procesas, skirtas vykdyti nuoseklus veiksmus su dokumentais";
+$MESS["BPATT_DO_CREATE_TEMPLATE"] = "Sukurti ðablonà";
+$MESS["BPATT_TITLE"] = "Verslo proceso ðablonas";
+$MESS["BPATT_F_NAME"] = "Pavadinimas";
+$MESS["BPATT_F_AUTOEXECUTE"] = "Auto paleidimas";
+$MESS["BPATT_ANY"] = "bet kuris";
+$MESS["BPATT_F_CREATE"] = "sukurti";
+$MESS["BPATT_F_EDIT"] = "redaguoti";
+$MESS["BPATT_USER_PROFILE"] = "Naudotojo profilis";
+$MESS["BPATT_BACK"] = "Gráþti";
+$MESS["BPATT_BACK_TITLE"] = "Gráþti á ankstesná puslapá";
+$MESS["BPATT_DO_CREATE_TEMPLATE1"] = "Pridëti naujà ðablonà";
+$MESS["BPWFADM_ERR"] = "Klaida ##ID#: #ERROR_TEXT#";
+$MESS["BPWFADM_ACT"] = "Veiksm.";
+?>

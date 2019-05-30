@@ -1,0 +1,35 @@
+<?
+$MESS ['SALE_INSTALL_DEFAULT'] = "Baþlangýçta ayarlanacak satýþ modülü dosyalarýn örneklerini seçiniz";
+$MESS ['SALE_INSTALL_NAME'] = "Dükkan";
+$MESS ['SALE_INSTALL_DESCRIPTION'] = "Site ziyaretçilerine ürün satýþýný gerçekleþtirmeye olanak saðlamaktadýr.";
+$MESS ['SALE_INSTALL_BASKET'] = "Sepet";
+$MESS ['SALE_INSTALL_PERSON'] = "Kiþisel bölüm";
+$MESS ['SALE_INSTALL_PUBLIC'] = "Kurulum için ortak klasör";
+$MESS ['SALE_INSTALL_TITLE'] = "Dükkan modülün yüklenmesi";
+$MESS ['SALE_INSTALL_PUBLIC_DIR'] = "Ortak klasör";
+$MESS ['SALE_INSTALL_SETUP'] = "Ayarla";
+$MESS ['SALE_INSTALL_COMPLETE_OK'] = "Kurulum tamamlanmýþtýr. Daha detaylý yardým için yardým bölümüne baþvurunuz.";
+$MESS ['SALE_INSTALL_COMPLETE_ERROR'] = "Kurulum hatalar ile tamamlanmýþtýr";
+$MESS ['SALE_INSTALL_ERROR'] = "Kurulum hata";
+$MESS ['SALE_INSTALL_BACK'] = "Modül yönetimine dön";
+$MESS ['SALE_UNINSTALL_WARNING'] = "Dikkat! Modül sistemden silinecektir.";
+$MESS ['SALE_UNINSTALL_SAVEDATA'] = "Save Tables&quot";
+$MESS ['SALE_UNINSTALL_SAVECURRENCY'] = "Döviz tablolarýný kaydet ( dükkan modülü ile alýþveriþ katalog modülü ile ortak kullanýlmaktadýr)";
+$MESS ['SALE_UNINSTALL_SAVETABLE'] = "Tablolarý kaydet";
+$MESS ['SALE_UNINSTALL_DEL'] = "Sil";
+$MESS ['SALE_UNINSTALL_ERROR'] = "Silme hata:";
+$MESS ['SALE_UNINSTALL_COMPLETE'] = "Silme tamamlanmýþtýr";
+$MESS ['SALE_INSTALL_PUBLIC_SETUP'] = "Ayarla";
+$MESS ['SALE_INSTALL_PUBLIC_REW'] = "Mevcut dosyalarý yeniden düzenle";
+$MESS ['SALE_INST_PUB_VAR'] = "Ortak kýsmý sürümleri";
+$MESS ['SALE_VARIANT_NUM'] = "Sürüm";
+$MESS ['SALE_VARIANT1_DESCR'] = "Önerilir. Evrensel modeller.";
+$MESS ['SALE_VARIANT2_DESCR'] = "Ýki adýmlýk sipariþ iþlemi. Ek manuel ayar gerekmektedir (ayrýntýlar sipariþ iþlemi betik içerisinde bulunmaktadýr). ";
+$MESS ['SIM_COPY_PUBLIC_FILES'] = "Ortak klasörleri kopyala";
+$MESS ['SIM_COPY_FOLDER'] = "Dosyalarýn kopyalanacaðý klasör (site köküne baðlý):";
+$MESS ['SIM_REWRITE_ADD'] = "Yardýmcý dosyalarý üstüne yaz";
+$MESS ['SINS_PERM_D'] = "kapalý";
+$MESS ['SINS_PERM_R'] = "deðiþiklik hakký olmaksýzýn görüntüleme";
+$MESS ['SINS_PERM_U'] = "sipariþ iþlemleri";
+$MESS ['SINS_PERM_W'] = "tam eriþim ";
+?>

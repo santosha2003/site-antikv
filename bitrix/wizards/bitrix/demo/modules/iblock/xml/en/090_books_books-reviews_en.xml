@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<CommerceInformation SchemaVersion="2.021" CreationDate="2009-06-05T10:11:56">
+	<Metadata>
+		<Id>books-reviews</Id>
+		<Title>Reviews</Title>
+		<Properties>
+			<Property>
+				<Id>CML2_CODE</Id>
+				<Title>Code</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_SORT</Id>
+				<Title>Sort</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_ACTIVE_FROM</Id>
+				<Title>Start time</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_ACTIVE_TO</Id>
+				<Title>End time</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_PREVIEW_TEXT</Id>
+				<Title>Anons</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>CML2_PREVIEW_PICTURE</Id>
+				<Title>Preview picture</Title>
+				<Multiple>false</Multiple>
+			</Property>
+			<Property>
+				<Id>120</Id>
+				<Title>Book</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>100</BitrixSort>
+				<BitrixCode>BOOK</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>E</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock>books-books</BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>true</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>121</Id>
+				<Title>Review author</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>200</BitrixSort>
+				<BitrixCode>AUTHOR</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>S</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>122</Id>
+				<Title>Number of votes</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>300</BitrixSort>
+				<BitrixCode>vote_count</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>N</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>123</Id>
+				<Title>Sum of votes</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>400</BitrixSort>
+				<BitrixCode>vote_sum</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>N</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+			<Property>
+				<Id>124</Id>
+				<Title>Rating</Title>
+				<Multiple>false</Multiple>
+				<BitrixSort>500</BitrixSort>
+				<BitrixCode>rating</BitrixCode>
+				<BitrixDefaultValue></BitrixDefaultValue>
+				<BitrixPropertyType>N</BitrixPropertyType>
+				<BitrixRows>1</BitrixRows>
+				<BitrixColumns>30</BitrixColumns>
+				<BitrixListType>L</BitrixListType>
+				<BitrixFileType>jpg, gif, bmp, png, jpeg</BitrixFileType>
+				<BitrixNumberOfInputs>5</BitrixNumberOfInputs>
+				<BitrixLinkedInformationBlock></BitrixLinkedInformationBlock>
+				<BitrixWithDescription>false</BitrixWithDescription>
+				<BitrixUsedInSearch>false</BitrixUsedInSearch>
+				<BitrixFilterAllowed>false</BitrixFilterAllowed>
+				<BitrixUserType></BitrixUserType>
+			</Property>
+		</Properties>
+	</Metadata>
+	<Catalog>
+		<Id>books-reviews</Id>
+		<MetadataId>books-reviews</MetadataId>
+		<Title>Reviews</Title>
+		<BitrixCode>reviews</BitrixCode>
+		<BitrixSort>900</BitrixSort>
+		<BitrixListURL>/e-store/books/reviews/</BitrixListURL>
+		<BitrixDetailURL>/e-store/books/reviews/index.php?REVIEW=#ID#</BitrixDetailURL>
+		<BitrixSectionURL></BitrixSectionURL>
+		<BitrixPicture></BitrixPicture>
+		<BitrixIndexElements>true</BitrixIndexElements>
+		<BitrixIndexSections>true</BitrixIndexSections>
+		<BitrixWorkflow>true</BitrixWorkflow>
+		<BitrixLabels>
+			<BitrixLabel>
+				<Id>ELEMENT_NAME</Id>
+				<Value>Review</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENTS_NAME</Id>
+				<Value>Reviews</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_ADD</Id>
+				<Value>Add new review</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_EDIT</Id>
+				<Value>Edit review</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>ELEMENT_DELETE</Id>
+				<Value>Delete review</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_NAME</Id>
+				<Value>Section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTIONS_NAME</Id>
+				<Value>Sections</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_ADD</Id>
+				<Value>Add new section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_EDIT</Id>
+				<Value>Edit section</Value>
+			</BitrixLabel>
+			<BitrixLabel>
+				<Id>SECTION_DELETE</Id>
+				<Value>Delete section</Value>
+			</BitrixLabel>
+		</BitrixLabels>
+		<Elements>
+			<Element>
+				<Id>1262</Id>
+				<Title>Great meditations for traders!</Title>
+				<BitrixTags></BitrixTags>
+				<Description>I originally bought this book because a trading advisor recommended it. Now it has become a cherished companion. In it are a number of short chapters covering a range of issues that are germain to the business of trading. Each of the chapters a suitable for a thought for the day, a quick pick me up, or a meditaion. A real goldmine for the futures trader.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/215/51Q0J7QSXFL.jpg</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-02-15 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>I originally bought this book because a trading advisor recommended it...</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/6bd/51Q0J7QSXFL_sm.png</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1265</Value>
+						<PropertyValue>
+							<Value>1265</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Sterling Smith</Value>
+						<PropertyValue>
+							<Value>Sterling Smith</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1312</Id>
+				<Title>Excellent for Artist and Mathematicians</Title>
+				<BitrixTags></BitrixTags>
+				<Description>This book is great for teachers in art as well as math. The book comes with full detailed explanations as well as separate sheets to make copies. There are many different designs to choose from. Excellent source of reference.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/c3a/51V85G10XAL.jpg</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-11-30 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>This book is great for teachers in art as well as math.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/9b6/51V85G10XAL_sm.png</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1301</Value>
+						<PropertyValue>
+							<Value>1301</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>A. Haddad  </Value>
+						<PropertyValue>
+							<Value>A. Haddad  </Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1313</Id>
+				<Title>Dr. Libes is thorough and easy to understand</Title>
+				<BitrixTags></BitrixTags>
+				<Description>In this text, Dr. Libes tackles the inter-relationship between all the sciences as they occur in the marine environment. She entertains the most complex concepts with pragmatic efficiency. It is a delight to read and work through, levaing you with a real sense of understanding. Excellent and resourceful, this text is a must for any serious Oceanographer.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/659/51NMKPFYT3L.jpg</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-04-15 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>In this text, Dr. Libes tackles the inter-relationship between all the sciences as they occur in the marine environment.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/8d6/51NMKPFYT3L_sm.png</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1298</Value>
+						<PropertyValue>
+							<Value>1298</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Maria Phillips</Value>
+						<PropertyValue>
+							<Value>Maria Phillips</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1315</Id>
+				<Title>There's Nothing Like It!</Title>
+				<BitrixTags></BitrixTags>
+				<Description>I was told about this book by my local Health Food Store owner. I had read much about fasting and had tried a 3 day water fast previously. But, when I got this book, it just seemed like a great way to cleanse through fasting. I couldn&amp;#39;t believe the difference between a water fast and the Miracle Cleansing Fast. Not only was it delicious, but I felt no lightheadedness, no headaches, no loss of energy...I just felt terrific! I love the &amp;#39;clean&amp;#39; feeling, inside, you get from this fast and actually dread going back to eating because of it. I have told many people about the Lemonade Fast and have enjoyed watching as many reluctantly decided to sip my brew and were surprised at how wonderful it tastes. During an 11 day fast, I lost 14 lbs., took it along with me while I played golf, and had absolutely no problems. I love this book, I love doing this fast, and I highly recommend giving this method a try.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/999/719T7NH0PML.jpg</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-03-19 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>I was told about this book by my local Health Food Store owner.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/ce3/11NCK.png</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1294</Value>
+						<PropertyValue>
+							<Value>1294</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>J. A Beilharz</Value>
+						<PropertyValue>
+							<Value>J. A Beilharz</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1316</Id>
+				<Title>A Sending Of Dragons</Title>
+				<BitrixTags></BitrixTags>
+				<Description>I am curious to know if Jane Yolen wrote anymore in her Pit Dragons trilogy/series? I really liked this book. I am intrigued by Ms. Yolen&amp;#39;s interpretation of dragons, on Austar IV. I hope that she wrote more.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/71f/Yolen20_big.png</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>1999-05-07 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>I am curious to know if Jane Yolen wrote anymore in her Pit Dragons trilogy/series?</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/5c2/Yolen20_sm.jpg</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1311</Value>
+						<PropertyValue>
+							<Value>1311</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Robert C. Shields</Value>
+						<PropertyValue>
+							<Value>Robert C. Shields</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1317</Id>
+				<Title>Too Short</Title>
+				<BitrixTags></BitrixTags>
+				<Description>These stories were fun to read and very orgininal&amp;#40;peacocks!&amp;#41;, but they were to short to have all the plot twists and suprises I really love about her other books. They were nice but I prefer her long stories better.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/36a/Jones20_big.png</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-04-15 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>These stories were fun to read and very orgininal&amp;#40;peacocks!&amp;#41;, but...</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/6e7/Jones20_sm.jpg</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1274</Value>
+						<PropertyValue>
+							<Value>1274</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>A reader</Value>
+						<PropertyValue>
+							<Value>A reader</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1318</Id>
+				<Title>Flawed but useful</Title>
+				<BitrixTags></BitrixTags>
+				<Description>There are so many errors in this book that I started thinking it was a strategic decision on the part of the author, to force the reader into *learning* Javascript properly. Some of the errors are very basic, school-kid stuff. One of the answers to excercise 2.4, which purports to convert into an octal value, actually has the function parseInt&amp;#40;&amp;#41; being passed a base of 2, for octal. This is what happens when books are rushed to print.&lt;br&gt;&lt;br&gt;On the whole, though, I think the book is a very good idea. Javascript is suited to a slim volume. As an intermittent user of Javascript, I need a compact reference for refamiliarising myself with it&amp;#39;s idiosyncracies. This book seems to fit that requirement. If only it had been proof read a little more before hitting the shelves.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/8fe/0596527462.gif</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2008-01-08 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>There are so many errors in this book that I started thinking it was a strategic decision on the part of the author, to force the reader into *learning* Javascript properly...</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/24d/0596527462_sm.gif</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1288</Value>
+						<PropertyValue>
+							<Value>1288</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Anonymous Reader</Value>
+						<PropertyValue>
+							<Value>Anonymous Reader</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+						<Value>1</Value>
+						<PropertyValue>
+							<Value>1</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+						<Value>2</Value>
+						<PropertyValue>
+							<Value>2</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+						<Value>3.02</Value>
+						<PropertyValue>
+							<Value>3.02</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1319</Id>
+				<Title>Source code link?</Title>
+				<BitrixTags></BitrixTags>
+				<Description>Wheres the source code link ? - Im coming from Safari - see no code samples or /download link on the page refered to.&lt;br&gt;I rated the book &amp;#39;1&amp;#39;, because I have not read the book yet, and within a few clicks I find &amp;#39;bugs&amp;#39;. I already have an rss feeder that validates.&lt;br&gt;&lt;br&gt;</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/f6a/0596008813_big.gif</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2008-05-01 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>Wheres the source code link ? - Im coming from Safari - see no code samples or /download link on the page refered to.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/865/0596008813.gif</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1309</Value>
+						<PropertyValue>
+							<Value>1309</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Matteo Giacomazzi </Value>
+						<PropertyValue>
+							<Value>Matteo Giacomazzi </Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1320</Id>
+				<Title>In the future it will be XML for all the places...</Title>
+				<BitrixTags></BitrixTags>
+				<Description>For my experience as desenvolvedor, I believe that xml will be the basic foundation for web. &lt;br&gt;Who still does not know this language must have in mind all the concepts. &lt;br&gt;I advise this book for who intends to learn this! It looks for to see in this book the details of XSL, DTDs and the Schemas.. I liked it book!&lt;br&gt;</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/988/0596003978_big.gif</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2008-09-30 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>For my experience as desenvolvedor, I believe that xml will be the basic foundation for web.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/4fc/0596003978.gif</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1290</Value>
+						<PropertyValue>
+							<Value>1290</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Eduardo Cesar Lunardelli</Value>
+						<PropertyValue>
+							<Value>Eduardo Cesar Lunardelli</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1321</Id>
+				<Title>Web Services Essentials Review</Title>
+				<BitrixTags></BitrixTags>
+				<Description>I am new to the web services and decade old to programming. This book starts with the introduction to web services and continues with xml-rpc and an example java. Next chapter is SOAP and has instruction to install and configure Apache SOAP and continues with WSDL and UDDI. Each chapter has enough examples in java to understand how to write each of the above components. I would say this is best book to introduce to web services.</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/638/0596002246_big.gif</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-05-06 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>I am new to the web services and decade old to programming. This book starts with the introduction to web services and continues with xml-rpc and an example java...</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/40f/0596002246.gif</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1292</Value>
+						<PropertyValue>
+							<Value>1292</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Ben Hutchison</Value>
+						<PropertyValue>
+							<Value>Ben Hutchison</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1322</Id>
+				<Title>The exciting sequel to Magician</Title>
+				<BitrixTags></BitrixTags>
+				<Description>In many respects, Magician &amp;#40;now sold as two books&amp;#41; was a saga unto itself - the time span, events, war, political intrigue, and heck even the physical length of the book. Coming out with a next installment worthy of the first, must truly have been daunting for Feist. &lt;br&gt;&lt;br&gt;However, with Silverthorn I think he did well. He built upon some fine, solid characters, while introducing a few more. The pace is a little more frenetic, owing to the shorter time period which the book covers. Feist, as usual, laces his work with enough to intrigue us to keep us turning the pages &amp;#40;and wishing to skip pages too, so we can find out what happened next&amp;#41;. &lt;br&gt;&lt;br&gt;The novel centers around Arutha, Prince of Krondor, whose wife, in a failed attempt upon his life, falls to a poisoned crossbow bolt. The cure for the toxin is from a rare flower found only in the north, in the heart of moredhel country - these are the elves of the Dark Path who hate all others with a passion. The mastermind behind the attack is a mysterious and terrifying moredhel named Murmandamus. When Pug, the sole Greater Path magician of Midkemia, learns of this creature and the powerful force, the seat of true power, behind Murmandamus, he sets out for Kelewan to seek answers. This is a bold move, considering the trouble he caused in the Tsurani empire before he fled back to his homeworld of Midkemia. &lt;br&gt;&lt;br&gt;So the story unfolds on two tangents - one following Arutha in his quest to find the Silverthorn flower &amp;#40;and in doing so, gauging to some degree the army being assembled in the north&amp;#41; and Pug to uncover the truth of this new and powerful foe out to destroy his world. &lt;br&gt;&lt;br&gt;Against all of this arises the possibility of the existence of the eldar, and the question of whether the powerful sorcerer Macros the Black is truly dead... &lt;br&gt;&lt;br&gt;I highly recommend this book, but would urge you to read the Magician novels first to understand the events in this one a little better.&lt;br&gt;</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/e84/Finney20_big.png</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2009-04-02 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>In many respects, Magician &amp;#40;now sold as two books&amp;#41; was a saga unto itself - the time span, events, war, political intrigue, and heck even the physical length of the book. Coming out with a next installment worthy of the first, must truly have been daunting for Feist.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/23b/Feist20_sm.jpg</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1282</Value>
+						<PropertyValue>
+							<Value>1282</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Luke Waygood</Value>
+						<PropertyValue>
+							<Value>Luke Waygood</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+			<Element>
+				<Id>1323</Id>
+				<Title>A realistic fantasy</Title>
+				<BitrixTags></BitrixTags>
+				<Description>An historical novel with more in common with fantasy than is usual, though mercifully free of the more annoying cliches and assumptions of that genre. Patricia Finney creates a realistic feeling Ireland at the time of the Roman Empire and weaves her story around Irish myth and legend to stunning effect.&lt;br&gt;One hesitates to mention her age at the time of the writing of the novel &amp;#40;she was 17&amp;#41; as one does not wish to add a novelty value to what is a unique and exciting novel that will stay with you. The sequel &amp;quot;The Crow Goddess&amp;quot; where the protagonist, Lugh MacRomain, travels to Roman occupied Britain is, if anything, better. Buy both immediatley.&lt;br&gt;</Description>
+				<Picture>090_books_books-reviews_en_files/iblock/d36/Finney20_big.png</Picture>
+				<PropertiesValues>
+					<PropertyValues>
+						<Id>CML2_CODE</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_SORT</Id>
+						<Value>500</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_FROM</Id>
+						<Value>2007-08-07 00:00:00</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_ACTIVE_TO</Id>
+						<Value></Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_TEXT</Id>
+						<Value>An historical novel with more in common with fantasy than is usual, though mercifully free of the more annoying cliches and assumptions of that genre.</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>CML2_PREVIEW_PICTURE</Id>
+						<Value>090_books_books-reviews_en_files/iblock/f84/Finney20_sm.jpg</Value>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>120</Id>
+						<Value>1280</Value>
+						<PropertyValue>
+							<Value>1280</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>121</Id>
+						<Value>Andrew McGrory</Value>
+						<PropertyValue>
+							<Value>Andrew McGrory</Value>
+							<Description></Description>
+						</PropertyValue>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>122</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>123</Id>
+					</PropertyValues>
+					<PropertyValues>
+						<Id>124</Id>
+					</PropertyValues>
+				</PropertiesValues>
+			</Element>
+		</Elements>
+	</Catalog>
+</CommerceInformation>

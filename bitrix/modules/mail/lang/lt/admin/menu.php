@@ -1,0 +1,14 @@
+<?
+$MESS["MAIL_MENU_MAIL"] = "El. paðto nustatymai";
+$MESS["MAIL_MENU_MSG"] = "Laiðkø";
+$MESS["MAIL_MENU_MSG_ALT"] = "El. praneðimø perþiûrà";
+$MESS["MAIL_MENU_LOG"] = "Darbo þurnalas";
+$MESS["MAIL_MENU_LOG_ALT"] = "Paðto apdorojimo þurnalas";
+$MESS["MAIL_MENU_RULES"] = "Taisyklës";
+$MESS["MAIL_MENU_RULES_ALT"] = "Paðto praneðimø filtravimo taisykliø nustatimas";
+$MESS["MAIL_MENU_MAILBOXES"] = "Paðto dëþutes";
+$MESS["MAIL_MENU_MAILBOXES_ALT"] = "Paðto dëþuèiø, filtravimo taisykliø nustatimai";
+$MESS["MAIL_MENU_MAIL_TITLE"] = "Paðto valdymas";
+$MESS["MAIL_MENU_MAILSERVICES"] = "El.paðto paslaugos";
+$MESS["MAIL_MENU_MAILSERVICES_ALT"] = "Konfigûruoti el.paðto paslaugas";
+?>

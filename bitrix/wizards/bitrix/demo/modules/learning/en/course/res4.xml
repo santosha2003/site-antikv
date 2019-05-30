@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>356</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153380251</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>133</chapter_id>
+<name>Sites and templates</name>
+<sort>200</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[
+<p>The Bitrix Site Manager supports the multiple sites concept, which allows creating several sites using a single copy of the product. Each site has its own domain name, design, interface language and content.</p>
+
+<div class="hint"><b>Note!</b> Following the license agreement by default within one copy of product can be created only two web-sites. To create more then two sites within on copy of product (three or more sites) it is necessary to purchase <a href="http://www.bitrixsoft.com/buy/add_license.php" target="_blank">Additional site licenses</a>.</div>
+
+<p>The design of a site is the subject of a design template. Each site can be assigned an unlimited number of templates. The use of templates opens up vast possibilities in the site design customization depending on your needs and various conditions.</p>
+
+<p>The software provides means for flexible design customization for different sites and site sections. For example, it allows using special holiday design for the specified period of time, assign certain design templates to different site visitor groups or depending on a parameter in the site URL etc.</p>
+
+<p><img src="cid:resources/res4/JcP70.OtEn3.templates.png" height="315" width="443"/></p>
+
+<p>Condissions of assigning templates to site pages are set for each site individually on the &quot;Edit site&quot; page: </p>
+
+<p><i>Settings -&gt; System settings -&gt; Sites -&gt; List of sites.</i></p>
+
+<p>This form allows to define a set of conditions that will regulate the site design selection, in the site settings. </p>
+
+<p><img src="cid:resources/res4/Cq0QM.hdx5j.templ_cond.png" height="176" width="537"/></p>
+
+<div class="hint">In case for one of templates there is chosen no condition, this template will be used as the default site template.</div>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

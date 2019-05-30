@@ -1,0 +1,9 @@
+<?
+$MESS["IM_DISK_STORAGE_TITLE"] = "Instant Messenger saugykla";
+$MESS["IM_DISK_ERR_AVATAR_1"] = "Jûs negalite keisti savo avataro ðiame pokalbyje.";
+$MESS["IM_DISK_AVATAR_CHANGE_M"] = "#USER_NAME# pakeitë pokalbio miniatiûrà";
+$MESS["IM_DISK_AVATAR_CHANGE_F"] = "#USER_NAME# pakeitë pokalbio miniatiûrà";
+$MESS["IM_DISK_ERR_UPLOAD"] = "Jûs negalite ákelti failus á ðá pokalbá.";
+$MESS["IM_DISK_LOCAL_FOLDER_B24_TITLE"] = "imessenger";
+$MESS["IM_DISK_LOCAL_FOLDER_TITLE"] = "imessenger";
+?>

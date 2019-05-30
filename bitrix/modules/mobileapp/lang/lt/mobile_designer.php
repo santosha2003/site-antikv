@@ -1,0 +1,37 @@
+<?
+$MESS["MOBILEAPP_ANDROID"] = "OS Android";
+$MESS["MOBILEAPP_IOS"] = "iOS";
+$MESS["MOBILEAPP_WP"] = "Windows Phone";
+$MESS["MOBILEAPP_GLOBAL"] = "Bendras";
+$MESS["MOBILEAPP_CONFIGNAME_ANDROID"] = "Android OS konfigûracija";
+$MESS["MOBILEAPP_CONFIGNAME_GLOBAL"] = "Bendra konfigûracija";
+$MESS["MOBILEAPP_CONFIGNAME_IOS"] = "iOS konfigûracija";
+$MESS["MOBILEAPP_CONFIGNAME_WP"] = "Windows Phone konfigûracija";
+$MESS["MOBILEAPP_ADD_IMAGE"] = "Pridëti vaizdà";
+$MESS["MOBILEAPP_SELECT_IMAGE"] = "Pasirinkti vaizdà";
+$MESS["MOBILEAPP_APP_PLATFORM"] = "Pridëti platformà";
+$MESS["MOBILEAPP_SAVE"] = "Iðsaugoti";
+$MESS["MOBILEAPP_CREATE"] = "Sukurti";
+$MESS["MOBILEAPP_CLOSE"] = "Uþdaryti";
+$MESS["MOBILEAPP_REMOVE"] = "iðtrinti";
+$MESS["MOBILEAPP_BACK"] = "gráþti";
+$MESS["MOBILEAPP_TITLE"] = "Antraðtë";
+$MESS["MOBILEAPP_NO_APPS"] = "Jûs neturite programëliø";
+$MESS["MOBILEAPP_CREATE_APP"] = "Sukurti programà";
+$MESS["MOBILEAPP_APP_NAME"] = "Pavadinimas";
+$MESS["MOBILEAPP_LABEL_CODE"] = "Programos kodas";
+$MESS["MOBILEAPP_LABEL_APP_FOLDER"] = "Programos aplankas";
+$MESS["MOBILEAPP_PREVIEW_MAIN"] = "Pagrindinis";
+$MESS["MOBILEAPP_PREVIEW_LOAD"] = "Kraunasi";
+$MESS["MOBILEAPP_PREVIEW_LISTS"] = "Sàraðai";
+$MESS["MOBILEAPP_CREATE_NEW_TEMPLATE"] = "Sukurti naujà ðablonà";
+$MESS["MOBILEAPP_WITHOUT_TEMPLATE"] = "Nekurti ðablono";
+$MESS["MOBILEAPP_NEW_TEMPLATE_NAME"] = "Ðablono pavadinimas";
+$MESS["MOBILEAPP_SELECT_TEMPLATE"] = "Pasirinkti esamà";
+$MESS["MOBILEAPP_APP_TEMPLATE"] = "Programëlës ðablonas";
+$MESS["MOBILEAPP_PREVIEW_HINT"] = "Paspauskite ant programëlës elemento tam, kad nustatyti jo parametrus.";
+$MESS["MOBILEAPP_APP_SAVE_CONFIG_WAIT"] = "Konfigûracijos iðsaugojimas";
+$MESS["MOBILEAPP_APP_REMOVE_CONFIG_WAIT"] = "Konfigûracijos iðtrinimas";
+$MESS["MOBILEAPP_APP_CREATE_CONFIG_WAIT"] = "Kurti konfigûracijà";
+$MESS["MOBILEAPP_APP_IS_ALREADY_EXISTS"] = "Programëlë su ðiuo simboliniu kodu jau yra!";
+?>

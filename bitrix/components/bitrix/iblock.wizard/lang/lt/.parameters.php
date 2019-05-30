@@ -1,0 +1,9 @@
+<?
+$MESS['WZ_PROPERTY_VALUES'] = 'Keliø laukø sàvybë, kurioje jaugomos iðkrentanèio ðàraðo reikðmës';
+$MESS['WZ_INCLUDE_INTO_CHAIN'] = 'Pridëti vedlio skyrius á navigacijos grandinæ';
+$MESS['WZ_TICKET_EDIT'] = 'Praneðimo redagavimo formos puslapis';
+$MESS['WZ_PROPERTY'] = 'Savybë kurioje saugomas klausymo tipas';
+$MESS['WZ_IBLOCK'] = 'Informacinis blokas';
+$MESS['WZ_TYPE'] = 'Informacinio bloko tipas';
+$MESS['WZ_BACKURL'] = 'Puslapis ið kurio atëjo á vedlá (mygtukui \"Atgal\" gali bûti tuðèias)';
+?>

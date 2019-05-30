@@ -1,0 +1,35 @@
+<?
+$MESS ['MYMV_SET_POPUP_TITLE'] = "Ustawienia mapy";
+$MESS ['MYMV_SET_POPUP_WINDOW_TITLE'] = "Edycja ustawieñ mapy";
+$MESS ['MYMV_SET_POPUP_WINDOW_DESCRIPTION'] = "Konfiguruj uk³ad mapy i widoczne przedmioty";
+$MESS ['MYMV_SET_START_POS'] = "Pocz±tkowa lokalizacja mapy";
+$MESS ['MYMV_SET_START_POS_FIX'] = "Zamknij";
+$MESS ['MYMV_SET_START_POS_RESTORE'] = "Przywróæ";
+$MESS ['MYMV_SET_START_POS_LAT'] = "Szeroko¶æ geograficzna";
+$MESS ['MYMV_SET_START_POS_LON'] = "D³ugo¶æ geograficzna";
+$MESS ['MYMV_SET_START_POS_SCALE'] = "Skala";
+$MESS ['MYMV_SET_START_POS_VIEW'] = "Zobacz";
+$MESS ['MYMV_SET_POINTS'] = "Placemarks";
+$MESS ['MYMV_SET_POINTS_ADD'] = "Dodaj Placemarks";
+$MESS ['MYMV_SET_POINTS_ADD_DESCRIPTION'] = "Podwójne klikniêcie powoduje dodanie Placemarks.";
+$MESS ['MYMV_SET_POINTS_ADD_FINISH'] = "Koniec";
+$MESS ['MYMV_SET_SUBMIT'] = "Zapisz";
+$MESS ['MYMV_SET_NONAME'] = "--- Bez tytu³u ---";
+$MESS ['MYMS_PARAM_INIT_MAP_TYPE_MAP'] = "Mapa";
+$MESS ['MYMS_PARAM_INIT_MAP_TYPE_SATELLITE'] = "Satelita";
+$MESS ['MYMS_PARAM_INIT_MAP_TYPE_HYBRID'] = "Hybryda";
+$MESS ['MYMS_PARAM_INIT_MAP_NOTHING_FOUND'] = "(nie znaleziono)";
+$MESS ['MYMV_SET_ADDRESS_SEARCH'] = "Znajd¼ lokalizacjê";
+$MESS ['MYMV_SET_POLY'] = "Mapa trasy";
+$MESS ['MYMV_SET_POLY_ADD'] = "Dodaj trasê";
+$MESS ['MYMV_SET_POLY_START_POINT'] = "Start";
+$MESS ['MYMV_SET_POLY_ADD_DESCRIPTION'] = "Kliknij dwukrotnie do miejsca pocz±tkowego trasy.";
+$MESS ['MYMV_SET_POLY_ADD_DESCRIPTION1'] = "Teraz kliknij na mapê, aby dodaæ wiêcej miejsc na trasie. Klikn±æ na balon, aby zakoñczyæ trasê.";
+$MESS ['MYMV_SET_POLY_ADD_FINISH'] = "Koniec tras.";
+$MESS ['MYMV_SET_POLY_SETTINGS'] = "Ustawienia";
+$MESS ['MYMV_SET_POLY_TITLE'] = "Tytu³";
+$MESS ['MYMV_SET_POLY_COLOR'] = "Kolor linii";
+$MESS ['MYMV_SET_POLY_WIDTH'] = "Grubo¶æ (px)";
+$MESS ['MYMV_SET_POLY_OPACITY'] = "Nieprzezroczysto¶æ (%)";
+$MESS ['MYMV_SET_POLY_FINISH'] = "Koniec";
+?>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>381</id>
+<timestamp_x>1162482874</timestamp_x>
+<date_create>1153494479</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>142</chapter_id>
+<name>Implementation</name>
+<sort>200</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<UL>
+<LI>
+In a site template directory is created the <CODE>/lang/</CODE> folder:<BR><BR><FONT class=text style="BACKGROUND-COLOR: #ffffff" face=Verdana><PRE class=syntax>/bitrix/templates/&lt;<temlate_name>&gt;/lang/</PRE></FONT></LI>
+
+<LI>In the <CODE>/lang/</CODE> folder are placed folders with the utilized languages identifiers: <CODE>/en/</CODE>, <CODE>/de/</CODE>, <CODE>/ru/</CODE>, and etc. For example:<BR><BR><FONT class=text style="BACKGROUND-COLOR: #ffffff" face=Verdana><PRE class=syntax>/bitrix/templates/&lt;<template_name>&gt;/lang/ru/</PRE></FONT></LI>
+<LI>In the folders with languages identifiers are stored corresponding message files. These files are characterized by the following properties:
+
+<UL>
+<LI>
+the message file name is equal to the file name where this message file is called. For example, if a message file is call is implemented in the template header (file <code>header.php</code>) then this message file must have name <code>header.php</code>.
+</li>
+<LI>message list in the file is stored the following way:<BR><BR><FONT class=text style="BACKGROUND-COLOR: #ffffff" face=Verdana><PRE class=syntax>&lt;?
+$MESS ['COMPANY_NAME'] = "Company Name";
+$MESS ['MAIN_PAGE'] = "Home page";
+$MESS ['PRINT'] = "Print version";
+$MESS ['AUTH_LOGIN'] = "Authorization";
+$MESS ['RATES_HEADER'] = "Currency rates";
+$MESS ['SEARCH'] = "Site search";
+$MESS ['SUBSCR'] = "Subscription";
+?&gt;</PRE></FONT></LI></UL>
+
+<LI>
+At the beginning of file, where the message file call is implemented, the following function is added:
+
+<BR><BR><FONT class=text style="BACKGROUND-COLOR: #ffffff" face=Verdana><PRE class=syntax>&lt;?
+IncludeTemplateLangFile(__FILE__);
+?&gt;</PRE></FONT>
+
+The <CODE>IncludeTemplateLangFile(__FILE__)</CODE> connects a message file for the current language.</LI>
+
+<LI>
+All text in template is replaced with the function calling the corresponding messages:<BR><BR><FONT class=text style="BACKGROUND-COLOR: #ffffff" face=Verdana><PRE class=syntax>&lt;font class="search"&gt;&lt;?echo GetMessage("SEARCH");?&gt;&lt;/font&gt;</PRE></FONT>
+The code (ID) of calling message is used as the <code>GetMessage()</code> parameter. The function verifies if the connected message file contains necessary message. If the necessary message exists then it is shown to page visitors.</LI></UL>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

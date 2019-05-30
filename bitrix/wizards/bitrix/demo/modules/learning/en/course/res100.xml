@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<content type="LES"><id>395</id>
+<timestamp_x>1162482875</timestamp_x>
+<date_create>1153814817</date_create>
+<created_by>1837</created_by>
+<active>Y</active>
+<course_id>10</course_id>
+<chapter_id>148</chapter_id>
+<name>Calling components in the page code</name>
+<sort>200</sort>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_picture></detail_picture>
+<detail_text><![CDATA[<p>Calling components on a site page is implemented with use of the function <code>IncludeFile()</code>. The following parameters are used as the function attributes:</p>
+<ul>
+<li>path to the file with required component source code;</li>
+<li>properties assigned (by user) for placed on a page component.</li>
+</ul>
+
+<pre class="syntax">&lt;?
+// this component displays an information block element detailed information
+$APPLICATION->IncludeFile("iblock/catalog/element.php", Array(
+    "IBLOCK_TYPE"       =&gt; "catalog",                          // Information block type
+    "IBLOCK_ID"         =&gt; "21",                               // Information block
+    "ELEMENT_ID"        =&gt; $_REQUEST["ID"],                    // Element ID 
+    "SECTION_URL"       =&gt; "/catalog/phone/section.php?",      // URL to the information block section page
+    "LINK_IBLOCK_TYPE"  =&gt; "catalog",                          // Type of information block elements of wich are linked with current element
+    "LINK_IBLOCK_ID"    =&gt; "22",                               // ID of information block elements of wich are linked with current element
+    "LINK_PROPERTY_SID" =&gt; "PHONE_ID",                         // Property containing the link between information blocks elements 
+    "LINK_ELEMENTS_URL" =&gt; "/catalog/accessory/byphone.php?",  // URL to the page with list of linked elements
+    "arrFIELD_CODE" =&gt; Array(                                  // Fields
+         "DETAIL_TEXT",
+         "DETAIL_PICTURE"),
+    "arrPROPERTY_CODE" =&gt; Array(                               // Properties
+         "YEAR",
+         "STANDBY_TIME",
+         "TALKTIME",
+         "WEIGHT",
+         "STANDART",
+         "SIZE",
+         "BATTERY",
+         "SCREEN",
+         "WAP",
+         "VIBRO",
+         "VOICE",
+         "PC",
+         "MORE_PHOTO",
+         "MANUAL"),
+    "CACHE_TIME"        =&gt; "3600",                              // Cache time
+    ));
+?&gt;</pre>
+<p>Files pertaining to a component can be stored in the following directories:<?p>
+<ul>
+<li>in the folder of a module to which this component relates (i.e. in the product kernel). For example, the information blocks components are stored in the following folders:
+
+<p><code>/bitrix/modules/iblock/install/templates/iblock/news/</code> or <code>/bitrix/modules/iblock/install/templates/iblock/catalog/</code>; </p></li>
+<li>in the folder of site template for which these components were customized. For example:
+
+<p><code>/bitrix/templates/&lt;template_ID&gt;/iblock/news/</code> or <code>/bitrix/templates/&lt;template_ID&gt;/iblock/catalog/</code>;</p></li> 
+<li>&#1074; in the default templates folder. For example:<p>
+
+<p><code>/bitrix/templates/.default/iblock/news/</code> or <code>/bitrix/templates/.default/iblock/catalog/</code>.</p>
+</li>
+</ul>
+]]></detail_text>
+<detail_text_type>html</detail_text_type>
+</content>

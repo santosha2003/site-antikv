@@ -1,0 +1,37 @@
+<?
+$MESS ['BLOG_DESCR_SECTION'] = "Bloglar ";
+$MESS ['BLOG_DESCR_SEP_NAME'] = "Blog ana sayfasý";
+$MESS ['BLOG_DESCR_SEP_DESCR'] = "Ana sayfa için blog bileþenleri ";
+$MESS ['BLOG_DESCR_SEARCH_NAME'] = "Arama formu";
+$MESS ['BLOG_DESCR_SEARCH_DESCR'] = "Arama formu ve arama sonuçlarý";
+$MESS ['BLOG_DESCR_SEARCH_PAGE'] = "Arama sayfasý";
+$MESS ['BLOG_DESCR_SEARCH_RESULT'] = "Sayfa içerisindeki sonuç sayýsý ";
+$MESS ['BLOG_DESCR_MES_NAME'] = "Son iletiler ";
+$MESS ['BLOG_DESCR_MES_DESCR'] = "Tarihe göre gruplandýrma ile tüm site bloglarýndan son iletiler. ";
+$MESS ['BLOG_DESCR_MES_COUNT'] = "Ýleti sayýsý";
+$MESS ['BLOG_DESCR_SORT_1'] = "Sýralamak için ilk alan";
+$MESS ['BLOG_DESCR_SORT_2'] = "Sýralamak için ikinci alan";
+$MESS ['BLOG_DESCR_SORT_DATE_PUBLISH'] = "Yayýn tarihi";
+$MESS ['BLOG_DESCR_SORT_MES_TITLE'] = "Ýleti baþlýðý ";
+$MESS ['BLOG_DESCR_SORT_BLOG_ID'] = "Blog ID";
+$MESS ['BLOG_DESCR_SORT_MES_CREATE'] = "Ýleti oluþturma tarihi";
+$MESS ['BLOG_DESCR_SORT_ORDER'] = "Sýralama yönü";
+$MESS ['BLOG_DESCR_SORT_ASC'] = "Artan";
+$MESS ['BLOG_DESCR_SORT_DESC'] = "Azalan";
+$MESS ['BLOG_DESCR_CACHE_TIME'] = "Bellekleme zamaný (0 - bellekleme yok)";
+$MESS ['BLOG_DESCR_NB_NAME'] = "Yeni bloglar";
+$MESS ['BLOG_DESCR_NB_DESCR'] = "Blog sitesinde son eklenenlerin görüntülenmesi";
+$MESS ['BLOG_DESCR_NB_COUNT'] = "Blog sayýsý";
+$MESS ['BLOG_DESCR_NB_S_DESCR'] = "Blog açýklamalarýný göster";
+$MESS ['BLOG_DESCR_Y'] = "Evet";
+$MESS ['BLOG_DESCR_N'] = "Hayýr";
+$MESS ['BLOG_DESCR_DATE_CREATE'] = "Oluþturma tarihi";
+$MESS ['BLOG_DESCR_BLOG_NAME'] = "Blog adý";
+$MESS ['BLOG_DESCR_BLOG_ID'] = "Blog ID ";
+$MESS ['BLOG_DESCR_LAST_MES'] = "Son ileti tarihi";
+$MESS ['BLOG_DESCR_GR_NAME'] = "Blog gruplarý";
+$MESS ['BLOG_DESCR_GR_DESCR'] = "Boþ olmayan blog grubu listesi";
+$MESS ['BLOG_DESCR_GR_COUNT'] = "Grup sayýsý";
+$MESS ['BLOG_DESCR_GR_COL_COUNT'] = "Sütun sayýsý";
+$MESS ['BLOG_DESCR_GR_SORT_NAME'] = "Grup adý";
+?>

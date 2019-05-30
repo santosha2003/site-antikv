@@ -1,0 +1,8 @@
+<?
+$MESS ['NEW_BLOG_MESSAGE_NAME'] = "Blog içerisindeki yeni ileti";
+$MESS ['NEW_BLOG_MESSAGE_SUBJECT'] = "#SITE_NAME#: [B] #BLOG_NAME# : #MESSAGE_TITLE#";
+$MESS ['NEW_BLOG_COMMENT_NAME'] = "Blog içerisindeki yeni yorum";
+$MESS ['NEW_BLOG_COMMENT_SUBJECT'] = "#SITE_NAME#: [B] #MESSAGE_TITLE# : #COMMENT_TITLE#";
+$MESS ['NEW_BLOG_COMMENT2COMMENT_NAME'] = "Blog içerisinde sizin yorumunuz için yeni yorum";
+$MESS ['NEW_BLOG_COMMENT2COMMENT_SUBJECT'] = "#SITE_NAME#: [B] #MESSAGE_TITLE# : #COMMENT_TITLE#";
+?>

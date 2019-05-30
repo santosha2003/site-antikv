@@ -1,0 +1,36 @@
+<?
+$MESS ['B_B_MS_FROM'] = "Den";
+$MESS ['B_B_MS_REPLY'] = "Cevaplandýr";
+$MESS ['B_B_MS_PARENT'] = "Üst";
+$MESS ['B_B_MS_LINK'] = "Baðlantý";
+$MESS ['B_B_MS_NAME'] = "Ad:";
+$MESS ['B_B_MS_SUBJECT'] = "Konu:";
+$MESS ['B_B_MS_M_BODY'] = "Ýleti";
+$MESS ['B_B_MS_CAPTCHA_SYM'] = "Resim üzerindeki karakterler:";
+$MESS ['B_B_MS_SEND'] = "Gönder";
+$MESS ['B_B_MS_ADD_COMMENT'] = "Yorum ekle";
+$MESS ['BLOG_P_INSERT_IMAGE_LINK'] = "Görüntü üzerine baðlantý ekle";
+$MESS ['BPC_BOLD'] = "Kalýn metin";
+$MESS ['BPC_ITALIC'] = "Ýtalik metin";
+$MESS ['BPC_UNDER'] = "Altý çizili metin";
+$MESS ['BPC_FONT'] = "Yazý tipi";
+$MESS ['BPC_CLOSE_OPENED_TAGS'] = "Tüm açýk etiketleri kapatýnýz";
+$MESS ['BPC_CLOSE_ALL_TAGS'] = "Tüm etiketleri kapatýnýz";
+$MESS ['BPC_HYPERLINK'] = "Köprü giriniz";
+$MESS ['BPC_IMAGE'] = "Renk";
+$MESS ['BPC_CODE'] = "Metnin kod þeklinde düzenlenmesi";
+$MESS ['BPC_LIST'] = "Metnin liste þeklinde düzenlenmesi ";
+$MESS ['BPC_QUOTE'] = "Metnin týrnak þeklinde düzenlenmesi";
+$MESS ['BPC_TEXT_ENTER_URL'] = "(URL) tam adýný giriniz";
+$MESS ['BPC_TEXT_ENTER_URL_NAME'] = "Site adýný belirtiniz";
+$MESS ['BPC_TEXT_ENTER_IMAGE'] = "(URL) görüntüsünün tam adresini giriniz";
+$MESS ['BPC_LIST_PROMPT'] = "Liste maddesini giriniz. Listenin tamamlanmasý için boþluk veya \"Ýptal\" tuþuna basýnýz.";
+$MESS ['BPC_ERROR_NO_URL'] = "(URL) adresini girmek zorundasýnýz";
+$MESS ['BPC_ERROR_NO_TITLE'] = "Adýný girmek zorundasýnýz";
+$MESS ['BLOG_CATEGORY_NAME'] = "Etiket adý";
+$MESS ['BPC_PAGE'] = "Sayfa:";
+$MESS ['BPC_PAGE_OF'] = "den";
+$MESS ['BPC_MES_DELETE_POST_CONFIRM'] = "Yorumu silmek istediðinizden eminmisiniz?";
+$MESS ['B_B_MS_PREVIEW'] = "Önizleme";
+$MESS ['B_B_MS_PREVIEW_TITLE'] = "Yorumun önizlemesi";
+?>

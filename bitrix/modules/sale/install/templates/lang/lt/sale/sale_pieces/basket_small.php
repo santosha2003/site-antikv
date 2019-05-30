@@ -1,0 +1,10 @@
+<?
+$MESS["TSBS_READY"] = "Prekës jûsø<br>krepðelyje:";
+$MESS["TSBS_PRICE"] = "Kaina:";
+$MESS["TSBS_QUANTITY"] = "Kiekis:";
+$MESS["TSBS_2BASKET"] = "Keisti kieká";
+$MESS["TSBS_2ORDER"] = "Uþsakyti";
+$MESS["TSBS_DELAY"] = "Sulaikyti:";
+$MESS["TSBS_UNAVAIL"] = "Ðiuo metu nëra:";
+$MESS["TSBS_EMPTY"] = "Jûsø krepðelis tuðèias";
+?>

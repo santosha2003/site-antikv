@@ -1,0 +1,10 @@
+<?
+$MESS ['LEARNING_TRANSCRIPT_TITLE'] = "Sertifikasyon";
+$MESS ['LEARNING_TRANSCRIPT_NOT_FOUND'] = "Kullanýcý bulunmamýþtýr";
+$MESS ['LEARNING_TRANSCRIPT_ERROR'] = "Hata! Yöneticiye danýþýnýz.";
+$MESS ['LEARNING_TRANSCRIPT_RESUME'] = "Özgeçmiþ";
+$MESS ['LEARNING_TRANSCRIPT_CERTIFIFCATIONS'] = "Sertifikalar";
+$MESS ['LEARNING_TRANSCRIPT_NO_DATA'] = "Sertifika yok";
+$MESS ['LEARNING_TRANSCRIPT_NAME'] = "Adý";
+$MESS ['LEARNING_TRANSCRIPT_DATE'] = "Tarih";
+?>

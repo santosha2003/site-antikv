@@ -1,0 +1,25 @@
+<?
+$MESS["LDAP_ADMIN_TITLE"] = "Activuoti direktorijà / LDAP serverio nustatymus";
+$MESS["LDAP_ADMIN_DEL_ERR"] = "Klaida ðalinant serverio nustatymus.";
+$MESS["LDAP_ADMIN_F_ACT"] = "Aktyvuoti";
+$MESS["LDAP_ADMIN_F_ACT_ANY"] = "(bet kuris)";
+$MESS["LDAP_ADMIN_F_NAME"] = "Pavadinimas";
+$MESS["LDAP_ADMIN_NAVSTRING"] = "Serveriai";
+$MESS["LDAP_ADMIN_TSTAMP"] = "Pakeista";
+$MESS["LDAP_ADMIN_NAME"] = "Pavadinimas";
+$MESS["LDAP_ADMIN_ACT"] = "Akt.";
+$MESS["LDAP_ADMIN_CODE"] = "Mnemoninis kodas";
+$MESS["LDAP_ADMIN_SERV"] = "Serveris";
+$MESS["SAVE_ERROR"] = "Klaida atnaujinant áraðà #";
+$MESS["LDAP_ADMIN_ACTIONS"] = "Veiksmai";
+$MESS["LDAP_ADMIN_CHANGE"] = "Pakeisti serverio nustatymus";
+$MESS["LDAP_ADMIN_CHANGE_LINK"] = "Pakeisti ";
+$MESS["LDAP_ADMIN_DEL_ALT"] = "Paðalinti serverá";
+$MESS["LDAP_ADMIN_DEL_LINK"] = "Paðalinti ";
+$MESS["LDAP_ADMIN_EMPTY"] = "Sàraðas yra tuðèias";
+$MESS["LDAP_ADMIN_TOTAL"] = "Ið viso:";
+$MESS["LDAP_ADMIN_DEL_CONF"] = "Serveris bus paðalintas,iro visi registruoti per já naudotojai nebegalës autorizuotis. Vis tiek paðalinti?";
+$MESS["LDAP_ADMIN_SYNC"] = "Sinchronizuoti";
+$MESS["LDAP_ADMIN_SYNC_PERIOD"] = "Sinchronizacijos laikotarpis";
+$MESS["LDAP_ADMIN_SYNC_LAST"] = "Paskutinë sinchronizacija";
+?>

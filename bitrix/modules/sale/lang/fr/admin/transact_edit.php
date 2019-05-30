@@ -1,0 +1,29 @@
+<?
+$MESS ['STE_EMPTY_USER'] = "The field \"User\" is empty";
+$MESS ['STE_EMPTY_CURRENCY'] = "\"La Devise\" de terrain est vide";
+$MESS ['STE_EMPTY_SUM'] = "\"La Quantité\" de terrain est vide";
+$MESS ['STE_EMPTY_DATE'] = "La \"Date de terrain de transaction\" est vide";
+$MESS ['STE_ERROR_SAVE_ACCOUNT'] = "Erreur sauvant le compte";
+$MESS ['STE_TITLE'] = "Nouvelle transaction";
+$MESS ['STE_TO_LIST'] = "Transactions";
+$MESS ['STE_USER'] = "Utilisateur:";
+$MESS ['STE_DATE'] = "Date transactionnelle (";
+$MESS ['STE_SUM'] = "La somme:";
+$MESS ['STE_CURRENCY'] = "Devise :";
+$MESS ['STE_TYPE'] = "Type record :";
+$MESS ['STE_DEBET'] = "Au compte d'utilisateur";
+$MESS ['STE_KREDIT'] = "Du compte d'utilisateur";
+$MESS ['STE_ORDER_ID'] = "Ordonnez fID (pour les transactions liées de l'ordre) :";
+$MESS ['STE_DESCR'] = "Description:";
+$MESS ['STE_NOTES'] = "Notes :";
+$MESS ['STE_SAVE'] = "Sauver";
+$MESS ['STE_APPLY'] = "Faire une demande";
+$MESS ['STE_CANCEL'] = "Annuler";
+$MESS ['STE_USER_PROFILE'] = "Profil d'utilisateur";
+$MESS ['STEN_2FLIST'] = "Liste transactionnelle";
+$MESS ['STEN_2FLIST_TITLE'] = "Liste transactionnelle de vue";
+$MESS ['STEN_TAB_TRANSACT'] = "Transaction";
+$MESS ['STEN_TAB_TRANSACT_DESCR'] = "Transaction";
+$MESS ['STE_CANCEL1'] = "Annuler";
+$MESS ['STE_ERROR'] = "Économie de l'erreur!";
+?>

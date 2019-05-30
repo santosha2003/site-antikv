@@ -1,0 +1,32 @@
+<?
+$MESS["FLOW_PAGE_TITLE"] = "Pakeisti istorijà";
+$MESS["FLOW_F_DOCUMENT"] = "Dokumento ID";
+$MESS["FLOW_F_FILENAME"] = "Failo pavadinimas";
+$MESS["FLOW_F_TITLE"] = "Antraðtë";
+$MESS["FLOW_F_STATUS"] = "Dokumento statusas";
+$MESS["FLOW_F_DATE_MODIFY"] = "Pakeista";
+$MESS["FLOW_F_MODIFIED_BY"] = "Pakeitë (ID)";
+$MESS["FLOW_F_BODY"] = "Turinys";
+$MESS["FLOW_PAGES"] = "Pakeitimai";
+$MESS["FLOW_DATE_MODIFY"] = "Pakeistas";
+$MESS["FLOW_MODIFIED_BY"] = "Pakeitë";
+$MESS["FLOW_TITLE"] = "Antraðtë";
+$MESS["FLOW_FILENAME"] = "Failo pavadinimas";
+$MESS["FLOW_STATUS"] = "Statusas";
+$MESS["FLOW_F_LOGIC"] = "Logika tarp laukø";
+$MESS["FLOW_VIEW"] = "Perþiûra";
+$MESS["FLOW_DOCUMENT"] = "Dokumento ID";
+$MESS["FLOW_DELETE_CONFIRM"] = "Ar tikrai norite paðalinti áraðà ið dokumentø istorijos?";
+$MESS["FLOW_USER_ALT"] = "Perþiûrëti naudotojo informacijà";
+$MESS["FLOW_STATUS_ALT"] = "Perþiûrëti statuso informacijà";
+$MESS["FLOW_COMPARE"] = "Palyginti";
+$MESS["FLOW_COMPARE_ALERT"] = "Pasirinkite du dokumentus palyginimui.";
+$MESS["FLOW_DELETE"] = "Paðallinti";
+$MESS["FLOW_RECORDS_LIST"] = "Dokumentø sàraðas";
+$MESS["MAIN_ADMIN_LIST_SELECTED"] = "Pasirinkta:";
+$MESS["MAIN_FIND"] = "Ieðkoti";
+$MESS["MAIN_ADMIN_LIST_CHECKED"] = "Paþymëta:";
+$MESS["MAIN_FIND_TITLE"] = "Ávesti tekstà paieðkai";
+$MESS["MAIN_ADMIN_LIST_DELETE"] = "paðalinti";
+$MESS["MAIN_ALL"] = "(visi)";
+?>

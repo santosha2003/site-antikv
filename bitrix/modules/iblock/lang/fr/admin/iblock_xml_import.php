@@ -1,0 +1,37 @@
+<?
+$MESS ['IBLOCK_CML2_WITH_ERRORS'] = "Erreurs&nbsp;: #COUNT#";
+$MESS ['IBLOCK_CML2_ADDED'] = "Ajouter nouveau&nbsp;:#COUNT#";
+$MESS ['IBLOCK_CML2_INDEX_ERROR'] = "Une erreur a surgi à la création de l'index.";
+$MESS ['IBLOCK_CML2_INDEX_CREATED'] = "Un index auxiliaire a été créé";
+$MESS ['IBLOCK_CML2_ELEMENTS_DONE'] = "Les éléments du catalogue ont été importés …";
+$MESS ['IBLOCK_CML2_METADATA_DONE'] = "Métadonnées du catalogue importés.";
+$MESS ['IBLOCK_CML2_ACTION_DEACTIVATE'] = "désactiver";
+$MESS ['IBLOCK_CML2_DEACTIVATION_PROGRESS'] = "Désactiver #DONE# éléments du catalogue";
+$MESS ['IBLOCK_CML2_DEACTIVATED'] = "Désactivés&nbsp;: #COUNT#";
+$MESS ['IBLOCK_CML2_ACTION_DELETE'] = "supprimer";
+$MESS ['IBLOCK_CML2_DELETE_PROGRESS'] = "Deleted #DONE# catalog elements.";
+$MESS ['IBLOCK_CML2_DELETED'] = "Deleted: #COUNT#";
+$MESS ['IBLOCK_CML2_FILE_ERROR'] = "Erreur à l'ouverture du fichier.";
+$MESS ['IBLOCK_CML2_GENERATE_PREVIEW'] = "Générer un aperçu d'illustration";
+$MESS ['IBLOCK_CML2_START_IMPORT'] = "Import";
+$MESS ['IBLOCK_CML2_TAB'] = "Import";
+$MESS ['IBLOCK_CML2_DONE'] = "L'importation est terminée";
+$MESS ['IBLOCK_CML2_TAB_TITLE'] = "Importation des options";
+$MESS ['IBLOCK_CML2_ELEMENTS_PROGRESS'] = "#DONE# sur #TOTAL# éléments du catalogue importés.";
+$MESS ['IBLOCK_CML2_ELEMENTS'] = "Import des éléments du catalogue.";
+$MESS ['IBLOCK_CML2_METADATA'] = "Import des métadonnées du catalogue.";
+$MESS ['IBLOCK_CML2_IBLOCK_TYPE'] = "Type de bloc d'information";
+$MESS ['IBLOCK_CML2_ACTION_NONE'] = "quitter";
+$MESS ['IBLOCK_CML2_PREVIEW_HEIGHT'] = "Hauteur maximale";
+$MESS ['IBLOCK_CML2_PREVIEW_WIDTH'] = "Largeur maximale ";
+$MESS ['IBLOCK_CML2_LID_ERROR'] = "Aucun site indiqué.";
+$MESS ['IBLOCK_CML2_OPEN'] = "Ouvrir …";
+$MESS ['IBLOCK_CML2_URL_DATA_FILE'] = "Fichier source";
+$MESS ['IBLOCK_CML2_INTERVAL'] = "Durée du pas, sec. (0 - exporter en une seule étape)";
+$MESS ['IBLOCK_CML2_STOP_IMPORT'] = "Bloquer";
+$MESS ['IBLOCK_CML2_TABLES_CREATED'] = "Les tables temporaires d'import ont été créées.";
+$MESS ['IBLOCK_CML2_TABLES_DROPPED'] = "Les tables temporaires d'import créées lors du dernier import ont été supprimées.";
+$MESS ['IBLOCK_CML2_FILE_READ'] = "Le fichier d'import a été traité.";
+$MESS ['IBLOCK_CML2_UPDATED'] = "Mis à jour&nbsp;: #COUNT#";
+$MESS ['IBLOCK_CML2_TITLE'] = "Import XML";
+?>
