@@ -78,7 +78,7 @@ $APPLICATION->SetTitle("Награды Российской империи");
 		"USE_RSS" => "Y",	// Разрешить RSS
 		"USE_SEARCH" => "N",	// Разрешить поиск
 		"USE_SHARE" => "N",	// Отображать панель соц. закладок
-		"COMPONENT_TEMPLATE" => "awards_rus",
+		"COMPONENT_TEMPLATE" => "awards_rus1",
 		"SEF_FOLDER" => "/awards_rus/",	// Каталог ЧПУ (относительно корня сайта)
 		"NUM_NEWS" => "20",	// Количество новостей для экспорта
 		"NUM_DAYS" => "30",	// Количество дней для экспорта
