@@ -117,28 +117,19 @@ $(document).ready(function(){
 
 });
 
-// пїЅпїЅпїЅпїЅпїЅпїЅ fancybox пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// Вешаем fancybox на все ссылки-картинки
 $(function(){
     var image_link_reg = /^(.*)\.jpg$|\.png$|\.jpeg$/;
     var link_arr = $('a');
 
     link_arr.each(function(){
         if(image_link_reg.test(this.href)){
-            if(!$(this).attr('data-fancybox') && $(this).attr('rel')){
-                $(this).attr('data-fancybox', $(this).attr('rel'));
-            } else if(!$(this).attr('data-fancybox') && !$(this).attr('rel')){
+            if(!$(this).hasClass('fancy')){
                 $(this).fancybox({
                     'titleShow': false,
                     'type': "image"
                 });
             }
-
-            /*if(!$(this).hasClass('fancy')){
-                $(this).fancybox({
-                    'titleShow': false,
-                    'type': "image"
-                });
-            }*/
         }
     })
 });

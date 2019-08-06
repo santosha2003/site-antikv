@@ -7,33 +7,16 @@ $arUrlRewrite = array(
 		"PATH" => "/bitrix/services/ymarket/index.php",
 	),
 	array(
-<<<<<<< HEAD
 		"CONDITION" => "#^([^/]+?)\\??(.*)#",
 		"RULE" => "SECTION_CODE=\$1&\$2",
 		"ID" => "bitrix:catalog.section",
 		"PATH" => "/index.php",
-=======
-		"CONDITION" => "#^/ng/personal/order/#",
-		"RULE" => "",
-		"ID" => "bitrix:sale.personal.order",
-		"PATH" => "/ng/personal/order/index.php",
 	),
 	array(
 		"CONDITION" => "#^([^/]+?)\\??(.*)#",
 		"RULE" => "SECTION_CODE=\$1&\$2",
 		"ID" => "bitrix:catalog.section",
 		"PATH" => "/i1.php",
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
-	),
-	array(
-		"CONDITION" => "#^([^/]+?)\\??(.*)#",
-		"RULE" => "SECTION_CODE=\$1&\$2",
-		"ID" => "bitrix:catalog.section",
-<<<<<<< HEAD
-		"PATH" => "/i1.php",
-=======
-		"PATH" => "/index.php",
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	),
 	array(
 		"CONDITION" => "#^/awards_rus/#",
@@ -42,15 +25,6 @@ $arUrlRewrite = array(
 		"PATH" => "/awards_rus/index.php",
 	),
 	array(
-<<<<<<< HEAD
-=======
-		"CONDITION" => "#^/ng/catalog/#",
-		"RULE" => "",
-		"ID" => "bitrix:catalog",
-		"PATH" => "/ng/catalog/index.php",
-	),
-	array(
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		"CONDITION" => "#^/catalog/#",
 		"RULE" => "",
 		"ID" => "bitrix:catalog",
