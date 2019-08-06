@@ -7,7 +7,11 @@
  */
 namespace Bitrix\Main\Web;
 
+<<<<<<< HEAD
 use Bitrix\Main\Text\String;
+=======
+use Bitrix\Main\Text\TString;
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 use Bitrix\Main\IO;
 
 class HttpClient
@@ -629,7 +633,11 @@ class HttpClient
 			}
 			if($this->requestHeaders->get("Content-Length") === null)
 			{
+<<<<<<< HEAD
 				$this->setHeader("Content-Length", String::getBinaryLength($postData));
+=======
+				$this->setHeader("Content-Length", TString::getBinaryLength($postData));
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			}
 		}
 
@@ -727,7 +735,11 @@ class HttpClient
 						$this->error['STREAM_READING'] = "Stream reading error";
 						return false;
 					}
+<<<<<<< HEAD
 					$length -= String::getBinaryLength($buf);
+=======
+					$length -= TString::getBinaryLength($buf);
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				}
 			}
 		}
@@ -766,7 +778,11 @@ class HttpClient
 		if(is_resource($this->outputStream))
 		{
 			$compressed = stream_get_contents($this->outputStream, -1, 10);
+<<<<<<< HEAD
 			$compressed = String::getBinarySubstring($compressed, 0, -8);
+=======
+			$compressed = TString::getBinarySubstring($compressed, 0, -8);
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			if($compressed <> '')
 			{
 				$uncompressed = gzinflate($compressed);
@@ -778,7 +794,11 @@ class HttpClient
 		}
 		else
 		{
+<<<<<<< HEAD
 			$compressed = String::getBinarySubstring($this->result, 10, -8);
+=======
+			$compressed = TString::getBinarySubstring($this->result, 10, -8);
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			if($compressed <> '')
 			{
 				$this->result = gzinflate($compressed);

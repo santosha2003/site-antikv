@@ -635,7 +635,13 @@ abstract class CAllUser extends CDBResult
 								'~IP_ADDR'=>sprintf("%u", ip2long($_SERVER["REMOTE_ADDR"])),
 								'STORED_HASH'=>$hash
 							);
+<<<<<<< HEAD
 						$stored_id = CDatabase::Add("b_user_stored_auth", $arFields);
+=======
+						$stored_id1 = new CDatabase ();
+						$stored_id = $stored_id1->Add("b_user_stored_auth", $arFields);
+						//$stored_id = CDatabase::Add("b_user_stored_auth", $arFields);
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 					}
 					$_SESSION["SESS_AUTH"]["STORED_AUTH_ID"] = $stored_id;
 				}

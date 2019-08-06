@@ -145,7 +145,11 @@ class ExceptionHandler
 		}
 
 		set_error_handler(array($this, "handleError"), $this->handledErrorsTypes);
+<<<<<<< HEAD
 		set_exception_handler(array($this, "handleException"));
+=======
+	//	set_exception_handler(array($this, "handleException"));
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		register_shutdown_function(array($this, "handleFatalError"));
 
 		if ($this->debug)

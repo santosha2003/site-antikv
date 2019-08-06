@@ -90,7 +90,11 @@ class CAccess
 		global $USER;
 
 		$USER_ID = 0;
+<<<<<<< HEAD
 		if(isset($arParams["USER_ID"]))
+=======
+		if(is_array($arParams) && isset($arParams["USER_ID"]))
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			$USER_ID = intval($arParams["USER_ID"]);
 		elseif(is_object($USER) && $USER->IsAuthorized())
 			$USER_ID = intval($USER->GetID());
@@ -292,11 +296,14 @@ class CAccess
 			}
 		}
 
+<<<<<<< HEAD
 		//possible unhandled values
 		foreach($arCodes as $code)
 			if(!array_key_exists($code, $arResult))
 				$arResult[$code] = array("provider"=>"", "name"=>$code);
 
+=======
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		if($bSort)
 			uasort($arResult, array('CAccess', 'CmpNames'));
 

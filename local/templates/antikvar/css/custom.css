@@ -79,6 +79,7 @@ table.award-table tr:last-child td{
 
 table.award-table{
     border-spacing: 0;
+<<<<<<< HEAD
 }
 
 .product-detail .product-imgs .slaider .bigFOTO{
@@ -88,4 +89,6 @@ table.award-table{
 
 .product-detail .product-imgs img{
     min-width: auto !important;
+=======
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 }

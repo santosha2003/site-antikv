@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <?
+=======
+<?php
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 ##############################################
 # Bitrix: SiteManager                        #
 # Copyright (c) 2002-2006 Bitrix             #
@@ -6,12 +10,22 @@
 # mailto:admin@bitrixsoft.com                #
 ##############################################
 
+<<<<<<< HEAD
 if (!class_exists("CCaptcha"))
 {
 	class CCaptcha
 	{
 		var $imageWidth = 180;
 		var $imageHeight = 40;
+=======
+//Some marketplace modules define the same class
+if (!class_exists("CCaptcha")):
+
+class CCaptcha
+{
+	var $imageWidth = 180;
+	var $imageHeight = 40;
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 		var $codeLength = 5;
 
@@ -1108,5 +1122,11 @@ if (!class_exists("CCaptcha"))
 		}
 
 	}
+<<<<<<< HEAD
 }
 ?>
+=======
+
+
+endif; ?>
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137

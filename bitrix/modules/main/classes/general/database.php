@@ -366,9 +366,17 @@ abstract class CAllDatabase
 	/**
 	 * @param string $strSql
 	 * @param bool $bIgnoreErrors
+<<<<<<< HEAD
 	 * @return CDBResult
 	 */
 	abstract function Query($strSql, $bIgnoreErrors=false);
+=======
+	 * @param string $error_position
+	 * @param array $arOptions
+	 * @return CDBResult
+	 */
+	abstract function Query($strSql, $bIgnoreErrors=false, $error_position="", $arOptions=array());
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 	//query with CLOB
 	function QueryBind($strSql, $arBinds, $bIgnoreErrors=false)
@@ -585,6 +593,16 @@ abstract class CAllDatabase
 			$this->arQueryDebug[$index]->addTime($exec_time);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	abstract public function GetIndexName($tableName, $arColumns, $bStrict = false);
+
+	public function IndexExists($tableName, $arColumns, $bStrict = false)
+	{
+		return $this->GetIndexName($tableName, $arColumns, $bStrict) !== "";
+	}
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 }
 
 abstract class CAllDBResult
@@ -623,7 +641,11 @@ abstract class CAllDBResult
 	var $resultObject = null;
 
 	/** @param CDBResult $res */
+<<<<<<< HEAD
 	public function CAllDBResult($res = null)
+=======
+	public function __construct($res = null)
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	{
 		$obj = is_object($res);
 		if($obj && is_subclass_of($res, "CAllDBResult"))
@@ -670,6 +692,15 @@ abstract class CAllDBResult
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	/** @deprecated */
+	public function CAllDBResult($res = null)
+	{
+		self::__construct($res);
+	}
+
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	public function __sleep()
 	{
 		return array(
@@ -704,6 +735,10 @@ abstract class CAllDBResult
 	/**
 	 * @return array
 	 */
+<<<<<<< HEAD
+=======
+	 //    CDBResult::Fetch()
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	abstract public function Fetch();
 
 	/**

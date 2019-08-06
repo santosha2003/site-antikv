@@ -352,8 +352,12 @@ final class Loader
 	}
 }
 
+<<<<<<< HEAD
 class LoaderException
 	extends \Exception
+=======
+class LoaderException extends \Exception
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 {
 	public function __construct($message = "", $code = 0, \Exception $previous = null)
 	{

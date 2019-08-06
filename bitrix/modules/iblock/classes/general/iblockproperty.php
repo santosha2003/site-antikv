@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <?
+=======
+<?php
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 global $IBLOCK_CACHE_PROPERTY;
 $IBLOCK_CACHE_PROPERTY = Array();
 IncludeModuleLangFile(__FILE__);
@@ -17,7 +21,11 @@ class CAllIBlockProperty
 		";
 
 		$bJoinIBlock = false;
+<<<<<<< HEAD
 		$arSqlSearch = "";
+=======
+		$arSqlSearch = [];
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		foreach($arFilter as $key => $val)
 		{
 			$val = $DB->ForSql($val);

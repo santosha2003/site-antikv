@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <?require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+=======
+<?php require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/fileman/prolog.php");
 
 IncludeModuleLangFile(__FILE__);

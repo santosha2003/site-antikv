@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2019-May-30 12:06:05 Наличие необходимых модулей php (check_php_modules): Ok
 Все необходимые модули установлены
 2019-May-30 12:06:05 Обязательные параметры PHP (check_php_settings): Ok
@@ -15,4 +16,302 @@
 2019-May-30 12:06:05 Работа с сокетами (check_socket): Ok
 Connection to rusantikvar.ru:80	Success
 
+=======
+2019-Apr-19 09:53:04 Наличие необходимых модулей php (check_php_modules): Fail
+Ошибка! Не установлены требуемые расширения:Функции шифрования MCrypt
+2019-Apr-19 09:53:05 Обязательные параметры PHP (check_php_settings): Ok
+Настройки правильные
+2019-Apr-19 09:53:05 Модули веб-сервера (check_security): Ok
+Конфликтов не выявлено
+2019-Apr-19 09:53:05 Значения переменных сервера (check_server_vars): Ok
+Корректные
+2019-Apr-19 09:53:06 Сохранение сессии (check_session): Ok
+50% done
+2019-Apr-19 09:53:06 Сохранение сессии (check_session): Ok
+Успешно
+2019-Apr-19 09:53:06 Параметры настройки UTF (mbstring и константа BX_UTF) (check_mbstring): Ok
+Правильные. Сайт работает в UTF кодировке
+2019-Apr-19 09:53:06 Служебные скрипты в корне сайта (check_install_scripts): Ok
+Отсутствуют
+2019-Apr-19 09:53:06 Работа с сокетами (check_socket): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:07 Параметры подключения к базе данных (check_dbconn_settings): Ok
+Успешно
+2019-Apr-19 09:53:08 Лишний вывод в файлах конфигурации (check_dbconn): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:08 Выполнение агентов на cron (check_bx_crontab): Warning
+Замечание. Агенты выполняются на хитах, рекомендуется перевести выполнение агентов на cron
+2019-Apr-19 09:53:08 Сохранение сессии без UserAgent (check_session_ua): Ok
+50% done
+Connection to santoshapro.me:97	Success
+
+2019-Apr-19 09:53:08 Сохранение сессии без UserAgent (check_session_ua): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:08 Настройки сайтов (check_sites): Ok
+Правильные
+2019-Apr-19 09:53:08 Передача объектов по ссылке (check_clone): Ok
+Успешно
+2019-Apr-19 09:53:08 Размер стека и pcre.recursion_limit (check_pcre_recursion): Warning
+Connection to santoshapro.me:97	Success
+
+Замечание. Возможны проблемы в работе с длинными строками из-за системных ограничений
+2019-Apr-19 09:53:09 Вызов method_exists на строке (check_method_exists): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:09 Загрузка файла (check_upload): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:09 Загрузка файла больше 4Мб (check_upload_big): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:09 Загрузка файла через php://input (check_upload_raw): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:09 Передача POST запроса с большим числом параметров (check_post): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:10 Отправка почты (check_mail): Fail
+Ошибка! Не работает
+2019-Apr-19 09:53:11 Отправка почтового сообщения больше 64Кб (check_mail_big): Fail
+Ошибка! Не работает
+2019-Apr-19 09:53:11 Проверка на наличие неотправленных сообщений (check_mail_b_event): Ok
+Успешно
+2019-Apr-19 09:53:12 Внутреннее перенаправление (функция LocalRedirect) (check_localredirect): Ok
+50% done
+Connection to santoshapro.me:97	Success
+
+2019-Apr-19 09:53:12 Внутреннее перенаправление (функция LocalRedirect) (check_localredirect): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:12 Фактическое ограничение памяти (check_memory_limit): Ok
+20% done
+Connection to santoshapro.me:97	Success
+
+2019-Apr-19 09:53:12 Фактическое ограничение памяти (check_memory_limit): Ok
+40% done
+Connection to santoshapro.me:97	Success
+
+2019-Apr-19 09:53:12 Фактическое ограничение памяти (check_memory_limit): Ok
+60% done
+Connection to santoshapro.me:97	Success
+
+2019-Apr-19 09:53:12 Фактическое ограничение памяти (check_memory_limit): Ok
+80% done
+Connection to santoshapro.me:97	Success
+
+2019-Apr-19 09:53:13 Фактическое ограничение памяти (check_memory_limit): Ok
+Connection to santoshapro.me:97	Success
+== Request ==
+GET /bitrix/admin/site_checker.php?test_type=memory_test&unique_id=c4bf22919b4e0542f48061fff4fdf331&max=255 HTTP/1.1
+Host: santoshapro.me
+
+
+== Response ==
+HTTP/1.1 200 OK
+Server: nginx/1.14.2
+Date: Fri, 19 Apr 2019 06:53:13 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+X-Powered-By: PHP/7.2.16
+
+== Body ==
+
+Fatal error: Allowed memory size of 524288000 bytes exhausted (tried to allocate 1052672 bytes) in /var/www/html/bitrix/modules/main/admin/site_checker.php on line 132
+
+==========
+
+Не менее 128 М
+2019-Apr-19 09:53:13 Работа с файлами кеша (check_cache): Ok
+Успешно
+2019-Apr-19 09:53:13 Доступ к серверу обновлений (check_update): Fail
+== Request ==
+POST /bitrix/updates/us_updater_list.php HTTP/1.0
+User-Agent: BitrixSMUpdater
+Accept: */*
+Host: localhost
+Accept-Language: en
+Content-type: application/x-www-form-urlencoded
+Content-length: 7
+
+lang=en
+
+== Response ==
+HTTP/1.1 404 Not Found
+Server: nginx/1.14.2
+Date: Fri, 19 Apr 2019 06:53:13 GMT
+Content-Type: text/html
+Content-Length: 1296
+Connection: close
+ETag: "5b9fbeec-510"
+
+== Body ==
+
+
+body {scrollbar-face-color: #000000; scrollbar-highlight-color: #c0c0c0; scrollbar-shadow-color: #c0c0c0; scrollbar-3dlight-color: #c0c0c0; scrollbar-arrow-color: #ff00ff; scrollbar-track-color: #000000; scrollbar-darkshadow-color: black}
+p { font-size: 11pt; font-family: arial }
+td {font:9pt arial;}
+strong {font:14pt arial; font-weight:bold};
+a {font:9pt arial; text-decoration:none; font-weight:bold}
+a:hover {color: #ff3dfd; font-weight: bold} >
+
+
+
+
+
+??????!
+
+
+server made: boo boo
+
+
+    jwplayer('playernllopvtvzshq').setup({
+        file: 'http://santoshapro.me/fla24.flv',
+        image: 'http://santoshapro.me/262.jpg',
+        title: 'syany',
+        width: '100%',
+        aspectratio: '16:9'
+    });
+
+
+
+==========
+
+Ошибка! Ошибочный ответ сервера обновлений
+2019-Apr-19 09:53:13 HTTP авторизация (check_http_auth): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:13 Создание и запуск файла (check_exec): Ok
+Connection to santoshapro.me:97	Success
+
+Успешно
+2019-Apr-19 09:53:14 Функция getimagesize для swf (check_getimagesize): Warning
+Замечание. Вставка swf роликов может не работать
+2019-Apr-19 09:53:14 Версия MySQL-сервера (check_mysql_bug_version): Ok
+Успешно
+2019-Apr-19 09:53:15 Время на БД и веб-сервере (check_mysql_time): Ok
+Успешно
+2019-Apr-19 09:53:15 Режим работы MySQL (check_mysql_mode): Ok
+Успешно
+2019-Apr-19 09:53:15 Кодировка соединения (check_mysql_connection_charset): Ok
+character_set_connection=utf8, collation_connection=utf8_unicode_ci, character_set_results=utf8
+Успешно
+2019-Apr-19 09:53:16 Кодировка базы данных (check_mysql_db_charset): Ok
+CHARSET=utf8, COLLATION=utf8_unicode_ci
+Успешно
+2019-Apr-19 09:53:26 Кодировки таблиц в БД (check_mysql_table_charset): Ok
+96% done
+2019-Apr-19 09:53:26 Кодировки таблиц в БД (check_mysql_table_charset): Ok
+Успешно
+2019-Apr-19 09:53:27 Структура базы данных (check_mysql_table_structure): Ok
+0% done
+2019-Apr-19 09:53:28 Структура базы данных (check_mysql_table_structure): Ok
+2% done
+2019-Apr-19 09:53:31 Структура базы данных (check_mysql_table_structure): Ok
+4% done
+2019-Apr-19 09:53:32 Структура базы данных (check_mysql_table_structure): Ok
+6% done
+2019-Apr-19 09:53:33 Структура базы данных (check_mysql_table_structure): Ok
+8% done
+2019-Apr-19 09:53:34 Структура базы данных (check_mysql_table_structure): Ok
+10% done
+2019-Apr-19 09:53:38 Структура базы данных (check_mysql_table_structure): Ok
+12% done
+2019-Apr-19 09:53:38 Структура базы данных (check_mysql_table_structure): Ok
+14% done
+2019-Apr-19 09:53:39 Структура базы данных (check_mysql_table_structure): Ok
+16% done
+2019-Apr-19 09:53:39 Структура базы данных (check_mysql_table_structure): Ok
+18% done
+2019-Apr-19 09:53:47 Структура базы данных (check_mysql_table_structure): Ok
+20% done
+2019-Apr-19 09:53:47 Структура базы данных (check_mysql_table_structure): Ok
+22% done
+2019-Apr-19 09:53:48 Структура базы данных (check_mysql_table_structure): Ok
+25% done
+2019-Apr-19 09:53:48 Структура базы данных (check_mysql_table_structure): Ok
+27% done
+2019-Apr-19 09:53:49 Структура базы данных (check_mysql_table_structure): Ok
+29% done
+2019-Apr-19 09:53:49 Структура базы данных (check_mysql_table_structure): Ok
+31% done
+2019-Apr-19 09:53:49 Структура базы данных (check_mysql_table_structure): Ok
+33% done
+2019-Apr-19 09:53:50 Структура базы данных (check_mysql_table_structure): Ok
+35% done
+2019-Apr-19 09:53:50 Структура базы данных (check_mysql_table_structure): Ok
+37% done
+2019-Apr-19 09:53:50 Структура базы данных (check_mysql_table_structure): Ok
+39% done
+2019-Apr-19 09:53:51 Структура базы данных (check_mysql_table_structure): Ok
+41% done
+2019-Apr-19 09:53:53 Структура базы данных (check_mysql_table_structure): Ok
+43% done
+2019-Apr-19 09:53:53 Структура базы данных (check_mysql_table_structure): Ok
+45% done
+2019-Apr-19 09:53:55 Структура базы данных (check_mysql_table_structure): Ok
+47% done
+2019-Apr-19 09:53:55 Структура базы данных (check_mysql_table_structure): Ok
+50% done
+2019-Apr-19 09:54:04 Структура базы данных (check_mysql_table_structure): Ok
+52% done
+2019-Apr-19 09:54:07 Структура базы данных (check_mysql_table_structure): Ok
+54% done
+2019-Apr-19 09:54:08 Структура базы данных (check_mysql_table_structure): Ok
+56% done
+2019-Apr-19 09:54:11 Структура базы данных (check_mysql_table_structure): Ok
+58% done
+2019-Apr-19 09:54:12 Структура базы данных (check_mysql_table_structure): Ok
+60% done
+2019-Apr-19 09:54:13 Структура базы данных (check_mysql_table_structure): Ok
+62% done
+2019-Apr-19 09:54:13 Структура базы данных (check_mysql_table_structure): Ok
+64% done
+2019-Apr-19 09:54:13 Структура базы данных (check_mysql_table_structure): Ok
+66% done
+2019-Apr-19 09:54:14 Структура базы данных (check_mysql_table_structure): Ok
+68% done
+2019-Apr-19 09:54:15 Структура базы данных (check_mysql_table_structure): Ok
+70% done
+2019-Apr-19 09:54:16 Структура базы данных (check_mysql_table_structure): Ok
+72% done
+2019-Apr-19 09:54:16 Структура базы данных (check_mysql_table_structure): Ok
+75% done
+2019-Apr-19 09:54:17 Структура базы данных (check_mysql_table_structure): Ok
+77% done
+2019-Apr-19 09:54:18 Структура базы данных (check_mysql_table_structure): Ok
+79% done
+2019-Apr-19 09:54:20 Структура базы данных (check_mysql_table_structure): Ok
+81% done
+2019-Apr-19 09:54:20 Структура базы данных (check_mysql_table_structure): Ok
+83% done
+2019-Apr-19 09:54:21 Структура базы данных (check_mysql_table_structure): Ok
+85% done
+2019-Apr-19 09:54:21 Структура базы данных (check_mysql_table_structure): Ok
+87% done
+2019-Apr-19 09:54:22 Структура базы данных (check_mysql_table_structure): Ok
+89% done
+2019-Apr-19 09:54:22 Структура базы данных (check_mysql_table_structure): Ok
+91% done
+2019-Apr-19 09:54:23 Структура базы данных (check_mysql_table_structure): Ok
+93% done
+2019-Apr-19 09:54:23 Структура базы данных (check_mysql_table_structure): Ok
+95% done
+2019-Apr-19 09:54:24 Структура базы данных (check_mysql_table_structure): Ok
+97% done
+2019-Apr-19 09:54:24 Структура базы данных (check_mysql_table_structure): Ok
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 Успешно
