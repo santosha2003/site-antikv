@@ -13,3 +13,12 @@ div.news-detail img.detail_picture
 {
 	color:#486DAA;
 }
+
+hr{
+	background: url(http://www.rusantikvar.ru/local/templates/antikvar/img/footer.png);
+    height: 20px !important;
+    border: none;
+    background-repeat: no-repeat;
+    background-position: center top;
+    margin: 20px;
+}

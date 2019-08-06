@@ -94,7 +94,8 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
     </div>
 </footer>
 <script type="text/javascript" src="<?=SITE_TEMPLATE_PATH;?>/fancybox/jquery.mousewheel-3.0.2.pack.js"></script>
-<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH;?>/fancybox/jquery.fancybox-1.3.1.js"></script>
+<!--<script type="text/javascript" src="<?=SITE_TEMPLATE_PATH;?>/fancybox/jquery.fancybox-1.3.1.js"></script>-->
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
 <script type="text/javascript" src="<?=SITE_TEMPLATE_PATH;?>/slick/slick.min.js"></script>
 <script type="text/javascript" src="<?=SITE_TEMPLATE_PATH;?>/js/jquery.jcarousel.js"></script>
 <script defer src="<?=SITE_TEMPLATE_PATH;?>/js/crutch.js"></script>

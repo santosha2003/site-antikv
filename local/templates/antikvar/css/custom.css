@@ -1,3 +1,62 @@
+@font-face {
+    font-family: 'Graphik LC';
+    src: url('../fonts/GraphikLC-Medium.woff2') format('woff2'),
+    url('../fonts/GraphikLC-Medium.woff') format('woff'),
+    url('../fonts/GraphikLC-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Graphik LC';
+    src: url('../fonts/GraphikLC-Black.woff2') format('woff2'),
+    url('../fonts/GraphikLC-Black.woff') format('woff'),
+    url('../fonts/GraphikLC-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Graphik LC';
+    src: url('../fonts/GraphikLC-Bold.woff2') format('woff2'),
+    url('../fonts/GraphikLC-Bold.woff') format('woff'),
+    url('../fonts/GraphikLC-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Graphik LC';
+    src: url('../fonts/GraphikLC-Semibold.woff2') format('woff2'),
+    url('../fonts/GraphikLC-Semibold.woff') format('woff'),
+    url('../fonts/GraphikLC-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Graphik LC';
+    src: url('../fonts/GraphikLC-Light.woff2') format('woff2'),
+    url('../fonts/GraphikLC-Light.woff') format('woff'),
+    url('../fonts/GraphikLC-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Graphik LC';
+    src: url('../fonts/GraphikLC-Regular.woff2') format('woff2'),
+    url('../fonts/GraphikLC-Regular.woff') format('woff'),
+    url('../fonts/GraphikLC-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+
+
+
+
 .collections-slider .bigFOTO a.active {
     display: block;
 }
@@ -79,7 +138,6 @@ table.award-table tr:last-child td{
 
 table.award-table{
     border-spacing: 0;
-<<<<<<< HEAD
 }
 
 .product-detail .product-imgs .slaider .bigFOTO{
@@ -89,6 +147,17 @@ table.award-table{
 
 .product-detail .product-imgs img{
     min-width: auto !important;
-=======
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+}
+
+
+body, header .header-menu ul li a{
+    font-family: 'Graphik LC';
+}
+
+.red-string{
+    text-indent: 30px;
+}
+
+.description-text p{
+    text-indent: 30px;
 }

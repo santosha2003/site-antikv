@@ -1,5 +1,7 @@
 <?php 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("keywords", "Монеты, ордена, медали, оружие, антиквариат, воинская реликвия, раритет, икона, редкость, картины, фарфор");
+$APPLICATION->SetPageProperty("title", "Rusantikvar.ru — Антикварный салон — Продажа и покупка предметов коллекционирования и антиквариата");
 $APPLICATION->SetTitle("Магазин");
 ?><?php $APPLICATION->IncludeComponent(
 	"bitrix:catalog", 

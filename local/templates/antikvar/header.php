@@ -8,7 +8,8 @@
     <link rel="SHORTCUT ICON" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="<?=SITE_TEMPLATE_PATH;?>/fancybox/jquery.fancybox-1.3.1.css" media="screen" />
+    <!--<link rel="stylesheet" type="text/css" href="<?=SITE_TEMPLATE_PATH;?>/fancybox/jquery.fancybox-1.3.1.css" media="screen" />-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
     <link rel="stylesheet" type="text/css" href="<?=SITE_TEMPLATE_PATH;?>/slick/slick.css"/>
     <link rel="stylesheet" type="text/css" href="<?=SITE_TEMPLATE_PATH;?>/slick/slick-theme.css"/>
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH;?>/css/normilize.css">
