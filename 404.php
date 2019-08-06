@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+<?
+=======
 <?php
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 include_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/urlrewrite.php');
 
 CHTTP::SetStatus("404 Not Found");

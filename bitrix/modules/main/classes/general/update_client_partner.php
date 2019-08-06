@@ -169,6 +169,8 @@ class CUpdateClientPartner
 			return True;
 	}
 
+<<<<<<< HEAD
+=======
 
 	public static function loadModule4Wizard($moduleId, $lang = false)
 	{
@@ -239,6 +241,7 @@ class CUpdateClientPartner
 	}
 
 
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	public static function LoadModuleNoDemand($moduleId, &$strError, $stableVersionsOnly = "Y", $lang = false)
 	{
 		$strError_tmp = "";
@@ -951,7 +954,10 @@ class CUpdateClientPartner
 				"&SUPD_URSA=".urlencode(CUpdateClientPartner::__GetFooPath1(1)).
 				"&TYPENC=".((defined("DEMO") && DEMO=="Y") ? "D" : ((defined("ENCODE") && ENCODE=="Y") ? "E" : "F" )).
 				"&CLIENT_PHPVER=".urlencode(phpversion()).
+<<<<<<< HEAD
+=======
 				"&NGINX=".urlencode(COption::GetOptionString("main", "update_use_nginx", "Y")).
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				"&dbv=".urlencode($dbv != false ? $dbv : "");
 
 			$strResultTmp = "";
@@ -1140,6 +1146,224 @@ class CUpdateClientPartner
 	public static function LoadModulesUpdates(&$errorMessage, &$arUpdateDescription, $lang = false, $stableVersionsOnly = "Y", $arRequestedModules = array(), $bStrongList = false)
 	{
 		$arUpdateDescription = array();
+<<<<<<< HEAD
+		$startTime = CUpdateClientPartner::__GetMicroTime();
+		$strError_tmp = "";
+
+		$filename = $_SERVER["DOCUMENT_ROOT"]."/bitrix/updates/update_archive.gz";
+		$iTimeOut = COption::GetOptionString("main", "update_load_timeout", "30");
+		if ($iTimeOut < 5)
+			$iTimeOut = 5;
+
+		CUpdateClientPartner::AddMessage2Log("exec CUpdateClientPartner::LoadModulesUpdates");
+
+		$updateServerQueryString = CUpdateClientPartner::__CollectRequestData($strError_tmp, $lang, $stableVersionsOnly, $arRequestedModules, array(), $bStrongList);
+		if ($updateServerQueryString === False || strlen($updateServerQueryString) <= 0 || strlen($strError_tmp) > 0)
+		{
+			if (StrLen($strError_tmp) <= 0)
+				$strError_tmp = "[GNSU01] ".GetMessage("SUPZ_NO_QSTRING").". ";
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			if (file_exists($filename.".log"))
+			{
+				$content = file_get_contents($filename.".log");
+				CUpdateClientPartner::__ParseServerData($content, $arUpdateDescription, $strError_tmp);
+			}
+
+			if (count($arUpdateDescription) <= 0 || strlen($strError_tmp) > 0)
+			{
+				$arUpdateDescription = array();
+				if (file_exists($filename.".tmp"))
+					@unlink($filename.".tmp");
+				if (file_exists($filename.".log"))
+					@unlink($filename.".log");
+			}
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			if (count($arUpdateDescription) <= 0)
+			{
+				if (file_exists($filename.".tmp"))
+					@unlink($filename.".tmp");
+				if (file_exists($filename.".log"))
+					@unlink($filename.".log");
+
+				CUpdateClientPartner::AddMessage2Log(preg_replace("/LICENSE_KEY=[^&]*/i", "LICENSE_KEY=X", $updateServerQueryString));
+
+				$stime = CUpdateClientPartner::__GetMicroTime();
+
+				$content = CUpdateClientPartner::__GetHTTPPage("STEPM", $updateServerQueryString, $strError_tmp);
+				if (strlen($content) <= 0)
+				{
+					if (strlen($strError_tmp) <= 0)
+						$strError_tmp = "[GNSU02] ".GetMessage("SUPZ_EMPTY_ANSWER").". ";
+				}
+
+				CUpdateClientPartner::AddMessage2Log("TIME LoadModulesUpdates(request) ".Round(CUpdateClientPartner::__GetMicroTime() - $stime, 3)." sec");
+
+				if (strlen($strError_tmp) <= 0)
+					CUpdateClientPartner::__ParseServerData($content, $arUpdateDescription, $strError_tmp);
+
+				if (strlen($strError_tmp) <= 0)
+				{
+					if (isset($arUpdateDescription["DATA"]["#"]["ERROR"]))
+					{
+						for ($i = 0, $cnt = count($arUpdateDescription["DATA"]["#"]["ERROR"]); $i < $cnt; $i++)
+							$strError_tmp .= "[".$arUpdateDescription["DATA"]["#"]["ERROR"][$i]["@"]["TYPE"]."] ".$arUpdateDescription["DATA"]["#"]["ERROR"][$i]["#"];
+					}
+				}
+
+				if (strlen($strError_tmp) <= 0)
+				{
+					if (isset($arUpdateDescription["DATA"]["#"]["NOUPDATES"]))
+					{
+						CUpdateClientPartner::AddMessage2Log("Finish - NOUPDATES", "STEP");
+						return "F";
+					}
+				}
+
+				if (strlen($strError_tmp) <= 0)
+				{
+					if (!($fp1 = fopen($filename.".log", "wb")))
+						$strError_tmp = "[GNSU03] ".str_replace("#FILE#", $_SERVER["DOCUMENT_ROOT"]."/bitrix/updates", GetMessage("SUPP_RV_ER_TEMP_FILE")).". ";
+
+					if (strlen($strError_tmp) <= 0)
+					{
+						fwrite($fp1, $content);
+						fclose($fp1);
+
+						return "S";
+					}
+				}
+
+				$errorMessage .= $strError_tmp;
+				return "E";
+			}
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			$ServerIP = COption::GetOptionString("main", "update_site", DEFAULT_UPDATE_SERVER);
+			$ServerPort = 80;
+
+			$proxyAddr = COption::GetOptionString("main", "update_site_proxy_addr", "");
+			$proxyPort = COption::GetOptionString("main", "update_site_proxy_port", "");
+			$proxyUserName = COption::GetOptionString("main", "update_site_proxy_user", "");
+			$proxyPassword = COption::GetOptionString("main", "update_site_proxy_pass", "");
+
+			$bUseProxy = (strlen($proxyAddr) > 0 && strlen($proxyPort) > 0);
+
+			if ($bUseProxy)
+			{
+				$proxyPort = IntVal($proxyPort);
+				if ($proxyPort <= 0)
+					$proxyPort = 80;
+
+				$requestIP = $proxyAddr;
+				$requestPort = $proxyPort;
+			}
+			else
+			{
+				$requestIP = $ServerIP;
+				$requestPort = $ServerPort;
+			}
+
+			$hUpdateServer = fsockopen($requestIP, $requestPort, $errno, $errstr, 120);
+
+			if (!$hUpdateServer)
+			{
+				$strError_tmp .= GetMessage("SUPP_GHTTP_ER").": [".$errno."] ".$errstr.". ";
+				if (intval($errno) <= 0)
+					$strError_tmp .= GetMessage("SUPP_GHTTP_ER_DEF")." ";
+
+				CUpdateClientPartner::AddMessage2Log("Error connecting 2 ".$ServerIP.": [".$errno."] ".$errstr."", "ERRCONN1");
+			}
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			$updateServerRequestString = "";
+
+			if ($bUseProxy)
+			{
+				$updateServerRequestString .= "POST http://".$ServerIP."/bitrix/updates/smp_updater_modules.php HTTP/1.0\r\n";
+				if (strlen($proxyUserName) > 0)
+					$updateServerRequestString .= "Proxy-Authorization: Basic ".base64_encode($proxyUserName.":".$proxyPassword)."\r\n";
+			}
+			else
+				$updateServerRequestString .= "POST /bitrix/updates/smp_updater_modules.php HTTP/1.0\r\n";
+
+			$updateServerQueryStringTmp = $updateServerQueryString."&UFILE=".$arUpdateDescription["DATA"]["#"]["FILE"][0]["@"]["NAME"];
+			$currentPosition = (file_exists($filename.".tmp") ? filesize($filename.".tmp") : 0);
+			$updateServerQueryStringTmp .= "&USTART=".$currentPosition."&verfix=2";
+
+			$updateServerRequestString .= "User-Agent: BitrixSMUpdater\r\n";
+			$updateServerRequestString .= "Accept: */*\r\n";
+			$updateServerRequestString .= "Host: ".$ServerIP."\r\n";
+			$updateServerRequestString .= "Accept-Language: en\r\n";
+			$updateServerRequestString .= "Content-type: application/x-www-form-urlencoded\r\n";
+			$updateServerRequestString .= "Content-length: ".strlen($updateServerQueryStringTmp)."\r\n\r\n";
+			$updateServerRequestString .= $updateServerQueryStringTmp;
+			$updateServerRequestString .= "\r\n";
+
+			fputs($hUpdateServer, $updateServerRequestString);
+
+			$responceHeader = "";
+			while (($result = fgets($hUpdateServer, 4096)) && $result != "\r\n")
+				$responceHeader .= $result;
+
+			$arResponceHeader = preg_split("#\r\n#", $responceHeader);
+
+			$contentLength = 0;
+			for ($i = 0, $cnt = count($arResponceHeader); $i < $cnt; $i++)
+			{
+				if (strpos($arResponceHeader[$i], "Content-Length") !== false)
+				{
+					$pos = strpos($arResponceHeader[$i], ":");
+					$contentLength = intval(trim(substr($arResponceHeader[$i], $pos + 1, strlen($arResponceHeader[$i]) - $pos + 1)));
+				}
+			}
+
+			if (($contentLength + $currentPosition) != $arUpdateDescription["DATA"]["#"]["FILE"][0]["@"]["SIZE"])
+				$strError_tmp .= "[ELVL001] ".GetMessage("ELVL001_SIZE_ERROR").". ";
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			@unlink($filename.".tmp1");
+
+			if (file_exists($filename.".tmp"))
+			{
+				if (@rename($filename.".tmp", $filename.".tmp1"))
+				{
+					$hTemporaryUpdateFile = fopen($filename.".tmp", "wb");
+					if ($hTemporaryUpdateFile)
+					{
+						$fh1 = fopen($filename.".tmp1", "rb");
+						do
+						{
+							$data = fread($fh1, 8192);
+							if (strlen($data) == 0)
+								break;
+							fwrite($hTemporaryUpdateFile, $data);
+						}
+						while (true);
+
+						fclose($fh1);
+						@unlink($filename.".tmp1");
+					}
+					else
+					{
+						$strError_tmp .= "[JUHYT002] ".GetMessage("JUHYT002_ERROR_FILE").". ";
+					}
+				}
+				else
+				{
+					$strError_tmp .= "[JUHYT003] ".GetMessage("JUHYT003_ERROR_FILE").". ";
+=======
 		$updateServerQueryString = "";
 
 		$filename = $_SERVER["DOCUMENT_ROOT"]."/bitrix/updates/update_archive.gz";
@@ -1455,10 +1679,72 @@ class CUpdateClientPartner
 				{
 					$errorMessage .= "[JUHYT002] ".GetMessage("JUHYT002_ERROR_FILE").". ";
 					return "E";
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				}
 			}
 			else
 			{
+<<<<<<< HEAD
+				$hTemporaryUpdateFile = fopen($filename.".tmp", "wb");
+				if (!$hTemporaryUpdateFile)
+					$strError_tmp .= "[JUHYT004] ".GetMessage("JUHYT004_ERROR_FILE").". ";
+			}
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			$bFinished = true;
+			while (true)
+			{
+				if ($iTimeOut > 0 && (CUpdateClientPartner::__GetMicroTime() - $startTime) > $iTimeOut)
+				{
+					$bFinished = false;
+					break;
+				}
+
+				$result = fread($hUpdateServer, 40960);
+				if ($result == "")
+					break;
+
+				fwrite($hTemporaryUpdateFile, $result);
+			}
+
+			fclose($hTemporaryUpdateFile);
+			fclose($hUpdateServer);
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			CUpdateClientPartner::AddMessage2Log("Time - ".(CUpdateClientPartner::__GetMicroTime() - $startTime)." sec", "DOWNLOAD");
+
+			if ($bFinished)
+			{
+				@unlink($filename);
+				if (!@rename($filename.".tmp", $filename))
+					$strError_tmp .= "[JUHYT005] ".GetMessage("JUHYT005_ERROR_FILE").". ";
+			}
+			else
+			{
+				return "S";
+			}
+		}
+
+		if (strlen($strError_tmp) <= 0)
+		{
+			@unlink($filename.".tmp");
+			@unlink($filename.".log");
+			return "U";
+		}
+
+		if (file_exists($filename.".tmp"))
+			@unlink($filename.".tmp");
+		if (file_exists($filename.".log"))
+			@unlink($filename.".log");
+
+		CUpdateClientPartner::AddMessage2Log($strError_tmp, "GNSU001");
+		$errorMessage .= $strError_tmp;
+		return "E";
+=======
 				$errorMessage .= "[JUHYT003] ".GetMessage("JUHYT003_ERROR_FILE").". ";
 				return "E";
 			}
@@ -1670,11 +1956,16 @@ class CUpdateClientPartner
 		}
 
 		return "U";
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	}
 
 	public static function UpdateStepModules($updatesDir, &$strError, $bSaveUpdaters = False)
 	{
+<<<<<<< HEAD
+		global $DB;
+=======
 		global $DB, $tempDirIsSet;
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		$strError_tmp = "";
 
 		if (!defined("US_SAVE_UPDATERS_DIR") || StrLen(US_SAVE_UPDATERS_DIR) <= 0)
@@ -1684,7 +1975,11 @@ class CUpdateClientPartner
 
 		$updatesDirFull = $_SERVER["DOCUMENT_ROOT"]."/bitrix/updates/".$updatesDir;
 
+<<<<<<< HEAD
+		if (!file_exists($updatesDirFull) || !is_dir($updatesDirFull))
+=======
 		if (!file_exists($updatesDirFull) || !is_dir($updatesDirFull) || !$tempDirIsSet($updatesDir))
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			$strError_tmp .= "[UUK01] ".str_replace("#FILE#", $updatesDirFull, GetMessage("SUPP_CU_NO_TMP_CAT")).". ";
 
 		if (strlen($strError_tmp) <= 0)
@@ -2009,7 +2304,10 @@ class CUpdateClientPartner
 		CUpdateClientPartner::AddMessage2Log("exec CUpdateClientPartner::GetHTTPPage");
 
 		$ServerIP = COption::GetOptionString("main", "update_site", DEFAULT_UPDATE_SERVER);
+<<<<<<< HEAD
+=======
 //		$ServerIP = 'www.1c-bitrix.ru';
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		$ServerPort = 80;
 
 		$proxyAddr = COption::GetOptionString("main", "update_site_proxy_addr", "");
@@ -2031,8 +2329,11 @@ class CUpdateClientPartner
 			$page = "smp_updater_register.php";
 		elseif ($page == "ACTIV")
 			$page = "us_updater_actions.php";
+<<<<<<< HEAD
+=======
 		elseif ($page == "SEARCH_NEW")
 			$page = "smp_updater_search_new.php";
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 		$strVars .= "&product=".(IsModuleInstalled("intranet") ? "CORPORTAL" : "BSM")."&verfix=2";
 
@@ -2161,7 +2462,10 @@ class CUpdateClientPartner
 		//CUpdateClientPartner::AddMessage2Log($content, "!1!");
 
 		//echo "content:<br>".$content."<br><br>";
+<<<<<<< HEAD
+=======
 
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		return $content;
 	}
 

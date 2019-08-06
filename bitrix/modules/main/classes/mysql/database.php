@@ -200,7 +200,10 @@ abstract class CDatabaseMysql extends CAllDatabase
 			return false;
 		}
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		$res = new CDBResult($result);
 		$res->DB = $this;
 		if($DB->ShowSqlStat)
@@ -331,7 +334,13 @@ abstract class CDatabaseMysql extends CAllDatabase
 		//time zone
 		if($strType == "FULL" && CTimeZone::Enabled())
 		{
+<<<<<<< HEAD
+			static $diff = false;
+			if($diff === false)
+				$diff = CTimeZone::GetOffset();
+=======
 			$diff = CTimeZone::GetOffset();
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 			if($diff <> 0)
 				$sFieldExpr = "DATE_ADD(".$strFieldName.", INTERVAL ".$diff." SECOND)";
@@ -347,7 +356,13 @@ abstract class CDatabaseMysql extends CAllDatabase
 		//time zone
 		if($strType == "FULL" && CTimeZone::Enabled())
 		{
+<<<<<<< HEAD
+			static $diff = false;
+			if($diff === false)
+				$diff = CTimeZone::GetOffset();
+=======
 			$diff = CTimeZone::GetOffset();
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 			if($diff <> 0)
 				$sFieldExpr = "DATE_ADD(".$sFieldExpr.", INTERVAL -(".$diff.") SECOND)";
@@ -461,12 +476,16 @@ abstract class CDatabaseMysql extends CAllDatabase
 							$strInsert2 .= ", '".intval($value)."'";
 							break;
 						case "real":
+<<<<<<< HEAD
+							$strInsert2 .= ", '".doubleval($value)."'";
+=======
 							$value = doubleval($value);
 							if(!is_finite($value))
 							{
 								$value = 0;
 							}
 							$strInsert2 .= ", '".$value."'";
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 							break;
 						default:
 							$strInsert2 .= ", '".$this->ForSql($value)."'";
@@ -520,10 +539,13 @@ abstract class CDatabaseMysql extends CAllDatabase
 							break;
 						case "real":
 							$value = doubleval($value);
+<<<<<<< HEAD
+=======
 							if(!is_finite($value))
 							{
 								$value = 0;
 							}
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 							break;
 						case "datetime":
 						case "timestamp":
@@ -638,11 +660,19 @@ abstract class CDatabaseMysql extends CAllDatabase
 		return $rows;
 	}
 
+<<<<<<< HEAD
+	function Add($tablename, $arFields, $arCLOBFields = Array(), $strFileDir="", $ignore_errors=false, $error_position="", $arOptions=array())
+	{
+		global $DB;
+
+		if(!is_object($this) || !isset($this->type))
+=======
 	public function Add($tablename, $arFields, $arCLOBFields = Array(), $strFileDir="", $ignore_errors=false, $error_position="", $arOptions=array())
 	{
 		global $DB;
 
 		if(!isset($this) || !is_object($this) || !isset($this->type))
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		{
 			return $DB->Add($tablename, $arFields, $arCLOBFields, $strFileDir, $ignore_errors, $error_position, $arOptions);
 		}
@@ -747,7 +777,11 @@ abstract class CDatabaseMysql extends CAllDatabase
 			return False;
 	}
 
+<<<<<<< HEAD
+	function IndexExists($tableName, $arColumns)
+=======
 	function IndexExists($tableName, $arColumns, $bStrict = false)
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	{
 		return $this->GetIndexName($tableName, $arColumns) !== "";
 	}
@@ -795,6 +829,11 @@ abstract class CDatabaseMysql extends CAllDatabase
 
 abstract class CDBResultMysql extends CAllDBResult
 {
+<<<<<<< HEAD
+	function CDBResultMysql($res = null)
+	{
+		parent::CAllDBResult($res);
+=======
 	public function __construct($res = null)
 	{
 		parent::__construct($res);
@@ -804,6 +843,7 @@ abstract class CDBResultMysql extends CAllDBResult
 	public function CDBResultMysql($res = null)
 	{
 		self::__construct($res);
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	}
 
 	/**
@@ -811,7 +851,10 @@ abstract class CDBResultMysql extends CAllDBResult
 	 *
 	 * @return array
 	 */
+<<<<<<< HEAD
+=======
 	
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	function Fetch()
 	{
 		global $DB;
@@ -819,6 +862,11 @@ abstract class CDBResultMysql extends CAllDBResult
 		if($this->bNavStart || $this->bFromArray)
 		{
 			if(!is_array($this->arResult))
+<<<<<<< HEAD
+				$res = false;
+			elseif($res = current($this->arResult))
+				next($this->arResult);
+=======
 			{
 				$res = false;
 			}
@@ -826,6 +874,7 @@ abstract class CDBResultMysql extends CAllDBResult
 			{
 				next($this->arResult);
 			}
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		}
 		else
 		{

@@ -51,7 +51,11 @@ class CAdminNotify
 			'ENABLE_CLOSE'	=> $arFields['ENABLE_CLOSE'],
 			'PUBLIC_SECTION' => $arFields['PUBLIC_SECTION']
 		);
+<<<<<<< HEAD
+		$ID = $DB->Add('b_admin_notify', $arFields_i, Array('MESSAGE'));
+=======
 		$ID = $DB->Add('b_admin_notify', $arFields_i, array('MESSAGE'));
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 		if ($ID)
 		{
@@ -101,8 +105,13 @@ class CAdminNotify
 	{
 		global $DB;
 		$err_mess = (self::err_mess()).'<br />Function: Delete<br />Line: ';
+<<<<<<< HEAD
+		$ID = intval($ID);
+		if (0 >= $ID)
+=======
 		$ID = (int)$ID;
 		if ($ID <= 0)
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			return false;
 
 		$strSql = "DELETE FROM b_admin_notify_lang WHERE NOTIFY_ID = ".$ID;
@@ -135,10 +144,13 @@ class CAdminNotify
 		global $DB;
 		$err_mess = (self::err_mess()).'<br />Function: DeleteByTag<br />Line: ';
 
+<<<<<<< HEAD
+=======
 		$tagId = (string)$tagId;
 		if ($tagId == '')
 			return false;
 
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		$strSql = "DELETE FROM b_admin_notify_lang WHERE NOTIFY_ID IN (SELECT ID FROM b_admin_notify WHERE TAG like '%".$DB->ForSQL($tagId)."%')";
 		$DB->Query($strSql, false, $err_mess.__LINE__);
 
@@ -266,3 +278,8 @@ class CAdminNotify
 		return '<br />Class: CAdminNotify<br />File: '.__FILE__;
 	}
 }
+<<<<<<< HEAD
+
+?>
+=======
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137

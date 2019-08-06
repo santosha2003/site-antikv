@@ -37,6 +37,8 @@ function OnBeforeUserRegisterHandler($args) {
 	   		$GLOBALS['APPLICATION']->ThrowException('Имя обязательное поле');
 	   		return false;
    		}else{
+	   		//$GLOBALS['APPLICATION']->ThrowException('Имя может состоять только из русских букв');
+	   		//return false;
 	   		$GLOBALS['APPLICATION']->ThrowException('Имя может состоять только из русских букв');
 	   		return false;
                       //return true;

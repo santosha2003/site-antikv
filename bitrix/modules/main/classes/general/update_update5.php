@@ -12,7 +12,11 @@ if ($MAIN_RIGHT<"R")
 
 class CUpdateOutput
 {
+<<<<<<< HEAD
+	function ShowBlock($top, $bottom="", $icon="")
+=======
 	public static function ShowBlock($top, $bottom="", $icon="")
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	{
 		$s = '
 <div class="update-block">
@@ -63,7 +67,11 @@ class CUpdateOutput
 		return $s;
 	}
 
+<<<<<<< HEAD
+	function ShowScript()
+=======
 	public static function ShowScript()
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	{
 		if(defined("__CUpdateOutputScript"))
 			return "";
@@ -81,7 +89,11 @@ function ToggleInfo(id, obj)
 ';		
 	}
 
+<<<<<<< HEAD
+	function ShowBlockInfo($top, $bottom, $id)
+=======
 	public static function ShowBlockInfo($top, $bottom, $id)
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	{
 		$aOpt = CUserOptions::GetOption("sysupdate", "hidden_blocks", array());
 		$s = CUpdateOutput::ShowScript();
