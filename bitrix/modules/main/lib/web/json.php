@@ -37,7 +37,11 @@ class Json
 		// PHP<5.3.3 returns no error for JSON_ERROR_UTF8 and some other ones
 		if($res === null && ToLower($data) != 'null')
 		{
+<<<<<<< HEAD
+			self::throwException(self::JSON_ERROR_UNKNOWN);
+=======
 		//	self::throwException(self::JSON_ERROR_UNKNOWN);  php7.2 utf-8 malform character??
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		}
 
 		if (!Application::getInstance()->isUtfMode())
@@ -79,6 +83,10 @@ class Json
 
 	protected static function throwException($e)
 	{
+<<<<<<< HEAD
+		throw new ArgumentException('JSON error: '.$e, 'data');
+=======
 	 //	throw new ArgumentException('JSON error: '.$e, 'data');
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	}
 }

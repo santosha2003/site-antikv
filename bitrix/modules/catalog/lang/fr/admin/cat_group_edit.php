@@ -1,0 +1,32 @@
+<?
+$MESS ['CAT_EDIT_RECORD'] = "Modifiez le type des prix # #ID#";
+$MESS ['CAT_NEW_RECORD'] = "Nouveau type des prix";
+$MESS ['CAT_RECORDS_LIST'] = "Liste de types des prix";
+$MESS ['NAME'] = "Nom";
+$MESS ['CODE'] = "Code:";
+$MESS ['CAT_GROUPS'] = "Les groupes d'utilisateur sont permis à voir ce type des prix:";
+$MESS ['CAT_GROUPS_BUY'] = "Les groupes d'utilisateur sont permis d'acheter avec ce type des prix :";
+$MESS ['CAT_SAVE'] = "Sauvegarder";
+$MESS ['CAT_ADD'] = "Ajouter";
+$MESS ['CAT_APPLY'] = "Faire une demande";
+$MESS ['CAT_RESET'] = "Remise";
+$MESS ['CAT_NEW'] = "Ajoutez un nouveau type des prix";
+$MESS ['BASE'] = "Base :";
+$MESS ['BASE_COMMENT'] = "Seulement un type des prix peut être mis comme la BASE. Si vous mettez ce drapeau pour le type des prix il sera automatiquement non mis du type des prix BASÉ actuel.";
+$MESS ['BASE_COMMENT_Y'] = "Il devrait y avoir au moins un type des prix BASIQUE. Si vous voulez changer le type des prix de BASE implicite a mettre le drapeau pour le type des prix  que vous voulez  utiliser comme  BASE.";
+$MESS ['BASE_YES'] = "Oui";
+$MESS ['BASE_NO'] = "Non";
+$MESS ['SORT'] = "Tri de l'index (1-255) :";
+$MESS ['ERROR_EMPTY_NAME'] = "Fournissez s'il vous plaît un code au type des prix.";
+$MESS ['ERROR_EMPTY_GROUP'] = "Choisissez s'il vous plaît au moins un groupe d'utilisateur a permis de voir ce type des prix.";
+$MESS ['ERROR_EMPTY_GROUP_BUY'] = "Choisissez s'il vous plaît au moins un groupe d'utilisateur a permis d'acheter aux prix de ce groupe.";
+$MESS ['ERROR_UPDATING_TYPE'] = "erreur en actualisant le type des prix.";
+$MESS ['ERROR_ADDING_TYPE'] = "erreur en ajoutant le type des prix.";
+$MESS ['CAT_RF_PROPS'] = "Paramètres";
+$MESS ['CGEN_2FLIST'] = "Types des prix";
+$MESS ['CGEN_NEW_GROUP'] = "Ajoutez le nouveau type des prix";
+$MESS ['CGEN_DELETE_GROUP'] = "Effacez le type des prix";
+$MESS ['CGEN_DELETE_GROUP_CONFIRM'] = "Êtes-vous sûrs que vous voulez effacer ce type des prix ?";
+$MESS ['CGEN_TAB_GROUP'] = "Type des prix";
+$MESS ['CGEN_TAB_GROUP_DESCR'] = "Paramètres de type des prix";
+?>

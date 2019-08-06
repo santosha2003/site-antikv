@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+<?
+=======
 <?php
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 define("UPDATE_SYSTEM_VERSION", "9.0.2");
 error_reporting(E_ALL & ~E_NOTICE);
 
@@ -18,6 +22,22 @@ else
 $MESS = array();
 if (LANGUAGE_ID == 'ru')
 {
+<<<<<<< HEAD
+	$MESS['TITLE'] = 'Восстановление';
+	$MESS['LOGIN_PROMT'] = 'Логин администратора';
+	$MESS['PASSWORD_PROMT'] = 'Пароль администратора';
+	$MESS['COUPON_PROMT'] = 'Лицензионный ключ или купон';
+	$MESS['BUTTON_SUBMIT'] = 'Восстановить';
+	$MESS['BUTTON_RESET'] = 'Отменить';
+	$MESS['ERROR_EMPTY_CONTENT'] = 'Сервер не отвечает';
+	$MESS['ERROR_INVALID_CONTENT'] = 'Ответ сервера не распознан';
+	$MESS['ERROR_NOT_ADMIN'] = 'Вы не являетесь администратором';
+	$MESS['ERROR_INVALID_COUPON'] = 'Лицензионный ключ / купон не корректен';
+	$MESS['ERROR_EMPTY_COUPON'] = 'Лицензионный ключ / купон не указан';
+	$MESS['SUCCESS_RECOVER'] = "Работоспособность сайта восстановлена";
+	$MESS['ERROR_NOT_WRITABLE'] = "Ядро продукта не доступно на запись";
+	$MESS['ERROR_NOT_FOPEN'] = "Не удалось открыть файл на запись";
+=======
 	$MESS['TITLE'] = 'Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ';
 	$MESS['LOGIN_PROMT'] = 'Р›РѕРіРёРЅ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°';
 	$MESS['PASSWORD_PROMT'] = 'РџР°СЂРѕР»СЊ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°';
@@ -32,6 +52,7 @@ if (LANGUAGE_ID == 'ru')
 	$MESS['SUCCESS_RECOVER'] = "Р Р°Р±РѕС‚РѕСЃРїРѕСЃРѕР±РЅРѕСЃС‚СЊ СЃР°Р№С‚Р° РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅР°";
 	$MESS['ERROR_NOT_WRITABLE'] = "РЇРґСЂРѕ РїСЂРѕРґСѓРєС‚Р° РЅРµ РґРѕСЃС‚СѓРїРЅРѕ РЅР° Р·Р°РїРёСЃСЊ";
 	$MESS['ERROR_NOT_FOPEN'] = "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РЅР° Р·Р°РїРёСЃСЊ";
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 }
 else
 {

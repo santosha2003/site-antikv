@@ -10,6 +10,9 @@
     </style>
     <div class="product-info">
         <div class="top">
+<<<<<<< HEAD
+            <div class="product-imgs">
+=======
             <div class="left">
                 <div class="name-ptoduct">
                     <h2><?=$arResult["NAME"] ?></h2>
@@ -47,6 +50,7 @@
         <hr/>
     </div>
     <div class="product-imgs">
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
         <? if (count($arResult["DISPLAY_PROPERTIES"]["FOTO"]["VALUE"]) > 0): ?>
             <div class="slaider">
                 <? $newWidth2 = 390;
@@ -115,6 +119,47 @@
             </div>
         <? endif ?>
     </div>
+<<<<<<< HEAD
+            <div class="left">
+                <div class="property">
+                    <? if ($arResult["DISPLAY_PROPERTIES"]["YEAR"]): ?><p><b>Год
+                        выпуска:</b> <?= $arResult["DISPLAY_PROPERTIES"]["YEAR"]["VALUE"] ?></p> <? endif ?>
+                    <? if ($arResult["DISPLAY_PROPERTIES"]["MATERIAL"]): ?><p>
+                        <b>Материал:</b> <?= $arResult["DISPLAY_PROPERTIES"]["MATERIAL"]["VALUE"] ?></p> <? endif ?>
+                    <? if ($arResult["DISPLAY_PROPERTIES"]["DIAMETR"]): ?><p>
+                        <b>Диаметр:</b> <?= $arResult["DISPLAY_PROPERTIES"]["DIAMETR"]["VALUE"] ?> </p><? endif ?>
+                    <? if ($arResult["DISPLAY_PROPERTIES"]["TIRAGE"]): ?><p><b>Тираж
+                        выпуска:</b> <?= $arResult["DISPLAY_PROPERTIES"]["TIRAGE"]["VALUE"] ?> </p><? endif ?>
+                    <? if ($arResult["DISPLAY_PROPERTIES"]["CONDITIO"]): ?><p><b>
+                        Состояние:</b> <?= $arResult["DISPLAY_PROPERTIES"]["CONDITIO"]["VALUE"] ?> </p><? endif ?>
+                </div>
+            </div>
+            <div class="right">
+                <div class="price">
+                    <div class="prPrice"><?= $arResult["PRICES"]["BASE"]["VALUE"] ?>
+                        <br/><?= $arResult["PRICES"]["BASE"]["CURRENCY"] == "RUB" ? "руб." : $arResult["PRICES"]["BASE"]["CURRENCY"] ?>
+                    </div>
+                    <?php if($arResult['CATALOG_QUANTITY']): ?>
+                        <div class="prCart"><a href="<?= $arResult["ADD_URL"] ?>">В корзину</a></div>
+                    <?php else: ?>
+                        <div>Нет в наличии</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="bottom">
+            <div class="description">
+                <p><b>Описание:</b><br/>
+                    <?= $arResult["DETAIL_TEXT"] ?>
+                </p>
+            </div>
+        </div>
+        <hr/>
+    </div>
+    <!--Тут был слайдер-->
+=======
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
     <div class="product-section">
         <? if (is_array($arResult["SECTION"])): ?>
             <br/><a href="<?= $arResult["SECTION"]["SECTION_PAGE_URL"] ?>"><?= GetMessage("CATALOG_BACK") ?></a>

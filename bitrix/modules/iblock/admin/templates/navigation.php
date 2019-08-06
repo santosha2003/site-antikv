@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+<?
+=======
 <?php
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/interface/navigation.php");
 IncludeModuleLangFile(__FILE__);

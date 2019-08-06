@@ -7,7 +7,11 @@
 <?if(!empty($arResult["ITEMS"])){?>
     <div class="items-list">
         <?foreach($arResult["ITEMS"] as $cell=>$arElement):?>
+<<<<<<< HEAD
+            <?if (/*$arElement["DISPLAY_PROPERTIES"]["INDEX"]["DISPLAY_VALUE"]=="да" && $arElement['CATALOG_QUANTITY']*/ true ):?>
+=======
             <?if ($arElement["DISPLAY_PROPERTIES"]["INDEX"]["DISPLAY_VALUE"]=="да"):?>
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
                 <div class="item-list">
                     <div class="prTitle">
                         <a title="<?=$arElement["NAME"]?>" href="<?=$arElement["DETAIL_PAGE_URL"]?>"><?=TruncateText($arElement["NAME"], 50)?></a>

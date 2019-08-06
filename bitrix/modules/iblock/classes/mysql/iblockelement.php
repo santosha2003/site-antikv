@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+<?
+=======
 <?php
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 class CIBlockElement extends CAllIBlockElement
 {
 	///////////////////////////////////////////////////////////////////
@@ -574,7 +578,11 @@ class CIBlockElement extends CAllIBlockElement
 				if(
 					$sGroupBy==""
 					&& !$bOnlyCount
+<<<<<<< HEAD
+					&& !(is_object($this) && isset($this->strField))
+=======
 // 					&& !(is_object($this) && isset($this->strField))  //php72 need $obj = new Class(); $obj->method(); not -> Class::Method
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				)
 					$sSelect .= $res_catalog["SELECT"]." ";
 				$sFrom .= str_replace("LEFT JOIN", "\n\t\t\tLEFT JOIN", $res_catalog["FROM"])."\n";

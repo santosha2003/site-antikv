@@ -1,0 +1,9 @@
+2016-10-17 19:27:55 -  - exec CUpdateClient::GetUpdatesList
+2016-10-17 19:27:55 -  - exec CUpdateClient::CollectRequestData
+2016-10-17 19:27:55 -  - LICENSE_KEY=X&lang=ru&SUPD_VER=15.5.1&VERSION=16.0.6&TYPENC=E&SUPD_STS=2&SUPD_URS=0&SUPD_URSA=118&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=rusantikvar.ru&CHHB=rusantikvar.ru&CSAB=195.2.77.123&CANGZIP=Y&CLIENT_PHPVER=5.6.26&stable=Y&rerere=Y&bitm_main=16.0.6&bitm_sender=16.0.1&bitm_bitrixcloud=16.0.0&bitm_statistic=15.0.1&bitm_subscribe=15.0.2&bitm_abtest=15.5.5&bitm_calendar=16.0.2&bitm_idea=15.0.1&bitm_mobileapp=16.0.0&bitm_webservice=16.0.0&bitm_mail=16.0.3&bitm_socialservices=16.0.7&bitm_bizprocdesigner=16.0.1&bitm_search=16.0.0&bitm_lists=16.0.0&bitm_vote=15.5.0&bitm_fileman=16.0.3&bitm_pull=16.0.2&bitm_seo=16.0.0&bitm_conversion=15.5.6&bitm_socialnetwork=16.0.3&bitm_scale=16.0.0&bitm_iblock=16.0.1&bitm_catalog=16.0.5&bitm_forum=16.0.0&bitm_report=15.0.0&bitm_sale=16.0.5&bitm_form=15.0.2&bitm_highloadblock=15.5.0&bitm_support=15.5.0&bitm_currency=16.0.0&bitm_cluster=16.0.0&bitm_advertising=16.0.0&bitm_learning=15.5.0&bitm_im=16.0.5&bitm_ldap=15.5.0&bitm_translate=14.0.0&bitm_bizproc=16.0.2&bitm_storeassist=16.0.0&bitm_security=16.0.1&bitm_compression=16.0.0&bitm_clouds=16.0.0&bitm_wiki=16.0.2&bitm_blog=16.0.3&bitm_perfmon=16.0.0&bitm_photogallery=16.0.1&bitm_workflow=14.5.1&bitm_eshopapp=15.0.0&bitl_la=20160122&bitl_lt=20160210&bitl_th=20080204&bitl_en=20070905&bitl_fa=20100510&bitl_ru=&bitl_ua=20140924&bitl_br=20150424&bith_ru=&bith_en=&bith_ua=&SUPD_SRS=0&SUPD_CMP=N&SALE_15=Y
+2016-10-17 19:27:55 -  - exec CUpdateClient::GetHTTPPage
+2016-10-17 19:27:55 -  - TIME GetUpdatesList(request) 0.4 sec
+2016-10-17 19:27:55 -  - exec CUpdateClient::ParseServerData
+2016-10-17 19:27:55 - UPSD02 - 
+2016-10-17 19:27:55 - CUPSD - [UPSD02] Неопознанный ответ от сервера обновлений. 
+2016-10-17 19:27:55 - GUL02 - [UPSD02] Неопознанный ответ от сервера обновлений. 

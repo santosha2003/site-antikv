@@ -68,7 +68,11 @@ class CDatabase extends CDatabaseMysql
 		if ($iMaxLength > 0)
 			$strValue = substr($strValue, 0, $iMaxLength);
 
+<<<<<<< HEAD
+		if (!is_object($this) || !$this->db_Conn)
+=======
 		if (!isset($this) || !is_object($this) || !$this->db_Conn)
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		{
 			global $DB;
 			$DB->DoConnect();
@@ -86,7 +90,11 @@ class CDatabase extends CDatabaseMysql
 		if ($iMaxLength > 0)
 			$strValue = substr($strValue, 0, $iMaxLength);
 
+<<<<<<< HEAD
+		if(!is_object($this) || !$this->db_Conn)
+=======
 		if(!isset($this) || !is_object($this) || !$this->db_Conn)
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		{
 			global $DB;
 			$DB->DoConnect();
@@ -160,6 +168,11 @@ class CDatabase extends CDatabaseMysql
 
 class CDBResult extends CDBResultMysql
 {
+<<<<<<< HEAD
+	function CDBResult($res = null)
+	{
+		parent::CDBResultMysql($res);
+=======
 	public function __construct($res = null)
 	{
 		parent::__construct($res);
@@ -169,6 +182,7 @@ class CDBResult extends CDBResultMysql
 	public function CDBResult($res = null)
 	{
 		self::__construct($res);
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	}
 
 	protected function FetchRow()
@@ -189,7 +203,11 @@ class CDBResult extends CDBResultMysql
 
 	function AffectedRowsCount()
 	{
+<<<<<<< HEAD
+		if(is_object($this) && is_object($this->DB))
+=======
 		if(isset($this) && is_object($this) && is_object($this->DB))
+>>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		{
 			/** @noinspection PhpUndefinedMethodInspection */
 			$this->DB->DoConnect();
