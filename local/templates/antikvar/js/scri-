@@ -45,10 +45,10 @@ $(document).ready(function () {
         ]
     });
 
-    $("a.fancy").fancybox({
+    /*$("a.fancy").fancybox({
         'titleShow': false,
         'type': "image"
-    });
+    });*/
 
     $(".kabinet").hover(
         function () {
@@ -118,62 +118,18 @@ $(document).ready(function(){
 });
 
 // ������ fancybox �� ��� ������-��������
-$(function(){
+/*$(function(){
     var image_link_reg = /^(.*)\.jpg$|\.png$|\.jpeg$/;
     var link_arr = $('a');
 
     link_arr.each(function(){
         if(image_link_reg.test(this.href)){
-            if(!$(this).attr('data-fancybox') && $(this).attr('rel')){
-                $(this).attr('data-fancybox', $(this).attr('rel'));
-            } else if(!$(this).attr('data-fancybox') && !$(this).attr('rel')){
+            if(!$(this).hasClass('fancy')){
                 $(this).fancybox({
                     'titleShow': false,
                     'type': "image"
                 });
             }
-
-            /*if(!$(this).hasClass('fancy')){
-                $(this).fancybox({
-                    'titleShow': false,
-                    'type': "image"
-                });
-            }*/
         }
     })
-});
-$('a.gallery1').fancybox({
-    afterShow: function () {
-                // вначале картинка маленькая - назначим курсор zoom-in
-                $("img.fancybox-image").css('cursor', 'zoom-in');
-                // уменьшим области листания, чтоб не мешали нашему курсору
-                $(".fancybox-nav").css('width', '15%');
-                $("img.fancybox-image").click(function () {
-                  var h = $(this).height();
-                  var w = $(this).width();
-                  if ($(this).hasClass('enlarged')) {
-                    // картинка уже увеличена. уменьшить в два раза. или не в два?  
-                    h = Math.round(h / 2); w = Math.round(w/2);
-                    $(this).removeClass('enlarged');
-                    $(this).css('cursor', 'zoom-in');
-                  } else {
-                    // еще не увеличена. увеличить в два раза. 
-                    h = h*2; w = w*2;
-                    $(this).addClass('enlarged');
-                    $(this).css('max-height', h + 'px');
-                    $(this).css('cursor', 'zoom-out');
-                  }
-                  // меняем размеры картинки
-                  $(this).css('width', w + 'px');
-                  $(this).css('height', h + 'px');
-                  $(this).css('max-width', w + 'px');
-                  $(this).css('max-height', h + 'px');
-                  // меняем размеры окна fancybox
-                  $('div.fancybox-wrap').css('width', w + 30 + 'px');
-                  $('div.fancybox-wrap').css('height', h + 30 + 'px');
-                  $('div.fancybox-skin').css('height', h + 'px');
-                  // двигаем fancybox так, чтоб он оставался по центру
-                  $('div.fancybox-wrap').css('left', Math.round(($(document).width()-w)/2));
-                });
-    }
-});
+});*/
