@@ -1,5 +1,6 @@
 # site-antikv  convert with iconv to utf-8, mysql - use phpmyadmin? change all to utf8 encoding //text translate from Russian
 test
+test2
 
 test
 
