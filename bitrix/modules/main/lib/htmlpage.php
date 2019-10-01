@@ -122,11 +122,7 @@ abstract class HtmlPage
 					$domainUriParts = $domainUri->parse();
 
 					if ($currentUriParts["host"] != $domainUriParts["host"])
-<<<<<<< HEAD
 						$result .= '<img src="'.Text\String::htmlspecialchars($uriString).'" alt="" style="width:0px; height:0px; position:absolute; left:-1px; top:-1px;" />'."\n";
-=======
-						$result .= '<img src="'.Text\TString::htmlspecialchars($uriString).'" alt="" style="width:0px; height:0px; position:absolute; left:-1px; top:-1px;" />'."\n";
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				}
 			}
 		}

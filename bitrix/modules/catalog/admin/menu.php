@@ -167,11 +167,7 @@ if ($boolRead || $boolDiscount)
 
 if ($boolRead || $boolStore)
 {
-<<<<<<< HEAD
 	if(COption::GetOptionString('catalog','default_use_store_control','N') == 'Y')
-=======
-	if (COption::GetOptionString('catalog','default_use_store_control') == 'Y')
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	{
 		$arSubItems[] = array(
 			"text" => GetMessage("CM_STORE_DOCS"),

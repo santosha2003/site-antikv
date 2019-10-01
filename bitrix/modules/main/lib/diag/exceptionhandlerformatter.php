@@ -27,11 +27,7 @@ class ExceptionHandlerFormatter
 		$result .= $fileLink.(empty($fileLink) ? "" : "\n");
 
 		if ($htmlMode)
-<<<<<<< HEAD
 			$result = Main\Text\String::htmlEncode($result);
-=======
-			$result = Main\Text\TString::htmlEncode($result);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 		$prevArg = null;
 		$trace = static::getTrace($exception);
@@ -48,11 +44,7 @@ class ExceptionHandlerFormatter
 			}
 
 			if ($htmlMode)
-<<<<<<< HEAD
 				$traceLine = Main\Text\String::htmlEncode($traceLine);
-=======
-				$traceLine = Main\Text\TString::htmlEncode($traceLine);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 			if (array_key_exists('file', $traceInfo))
 				$traceLine .= "\n\t".static::getFileLink($traceInfo['file'], $traceInfo['line']);

@@ -1,11 +1,7 @@
 <?php
 namespace Bitrix\Main\Security;
 
-<<<<<<< HEAD
 use Bitrix\Main\Text\String;
-=======
-use Bitrix\Main\Text\TString;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 
 class Random
@@ -110,11 +106,7 @@ class Random
 	 */
 	public static function getStringByCharsets($length, $charsetList)
 	{
-<<<<<<< HEAD
 		$charsetVariants = String::getBinaryLength($charsetList);
-=======
-		$charsetVariants = TString::getBinaryLength($charsetList);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		$randomSequence = static::getBytes($length);
 
 		$result = '';
@@ -139,17 +131,10 @@ class Random
 		if (static::isOpensslAvailable())
 		{
 			$bytes = openssl_random_pseudo_bytes($length, $strong);
-<<<<<<< HEAD
 			if ($bytes && String::getBinaryLength($bytes) >= $length)
 			{
 				if ($strong)
 					return String::getBinarySubstring($bytes, 0, $length);
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= $length)
-			{
-				if ($strong)
-					return TString::getBinarySubstring($bytes, 0, $length);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				else
 					$backup = $bytes;
 			}
@@ -158,15 +143,9 @@ class Random
 		if (function_exists('mcrypt_create_iv'))
 		{
 			$bytes = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
-<<<<<<< HEAD
 			if ($bytes && String::getBinaryLength($bytes) >= $length)
 			{
 				return String::getBinarySubstring($bytes, 0, $length);
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= $length)
-			{
-				return TString::getBinarySubstring($bytes, 0, $length);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			}
 		}
 
@@ -174,7 +153,6 @@ class Random
 		{
 			$bytes = @fread($file, $length + 1);
 			@fclose($file);
-<<<<<<< HEAD
 			if ($bytes && String::getBinaryLength($bytes) >= $length)
 			{
 				return String::getBinarySubstring($bytes, 0, $length);
@@ -188,30 +166,11 @@ class Random
 
 		$bytes = '';
 		while (String::getBinaryLength($bytes) < $length)
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= $length)
-			{
-				return TString::getBinarySubstring($bytes, 0, $length);
-			}
-		}
-
-		if ($backup && TString::getBinaryLength($backup) >= $length)
-		{
-			return TString::getBinarySubstring($backup, 0, $length);
-		}
-
-		$bytes = '';
-		while (TString::getBinaryLength($bytes) < $length)
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		{
 			$bytes .= static::getPseudoRandomBlock();
 		}
 
-<<<<<<< HEAD
 		return String::getBinarySubstring($bytes, 0, $length);
-=======
-		return TString::getBinarySubstring($bytes, 0, $length);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	}
 
 	/**
@@ -226,15 +185,9 @@ class Random
 		if (static::isOpensslAvailable())
 		{
 			$bytes = openssl_random_pseudo_bytes(static::RANDOM_BLOCK_LENGTH);
-<<<<<<< HEAD
 			if ($bytes && String::getBinaryLength($bytes) >= static::RANDOM_BLOCK_LENGTH)
 			{
 				return String::getBinarySubstring($bytes, 0, static::RANDOM_BLOCK_LENGTH);
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= static::RANDOM_BLOCK_LENGTH)
-			{
-				return TString::getBinarySubstring($bytes, 0, static::RANDOM_BLOCK_LENGTH);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			}
 		}
 

@@ -83,11 +83,7 @@ if(($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 			case "delete":
 				@set_time_limit(0);
 				$DB->StartTransaction();
-<<<<<<< HEAD
 				if(!CCatalogMeasure::Delete($ID))
-=======
-				if(!CCatalogMeasure::delete($ID))
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				{
 					$DB->Rollback();
 
@@ -200,10 +196,6 @@ $strNameFormat = CSite::GetNameFormat(true);
 
 $arRows = array();
 
-<<<<<<< HEAD
-=======
-//php7.2 Fatal error: Uncaught Error: Using $this when not in object context in /var/www/html/bitrix/modules/main/classes/mysql/database.php:806 Stack trace: #0 /var/www/html/bitrix/modules/catalog/general/measure.php(202): CDBResultMysql::Fetch() #1 /var/www/html/bitrix/modules/catalog/general/measure_result.php(12): CCatalogMeasureResult::Fetch() #2 /var/www/html/bitrix/modules/catalog/admin/cat_measure_list.php(196): CCatalogMeasureAdminResult->Fetch() #3 /var/www/html/bitrix/admin/cat_measure_list.php(1): require('/var/www/html/b...') #4 {main} thrown in /var/www/html/bitrix/modules/main/classes/mysql/database.php on line 806
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 while($arRes = $dbResultList->Fetch())
 {
 	$arRes['ID'] = (int)$arRes['ID'];

@@ -6,11 +6,7 @@
  * @copyright 2001-2014 Bitrix
  */
 
-<<<<<<< HEAD
 use Bitrix\Main\Text\String;
-=======
-use Bitrix\Main\Text\TString;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 class CCSVData
 {

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 <?
-=======
-<?php
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 error_reporting(E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR|E_PARSE);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/charset_converter.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/tools.php");

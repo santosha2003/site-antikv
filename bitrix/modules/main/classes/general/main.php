@@ -5323,13 +5323,8 @@ class CCaptchaAgent
 		$sec = intval($sec);
 
 		$time = $DB->CharToDateFunction(GetTime(time()-$sec,"FULL"));
-<<<<<<< HEAD
 		if (!$DB->Query("DELETE FROM b_captcha WHERE DATE_CREATE <= ".$time))
 			return false;
-=======
-		//if (!$DB->Query("DELETE FROM b_captcha WHERE DATE_CREATE <= ".$time))
-		//	return false;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 		return "CCaptchaAgent::DeleteOldCaptcha(".$sec.");";
 	}

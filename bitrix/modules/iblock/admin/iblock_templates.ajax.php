@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 <?
-=======
-<?php
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 define('STOP_STATISTICS', true);
 define('NO_AGENT_CHECK', true);
 define('DisableEventsCheck', true);
@@ -95,11 +91,7 @@ if (check_bitrix_sessid())
 		{
 			$result[] = array(
 				"id" => $TEMPLATE_NAME,
-<<<<<<< HEAD
 				"value" => \Bitrix\Main\Text\String::htmlEncode(
-=======
-				"value" => \Bitrix\Main\Text\TString::htmlEncode(
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 					\Bitrix\Iblock\Template\Engine::process($entity, $templateInfo["TEMPLATE"])
 				),
 			);

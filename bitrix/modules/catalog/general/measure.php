@@ -1,11 +1,5 @@
 <?php
-<<<<<<< HEAD
 use Bitrix\Main\Localization\Loc;
-=======
-use Bitrix\Main,
-	Bitrix\Main\Localization\Loc,
-	Bitrix\Catalog;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 Loc::loadMessages(__FILE__);
 /**
@@ -69,7 +63,6 @@ class CCatalogMeasureAll
 			return false;
 		}
 
-<<<<<<< HEAD
 		if((is_set($arFields, "IS_DEFAULT")) && (($arFields["IS_DEFAULT"]) == 'Y'))
 		{
 			$dbMeasure = CCatalogMeasure::getList(array(), array("IS_DEFAULT" => 'Y'), false, false, array('ID'));
@@ -79,31 +72,10 @@ class CCatalogMeasureAll
 					return false;
 			}
 		}
-=======
-		if (isset($arFields["IS_DEFAULT"]) && $arFields["IS_DEFAULT"] == 'Y')
-		{
-			$filter = array('=IS_DEFAULT' => 'Y');
-			if ($action == 'UPDATE')
-				$filter['!=ID'] = $id;
-			$iterator = Catalog\MeasureTable::getList(array(
-				'select' => array('ID'),
-				'filter' => $filter
-			));
-			while ($row = $iterator->fetch())
-			{
-				$result = Catalog\MeasureTable::update((int)$row['ID'], array('IS_DEFAULT' => 'N'));
-				if (!$result->isSuccess())
-					return false;
-			}
-			unset($result, $row, $iterator);
-		}
-
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		return true;
 	}
 
 	/**
-<<<<<<< HEAD
 	 * @param $id
 	 * @param $arFields
 	 * @return bool|int
@@ -120,71 +92,11 @@ class CCatalogMeasureAll
 		$strSql = "UPDATE b_catalog_measure SET ".$strUpdate." WHERE ID = ".$id;
 		if(!$DB->Query($strSql, true, "File: ".__FILE__."<br>Line: ".__LINE__))
 			return false;
-=======
-	 * @deprecated deprecated since catalog 17.5.12
-	 * @see \Bitrix\Catalog\MeasureTable:add
-	 *
-	 * @param array $arFields
-	 * @return bool|int
-	 */
-	public static function add($arFields)
-	{
-		if (!static::checkFields('ADD', $arFields))
-			return false;
-
-		if (empty($arFields))
-			return false;
-
-		$id = false;
-		$result = Catalog\MeasureTable::add($arFields);
-		$success = $result->isSuccess();
-		if (!$success)
-			self::convertErrors($result);
-		else
-			$id = (int)$result->getId();
-		unset($success, $result);
-
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		return $id;
 	}
 
 	/**
-<<<<<<< HEAD
 	 * @param $id
-=======
-	 * @deprecated deprecated since catalog 17.5.12
-	 * @see \Bitrix\Catalog\MeasureTable:update
-	 *
-	 * @param int $id
-	 * @param array $arFields
-	 * @return bool|int
-	 */
-	public static function update($id, $arFields)
-	{
-		$id = (int)$id;
-		if ($id <= 0)
-			return false;
-		if (!static::checkFields('UPDATE', $arFields, $id))
-			return false;
-
-		if (empty($arFields))
-			return $id;
-
-		$result = Catalog\MeasureTable::update($id, $arFields);
-		$success = $result->isSuccess();
-		if (!$success)
-			self::convertErrors($result);
-		unset($result);
-
-		return ($success ? $id : false);
-	}
-
-	/**
-	 * @deprecated deprecated since catalog 17.5.12
-	 * @see \Bitrix\Catalog\MeasureTable:delete
-	 *
-	 * @param int $id
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	 * @return bool
 	 */
 	public static function delete($id)
@@ -267,27 +179,6 @@ class CCatalogMeasureAll
 		}
 		return self::$defaultMeasure;
 	}
-<<<<<<< HEAD
-=======
-
-	private static function convertErrors(Main\Entity\Result $result)
-	{
-		global $APPLICATION;
-
-		$oldMessages = array();
-		foreach ($result->getErrorMessages() as $errorText)
-			$oldMessages[] = array('text' => $errorText);
-		unset($errorText);
-
-		if (!empty($oldMessages))
-		{
-			$error = new CAdminException($oldMessages);
-			$APPLICATION->ThrowException($error);
-			unset($error);
-		}
-		unset($oldMessages);
-	}
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 }
 
 /**
@@ -298,7 +189,6 @@ class CCatalogMeasureResult extends CDBResult
 	/**
 	 * @param $res
 	 */
-<<<<<<< HEAD
 	function CCatalogMeasureResult($res)
 	{
 	//    $res = new CDBResult($res);
@@ -306,17 +196,11 @@ class CCatalogMeasureResult extends CDBResult
      $res1 = new parent();
         $res1 = $res1 -> CDBResult($res);
         //parent::CDBResult($res);
-=======
-	public function __construct($res)
-	{
-		parent::__construct($res);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 	}
 
 	/**
 	 * @return array
 	 */
-<<<<<<< HEAD
     function Fetch()
     {
      $res1 = new parent();   // parent class CDBResult ($res) php 7.2 no error
@@ -357,29 +241,3 @@ class CCatalogMeasureResult extends CDBResult
     }
 
 }
-=======
-	function Fetch()
-	{
-		$res = parent::Fetch();
-		if (!empty($res) && isset($res['CODE']))
-		{
-			if (array_key_exists('MEASURE_TITLE', $res) && $res["MEASURE_TITLE"] == '')
-			{
-				$tmpTitle = CCatalogMeasureClassifier::getMeasureTitle($res["CODE"], 'MEASURE_TITLE');
-				$res["MEASURE_TITLE"] = ($tmpTitle == '') ? $res["SYMBOL_INTL"] : $tmpTitle;
-			}
-			if (array_key_exists('SYMBOL_RUS', $res) && $res["SYMBOL_RUS"] == '')
-			{
-				$tmpSymbol = CCatalogMeasureClassifier::getMeasureTitle($res["CODE"], 'SYMBOL_RUS');
-				$res["SYMBOL_RUS"] = ($tmpSymbol == '') ? $res["SYMBOL_INTL"] : $tmpSymbol;
-			}
-			if (array_key_exists('SYMBOL', $res) && $res['SYMBOL'] == '')
-			{
-				$tmpSymbol = CCatalogMeasureClassifier::getMeasureTitle($res["CODE"], 'SYMBOL_RUS');
-				$res["SYMBOL"] = ($tmpSymbol == '') ? $res["SYMBOL_INTL"] : $tmpSymbol;
-			}
-		}
-		return $res;
-	}
-}
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137

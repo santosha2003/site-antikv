@@ -12,6 +12,12 @@ AddEventHandler("main", "OnBeforeUserRegister", "OnBeforeUserRegisterHandler");
 // обработчик события обновления данных пользователем
 AddEventHandler("main", "OnBeforeUserUpdate", "OnBeforeUserRegisterHandler");
 
+    function mp($arr){
+        echo "<pre>";
+            print_r($arr);
+        echo "</pre>";
+    }
+
 function custom_mail($to,$subject,$body,$headers) {
 $f4a=fopen($_SERVER["DOCUMENT_ROOT"]."/log-mail1.txt","a+");
 //    fwrite($f3, print_r($imgprop,true));//печатаем в файл результирующий массив для проверки
@@ -31,8 +37,8 @@ function OnBeforeUserRegisterHandler($args) {
 	   		$GLOBALS['APPLICATION']->ThrowException('Имя обязательное поле');
 	   		return false;
    		}else{
-	   		//$GLOBALS['APPLICATION']->ThrowException('Имя может состоять только из русских букв');
-	   		//return false;
+	   		$GLOBALS['APPLICATION']->ThrowException('Имя может состоять только из русских букв');
+	   		return false;
                       //return true;
    		}
     }
@@ -50,3 +56,4 @@ function OnBeforeUserRegisterHandler($args) {
 
     return true;
 }
+?>

@@ -7,9 +7,7 @@ class CWatermark {
    function ImageAdd(&$arFields) {
      CWatermark::log_array($arFields); // убрать после отладки 
       //Указываем нужные ИБ, допустим ваш каталог имеет ID 1 + секция ордена медали  (529)
-
-      if ($arFields["IBLOCK_ID"] == 4 ) {
- //# or $arFields["IBLOCK_SECTION"][0]== 531 or $arFields["IBLOCK_SECTION"][0]== 279)
+      if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529) {
 //       CWatermark::log_array($arFields); // убрать после отладки 
          if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])) {
             //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
@@ -50,80 +48,11 @@ class CWatermark {
          }
      }
   if(isset($arFields["PROPERTY_VALUES"]["73"])) {
- //  ["PROPERTY_VALUES"]["73"][n0][VALUE][tmp_name]   ! no .jpg or .png
     foreach ($arFields["PROPERTY_VALUES"]["73"] as $key=>$moreimg)
          {
     CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["73"][$key]['VALUE']['tmp_name']);
          }
      }
-
-
-             //REAL_PICTURE  //Оригинал
-        //CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["54"]["n0"]["VALUE"]["tmp_name"]);
-         //CWatermark::PostWaterMark($arFields[PROPERTY_VALUES][2]["xkey0"][VALUE][tmp_name]); //bx16 no extension for temp picture!!!
-
-/* [n0] => Array
-                        (
-                            [VALUE] => Array
-                                (
-                                    [name] =>
-                                    [type] =>
-                                    [tmp_name] =>
-                                    [error] => 4
-                                    [size] => 0
-                                )
-
-                        )
-*/
-
-//    foreach($arFields["PROPERTY_VALUES"]["2"] as &$file):
-//       CAllFile::ResizeImage(
-//         $file, 
-//         array("width" => "200", "height" => "200"), 
-//         BX_RESIZE_IMAGE_PROPORTIONAL);
-//    endforeach;
-
-      }
-// разделы Сов знаки и Аммуниция
-  if ($arFields["IBLOCK_ID"] == 1) {
-            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc4.txt","w");
-            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
-            fclose($f);
-      if ($arFields["IBLOCK_SECTION"][0] == 531 or $arFields["IBLOCK_SECTION"][0] == 279  or $arFields["IBLOCK_SECTION"][0]== 529) {
- //# or $arFields["IBLOCK_SECTION"][0]== 531 or $arFields["IBLOCK_SECTION"][0]== 279)
-//       CWatermark::log_array($arFields); // убрать после отладки 
-         if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])) {
-            //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
-         }
-         //Если заполнено детальное изображение
-         if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
-//            //foreach($arFields[PROPERTY_VALUES][28] as &$file):
-//             foreach($arFields["DETAIL_PICTURE"] as &$file):
-//       CAllFile::ResizeImage(
-//         $file, 
-//         array("width" => "200", "height" => "200"), 
-//         BX_RESIZE_IMAGE_PROPORTIONAL);
-//	     endforeach;
-            CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
-              }
- //        $tok="bbb";
-            //$arFields[NAME] = $tok;  //имя присваиваем из свойства
-            //if ($arFields[PROPERTY_VALUES][69][0] == "") {$arFields[ACTIVE] = "N";} //aктивность также в зависимости от свойства
-//
-//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["name"]=$arFields[DETAIL_PICTURE]["name"];
-//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["type"]=$arFields[DETAIL_PICTURE]["type"];
-//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["tmp_name"]=$arFields[DETAIL_PICTURE]["tmp_name"];
-//        $arFields[PROPERTY_VALUES][2][n0][VALUE][error]=$arFields[DETAIL_PICTURE][error];
-//        $arFields[PROPERTY_VALUES][2][n0][VALUE][size]=$arFields[DETAIL_PICTURE][size];
-//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["COPY_FILE"] = "Y";
-//            $arFields[TAGS] = trim($tok, " ;:\/*.,");
-            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc1.txt","w");
-            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
-            fclose($f);
-
-     CWatermark::log_array($arFields); // убрать после отладки.
-//Тут наносим на дополнительное фото, 2 это ID свойства ИБ       //for jcarusel  72 73, 56 61 (Awards)
-
   if(isset($arFields["PROPERTY_VALUES"]["56"])) {
 
     foreach ($arFields["PROPERTY_VALUES"]["56"] as $key=>$moreimg)
@@ -165,8 +94,6 @@ class CWatermark {
 //    endforeach;
 
       }
-    // iblock 1 shop
-     }
    }
 
    //Срабатываем при изменение элемента
@@ -178,12 +105,8 @@ class CWatermark {
 */
 
    function ImageUpdate(&$arFields) {
-            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc5.txt","w");
-            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
-            fclose($f);
-
       //То же самое, указываем ID ИБ
-	   if ($arFields["IBLOCK_ID"] == 4 or ($arFields["IBLOCK_SECTION"][0]== 529) or  ($arFields["IBLOCK_SECTION"][0]== 531)or ($arFields["IBLOCK_SECTION"][0]== 531)) {
+	   if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529) {
          //Если заполнено изображение анонса
         // if(!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])){
             //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);

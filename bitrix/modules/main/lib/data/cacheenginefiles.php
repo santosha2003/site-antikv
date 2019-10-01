@@ -316,11 +316,7 @@ class CacheEngineFiles
 
 			$this->written = fwrite($handle, $contents);
 			$this->path = $fn;
-<<<<<<< HEAD
 			$len = Main\Text\String::getBinaryLength($contents);
-=======
-			$len = Main\Text\TString::getBinaryLength($contents);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 			fclose($handle);
 

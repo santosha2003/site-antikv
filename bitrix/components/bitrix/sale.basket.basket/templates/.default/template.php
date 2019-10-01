@@ -43,7 +43,6 @@ $APPLICATION->AddHeadScript($templateFolder."/script.js");
 if($arParams['USE_GIFTS'] === 'Y')
 {
 	$APPLICATION->IncludeComponent(
-<<<<<<< HEAD
 		"bitrix:sale.gift.basket",
 		".default",
 		array(
@@ -82,74 +81,6 @@ if($arParams['USE_GIFTS'] === 'Y')
 		),
 		false
 	);
-=======
-	"bitrix:sale.gift.basket", 
-	".default", 
-	array(
-		"SHOW_PRICE_COUNT" => "1",
-		"PRODUCT_SUBSCRIPTION" => "N",
-		"PRODUCT_ID_VARIABLE" => "id",
-		"PARTIAL_PRODUCT_PROPERTIES" => "Y",
-		"USE_PRODUCT_QUANTITY" => "Y",
-		"ACTION_VARIABLE" => "actionGift",
-		"ADD_PROPERTIES_TO_BASKET" => "Y",
-		"BASKET_URL" => $APPLICATION->GetCurPage(),
-		"APPLIED_DISCOUNT_LIST" => $arResult["APPLIED_DISCOUNT_LIST"],
-		"FULL_DISCOUNT_LIST" => $arResult["FULL_DISCOUNT_LIST"],
-		"TEMPLATE_THEME" => $arParams["TEMPLATE_THEME"],
-		"PRICE_VAT_INCLUDE" => "Y",
-		"CACHE_GROUPS" => "N",
-		"BLOCK_TITLE" => $arParams["GIFTS_BLOCK_TITLE"],
-		"HIDE_BLOCK_TITLE" => "N",
-		"TEXT_LABEL_GIFT" => $arParams["GIFTS_TEXT_LABEL_GIFT"],
-		"PRODUCT_QUANTITY_VARIABLE" => $arParams["GIFTS_PRODUCT_QUANTITY_VARIABLE"],
-		"PRODUCT_PROPS_VARIABLE" => $arParams["GIFTS_PRODUCT_PROPS_VARIABLE"],
-		"SHOW_OLD_PRICE" => "N",
-		"SHOW_DISCOUNT_PERCENT" => "N",
-		"SHOW_NAME" => "N",
-		"SHOW_IMAGE" => "N",
-		"MESS_BTN_BUY" => $arParams["GIFTS_MESS_BTN_BUY"],
-		"MESS_BTN_DETAIL" => $arParams["GIFTS_MESS_BTN_DETAIL"],
-		"PAGE_ELEMENT_COUNT" => $arParams["GIFTS_PAGE_ELEMENT_COUNT"],
-		"CONVERT_CURRENCY" => "N",
-		"HIDE_NOT_AVAILABLE" => "N",
-		"LINE_ELEMENT_COUNT" => $arParams["GIFTS_PAGE_ELEMENT_COUNT"],
-		"COMPONENT_TEMPLATE" => ".default",
-		"IBLOCK_TYPE" => "catalog",
-		"IBLOCK_ID" => "11",
-		"SHOW_FROM_SECTION" => "N",
-		"SECTION_ID" => "",
-		"SECTION_CODE" => "",
-		"SECTION_ELEMENT_ID" => "",
-		"SECTION_ELEMENT_CODE" => "",
-		"DEPTH" => "",
-		"MESS_BTN_SUBSCRIBE" => "Подписаться",
-		"DETAIL_URL" => "",
-		"CACHE_TYPE" => "A",
-		"CACHE_TIME" => "1800",
-		"PRICE_CODE" => array(
-			0 => "BASE",
-		),
-		"SHOW_PRODUCTS_1" => "N",
-		"PROPERTY_CODE_1" => array(
-		),
-		"CART_PROPERTIES_1" => array(
-		),
-		"ADDITIONAL_PICT_PROP_1" => "",
-		"SHOW_PRODUCTS_11" => "Y",
-		"PROPERTY_CODE_11" => array(
-			0 => "SPECIALOFFER",
-			1 => "",
-		),
-		"CART_PROPERTIES_11" => array(
-			0 => "",
-			1 => "",
-		),
-		"ADDITIONAL_PICT_PROP_11" => "MORE_PHOTO"
-	),
-	false
-);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 }
 
 if (strlen($arResult["ERROR_MESSAGE"]) <= 0)

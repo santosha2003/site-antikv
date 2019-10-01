@@ -85,11 +85,7 @@ class Path
 		$path = self::getName($path);
 		if ($path != '')
 		{
-<<<<<<< HEAD
 			$pos = Text\String::strrpos($path, '.');
-=======
-			$pos = Text\TString::strrpos($path, '.');
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			if ($pos !== false)
 				return substr($path, $pos + 1);
 		}
@@ -100,11 +96,7 @@ class Path
 	{
 		//$path = self::normalize($path);
 
-<<<<<<< HEAD
 		$p = Text\String::strrpos($path, self::DIRECTORY_SEPARATOR);
-=======
-		$p = Text\TString::strrpos($path, self::DIRECTORY_SEPARATOR);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		if ($p !== false)
 			return substr($path, $p + 1);
 

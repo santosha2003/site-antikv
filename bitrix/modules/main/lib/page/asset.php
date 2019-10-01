@@ -4,11 +4,7 @@ namespace Bitrix\Main\Page;
 use Bitrix\Main;
 use Bitrix\Main\IO;
 use Bitrix\Main\Config\Option;
-<<<<<<< HEAD
 use Bitrix\Main\Text\String;
-=======
-use Bitrix\Main\Text\TString;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 class AssetMode
 {
@@ -833,22 +829,13 @@ class Asset
 		$areas = $this->getScriptAreas($content);
 		foreach ($areas as $area)
 		{
-<<<<<<< HEAD
 			if (String::getBinaryStrpos($area->attrs, "data-skip-moving") !== false || !self::isValidScriptType($area->attrs))
-=======
-			if (TString::getBinaryStrpos($area->attrs, "data-skip-moving") !== false || !self::isValidScriptType($area->attrs))
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			{
 				continue;
 			}
 
-<<<<<<< HEAD
 			$js .= String::getBinarySubstring($content, $area->openTagStart, $area->closingTagEnd - $area->openTagStart);
 			$newContent .= String::getBinarySubstring($content, $offset, $area->openTagStart - $offset);
-=======
-			$js .= TString::getBinarySubstring($content, $area->openTagStart, $area->closingTagEnd - $area->openTagStart);
-			$newContent .= TString::getBinarySubstring($content, $offset, $area->openTagStart - $offset);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			$offset = $area->closingTagEnd;
 		}
 
@@ -857,13 +844,8 @@ class Asset
 			return;
 		}
 
-<<<<<<< HEAD
 		$newContent .= String::getBinarySubstring($content, $offset);
 		$bodyEnd = String::getBinaryStrripos($newContent, "</body>");
-=======
-		$newContent .= TString::getBinarySubstring($content, $offset);
-		$bodyEnd = TString::getBinaryStrripos($newContent, "</body>");
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		if ($bodyEnd === false)
 		{
 			$content = $newContent.$js;
@@ -888,36 +870,21 @@ class Asset
 
 		$offset = 0;
 		$areas = array();
-<<<<<<< HEAD
 		$content = String::getBinaryStrtolower($content);
 		while (($openTagStart = String::getBinaryStrpos($content, $openTag, $offset)) !== false)
 		{
 			$endingPos = String::getBinaryStrpos($content, $ending, $openTagStart);
-=======
-		$content = TString::getBinaryStrtolower($content);
-		while (($openTagStart = TString::getBinaryStrpos($content, $openTag, $offset)) !== false)
-		{
-			$endingPos = TString::getBinaryStrpos($content, $ending, $openTagStart);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			if ($endingPos === false)
 			{
 				break;
 			}
 
 			$attrsStart = $openTagStart + strlen($openTag);
-<<<<<<< HEAD
 			$attrs = String::getBinarySubstring($content, $attrsStart, $endingPos - $attrsStart);
 			$openTagEnd = $endingPos + strlen($ending);
 
 			$realClosingTag = $closingTag.$ending;
 			$closingTagStart = String::getBinaryStrpos($content, $realClosingTag, $openTagEnd);
-=======
-			$attrs = TString::getBinarySubstring($content, $attrsStart, $endingPos - $attrsStart);
-			$openTagEnd = $endingPos + strlen($ending);
-
-			$realClosingTag = $closingTag.$ending;
-			$closingTagStart = TString::getBinaryStrpos($content, $realClosingTag, $openTagEnd);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			if ($closingTagStart === false)
 			{
 				$offset = $openTagEnd;
@@ -2413,7 +2380,6 @@ class Asset
 	{
 		$sourceMapName = "";
 
-<<<<<<< HEAD
 		$length = String::getBinaryLength($content);
 		$position = $length > 512 ? $length - 512 : 0;
 		$lastLine = String::getBinaryStrpos($content, self::SOURCE_MAP_TAG, $position);
@@ -2431,25 +2397,6 @@ class Asset
 
 			$sourceMapName = trim($sourceMapName);
 			$content = String::getBinarySubstring($content, 0, $lastLine);
-=======
-		$length = TString::getBinaryLength($content);
-		$position = $length > 512 ? $length - 512 : 0;
-		$lastLine = TString::getBinaryStrpos($content, self::SOURCE_MAP_TAG, $position);
-		if ($lastLine !== false)
-		{
-			$nameStart = $lastLine + strlen(self::SOURCE_MAP_TAG);
-			if (($newLinePos = TString::getBinaryStrpos($content, "\n", $nameStart)) !== false)
-			{
-				$sourceMapName = TString::getBinarySubstring($content, $nameStart, $newLinePos - $nameStart);
-			}
-			else
-			{
-				$sourceMapName = TString::getBinarySubstring($content, $nameStart);
-			}
-
-			$sourceMapName = trim($sourceMapName);
-			$content = TString::getBinarySubstring($content, 0, $lastLine);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		}
 
 		return $sourceMapName;
@@ -2466,7 +2413,6 @@ class Asset
 		$line = 0;
 
 		$arResult = array();
-<<<<<<< HEAD
 		while (($newLinePos = String::getBinaryStrpos($content, "\n", $offset)) !== false)
 		{
 			$line++;
@@ -2474,26 +2420,13 @@ class Asset
 			if (String::getBinarySubstring($content, $offset, strlen(self::HEADER_START_TAG)) === self::HEADER_START_TAG)
 			{
 				$endingPos = String::getBinaryStrpos($content, self::HEADER_END_TAG, $offset);
-=======
-		while (($newLinePos = TString::getBinaryStrpos($content, "\n", $offset)) !== false)
-		{
-			$line++;
-			$offset = $newLinePos + 1;
-			if (TString::getBinarySubstring($content, $offset, strlen(self::HEADER_START_TAG)) === self::HEADER_START_TAG)
-			{
-				$endingPos = TString::getBinaryStrpos($content, self::HEADER_END_TAG, $offset);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				if ($endingPos === false)
 				{
 					break;
 				}
 
 				$startData = $offset + strlen(self::HEADER_START_TAG);
-<<<<<<< HEAD
 				$data = unserialize(String::getBinarySubstring($content, $startData, $endingPos - $startData));
-=======
-				$data = unserialize(TString::getBinarySubstring($content, $startData, $endingPos - $startData));
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 				if (is_array($data))
 				{
@@ -2568,11 +2501,7 @@ class Asset
 		}
 
 		$written = fwrite($fh, $content);
-<<<<<<< HEAD
 		$len = Main\Text\String::getBinaryLength($content);
-=======
-		$len = Main\Text\TString::getBinaryLength($content);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		fclose($fh);
 
 		self::unlink($filePath);
