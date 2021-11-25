@@ -85,8 +85,7 @@ class CWatermark {
 
       }
 // разделы Сов знаки и Аммуниция + Award ордена медали
-   // Отключил для этого инфоблока, т.к. для него добавил другой watermark
-  if (FALSE && $arFields["IBLOCK_ID"] == 1) {
+  if ($arFields["IBLOCK_ID"] == 1) {
             $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc4.txt","w");
             fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
             fclose($f);
@@ -187,22 +186,16 @@ class CWatermark {
 */
 
    function ImageUpdate(&$arFields) {
-
             $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc5.txt","w");
             fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
             fclose($f);
 
-        // Для этого инфоблока другой прозрачный watermark
-        if ($arFields["IBLOCK_ID"] == 1) {
-            return;
-        }
-
       //То же самое, указываем ID ИБ
-	   if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529 or  $arFields["IBLOCK_SECTION"][0] == 531 or $arFields["IBLOCK_SECTION"][0] == 279) {
+	   if ($arFields["IBLOCK_ID"] == 4 or ($arFields["IBLOCK_SECTION"][0]== 529) or  ($arFields["IBLOCK_SECTION"][0]== 531)or ($arFields["IBLOCK_SECTION"][0]== 279)) {
          //Если заполнено изображение анонса
-         if(!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])){
+        // if(!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])){
             //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
-         }
+        // }
          //Если заполнено детальное изображение
          if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
             CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
@@ -217,6 +210,7 @@ class CWatermark {
             fclose($f);
      CWatermark::log_array($arFields); // убрать после отладки.
   if(isset($arFields["PROPERTY_VALUES"]["72"])) {
+
     foreach ($arFields["PROPERTY_VALUES"]["72"] as $key=>$moreimg)
          {
     CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["72"][$key]['VALUE']['tmp_name']);
@@ -260,7 +254,7 @@ class CWatermark {
    AddMessage2Log($sResult, 'log_array -> ');
    }
 
-function PostWaterMark(&$image) {
+   function PostWaterMark(&$image) {
 //echo ("<pre>");
 //print_r ($key);
 //print_r ($arFields);
@@ -315,14 +309,13 @@ function PostWaterMark(&$image) {
  //fuck.. png with transparent (at white 255,255,255 color) do not resize with ResizeImageGet
  //see manual Bitrix! to prevent black pictures w/o transparency
       $wmTargetArray = CFile::ResizeImageGet(
-         13741,
+         13689,
          array("width" => $watermarkSize, "height" => $watermarkSize),
          BX_RESIZE_IMAGE_PROPORTIONAL,
          true,
          array()
       );
-
-    //13741 //13689 //2181 //63 - это ID watermark.png, который лежит в файловой системе Битрикса b_file ID SUBDIR FILE_NAME (закинуть в медиабиблиотеку)
+    //13689 //2181 //63 - это ID watermark.png, который лежит в файловой системе Битрикса b_file ID SUBDIR FILE_NAME (закинуть в медиабиблиотеку)
      //select * from b_file where module_id!="iblock"  легче найти в админке если в medialibrary не 40000 картинок
 
       //$wmTarget = $_SERVER['DOCUMENT_ROOT'] . "/bitrix/php_interface/watermark.png";
