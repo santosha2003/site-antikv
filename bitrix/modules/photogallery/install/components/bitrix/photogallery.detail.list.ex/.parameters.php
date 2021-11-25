@@ -21,11 +21,11 @@ while($arr=$rsIBlock->Fetch())
 }
 
 $arUGroupsEx = Array();
-$dbUGroups = CGroup::GetList($by = "c_sort", $order = "asc");
+$dbUGroups = CGroup::GetList();
 while($arUGroups = $dbUGroups -> Fetch())
 	$arUGroupsEx[$arUGroups["ID"]] = $arUGroups["NAME"];
 
-$res = unserialize(COption::GetOptionString("photogallery", "pictures"));
+$res = unserialize(COption::GetOptionString("photogallery", "pictures"), ['allowed_classes' => false]);
 $arSights = array();
 if (is_array($res))
 	foreach ($res as $key => $val)
@@ -221,7 +221,6 @@ $arComponentParameters["PARAMETERS"]["DETAIL_SLIDE_SHOW_URL"] = array(
 	);
 
 
-
 if (IsModuleInstalled("blog") || IsModuleInstalled("forum"))
 {
 	$arComponentParameters["GROUPS"]["REVIEW_SETTINGS"] = array("NAME" => GetMessage("T_IBLOCK_DESC_REVIEW_SETTINGS"), "SORT" => 400);
@@ -309,8 +308,8 @@ if (IsModuleInstalled("blog") || IsModuleInstalled("forum"))
 				{
 					do
 					{
-						$arForum[intVal($res["ID"])] = $res["NAME"];
-						$fid = intVal($res["ID"]);
+						$arForum[intval($res["ID"])] = $res["NAME"];
+						$fid = intval($res["ID"]);
 					}while ($res = $db_res->GetNext());
 				}
 			}
@@ -449,7 +448,7 @@ if($arCurrentValues["BEHAVIOUR"] == "USER")
 
 
 $arComponentParameters["PARAMETERS"]["PATH_TO_USER"] = array(
-	"PARENT" => "ADDITIONAL_SETTINGS",
+	"PARENT" => "URL_TEMPLATES",
 	"NAME" => GetMessage("P_PATH_TO_USER"),
 	"DEFAULT" => "/company/personal/user/#USER_ID#",
 );

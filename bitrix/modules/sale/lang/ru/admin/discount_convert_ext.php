@@ -8,5 +8,6 @@ $MESS["SALE_DISCOUNT_REINDEX_TAB_TITLE"] = "Параметры переинде�
 $MESS["SALE_DISCOUNT_REINDEX_ERRORS_TITLE"] = "Ошибки во время выполнения переиндексации";
 $MESS["SALE_DISCOUNT_REINDEX_MAX_EXECUTION_TIME"] = "Продолжительность одного шага, сек:";
 $MESS["SALE_DISCOUNT_REINDEX_UPDATE_BTN"] = "Начать";
-$MESS["SALE_DISCOUNT_REINDEX_STOP_BTN"] = "Остановить"
+$MESS["SALE_DISCOUNT_REINDEX_STOP_BTN"] = "Остановить";
+$MESS["SALE_DISCOUNT_REINDEX_DISCOUNT_ABSENT"] = "Нет правил корзины, у которых в условиях указаны службы доставки либо все такие правила уже переиндексированы";
 ?>

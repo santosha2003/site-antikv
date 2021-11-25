@@ -1,8 +1,0 @@
-<?
-$MESS["SONET_MODULE_NOT_INSTALL"] = "Socialinio tinklo modulis neádiegtas.";
-$MESS["SONET_P_USER_NO_USER"] = "Vartotojas nerastas.";
-$MESS["SONET_C35_NO_FR_FUNC"] = "Draugø funkcija iðjungta.";
-$MESS["SONET_C35_PAGE_TITLE"] = "Ðalinti draugà";
-$MESS["SONET_C35_SELF"] = "Savæs paðalinti ið draugø negalite.";
-$MESS["SONET_C35_NOT_FRIEND"] = "Ðio vartotojo neátraukëte á draugø sàraðà.";
-?>

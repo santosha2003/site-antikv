@@ -81,10 +81,10 @@ if ($queryType == "M")
 		{
 			for ($i = 0, $cnt = count($arUpdateDescription["DATA"]["#"]["ITEM"]); $i < $cnt; $i++)
 			{
-				if (strlen($message) > 0)
+				if ($message <> '')
 					$message .= ", ";
 				$message .= $arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["NAME"];
-				if (strlen($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"]) > 0)
+				if ($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"] <> '')
 					$message .= " (".$arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"].")";
 			}
 		}
@@ -93,17 +93,30 @@ if ($queryType == "M")
 	}
 	elseif ($loadResult == "E")
 	{
-		if (strlen($errorMessage) <= 0)
+		if ($errorMessage == '')
 			$errorMessage = "[CL02] ".GetMessage("SUPC_ME_PACK");
 		CUpdateClient::AddMessage2Log($errorMessage, "CL02");
 	}
 	elseif ($loadResult == "F")
 	{
 		CUpdateClient::AddMessage2Log("Finish - NOUPDATES", "STEP");
+
+		$bIntranet = CModule::IncludeModule('intranet');
+		if ($bIntranet)
+		{
+			CAdminNotify::Add(array(
+				'MODULE_ID' => 'main',
+				'TAG' => 'checklist_cp',
+				'MESSAGE' => GetMessage("SUPC_NOTIFY_CHECKLIST", array("#LANG#" => LANG)),
+				'NOTIFY_TYPE' => CAdminNotify::TYPE_NORMAL,
+				'PUBLIC_SECTION' => 'N',
+			));
+		}
+
 		die("FIN");
 	}
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$temporaryUpdatesDir = "";
 		if (!CUpdateClient::UnGzipArchive($temporaryUpdatesDir, $errorMessage, true))
@@ -113,7 +126,7 @@ if ($queryType == "M")
 		}
 	}
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (!CUpdateClient::CheckUpdatability($temporaryUpdatesDir, $errorMessage))
 		{
@@ -122,16 +135,17 @@ if ($queryType == "M")
 		}
 	}
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
-		if (!CUpdateClient::UpdateStepModules($temporaryUpdatesDir, $errorMessage, defined("US_BITRIX24_MODE") && US_BITRIX24_MODE))
+		$isB24Mode = defined("US_BITRIX24_MODE") && US_BITRIX24_MODE;
+		if (!CUpdateClient::UpdateStepModules($temporaryUpdatesDir, $errorMessage, $isB24Mode, $isB24Mode))
 		{
 			$errorMessage .= "[CL04] ".GetMessage("SUPC_ME_UPDATE").". ";
 			CUpdateClient::AddMessage2Log(GetMessage("SUPC_ME_UPDATE"), "CL04");
 		}
 	}
 
-	if (strlen($errorMessage) > 0)
+	if ($errorMessage <> '')
 	{
 		CUpdateClient::AddMessage2Log("Error: ".$errorMessage, "UPD_ERROR");
 		echo "ERR".$errorMessage;
@@ -150,7 +164,7 @@ if ($queryType == "M")
 		for ($i = 0, $cnt = count($arUpdateDescription["DATA"]["#"]["ITEM"]); $i < $cnt; $i++)
 		{
 			$strModuleDescr = "";
-			if (strlen($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["DESCR"]) > 0)
+			if ($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["DESCR"] <> '')
 			{
 				$strModuleDescr = "<br>".htmlspecialcharsback($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["DESCR"]);
 				$strModuleDescr = preg_replace("#</?pre>#i", " ", $strModuleDescr);
@@ -163,6 +177,8 @@ if ($queryType == "M")
 			echo ($bFirst ? "" : ", ").$arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["NAME"].(($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"] != "0") ? " (".$arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"].")" : "");
 			$bFirst = False;
 		}
+
+		CUpdateClient::finalizeModuleUpdate($arUpdateDescription["DATA"]["#"]["ITEM"]);
 	}
 }
 elseif ($queryType == "L")
@@ -177,10 +193,10 @@ elseif ($queryType == "L")
 		{
 			for ($i = 0, $cnt = count($arUpdateDescription["DATA"]["#"]["ITEM"]); $i < $cnt; $i++)
 			{
-				if (strlen($message) > 0)
+				if ($message <> '')
 					$message .= ", ";
 				$message .= $arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["NAME"];
-				if (strlen($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"]) > 0)
+				if ($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"] <> '')
 					$message .= " (".$arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"].")";
 			}
 		}
@@ -189,7 +205,7 @@ elseif ($queryType == "L")
 	}
 	elseif ($loadResult == "E")
 	{
-		if (strlen($errorMessage) <= 0)
+		if ($errorMessage == '')
 			$errorMessage = "[CL02] ".GetMessage("SUPC_ME_PACK");
 		CUpdateClient::AddMessage2Log($errorMessage, "CL02");
 	}
@@ -198,14 +214,14 @@ elseif ($queryType == "L")
 		CUpdateClient::AddMessage2Log("Finish - NOUPDATES", "STEP");
 		die("FIN");
 	}
-	
+
 	/*if (!CUpdateClient::GetNextStepLangUpdates($errorMessage, LANG, $arRequestedLangs))
 	{
 		$errorMessage .= "[CL01] ".GetMessage("SUPC_ME_LOAD").". ";
 		CUpdateClient::AddMessage2Log(GetMessage("SUPC_ME_LOAD"), "CL01");
 	}*/
 
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$temporaryUpdatesDir = "";
 		if (!CUpdateClient::UnGzipArchive($temporaryUpdatesDir, $errorMessage, true))
@@ -221,7 +237,7 @@ elseif ($queryType == "L")
 		$arStepUpdateInfo = CUpdateClient::GetStepUpdateInfo($temporaryUpdatesDir, $errorMessage);
 	}*/
 
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (isset($arStepUpdateInfo["DATA"]["#"]["ERROR"]))
 		{
@@ -231,7 +247,7 @@ elseif ($queryType == "L")
 	}
 
 	$arItemsUpdated = array();
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (isset($arStepUpdateInfo["DATA"]["#"]["ITEM"]))
 		{
@@ -240,7 +256,7 @@ elseif ($queryType == "L")
 		}
 	}
 
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (isset($arStepUpdateInfo["DATA"]["#"]["NOUPDATES"]))
 		{
@@ -250,7 +266,7 @@ elseif ($queryType == "L")
 		}
 		else
 		{
-			if (strlen($errorMessage) <= 0)
+			if ($errorMessage == '')
 			{
 				if (!CUpdateClient::UpdateStepLangs($temporaryUpdatesDir, $errorMessage))
 				{
@@ -259,7 +275,7 @@ elseif ($queryType == "L")
 				}
 			}
 
-			if (StrLen($errorMessage) > 0)
+			if ($errorMessage <> '')
 			{
 				CUpdateClient::AddMessage2Log("Error: ".$errorMessage, "UPD_ERROR");
 				echo "ERR".$errorMessage;
@@ -329,10 +345,12 @@ elseif ($queryType == "L")
 				$bFirst = True;
 				foreach ($arItemsUpdated as $key => $value)
 				{
-					CUpdateClient::AddMessage2Log("Updated: ".$key.((StrLen($value) > 0) ? "(".$value.")" : ""), "UPD_SUCCESS");
-					echo ($bFirst ? "" : ", ").$key.((StrLen($value) > 0) ? "(".$value.")" : "");
+					CUpdateClient::AddMessage2Log("Updated: ".$key.(($value <> '') ? "(".$value.")" : ""), "UPD_SUCCESS");
+					echo ($bFirst ? "" : ", ").$key.(($value <> '') ? "(".$value.")" : "");
 					$bFirst = False;
 				}
+
+				CUpdateClient::finalizeLanguageUpdate($arItemsUpdated);
 			}
 		}
 	}
@@ -350,7 +368,7 @@ else
 		CUpdateClient::AddMessage2Log(GetMessage("SUPC_ME_LOAD"), "CL01");
 	}
 
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$temporaryUpdatesDir = "";
 		if (!CUpdateClient::UnGzipArchive($temporaryUpdatesDir, $errorMessage, true))
@@ -361,12 +379,12 @@ else
 	}
 
 	$arStepUpdateInfo = array();
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$arStepUpdateInfo = CUpdateClient::GetStepUpdateInfo($temporaryUpdatesDir, $errorMessage);
 	}
 
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (isset($arStepUpdateInfo["DATA"]["#"]["ERROR"]))
 		{
@@ -376,7 +394,7 @@ else
 	}
 
 	$arItemsUpdated = array();
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (isset($arStepUpdateInfo["DATA"]["#"]["ITEM"]))
 		{
@@ -385,7 +403,7 @@ else
 		}
 	}
 
-	if (StrLen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (isset($arStepUpdateInfo["DATA"]["#"]["NOUPDATES"]))
 		{
@@ -395,7 +413,7 @@ else
 		}
 		else
 		{
-			if (strlen($errorMessage) <= 0)
+			if ($errorMessage == '')
 			{
 				if (!CUpdateClient::UpdateStepHelps($temporaryUpdatesDir, $errorMessage))
 				{
@@ -404,7 +422,7 @@ else
 				}
 			}
 
-			if (StrLen($errorMessage) > 0)
+			if ($errorMessage <> '')
 			{
 				CUpdateClient::AddMessage2Log("Error: ".$errorMessage, "UPD_ERROR");
 				echo "ERR".$errorMessage;
@@ -416,8 +434,8 @@ else
 				$bFirst = True;
 				foreach ($arItemsUpdated as $key => $value)
 				{
-					CUpdateClient::AddMessage2Log("Updated: ".$key.((StrLen($value) > 0) ? "(".$value.")" : ""), "UPD_SUCCESS");
-					echo ($bFirst ? "" : ", ").$key.((StrLen($value) > 0) ? "(".$value.")" : "");
+					CUpdateClient::AddMessage2Log("Updated: ".$key.(($value <> '') ? "(".$value.")" : ""), "UPD_SUCCESS");
+					echo ($bFirst ? "" : ", ").$key.(($value <> '') ? "(".$value.")" : "");
 					$bFirst = False;
 				}
 			}

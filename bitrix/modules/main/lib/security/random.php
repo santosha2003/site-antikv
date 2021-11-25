@@ -1,13 +1,6 @@
 <?php
 namespace Bitrix\Main\Security;
 
-<<<<<<< HEAD
-use Bitrix\Main\Text\String;
-=======
-use Bitrix\Main\Text\TString;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
-
-
 class Random
 {
 	const RANDOM_BLOCK_LENGTH = 64;
@@ -83,22 +76,32 @@ class Random
 	{
 		$alphabet = self::ALPHABET_NUM | self::ALPHABET_ALPHALOWER;
 		if ($caseSensitive)
+		{
 			$alphabet |= self::ALPHABET_ALPHAUPPER;
+		}
 
 		return static::getStringByAlphabet($length, $alphabet);
 	}
 
 	/**
 	 * Returns random (if possible) ASCII string for a given alphabet mask (@see self::ALPHABET_ALL)
-	 *
 	 * @param int $length Result string length.
-	 * @param int $alphabet Alpabet masks (e.g. Random::ALPHABET_NUM|Random::ALPHABET_ALPHALOWER).
+	 * @param int $alphabet Alphabet masks (e.g. Random::ALPHABET_NUM|Random::ALPHABET_ALPHALOWER).
+	 * @param bool $requireAll Required chars from all the alphabet masks.
 	 * @return string
 	 */
-	public static function getStringByAlphabet($length, $alphabet)
+	public static function getStringByAlphabet($length, $alphabet, $requireAll = false)
 	{
 		$charsetList = static::getCharsetsforAlphabet($alphabet);
-		return static::getStringByCharsets($length, $charsetList);
+
+		if($requireAll && count($charsetList) > 1)
+		{
+			return static::getStringByArray($length, $charsetList);
+		}
+		else
+		{
+			return static::getStringByCharsets($length, implode("", $charsetList));
+		}
 	}
 
 	/**
@@ -110,11 +113,7 @@ class Random
 	 */
 	public static function getStringByCharsets($length, $charsetList)
 	{
-<<<<<<< HEAD
-		$charsetVariants = String::getBinaryLength($charsetList);
-=======
-		$charsetVariants = TString::getBinaryLength($charsetList);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+		$charsetVariants = strlen($charsetList);
 		$randomSequence = static::getBytes($length);
 
 		$result = '';
@@ -123,6 +122,48 @@ class Random
 			$randomNumber = ord($randomSequence[$i]);
 			$result .= $charsetList[$randomNumber % $charsetVariants];
 		}
+		return $result;
+	}
+
+	/**
+	 * This function places chars from every charset into the result string randomly.
+	 * @param int $length Result string length.
+	 * @param array $charsetList Array of charsets.
+	 * @return string
+	 */
+	public static function getStringByArray(int $length, array $charsetList): string
+	{
+		$count = count($charsetList);
+
+		// take strlen() out of the cycle
+		$charsets = [];
+		foreach ($charsetList as $charset)
+		{
+			$charsets[] = [$charset, strlen($charset)];
+		}
+
+		$randomSequence = static::getBytes($length);
+
+		$result = '';
+		for ($i = 0; $i < $length; $i += $count)
+		{
+			shuffle($charsets);
+
+			for ($j = 0; $j < $count; $j++)
+			{
+				$randomNumber = ord($randomSequence[$i + $j]);
+
+				$charset = $charsets[$j][0];
+				$charsetVariants = $charsets[$j][1];
+				$result .= $charset[$randomNumber % $charsetVariants];
+
+				if (($i + $j + 1) == $length)
+				{
+					break 2;
+				}
+			}
+		}
+
 		return $result;
 	}
 
@@ -139,34 +180,12 @@ class Random
 		if (static::isOpensslAvailable())
 		{
 			$bytes = openssl_random_pseudo_bytes($length, $strong);
-<<<<<<< HEAD
-			if ($bytes && String::getBinaryLength($bytes) >= $length)
+			if ($bytes && strlen($bytes) >= $length)
 			{
 				if ($strong)
-					return String::getBinarySubstring($bytes, 0, $length);
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= $length)
-			{
-				if ($strong)
-					return TString::getBinarySubstring($bytes, 0, $length);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+					return substr($bytes, 0, $length);
 				else
 					$backup = $bytes;
-			}
-		}
-
-		if (function_exists('mcrypt_create_iv'))
-		{
-			$bytes = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
-<<<<<<< HEAD
-			if ($bytes && String::getBinaryLength($bytes) >= $length)
-			{
-				return String::getBinarySubstring($bytes, 0, $length);
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= $length)
-			{
-				return TString::getBinarySubstring($bytes, 0, $length);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			}
 		}
 
@@ -174,44 +193,24 @@ class Random
 		{
 			$bytes = @fread($file, $length + 1);
 			@fclose($file);
-<<<<<<< HEAD
-			if ($bytes && String::getBinaryLength($bytes) >= $length)
+			if ($bytes && strlen($bytes) >= $length)
 			{
-				return String::getBinarySubstring($bytes, 0, $length);
+				return substr($bytes, 0, $length);
 			}
 		}
 
-		if ($backup && String::getBinaryLength($backup) >= $length)
+		if ($backup && strlen($backup) >= $length)
 		{
-			return String::getBinarySubstring($backup, 0, $length);
+			return substr($backup, 0, $length);
 		}
 
 		$bytes = '';
-		while (String::getBinaryLength($bytes) < $length)
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= $length)
-			{
-				return TString::getBinarySubstring($bytes, 0, $length);
-			}
-		}
-
-		if ($backup && TString::getBinaryLength($backup) >= $length)
-		{
-			return TString::getBinarySubstring($backup, 0, $length);
-		}
-
-		$bytes = '';
-		while (TString::getBinaryLength($bytes) < $length)
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+		while (strlen($bytes) < $length)
 		{
 			$bytes .= static::getPseudoRandomBlock();
 		}
 
-<<<<<<< HEAD
-		return String::getBinarySubstring($bytes, 0, $length);
-=======
-		return TString::getBinarySubstring($bytes, 0, $length);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+		return substr($bytes, 0, $length);
 	}
 
 	/**
@@ -226,15 +225,9 @@ class Random
 		if (static::isOpensslAvailable())
 		{
 			$bytes = openssl_random_pseudo_bytes(static::RANDOM_BLOCK_LENGTH);
-<<<<<<< HEAD
-			if ($bytes && String::getBinaryLength($bytes) >= static::RANDOM_BLOCK_LENGTH)
+			if ($bytes && strlen($bytes) >= static::RANDOM_BLOCK_LENGTH)
 			{
-				return String::getBinarySubstring($bytes, 0, static::RANDOM_BLOCK_LENGTH);
-=======
-			if ($bytes && TString::getBinaryLength($bytes) >= static::RANDOM_BLOCK_LENGTH)
-			{
-				return TString::getBinarySubstring($bytes, 0, static::RANDOM_BLOCK_LENGTH);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+				return substr($bytes, 0, static::RANDOM_BLOCK_LENGTH);
 			}
 		}
 
@@ -261,11 +254,7 @@ class Random
 		{
 			$result = (
 				function_exists('openssl_random_pseudo_bytes')
-				&& (
-					// PHP have strange behavior for "openssl_random_pseudo_bytes" on older PHP versions
-					!(strtolower(substr(PHP_OS, 0, 3)) === "win")
-					|| version_compare(phpversion(),"5.4.0",">=")
-				)
+				&& strtolower(substr(PHP_OS, 0, 3)) !== "win"
 			);
 		}
 
@@ -275,7 +264,7 @@ class Random
 	/**
 	 * Returns strings with charsets based on alpabet mask (see $this->alphabet)
 	 *
-	 * Simple example:
+	 * Simple example (now arrays!):
 	 * <code>
 	 * echo $this->getCharsetsforAlphabet(static::ALPHABET_NUM|static::ALPHABET_ALPHALOWER);
 	 * //output: 0123456789abcdefghijklmnopqrstuvwxyz
@@ -288,17 +277,17 @@ class Random
 	 * </code>
 	 *
 	 * @param string $alphabet Alpabet masks (e.g. static::ALPHABET_NUM|static::ALPHABET_ALPHALOWER).
-	 * @return string
+	 * @return array
 	 */
 	protected static function getCharsetsForAlphabet($alphabet)
 	{
-		$result = '';
+		$result = [];
 		foreach (static::$alphabet as $mask => $value)
 		{
-			if (!($alphabet & $mask))
-				continue;
-
-			$result .= $value;
+			if ($alphabet & $mask)
+			{
+				$result[] = $value;
+			}
 		}
 
 		return $result;

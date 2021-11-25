@@ -1,8 +1,0 @@
-<?
-$MESS["SONET_FILES_LOG"] = "#NOMBRE_AUTOR# agregar a archivo #TÍTULOS#.";
-$MESS["SONET_FILES_LOG_TEXT"] = "Nuevo archivo #TÍTULO# en #URL#.";
-$MESS["SONET_LOG_TEMPLATE_AUTHOR"] = "Autor: <a href=\"#AUTOR_URL#\">#NOMBRE_AUTOR#</a>.";
-$MESS["SONET_LOG_TEMPLATE_AUTHOR_MAIL"] = "Autor: #NOMBRE_AUTOR# (#AUTOR_URL#).";
-$MESS["SONET_LOG_TEMPLATE_GUEST"] = "Autor: #NOMBRE_AUTOR#.";
-$MESS["SONET_LOG_GUEST"] = "Invitado";
-?>

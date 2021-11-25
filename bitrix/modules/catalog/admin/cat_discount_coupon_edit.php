@@ -26,7 +26,7 @@ $returnUrl = '';
 if (!empty($_REQUEST['return_url']))
 {
 	$currentUrl = $APPLICATION->GetCurPage();
-	if (strtolower(substr($_REQUEST['return_url'], strlen($currentUrl))) != strtolower($currentUrl))
+	if (mb_strtolower(mb_substr($_REQUEST['return_url'], mb_strlen($currentUrl))) != mb_strtolower($currentUrl))
 	{
 		$returnUrl = $_REQUEST['return_url'];
 	}
@@ -104,7 +104,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 $arDefaultValues = array(
 	'DISCOUNT_ID' => '',
 	'ACTIVE' => 'Y',
-	'ONE_TIME' => Catalog\DiscountCouponTable::TYPE_ONE_ROW,
+	'ONE_TIME' => Catalog\DiscountCouponTable::TYPE_ONE_ORDER,
 	'COUPON' => '',
 	'DATE_APPLY' => '',
 	'DESCRIPTION' => '',
@@ -217,7 +217,7 @@ $tabControl->BeginNextFormTab();
 			<td width="60%"><?
 				if (isset($arDiscountList[$arCoupon['DISCOUNT_ID']]))
 				{
-					echo htmlspecialcharsex($arDiscountList[$arCoupon['DISCOUNT_ID']]);
+					echo htmlspecialcharsbx($arDiscountList[$arCoupon['DISCOUNT_ID']]);
 				}
 			?></td>
 			</tr><?

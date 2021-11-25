@@ -14,7 +14,7 @@ $MESS["SALE_DISC_CONVERT_STEP_SEC"] = "секунд";
 $MESS["SALE_DISC_CONVERT_BUTTON"] = "Почати конвертацію";
 $MESS["SALE_DISC_CONVERT_STOP"] = "Зупинити";
 $MESS["SALE_DISC_CONVERT_ERR"] = "У процесі конвертації були знайдені помилки:";
-$MESS["SALE_DISC_CONVERT_ONE_ERROR"] = "Знижка <a href=\"#LINK#\" target=\"_blank\"> #NAME# </ a> <br> #MESS#";
+$MESS["SALE_DISC_CONVERT_ONE_ERROR"] = "Знижка <a href=\"#LINK#\" target=\"_blank\">#NAME#</a> <br> #MESS#";
 $MESS["SALE_DISC_CONVERT_ERROR_RESUME"] = "Необхідно виправити умови застосування цих знижок";
 $MESS["SALE_DISC_CONVERT_DISABLE"] = "Після конвертації знижки будуть деактивовані";
 $MESS["SALE_DISC_CONVERT_DISABLE_ALL"] = "Змінився порядок застосування знижок. Необхідно вручну включити знижки після конвертації.";

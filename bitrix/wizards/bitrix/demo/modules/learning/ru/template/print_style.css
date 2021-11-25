@@ -23,7 +23,7 @@ body
 	font-size: 80%;
 	font-family: Tahoma, Verdana, Helvetica, sans-serif;
 	color: #333;
-	background-color: #fff;
+	background: #fff;
 }
 
 
@@ -32,24 +32,19 @@ body
 	display: none;
 }
 
-table#header
+#header
 {
 	background:none;
 	width:auto;
 	margin-left:16px;
 }
 
-td#logotext
+#logotext
 {
 	color:black;
 }
 
-#workarea
-{
-	height:100%;
-}
-
-#workarea table.learn-work-table
+#workarea-row table.learn-work-table
 {
 	background:none;
 }
@@ -69,7 +64,7 @@ pre.syntax
 	overflow: visible;
 }
 
-div.hint, div.important 
+div.hint, div.important
 {
 	width: auto;
 }
@@ -85,3 +80,5 @@ a {color:#1952D3;}
 	color:red;
 	font-weight:bold;
 }
+
+#learning-copyright { background: #fff; }

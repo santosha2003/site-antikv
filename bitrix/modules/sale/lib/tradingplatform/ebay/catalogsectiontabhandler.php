@@ -25,11 +25,10 @@ class CatalogSectionTabHandler extends TabHandler
 
 	public function Action($arArgs)
 	{
-		$propsRes = true;
-
 		if(!isset($_POST["SALE"]["EBAY"]))
-			return false;
+			return true;
 
+		$propsRes = true;
 		$ebayCategoryId = isset($_POST["SALE"]["EBAY"]["EBAY_CATEGORY_ID"]) ? $_POST["SALE"]["EBAY"]["EBAY_CATEGORY_ID"] : "";
 		$params = array();
 
@@ -75,7 +74,7 @@ class CatalogSectionTabHandler extends TabHandler
 
 		foreach($ebayCatVar as $key => $ebayCategoryVariation)
 		{
-			if(!isset($bitrixCatProps[$key]) || strlen($ebayCategoryVariation) <=0 )
+			if(!isset($bitrixCatProps[$key]) || $ebayCategoryVariation == '' )
 				continue;
 
 			$fields = array(
@@ -99,7 +98,7 @@ class CatalogSectionTabHandler extends TabHandler
 
 		foreach($ebayCategoriesIds as $ebayCategoryId)
 		{
-			if(strlen(trim($ebayCategoryId)) <= 0)
+			if(trim($ebayCategoryId) == '')
 				continue;
 
 			$fields = array(
@@ -152,7 +151,7 @@ class CatalogSectionTabHandler extends TabHandler
 
 				if($variationIdx === false
 				||!isset($_POST["SALE"]["EBAY"]["BITRIX_CATEGORY_PROPS"][$variationIdx])
-				|| strlen($_POST["SALE"]["EBAY"]["BITRIX_CATEGORY_PROPS"][$variationIdx]) <=0 )
+				|| $_POST["SALE"]["EBAY"]["BITRIX_CATEGORY_PROPS"][$variationIdx] == '' )
 				{
 					$result = false;
 					break;
@@ -181,8 +180,8 @@ class CatalogSectionTabHandler extends TabHandler
 		//categories
 		$resultHtml =
 			'<tr>'.
-				'<td width="20%" valign="top">'.Loc::getMessage("SALE_EBAY_CSTH_CATEGORY").':</td>'.
-				'<td width="80%">';
+				'<td width="40%" valign="top">'.Loc::getMessage("SALE_EBAY_CSTH_CATEGORY").':</td>'.
+				'<td width="60%">';
 
 		$catMapRes = \Bitrix\Sale\TradingPlatform\MapTable::getList(array(
 			"filter" => array(
@@ -260,16 +259,16 @@ class CatalogSectionTabHandler extends TabHandler
 				$policyPayment = $arMapRes["PARAMS"]["POLICY"]["PAYMENT"];
 		}
 
-		if(strlen($policyReturn) <= 0 && !empty($siteSettings["POLICY"]["RETURN"]["DEFAULT"]))
+		if($policyReturn == '' && !empty($siteSettings["POLICY"]["RETURN"]["DEFAULT"]))
 			$policyReturn = $siteSettings["POLICY"]["RETURN"]["DEFAULT"];
 
-		if(strlen($policyShipping) <= 0 && !empty($siteSettings["POLICY"]["SHIPPING"]["DEFAULT"]))
+		if($policyShipping == '' && !empty($siteSettings["POLICY"]["SHIPPING"]["DEFAULT"]))
 			$policyShipping = $siteSettings["POLICY"]["SHIPPING"]["DEFAULT"];
 
-		if(strlen($policyPayment) <= 0 && !empty($siteSettings["POLICY"]["PAYMENT"]["DEFAULT"]))
+		if($policyPayment == '' && !empty($siteSettings["POLICY"]["PAYMENT"]["DEFAULT"]))
 			$policyPayment = $siteSettings["POLICY"]["PAYMENT"]["DEFAULT"];
 
-		if(isset($siteSettings["API"]["AUTH_TOKEN"]) && strlen($siteSettings["API"]["AUTH_TOKEN"]) > 0)
+		if(isset($siteSettings["API"]["AUTH_TOKEN"]) && $siteSettings["API"]["AUTH_TOKEN"] <> '')
 			$policy = new \Bitrix\Sale\TradingPlatform\Ebay\Policy($siteSettings["API"]["AUTH_TOKEN"], $arArgs["IBLOCK"]["LID"]);
 		else
 			$errorMsg .= "You must set API token first!\n";
@@ -278,45 +277,81 @@ class CatalogSectionTabHandler extends TabHandler
 			<tr></tr><td colspan="2" style="border-top: 2px solid #e0e8ea;">&nbsp;</td></tr>
 			<tr>
 				<td>'.Loc::getMessage("SALE_EBAY_CSTH_POLICY_RETURN").':</span></td>
-				<td>
-					<select name="SALE[EBAY][POLICY][RETURN]">';
+				<td>';
 
 		if($policy)
+			$names = $policy->getPoliciesNames(\Bitrix\Sale\TradingPlatform\Ebay\Policy::TYPE_RETURN);
+		else
+			$names = array();
+
+		if($policy && !empty($names))
 		{
-			foreach($policy->getPoliciesNames(\Bitrix\Sale\TradingPlatform\Ebay\Policy::TYPE_RETURN) as $policyId => $policyName)
+			$resultHtml .= '<select name="SALE[EBAY][POLICY][RETURN]">';
+
+			foreach($names as $policyId => $policyName)
 				$resultHtml .= '<option value="'.htmlspecialcharsbx($policyId).'"'.($policyReturn == $policyId ? " selected" : "").'>'.$policyName.'</option>';
+
+			$resultHtml .= '</select>';
+		}
+		else
+		{
+			$resultHtml .= Loc::getMessage("SALE_EBAY_CSTH_NO_POLICY");
 		}
 
 		$resultHtml .= '
-					</select>
 				</td>
 			</tr>
 			<tr>
 				<td>'.Loc::getMessage("SALE_EBAY_CSTH_POLICY_SHIPMENT").':</td>
-				<td>
-					<select name="SALE[EBAY][POLICY][SHIPPING]">';
+				<td>';
+
 		if($policy)
+			$names = $policy->getPoliciesNames(\Bitrix\Sale\TradingPlatform\Ebay\Policy::TYPE_SHIPPING);
+		else
+			$names = array();
+
+
+		if($policy && !empty($names))
 		{
-			foreach($policy->getPoliciesNames(\Bitrix\Sale\TradingPlatform\Ebay\Policy::TYPE_SHIPPING) as $policyId => $policyName)
+			$resultHtml .= '<select name="SALE[EBAY][POLICY][SHIPPING]">';
+
+			foreach($names as $policyId => $policyName)
 				$resultHtml .= '<option value="'.htmlspecialcharsbx($policyId).'"'.($policyShipping == $policyId ? " selected" : "").'>'.$policyName.'</option>';
+
+			$resultHtml .= '</select>';
+		}
+		else
+		{
+			$resultHtml .= Loc::getMessage("SALE_EBAY_CSTH_NO_POLICY");
 		}
 
 		$resultHtml .='
-					</select>
 				</td>
 			</tr>
 			<tr>
 				<td>'.Loc::getMessage("SALE_EBAY_CSTH_POLICY_PAYMENT").':</td>
-				<td>
-					<select name="SALE[EBAY][POLICY][PAYMENT]">';
+				<td>';
 
 		if($policy)
+			$names = $policy->getPoliciesNames(\Bitrix\Sale\TradingPlatform\Ebay\Policy::TYPE_PAYMENT);
+		else
+			$names = array();
+
+		if($policy && !empty($names))
 		{
+			$resultHtml .= '<select name="SALE[EBAY][POLICY][PAYMENT]">';
+
 			foreach($policy->getPoliciesNames(\Bitrix\Sale\TradingPlatform\Ebay\Policy::TYPE_PAYMENT) as $policyId => $policyName)
 				$resultHtml .= '<option value="'.htmlspecialcharsbx($policyId).'"'.($policyPayment == $policyId ? " selected" : "").'>'.$policyName.'</option>';
+
+			$resultHtml .= '</select>';
+		}
+		else
+		{
+			$resultHtml .= Loc::getMessage("SALE_EBAY_CSTH_NO_POLICY");
 		}
 
-		$resultHtml .='	</select>
+		$resultHtml .='
 				</td>
 			</tr>
 			<tr>

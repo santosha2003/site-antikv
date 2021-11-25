@@ -6,4 +6,5 @@ $MESS["SALE_COMPATIBLE_ORDER_NOT_FOUND"] = "Bestellung nicht gefunden";
 $MESS["SALE_COMPATIBLE_ORDER_ID_NOT_FOUND"] = "Bestell-ID ist nicht angegeben.";
 $MESS["SALE_COMPATIBLE_ORDER_FUSERID_NOT_FOUND"] = "FUSER_ID ist nicht angegeben.";
 $MESS["SALE_COMPATIBLE_ORDER_ACCOUNT_NUMBER_ALREADY_EXISTS"] = "Die angegebene Bestell-ID wird bereits von einem anderen Dokument benutzt.";
+$MESS["SALE_COMPATIBLE_PAYSYSTEM_NOT_FOUND"] = "Zahlungssystem wurde nicht gefunden";
 ?>

@@ -16,4 +16,5 @@ $MESS["SALE_PRODUCT_ENTITY_PURCHASING_PRICE_IN_SITE_CURRENCY_FIELD"] = "Kaufprei
 $MESS["SALE_PRODUCT_ENTITY_ARRIVED_PRODUCTS_IN_PERIOD_BY_SHOP_FIELD"] = "Produkteinheiten erhalten";
 $MESS["SALE_PRODUCT_ENTITY_ARRIVED_PRODUCTS_IN_PERIOD_BY_STORE_FIELD"] = "Wareneingang auf den Lagern für einen bestimmten Zeitraum";
 $MESS["SALE_PRODUCT_ENTITY_EXPENSE_PRODUCTS_IN_PERIOD_BY_STORE_FIELD"] = "Warenausgang von Lagern für einen bestimmten Zeitraum";
+$MESS["SALE_PRODUCT_ENTITY_SUBSCRIPTIONS_IN_PERIOD_BY_SHOP_FIELD"] = "Abonnements für den angegebenen Berichtszeitraum";
 ?>

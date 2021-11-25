@@ -3,22 +3,33 @@ BX.namespace("BX.Sale.Admin.OrderShipment");
 BX.Sale.Admin.OrderShipment = function(params)
 {
 	this.index = params.index;
+	this.id = params.id;
 	this.shipment_statuses = params.shipment_statuses;
 	this.isAjax = !!params.isAjax;
 	this.srcList = params.src_list;
-	this.active = !!params.active;
+	this.allowAvailable = !!params.canAllow;
+	this.deductAvailable = !!params.canDeduct;
+	this.changeStatusAvailable = !!params.canChangeStatus;
 	this.discounts = params.discounts || {};
 	this.discountsMode = params.discountsMode || "edit";
+	this.weightKoeff = params.weightKoeff || 1;
+	this.weightUnit = params.weightUnit || '';
 
-	if (this.active)
-	{
-		this.initFieldChangeDeducted();
+	if (this.allowAvailable)
 		this.initFieldChangeAllowDelivery();
+
+	if (this.deductAvailable)
+		this.initFieldChangeDeducted();
+
+	if (this.changeStatusAvailable)
 		this.initFieldChangeStatus();
-		if (params.templateType == 'view')
-			this.initUpdateTrackingNumber();
-	}
+
+	if (!!params.active && params.templateType == 'view')
+		this.initUpdateTrackingNumber();
+
 	this.initFieldUpdateSum();
+	this.initFieldUpdateWeight();
+
 	this.initChangeProfile();
 	this.initCustomEvent();
 	this.initToggle();
@@ -35,10 +46,38 @@ BX.Sale.Admin.OrderShipment = function(params)
 			callback: this.setDeliveryPrice,
 			context: this
 		};
+
+		updater["DELIVERY_WEIGHT"] = {
+			callback: this.setDeliveryWeight,
+			context: this
+		};
 	}
 
-	if (!!params.base_price_delivery)
-		this.setCustomPriceDelivery(params.base_price_delivery);
+	if (!!params.calculated_price)
+		this.setCalculatedPriceDelivery(params.calculated_price);
+
+	if (!!params.calculated_weight)
+		this.setCalculatedWeightDelivery(params.calculated_weight);
+
+	updater["DEDUCTED_"+this.id] = {
+		callback: this.updateDeductedStatus,
+		context: this
+	};
+
+	updater["ALLOW_DELIVERY_"+this.id] = {
+		callback: this.updateAllowDeliveryStatus,
+		context: this
+	};
+
+	updater["SHIPMENT_STATUS_LIST_"+this.id] = {
+		callback: this.setShipmentStatusList,
+		context: this
+	};
+
+	updater["SHIPMENT_STATUS_"+this.id] = {
+		callback: this.setDeliveryStatus,
+		context: this
+	};
 
 	if (params.templateType == 'edit')
 	{
@@ -47,8 +86,13 @@ BX.Sale.Admin.OrderShipment = function(params)
 			context: this
 		};
 
-		updater["CUSTOM_PRICE"] = {
-			callback: this.setCustomPriceDelivery,
+		updater["CALCULATED_PRICE"] = {
+			callback: this.setCalculatedPriceDelivery,
+			context: this
+		};
+
+		updater["CALCULATED_WEIGHT"] = {
+			callback: this.setCalculatedWeightDelivery,
 			context: this
 		};
 
@@ -77,6 +121,12 @@ BX.Sale.Admin.OrderShipment = function(params)
 			context: this
 		};
 
+
+		updater["SHIPMENT_COMPANY_ID"] = {
+			callback: this.updateCompany,
+			context: this
+		};
+
 		if (!!BX.Sale.Admin.OrderBuyer && !!BX.Sale.Admin.OrderBuyer.propertyCollection)
 		{
 			var propLocation = BX.Sale.Admin.OrderBuyer.propertyCollection.getDeliveryLocation();
@@ -98,6 +148,23 @@ BX.Sale.Admin.OrderShipment = function(params)
 	};
 
 	BX.Sale.Admin.OrderEditPage.registerFieldsUpdaters(updater);
+};
+
+BX.Sale.Admin.OrderShipment.prototype.updateCompany = function(companyList)
+{
+	var company = BX('SHIPMENT_COMPANY_ID_'+this.index);
+	if (company)
+		company.innerHTML = companyList;
+};
+
+BX.Sale.Admin.OrderShipment.prototype.updateDeductedStatus = function (flag)
+{
+	this.setDeducted({status : flag});
+};
+
+BX.Sale.Admin.OrderShipment.prototype.updateAllowDeliveryStatus = function (flag)
+{
+	this.setAllowDelivery({status : flag});
 };
 
 BX.Sale.Admin.OrderShipment.prototype.initUpdateTrackingNumber = function ()
@@ -150,11 +217,21 @@ BX.Sale.Admin.OrderShipment.prototype.initUpdateTrackingNumber = function ()
 BX.Sale.Admin.OrderShipment.prototype.updateDeliveryList = function(services)
 {
 	var serviceControl = BX('DELIVERY_'+this.index);
-	if (!serviceControl)
-		return;
 
-	var selectedItem = serviceControl.options[serviceControl.selectedIndex].value;
+	if (!serviceControl)
+	{
+		return;
+	}
+
+	var selectedItem = 0;
+
+	if(serviceControl.options[serviceControl.selectedIndex])
+	{
+		selectedItem = serviceControl.options[serviceControl.selectedIndex].value;
+	}
+
 	serviceControl.innerHTML = services;
+
 	for (var i in serviceControl.options)
 	{
 		if (serviceControl.options[i].value == selectedItem)
@@ -174,7 +251,7 @@ BX.Sale.Admin.OrderShipment.prototype.setDiscountsList = function(discounts)
 
 	if(container)
 	{
-		container.innerHTML = "";
+		container = BX.cleanNode(container, false);
 
 		if(discounts && discounts.RESULT && discounts.RESULT.DELIVERY && discounts.RESULT.DELIVERY.length > 0)
 		{
@@ -186,10 +263,10 @@ BX.Sale.Admin.OrderShipment.prototype.setDiscountsList = function(discounts)
 		}
 	}
 
-	if(row && row.nextElementSibling)
+	if(row && row.previousElementSibling)
 	{
 		row.style.display = display;
-		row.nextElementSibling.style.display = display;
+		row.previousElementSibling.style.display = display;
 	}
 };
 
@@ -285,19 +362,84 @@ BX.Sale.Admin.OrderShipment.prototype.updateShipmentStatus = function(field, sta
 		'shipmentId' : BX('SHIPMENT_ID_'+this.index).value,
 		'field' : field,
 		'status' : status,
-		'callback' : BX.proxy(function (result)
-		{
-			if (result.ERROR && result.ERROR.length > 0)
-			{
-				BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
-			}
-			else
-			{
-				this[params.callback](params.args);
+		'callback' : BX.proxy(function(result){
+			this.callbackUpdateShipmentStatus(result, field, status, params)
+		}, this)
+	};
+	BX.Sale.Admin.OrderAjaxer.sendRequest(request);
+};
 
-				if(result.RESULT)
-					BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.RESULT);
+
+BX.Sale.Admin.OrderShipment.prototype.callbackUpdateShipmentStatus = function(result, field, status, params)
+{
+	if (result.ERROR && result.ERROR.length > 0)
+	{
+		BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
+	}
+	else if (result.NEED_CONFIRM && result.NEED_CONFIRM === true)
+	{
+		var confirmTitle = false;
+		var confirmMessage = false;
+
+		if (result.WARNING && result.WARNING.length > 0)
+		{
+			confirmMessage = result.WARNING;
+		}
+
+		if (result.CONFIRM_TITLE && result.CONFIRM_TITLE.length > 0)
+		{
+			confirmTitle = result.CONFIRM_TITLE ;
+		}
+
+		if (result.CONFIRM_MESSAGE && result.CONFIRM_MESSAGE.length > 0)
+		{
+			confirmMessage = confirmMessage + "<br/>" + result.CONFIRM_MESSAGE;
+		}
+
+
+		BX.Sale.Admin.OrderEditPage.showConfirmDialog(
+			confirmMessage,
+			confirmTitle,
+			BX.proxy(function(){
+				this.sendStrictUpdateShipmentStatus(field, status, params)
+			}, this),
+			function () {
+				return;
 			}
+		);
+	}
+	else
+	{
+		this[params.callback](params.args);
+
+		if(result.RESULT)
+			BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.RESULT);
+
+		if (result.WARNING && result.WARNING.length > 0)
+		{
+			BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
+		}
+
+		if(typeof result.MARKERS != 'undefined')
+		{
+			var node = BX('sale-adm-order-problem-block');
+			if(node)
+				node.innerHTML = result.MARKERS;
+		}
+	}
+};
+
+BX.Sale.Admin.OrderShipment.prototype.sendStrictUpdateShipmentStatus = function(field, status, params)
+{
+	var request = {
+		'action' : 'updateShipmentStatus',
+		'orderId' : BX('ID').value,
+		'shipmentId' : BX('SHIPMENT_ID_'+this.index).value,
+		'field' : field,
+		'status' : status,
+		'strict': true,
+		'callback' : BX.proxy(function(result){
+			this.callbackUpdateShipmentStatus(result, field, status, params)
 		}, this)
 	};
 	BX.Sale.Admin.OrderAjaxer.sendRequest(request);
@@ -362,7 +504,7 @@ BX.Sale.Admin.OrderShipment.prototype.initChangeProfile = function()
 		var discounts = BX('sale-order-shipment-discounts-row-' + this.index);
 		if (discounts)
 		{
-			BX.hide(discounts.nextElementSibling);
+			BX.hide(discounts.previousElementSibling);
 			BX.hide(discounts);
 		}
 
@@ -387,7 +529,7 @@ BX.Sale.Admin.OrderShipment.prototype.initChangeProfile = function()
 			var discounts = BX('sale-order-shipment-discounts-row-' + this.index);
 			if (discounts)
 			{
-				BX.hide(discounts.nextElementSibling);
+				BX.hide(discounts.previousElementSibling);
 				BX.hide(discounts);
 			}
 
@@ -507,12 +649,33 @@ BX.Sale.Admin.OrderShipment.prototype.initFieldChangeStatus = function()
 
 		if(btnShipment)
 		{
-			var shipment = new BX.COpener(
-				{
-					'DIV' : btnShipment.parentNode,
-					'MENU' : menu
-				}
-			);
+			if (menu.length > 0)
+			{
+				var shipment = new BX.COpener(
+					{
+						'DIV': btnShipment.parentNode,
+						'MENU': menu
+					}
+				);
+			}
+			else
+			{
+				var span = BX.create('span', {
+						children : [
+							BX.create('span', {
+								attrs :
+								{
+									id : btnShipment.getAttribute('id'),
+									className : 'not_active'
+								},
+								text : btnShipment.textContent
+							})
+						]
+					}
+				);
+				btnShipment.parentNode.parentNode.appendChild(span);
+				BX.remove(btnShipment.parentNode);
+			}
 		}
 	}
 };
@@ -535,33 +698,67 @@ BX.Sale.Admin.OrderShipment.prototype.setDeliveryStatus = function (data)
 
 BX.Sale.Admin.OrderShipment.prototype.setDeliveryBasePrice = function(basePrice)
 {
-	if(!BX('BASE_PRICE_DELIVERY_'+this.index))
-		return;
+	if (BX('BASE_PRICE_DELIVERY_'+this.index))
+		BX('BASE_PRICE_DELIVERY_'+this.index).value = basePrice;
 
-	BX('BASE_PRICE_DELIVERY_'+this.index).value = basePrice;
+	if (BX('BASE_PRICE_DELIVERY_T_'+this.index))
+		BX('BASE_PRICE_DELIVERY_T_'+this.index).innerHTML = basePrice;
+};
+
+BX.Sale.Admin.OrderShipment.prototype.setDeliveryWeight = function(weight)
+{
+	var weightCell = BX('WEIGHT_DELIVERY_'+this.index);
+
+	if(!weightCell)
+	{
+		return;
+	}
+
+	if(weightCell.tagName === 'INPUT')
+	{
+		weightCell.value = weight;
+	}
+	else if(weightCell.tagName === 'TD')
+	{
+		weightCell.innerHTML = weight + ' ' + this.weightUnit;
+	}
 };
 
 BX.Sale.Admin.OrderShipment.prototype.setDeliveryPrice = function(price)
 {
-	if(!BX('PRICE_DELIVERY_'+this.index))
-		return;
+	var priceCell = BX('PRICE_DELIVERY_'+this.index);
 
-	BX('PRICE_DELIVERY_'+this.index).innerHTML = price;
+	if(!priceCell)
+	{
+		return;
+	}
+
+	if(priceCell.tagName === 'INPUT')
+	{
+		priceCell.value = price;
+	}
+	else if(priceCell.tagName === 'TD')
+	{
+		priceCell.innerHTML = BX.Sale.Admin.OrderEditPage.currencyFormat(price);
+	}
 };
 
-BX.Sale.Admin.OrderShipment.prototype.setCustomPriceDelivery = function(deliveryPrice)
+BX.Sale.Admin.OrderShipment.prototype.setCalculatedPriceDelivery = function(deliveryPrice)
 {
 	var customPrice = BX('CUSTOM_PRICE_DELIVERY_'+this.index);
-	if (customPrice.value != 'Y')
+	if (customPrice.value != 'Y' && BX.Sale.Admin.OrderEditPage.formId != 'order_shipment_edit_info_form')
 		return;
 
 	var obDiscountSum = BX('PRICE_DELIVERY_'+this.index);
-	var parent = BX.findParent(obDiscountSum, {tag : 'tbody'}, true);
-	var child = BX.findChildByClassName(parent, 'row_set_new_delivery_price');
-	if (child)
-		BX.remove(child);
+	if (obDiscountSum)
+	{
+		var parent = BX.findParent(obDiscountSum, {tag: 'tbody'}, true);
+		var child = BX.findChildByClassName(parent, 'row_set_new_delivery_price');
+		if (child)
+			BX.remove(child);
+	}
 
-	BX('CUSTOM_PRICE_'+this.index).value = deliveryPrice;
+	BX('CALCULATED_PRICE_'+this.index).value = deliveryPrice;
 
 	var tr = BX.create('tr',
 	{
@@ -578,7 +775,7 @@ BX.Sale.Admin.OrderShipment.prototype.setCustomPriceDelivery = function(delivery
 				children : [
 					BX.create('span',
 					{
-						text : BX.Sale.Admin.OrderEditPage.currencyFormat(deliveryPrice)
+						html : BX.Sale.Admin.OrderEditPage.currencyFormat(deliveryPrice)
 					}),
 					BX.create('span', {
 						text : BX.message('SALE_ORDER_SHIPMENT_APPLY'),
@@ -587,6 +784,7 @@ BX.Sale.Admin.OrderShipment.prototype.setCustomPriceDelivery = function(delivery
 							{
 								if (confirm(BX.message('SALE_ORDER_SHIPMENT_CONFIRM_SET_NEW_PRICE')))
 								{
+									BX('PRICE_DELIVERY_'+this.index).value = deliveryPrice;
 									BX('BASE_PRICE_DELIVERY_'+this.index).value = deliveryPrice;
 
 									var child = BX.findChildByClassName(parent, 'row_set_new_delivery_price');
@@ -614,6 +812,78 @@ BX.Sale.Admin.OrderShipment.prototype.setCustomPriceDelivery = function(delivery
 	parent.appendChild(tr);
 };
 
+BX.Sale.Admin.OrderShipment.prototype.setCalculatedWeightDelivery = function(deliveryWeight)
+{
+	var customWeight = BX('CUSTOM_WEIGHT_DELIVERY_'+this.index);
+
+	if (customWeight.value !== 'Y' && BX.Sale.Admin.OrderEditPage.formId !== 'order_shipment_edit_info_form')
+		return;
+
+	var obCurrentWeight = BX('WEIGHT_DELIVERY_'+this.index);
+	if (obCurrentWeight)
+	{
+		var parent = BX.findParent(obCurrentWeight, {tag: 'tbody'}, true);
+		var child = BX.findChildByClassName(parent, 'row_set_new_delivery_weight');
+
+		if (child)
+		{
+			BX.remove(child);
+		}
+	}
+
+	BX('CALCULATED_WEIGHT_'+this.index).value = deliveryWeight;
+
+	var tr = BX.create('tr',
+		{
+			children : [
+				BX.create('td',
+					{
+						html : BX.message('SALE_ORDER_SHIPMENT_NEW_WEIGHT_DELIVERY')+': ',
+						props : {
+							className: 'adm-detail-content-cell-l'
+						}
+					}),
+				BX.create('td',
+					{
+						children : [
+							BX.create('span',
+								{
+									text : deliveryWeight + ' ' + this.weightUnit
+								}),
+							BX.create('span', {
+								text : BX.message('SALE_ORDER_SHIPMENT_APPLY'),
+								props : {
+									onclick: BX.proxy(function ()
+									{
+										if (confirm(BX.message('SALE_ORDER_SHIPMENT_CONFIRM_SET_NEW_WEIGHT')))
+										{
+											BX('WEIGHT_DELIVERY_'+this.index).value = deliveryWeight;
+
+											var child = BX.findChildByClassName(parent, 'row_set_new_delivery_weight');
+											BX.remove(child);
+
+											customWeight.value = 'N';
+
+											if (BX.Sale.Admin.OrderEditPage.formId != 'order_shipment_edit_info_form')
+												BX.Sale.Admin.OrderAjaxer.sendRequest(BX.Sale.Admin.OrderEditPage.ajaxRequests.refreshOrderData());
+										}
+									}, this),
+									className : 'new_delivery_price_button'
+								}
+							})
+						],
+						props : {
+							className: 'adm-detail-content-cell-r'
+						}
+					})
+			],
+			props : {
+				className : 'row_set_new_delivery_weight'
+			}
+		});
+	parent.appendChild(tr);
+};
+
 BX.Sale.Admin.OrderShipment.prototype.updateDeliveryInfo = function()
 {
 	var formData = BX.Sale.Admin.OrderEditPage.getAllFormData();
@@ -630,6 +900,11 @@ BX.Sale.Admin.OrderShipment.prototype.updateDeliveryInfo = function()
 			{
 				BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.SHIPMENT_DATA);
 				this.updateDeliveryLogotip();
+
+				if (result.WARNING && result.WARNING.length > 0)
+				{
+					BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
+				}
 			}
 		}, this)
 	};
@@ -647,9 +922,17 @@ BX.Sale.Admin.OrderShipment.prototype.getDeliveryPrice = function()
 	'formData': formData,
 	'callback' : BX.proxy(function (result) {
 		if (result.ERROR && result.ERROR.length > 0)
+		{
 			BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
+		}
 		else
+		{
 			BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.RESULT);
+			if (result.WARNING && result.WARNING.length > 0)
+			{
+				BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
+			}
+		}
 		}, this)
 	};
 
@@ -753,9 +1036,15 @@ BX.Sale.Admin.OrderShipment.prototype.setAllowDelivery = function(data)
 	this.initFieldChangeAllowDelivery();
 };
 
+BX.Sale.Admin.OrderShipment.prototype.setShipmentStatusList = function(data)
+{
+	this.shipment_statuses = data;
+	this.initFieldChangeStatus();
+};
+
 BX.Sale.Admin.OrderShipment.prototype.initFieldUpdateSum = function()
 {
-	var obSum = BX('BASE_PRICE_DELIVERY_'+this.index);
+	var obSum = BX('PRICE_DELIVERY_'+this.index);
 	var customPrice = BX('CUSTOM_PRICE_DELIVERY_'+this.index);
 	BX.bind(obSum, 'change', BX.proxy(function()
 	{
@@ -771,11 +1060,33 @@ BX.Sale.Admin.OrderShipment.prototype.initFieldUpdateSum = function()
 			var discounts = BX('sale-order-shipment-discounts-row-' + this.index);
 			if (discounts)
 			{
-				BX.hide(discounts.nextElementSibling);
+				BX.hide(discounts.previousElementSibling);
 				BX.hide(discounts);
 			}
 
 			BX('CUSTOM_PRICE_DELIVERY_' + this.index).value = 'Y';
+			BX('BASE_PRICE_DELIVERY_' + this.index).value = obSum.value;
+		}
+	}, this));
+};
+
+BX.Sale.Admin.OrderShipment.prototype.initFieldUpdateWeight = function()
+{
+	var obWeight = BX('WEIGHT_DELIVERY_'+this.index);
+	var customWeight = BX('CUSTOM_WEIGHT_DELIVERY_'+this.index);
+	BX.bind(obWeight, 'change', BX.proxy(function()
+	{
+		customWeight.value = 'Y';
+
+		if (BX.Sale.Admin.OrderEditPage.formId !== 'order_shipment_edit_info_form')
+		{
+			BX.Sale.Admin.OrderAjaxer.sendRequest(
+				BX.Sale.Admin.OrderEditPage.ajaxRequests.refreshOrderData()
+			);
+		}
+		else
+		{
+			BX('CUSTOM_WEIGHT_DELIVERY_' + this.index).value = 'Y';
 		}
 	}, this));
 };
@@ -818,6 +1129,10 @@ BX.Sale.Admin.OrderShipment.prototype.initDeleteShipment = function()
 							{
 								BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.RESULT);
 								BX.cleanNode(BX('shipment_container_' + this.index));
+								if (result.WARNING && result.WARNING.length > 0)
+								{
+									BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
+								}
 							}
 						}, this)
 					};
@@ -825,6 +1140,172 @@ BX.Sale.Admin.OrderShipment.prototype.initDeleteShipment = function()
 				}
 			}
 	}, this));
+};
+
+BX.Sale.Admin.OrderShipment.prototype.showCreateCheckWindow = function(shipmentId)
+{
+	ShowWaitWindow();
+	var request = {
+		'action': 'addCheckShipment',
+		'shipmentId': shipmentId,
+		'callback' : BX.proxy(function(result)
+		{
+			CloseWaitWindow();
+			if (result.ERROR && result.ERROR.length > 0)
+			{
+				BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
+			}
+			else
+			{
+				var text = result.HTML;
+
+				var dlg = new BX.CAdminDialog({
+					'content': text,
+					'title': BX.message('SALE_ORDER_SHIPMENT_CASHBOX_CHECK_ADD_WINDOW_TITLE'),
+					'resizable': false,
+					'draggable': false,
+					'height': '100',
+					'width': '516',
+					'buttons': [
+						{
+							title: window.BX.message('JS_CORE_WINDOW_SAVE'),
+							id: 'saveCheckBtn',
+							name: 'savebtn',
+							className: window.BX.browser.IsIE() && window.BX.browser.IsDoctype() && !window.BX.browser.IsIE10() ? '' : 'adm-btn-save'
+						},
+						{
+							title: window.BX.message('JS_CORE_WINDOW_CANCEL'),
+							id: 'cancelCheckBtn',
+							name: 'cancel'
+						}
+					]
+				});
+				dlg.Show();
+
+				BX.bind(BX('checkTypeSelect'), 'change', function ()
+				{
+					var option = this.value;
+					var disabled = option.indexOf('credit') !== -1;
+
+					var parent = BX.findParent(this, {tag : 'tr'});
+					var tr = parent.nextElementSibling;
+					var checkboxList = BX.findChildren(tr, {tag : 'input'}, true);
+					for (var i in checkboxList)
+					{
+						if (checkboxList.hasOwnProperty(i))
+						{
+							var sibling = checkboxList[i].nextElementSibling;
+							if (disabled)
+							{
+								BX.addClass(sibling, "bx-admin-service-restricted");
+							}
+							else
+							{
+								BX.removeClass(sibling, "bx-admin-service-restricted");
+							}
+
+							if (checkboxList[i].checked)
+								checkboxList[i].click();
+							checkboxList[i].disabled = disabled;
+						}
+					}
+				});
+
+				BX.bind(BX("cancelCheckBtn"), 'click', BX.delegate(
+					function()
+					{
+						dlg.Close();
+						dlg.DIV.parentNode.removeChild(dlg.DIV);
+					}
+				),this );
+
+				BX.bind(BX("saveCheckBtn"), 'click', BX.delegate(
+					function()
+					{
+						ShowWaitWindow();
+						var form = BX('check_shipment');
+						
+						var subRequest = {
+							formData : BX.ajax.prepareForm(form),
+							action: 'saveCheck',
+							sessid: BX.bitrix_sessid()
+						};
+
+						BX.ajax(
+						{
+							method: 'post',
+							dataType: 'json',
+							url: '/bitrix/admin/sale_order_ajax.php',
+							data: subRequest,
+							onsuccess: function(saveResult)
+							{
+								CloseWaitWindow();
+								if (saveResult.ERROR && saveResult.ERROR.length > 0)
+								{
+									BX.Sale.Admin.OrderEditPage.showDialog(saveResult.ERROR);
+								}
+								else
+								{
+									BX('SHIPMENT_CHECK_LIST_ID_' + shipmentId).innerHTML = saveResult.CHECK_LIST_HTML;
+									if (BX('SHIPMENT_CHECK_LIST_ID_SHORT_VIEW' + shipmentId) !== undefined && BX('SHIPMENT_CHECK_LIST_ID_SHORT_VIEW' + shipmentId) !== null)
+									{
+										BX('SHIPMENT_CHECK_LIST_ID_SHORT_VIEW' + shipmentId).innerHTML = saveResult.CHECK_LIST_HTML;
+									}
+
+									dlg.Close();
+									dlg.DIV.parentNode.removeChild(dlg.DIV);
+								}
+							},
+							onfailure: function(data)
+							{
+								CloseWaitWindow();
+							}
+						});
+					}
+				),this);
+			}
+		}, this)
+	};
+
+	BX.Sale.Admin.OrderAjaxer.sendRequest(request, true);
+};
+
+
+
+BX.Sale.Admin.OrderShipment.prototype.onCheckEntityChoose = function (currentElement)
+{
+	var checked = currentElement.checked;
+	
+	var paymentType = BX(currentElement.id+"_type");
+	if (paymentType)
+		paymentType.disabled = !checked;
+};
+
+BX.Sale.Admin.OrderShipment.prototype.sendQueryCheckStatus = function(checkId)
+{
+	ShowWaitWindow();
+	var request = {
+		'action': 'sendQueryCheckStatus',
+		'checkId': checkId,
+		'callback' : BX.proxy(function(result)
+		{
+			if (result.ERROR && result.ERROR.length > 0)
+			{
+				BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
+			}
+			
+			var shipmentId = result.SHIPMENT_ID;
+			BX('SHIPMENT_CHECK_LIST_ID_' + shipmentId).innerHTML = result.CHECK_LIST_HTML;
+			if (BX('SHIPMENT_CHECK_LIST_ID_SHORT_VIEW' + shipmentId) !== undefined && BX('SHIPMENT_CHECK_LIST_ID_SHORT_VIEW' + shipmentId) !== null)
+			{
+				BX('SHIPMENT_CHECK_LIST_ID_SHORT_VIEW' + shipmentId).innerHTML = result.CHECK_LIST_HTML;
+			}
+
+			CloseWaitWindow();
+		}, this)
+	};
+
+	BX.Sale.Admin.OrderAjaxer.sendRequest(request, true);
 };
 
 BX.namespace("BX.Sale.Admin.GeneralShipment");
@@ -838,12 +1319,19 @@ BX.Sale.Admin.GeneralShipment =
 		);
 	},
 
-	createNewShipment : function()
+	createNewShipment : function(event, data)
 	{
-		var orderId = BX('ID').value;
-		window.location = '/bitrix/admin/sale_order_shipment_edit.php?lang='+BX.Sale.Admin.OrderEditPage.languageId+'&order_id='+orderId+'&backurl='+encodeURIComponent(window.location.pathname+window.location.search);
-	},
+        data = data ? data : {};
+        addParams = BX.prop.getObject(data, 'addParams', {});
 
+		var orderId = BX('ID').value;
+        url = '/bitrix/admin/sale_order_shipment_edit.php?lang='+BX.Sale.Admin.OrderEditPage.languageId+'&order_id='+orderId+'&backurl='+encodeURIComponent(window.location.pathname+window.location.search);
+		if (addParams)
+            url = BX.util.add_url_param(url, addParams);
+
+		window.location = url;
+	},
+	
 	findProductByBarcode : function(_this)
 	{
 		BX.hide(_this.parentNode);
@@ -910,6 +1398,11 @@ BX.Sale.Admin.GeneralShipment =
 
 						if(lastUpdate)
 							lastUpdate.innerHTML = result.TRACKING_LAST_CHANGE;
+					}
+
+					if (result.WARNING && result.WARNING.length > 0)
+					{
+						BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
 					}
 				}
 

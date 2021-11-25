@@ -17,7 +17,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_MeasureRatio_Query query()
+ * @method static EO_MeasureRatio_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_MeasureRatio_Result getById($id)
+ * @method static EO_MeasureRatio_Result getList(array $parameters = array())
+ * @method static EO_MeasureRatio_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_MeasureRatio createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_MeasureRatio_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_MeasureRatio wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_MeasureRatio_Collection wakeUpCollection($rows)
+ */
 
 class MeasureRatioTable extends Main\Entity\DataManager
 {
@@ -51,7 +64,18 @@ class MeasureRatioTable extends Main\Entity\DataManager
 			'RATIO' => new Main\Entity\FloatField('RATIO', array(
 				'required' => true,
 				'title' => Loc::getMessage('MEASURE_RATIO_ENTITY_RATIO_FIELD')
-			))
+			)),
+			'IS_DEFAULT' => new Main\Entity\BooleanField('IS_DEFAULT', array(
+				'values' => array('N', 'Y'),
+				'default_value' => 'N',
+				'title' => Loc::getMessage('MEASURE_RATIO_ENTITY_IS_DEFAULT_FIELD')
+			)),
+			'PRODUCT' => new Main\Entity\ReferenceField(
+				'PRODUCT',
+				'\Bitrix\Catalog\Product',
+				array('=this.PRODUCT_ID' => 'ref.ID'),
+				array('join_type' => 'LEFT')
+			),
 		);
 	}
 
@@ -72,11 +96,11 @@ class MeasureRatioTable extends Main\Entity\DataManager
 
 		$result = array_fill_keys($product, 1);
 		$ratioRows = array_chunk($product, 500);
-		foreach ($ratioRows as &$row)
+		foreach ($ratioRows as $row)
 		{
 			$ratioIterator = self::getList(array(
 				'select' => array('PRODUCT_ID', 'RATIO'),
-				'filter' => array('@PRODUCT_ID' => $row)
+				'filter' => array('@PRODUCT_ID' => $row, '=IS_DEFAULT' => 'Y')
 			));
 			while ($ratio = $ratioIterator->fetch())
 			{
@@ -84,7 +108,7 @@ class MeasureRatioTable extends Main\Entity\DataManager
 				$ratioInt = (int)$ratio['RATIO'];
 				$ratioFloat = (float)$ratio['RATIO'];
 				$ratioResult  = ($ratioFloat > $ratioInt ? $ratioFloat : $ratioInt);
-				if (abs($ratioResult) < CATALOG_VALUE_EPSILON || $ratioResult < 0)
+				if ($ratioResult < CATALOG_VALUE_EPSILON)
 					continue;
 				$result[$ratio['PRODUCT_ID']] = $ratioResult;
 			}
@@ -92,5 +116,26 @@ class MeasureRatioTable extends Main\Entity\DataManager
 		}
 		unset($row, $ratioRows);
 		return $result;
+	}
+
+	/**
+	 * Delete all rows for product.
+	 * @internal
+	 *
+	 * @param int $id       Product id.
+	 * @return void
+	 */
+	public static function deleteByProduct($id)
+	{
+		$id = (int)$id;
+		if ($id <= 0)
+			return;
+
+		$conn = Main\Application::getConnection();
+		$helper = $conn->getSqlHelper();
+		$conn->queryExecute(
+			'delete from '.$helper->quote(self::getTableName()).' where '.$helper->quote('PRODUCT_ID').' = '.$id
+		);
+		unset($helper, $conn);
 	}
 }

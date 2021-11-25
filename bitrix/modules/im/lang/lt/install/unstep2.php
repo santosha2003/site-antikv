@@ -1,3 +1,0 @@
-<?
-$MESS["MOD_UNINST_DELETE_FROM_TEMPLATE"] = "Paðalinti ðá kodà ið svetainës ðablono (header.php):";
-?>

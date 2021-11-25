@@ -3,16 +3,14 @@ IncludeModuleLangFile(__FILE__);
 
 class CAdminNotify
 {
-	const TYPE_NORMAL = 'NORMAL';
-	const TYPE_ERROR = 'ERROR';
+	const TYPE_NORMAL = 'M';
+	const TYPE_ERROR = 'E';
 
 	protected static function CleanCache()
 	{
 		global $CACHE_MANAGER;
 
-		$by = 'lid';
-		$order = 'asc';
-		$rsLangs = CLanguage::GetList($by, $order);
+		$rsLangs = CLanguage::GetList('lid', 'asc');
 		while ($arLang = $rsLangs->Fetch())
 		{
 			$CACHE_MANAGER->Clean("admin_notify_list_".$arLang['LANGUAGE_ID']);
@@ -31,7 +29,7 @@ class CAdminNotify
 		if (!is_set($arFields['ENABLE_CLOSE']))
 			$arFields['ENABLE_CLOSE'] = 'Y';
 
-		if (is_set($arFields['TAG']) && strlen(trim($arFields['TAG']))>0)
+		if (is_set($arFields['TAG']) && trim($arFields['TAG']) <> '')
 		{
 			$arFields['TAG'] = trim($arFields['TAG']);
 			self::DeleteByTag($arFields['TAG']);
@@ -41,21 +39,19 @@ class CAdminNotify
 			$arFields['TAG'] = "";
 		}
 
-		if (!isset($arFields['TYPE']) || !in_array($arFields['TYPE'], Array(self::TYPE_NORMAL, self::TYPE_ERROR)))
-			$arFields['TYPE'] = self::TYPE_NORMAL;
+		$arFields['PUBLIC_SECTION'] = (isset($arFields['PUBLIC_SECTION']) && $arFields['PUBLIC_SECTION'] == 'Y' ? 'Y' : 'N');
+		if (!isset($arFields['NOTIFY_TYPE']) || !in_array($arFields['NOTIFY_TYPE'], array(self::TYPE_NORMAL, self::TYPE_ERROR)))
+			$arFields['NOTIFY_TYPE'] = self::TYPE_NORMAL;
 
-		$arFields_i = Array(
+		$arFields_i = array(
 			'MODULE_ID'	=> is_set($arFields['MODULE_ID'])? trim($arFields['MODULE_ID']): "",
 			'TAG'	=> $arFields['TAG'],
 			'MESSAGE'	=> trim($arFields['MESSAGE']),
 			'ENABLE_CLOSE'	=> $arFields['ENABLE_CLOSE'],
-			'PUBLIC_SECTION' => $arFields['PUBLIC_SECTION']
+			'PUBLIC_SECTION' => $arFields['PUBLIC_SECTION'],
+			'NOTIFY_TYPE' => $arFields['NOTIFY_TYPE']
 		);
-<<<<<<< HEAD
-		$ID = $DB->Add('b_admin_notify', $arFields_i, Array('MESSAGE'));
-=======
 		$ID = $DB->Add('b_admin_notify', $arFields_i, array('MESSAGE'));
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 
 		if ($ID)
 		{
@@ -89,7 +85,6 @@ class CAdminNotify
 			$aMsg[] = array('id'=>'MESSAGE', 'text'=>GetMessage('MAIN_AN_ERROR_MESSAGE'));
 		if(is_set($arFields, 'ENABLE_CLOSE') && !($arFields['ENABLE_CLOSE'] == 'Y' || $arFields['ENABLE_CLOSE'] == 'N'))
 			$aMsg[] = array('id'=>'ENABLE_CLOSE', 'text'=>GetMessage('MAIN_AN_ERROR_ENABLE_CLOSE'));
-		$arFields['PUBLIC_SECTION'] = (isset($arFields['PUBLIC_SECTION']) && $arFields['PUBLIC_SECTION'] == 'Y' ? 'Y' : 'N');
 
 		if(!empty($aMsg))
 		{
@@ -105,13 +100,8 @@ class CAdminNotify
 	{
 		global $DB;
 		$err_mess = (self::err_mess()).'<br />Function: Delete<br />Line: ';
-<<<<<<< HEAD
-		$ID = intval($ID);
-		if (0 >= $ID)
-=======
 		$ID = (int)$ID;
 		if ($ID <= 0)
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 			return false;
 
 		$strSql = "DELETE FROM b_admin_notify_lang WHERE NOTIFY_ID = ".$ID;
@@ -144,13 +134,10 @@ class CAdminNotify
 		global $DB;
 		$err_mess = (self::err_mess()).'<br />Function: DeleteByTag<br />Line: ';
 
-<<<<<<< HEAD
-=======
 		$tagId = (string)$tagId;
 		if ($tagId == '')
 			return false;
 
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		$strSql = "DELETE FROM b_admin_notify_lang WHERE NOTIFY_ID IN (SELECT ID FROM b_admin_notify WHERE TAG like '%".$DB->ForSQL($tagId)."%')";
 		$DB->Query($strSql, false, $err_mess.__LINE__);
 
@@ -191,7 +178,8 @@ class CAdminNotify
 		$html = "";
 		foreach ($arNotify as $value)
 		{
-			$html .= '<div class="adm-warning-block" data-id="'.intval($value['ID']).'" data-ajax="Y"><span class="adm-warning-text">'.$value['MESSAGE'].'</span><span class="adm-warning-icon"></span>'.($value['ENABLE_CLOSE'] == 'Y' ? '<span onclick="BX.adminPanel ? BX.adminPanel.hideNotify(this.parentNode) : BX.admin.panel.hideNotify(this.parentNode);" class="adm-warning-close"></span>' : '').'</div>';
+			$className = ($value['NOTIFY_TYPE'] == self::TYPE_ERROR ? 'adm-warning-block adm-warning-block-red' : 'adm-warning-block');
+			$html .= '<div class="'.$className.'" data-id="'.(int)$value['ID'].'" data-ajax="Y"><span class="adm-warning-text">'.$value['MESSAGE'].'</span><span class="adm-warning-icon"></span>'.($value['ENABLE_CLOSE'] == 'Y' ? '<span onclick="BX.adminPanel ? BX.adminPanel.hideNotify(this.parentNode) : BX.admin.panel.hideNotify(this.parentNode);" class="adm-warning-close"></span>' : '').'</div>';
 		}
 
 		return $html;
@@ -213,7 +201,7 @@ class CAdminNotify
 			$arFilter['PUBLIC_SECTION'] = 'N';
 
 		$strFrom = '';
-		$strSelect = "AN.ID, AN.MODULE_ID, AN.TAG, AN.MESSAGE, AN.ENABLE_CLOSE, AN.PUBLIC_SECTION";
+		$strSelect = "AN.*";
 
 		if (is_array($arFilter))
 		{
@@ -221,30 +209,30 @@ class CAdminNotify
 			for ($i=0, $ic=count($filter_keys); $i<$ic; $i++)
 			{
 				$val = $arFilter[$filter_keys[$i]];
-				if (strlen($val)<=0 || $val=='NOT_REF') continue;
-				switch(strtoupper($filter_keys[$i]))
+				if ((string)$val == '' || $val=='NOT_REF') continue;
+				switch(mb_strtoupper($filter_keys[$i]))
 				{
 					case 'ID':
 						$arSqlSearch[] = GetFilterQuery('AN.ID', $val, 'N');
-					break;
+						break;
 					case 'MODULE_ID':
 						$arSqlSearch[] = GetFilterQuery('AN.MODULE_ID', $val);
-					break;
+						break;
 					case 'TAG':
 						$arSqlSearch[] = GetFilterQuery('AN.TAG', $val);
-					break;
+						break;
 					case 'MESSAGE':
 						$arSqlSearch[] = GetFilterQuery('AN.MESSAGE', $val);
-					break;
+						break;
 					case 'ENABLE_CLOSE':
-						$arSqlSearch[] = ($val=='Y') ? "AN.ENABLE_CLOSE='Y'" : "AN.ENABLE_CLOSE='N'";
-					break;
+						$arSqlSearch[] = ($val == 'Y')? "AN.ENABLE_CLOSE='Y'" : "AN.ENABLE_CLOSE='N'";
+						break;
 					case 'LID':
 						$strSelect .= ", ANL.MESSAGE as MESSAGE_LANG";
 						$strFrom = 'LEFT JOIN b_admin_notify_lang ANL ON (AN.ID = ANL.NOTIFY_ID AND ANL.LID = \''.$DB->ForSQL($val).'\')';
 						break;
 					case 'PUBLIC_SECTION':
-						$arSqlSearch[] = ($val=='Y') ? "AN.PUBLIC_SECTION='Y'" : "AN.PUBLIC_SECTION='N'";
+						$arSqlSearch[] = ($val == 'Y')? "AN.PUBLIC_SECTION='Y'" : "AN.PUBLIC_SECTION='N'";
 				}
 			}
 		}
@@ -252,16 +240,22 @@ class CAdminNotify
 		$sOrder = '';
 		foreach($arSort as $key=>$val)
 		{
-			$ord = (strtoupper($val) <> 'ASC'? 'DESC':'ASC');
-			switch (strtoupper($key))
+			$ord = (mb_strtoupper($val) <> 'ASC'? 'DESC':'ASC');
+			switch(mb_strtoupper($key))
 			{
-				case 'ID':		$sOrder .= ', AN.ID '.$ord; break;
-				case 'MODULE_ID':	$sOrder .= ', AN.MODULE_ID '.$ord; break;
-				case 'ENABLE_CLOSE':	$sOrder .= ', AN.ENABLE_CLOSE '.$ord; break;
+				case 'ID':
+					$sOrder .= ', AN.ID '.$ord;
+					break;
+				case 'MODULE_ID':
+					$sOrder .= ', AN.MODULE_ID '.$ord;
+					break;
+				case 'ENABLE_CLOSE':
+					$sOrder .= ', AN.ENABLE_CLOSE '.$ord;
+					break;
 			}
 		}
 
-		if (strlen($sOrder)<=0)
+		if ($sOrder == '')
 			$sOrder = 'AN.ID DESC';
 
 		$strSqlOrder = ' ORDER BY '.TrimEx($sOrder,',');
@@ -278,8 +272,3 @@ class CAdminNotify
 		return '<br />Class: CAdminNotify<br />File: '.__FILE__;
 	}
 }
-<<<<<<< HEAD
-
-?>
-=======
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137

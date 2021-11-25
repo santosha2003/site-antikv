@@ -29,7 +29,7 @@
 						</td>
 					</tr>
 					<?
-					if (strlen($arResult["PAY_SYSTEM"]["ACTION_FILE"]) > 0)
+					if ($arResult["PAY_SYSTEM"]["ACTION_FILE"] <> '')
 					{
 						?>
 						<tr>
@@ -46,7 +46,7 @@
 								}
 								else
 								{
-									if (strlen($arResult["PAY_SYSTEM"]["PATH_TO_ACTION"])>0)
+									if ($arResult["PAY_SYSTEM"]["PATH_TO_ACTION"] <> '')
 									{
 										try
 										{

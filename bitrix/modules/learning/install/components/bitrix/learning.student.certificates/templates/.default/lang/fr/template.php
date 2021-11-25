@@ -1,9 +1,0 @@
-<?
-$MESS ['LEARNING_MYCOURSES_NO'] = "non";
-$MESS ['LEARNING_MYCOURSES_RESULT'] = "Achevé&nbsp;?";
-$MESS ['LEARNING_MYCOURSES_COURSE'] = "Nom du cours";
-$MESS ['LEARNING_MYCOURSES_CODE'] = "Cours n&deg;";
-$MESS ['LEARNING_MYCOURSES_NO_DATA'] = "Aucune donnée";
-$MESS ['LEARNING_MYCOURSES_SCORE'] = "Classification";
-$MESS ['LEARNING_MYCOURSES_YES'] = "Oui";
-?>

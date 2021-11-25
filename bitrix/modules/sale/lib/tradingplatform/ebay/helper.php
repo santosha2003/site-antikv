@@ -7,6 +7,7 @@ use Bitrix\Main\IO\Directory;
 use Bitrix\Main\Result;
 use Bitrix\Main\SystemException;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\TradingPlatform\Logger;
 use Bitrix\Sale\TradingPlatform\Sftp;
 use Bitrix\Main\ArgumentNullException;
 use Bitrix\Sale\TradingPlatform\Ebay\Feed\Manager;
@@ -83,11 +84,11 @@ class Helper
 	 */
 	public static function installEvents()
 	{
-		$dbEvent = \CEventMessage::GetList($b="ID", $order="ASC", Array("EVENT_NAME" => "SALE_EBAY_ERROR"));
+		$dbEvent = \CEventMessage::GetList("id", "asc", Array("EVENT_NAME" => "SALE_EBAY_ERROR"));
 
 		if(!($dbEvent->Fetch()))
 		{
-			$langs = \CLanguage::GetList(($b=""), ($o=""));
+			$langs = \CLanguage::GetList();
 			while($lang = $langs->Fetch())
 			{
 				$lid = $lang["LID"];
@@ -105,7 +106,7 @@ class Helper
 				));
 
 				$arSites = array();
-				$sites = \CSite::GetList(($b=""), ($o=""), Array("LANGUAGE_ID"=>$lid));
+				$sites = \CSite::GetList('', '', Array("LANGUAGE_ID"=>$lid));
 				while ($site = $sites->Fetch())
 					$arSites[] = $site["LID"];
 
@@ -161,15 +162,15 @@ class Helper
 
 		$order = \CSaleOrder::GetByID($orderId);
 
-		if(strlen($order["XML_ID"]) <= 0 || substr($order["XML_ID"], 0, 4) != Ebay::TRADING_PLATFORM_CODE)
+		if($order["XML_ID"] == '' || mb_substr($order["XML_ID"], 0, 4) != Ebay::TRADING_PLATFORM_CODE)
 			return false;
 
-		$ebayOrderId = substr($order["XML_ID"], strlen(Ebay::TRADING_PLATFORM_CODE)+1);
+		$ebayOrderId = mb_substr($order["XML_ID"], mb_strlen(Ebay::TRADING_PLATFORM_CODE) + 1);
 
 		$shipmentInfo =	array();
 		$trackingInfo = array();
 
-		if(strlen($order["TRACKING_NUMBER"]) > 0)
+		if($order["TRACKING_NUMBER"] <> '')
 		{
 			$ebayDelivery = "Other";
 			$ebay = \Bitrix\Sale\TradingPlatform\Ebay\Ebay::getInstance();
@@ -263,6 +264,7 @@ class Helper
 			"EBAY_DATA_PROCESSOR_ORDER_SAVE_ERROR" => Loc::getMessage("SALE_EBAY_AT_DATA_PROCESSOR_ORDER_SAVE_ERROR"),
 			"EBAY_DATA_PROCESSOR_ORDER_CORR_SAVE_ERROR" => Loc::getMessage("SALE_EBAY_AT_DATA_PROCESSOR_ORDER_CORR_SAVE_ERROR"),
 			"EBAY_DATA_PROCESSOR_SFTPQUEUE_FLUSHING" => Loc::getMessage("SALE_EBAY_AT_DATA_PROCESSOR_SFTPQUEUE_FLUSHING"),
+			"EBAY_SFTP_TOKEN_EXP" => Loc::getMessage("SALE_EBAY_AT_SFTP_TOKEN_EXP"),
 		);
 
 		array_walk($result, function(&$value, $key, $prefix)	{
@@ -281,7 +283,7 @@ class Helper
 	 */
 	public static function getSftp($siteId)
 	{
-		if(strlen($siteId) <= 0)
+		if($siteId == '')
 			throw new ArgumentNullException("siteId");
 
 		static $sftp = array();
@@ -290,11 +292,25 @@ class Helper
 		{
 			$ebay = \Bitrix\Sale\TradingPlatform\Ebay\Ebay::getInstance();
 			$settings = $ebay->getSettings();
+			$host = isset($settings[$siteId]["SFTP_HOST"]) ? $settings[$siteId]["SFTP_HOST"] : "mip.ebay.com";
+			$port = isset($settings[$siteId]["SFTP_PORT"]) ? $settings[$siteId]["SFTP_PORT"] : 22;
+			$fingerprint = $settings[$siteId]["SFTP_HOST_FINGERPRINT"] <> '' ? $settings[$siteId]["SFTP_HOST_FINGERPRINT"] : "DD1FEE728C2E1FF2AACC2724929C3CF1";
 
-			$sftp[$siteId] = new Sftp(
-				$settings[$siteId]["SFTP_LOGIN"],
-				$settings[$siteId]["SFTP_PASS"]
-			);
+			if(!empty($settings[$siteId]["SFTP_TOKEN_EXP"]) && date('c') > date($settings[$siteId]["SFTP_TOKEN_EXP"]))
+			{
+					Ebay::log(Logger::LOG_LEVEL_ERROR, "EBAY_SFTP_TOKEN_EXP", 'SFTP token', Loc::getMessage('SALE_EBAY_AT_SFTP_TOKEN_EXP_MESSAGE'), $siteId);
+					throw new SystemException(Loc::getMessage('SALE_EBAY_AT_SFTP_TOKEN_EXP_MESSAGE'));
+			}
+			else
+			{
+				$sftp[$siteId] = new Sftp(
+					$settings[$siteId]["SFTP_LOGIN"],
+					$settings[$siteId]["SFTP_PASS"],
+					$host,
+					$port,
+					$fingerprint
+				);
+			}
 		}
 
 		return $sftp[$siteId];

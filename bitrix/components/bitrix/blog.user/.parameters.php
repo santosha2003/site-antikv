@@ -7,7 +7,7 @@ $userProp = array();
 if (!empty($arRes))
 {
 	foreach ($arRes as $key => $val)
-		$userProp[$val["FIELD_NAME"]] = (strLen($val["EDIT_FORM_LABEL"]) > 0 ? $val["EDIT_FORM_LABEL"] : $val["FIELD_NAME"]);
+		$userProp[$val["FIELD_NAME"]] = ($val["EDIT_FORM_LABEL"] <> '' ? $val["EDIT_FORM_LABEL"] : $val["FIELD_NAME"]);
 }
 
 $arComponentParameters = Array(
@@ -17,6 +17,7 @@ $arComponentParameters = Array(
 		),
 	),
 	"PARAMETERS" => Array(
+		"USER_CONSENT" => array(),
 		"PATH_TO_BLOG" => Array(
 			"NAME" => GetMessage("BU_PATH_TO_BLOG"),
 			"TYPE" => "STRING",

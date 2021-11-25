@@ -15,10 +15,15 @@ final class MainPostForm extends CBitrixComponent
 			defined("BX_MOBILE") && BX_MOBILE === true)
 			$this->scope = self::STATUS_SCOPE_MOBILE;
 
-		if ($this->isWeb())
-			$this->setTemplateName(".default");
-		else
-			$this->setTemplateName("mobile_app");
+		$templateName = $this->getTemplateName();
+
+		if ((empty($templateName) || $templateName == ".default" || $templateName == "bitrix24"))
+		{
+			if ($this->isWeb())
+				$this->setTemplateName(".default");
+			else
+				$this->setTemplateName("mobile_app");
+		}
 	}
 
 	protected function isWeb()
@@ -28,7 +33,7 @@ final class MainPostForm extends CBitrixComponent
 
 	private function prepareParams(&$arParams)
 	{
-		if(strlen($arParams["FORM_ID"]) <= 0)
+		if($arParams["FORM_ID"] == '')
 			$arParams["FORM_ID"] = "POST_FORM_".RandString(3);
 		$arParams['NAME_TEMPLATE'] = empty($arParams['NAME_TEMPLATE']) ? \CSite::GetNameFormat(false) : str_replace(array("#NOBR#","#/NOBR#"), "", $arParams["NAME_TEMPLATE"]);
 	}

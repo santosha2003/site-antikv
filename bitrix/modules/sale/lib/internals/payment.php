@@ -19,6 +19,11 @@ class PaymentTable extends Main\Entity\DataManager
 		return 'b_sale_order_payment';
 	}
 
+	public static function getUfId()
+	{
+		return 'PAYMENT';
+	}
+
 	public static function getMap()
 	{
 		return array(
@@ -73,9 +78,9 @@ class PaymentTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_PAY_SYSTEM_ID_FIELD'),
 			),
 			'PAY_SYSTEM' => array(
-				'data_type' => 'Bitrix\Sale\PaySystemAction',
+				'data_type' => 'Bitrix\Sale\Internals\PaySystemAction',
 				'reference' => array(
-					'=this.PAY_SYSTEM_ID' => 'ref.PAY_SYSTEM_ID'
+					'=this.PAY_SYSTEM_ID' => 'ref.ID'
 				)
 			),
 			'PS_STATUS' => array(
@@ -116,6 +121,16 @@ class PaymentTable extends Main\Entity\DataManager
 				'data_type' => 'datetime',
 				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_PS_RESPONSE_DATE_FIELD'),
 			),
+			'PS_RECURRING_TOKEN' => array(
+				'data_type' => 'string',
+				'validation' => array(__CLASS__, 'validatePsRecurringToken'),
+				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_PS_RECURRING_TOKEN_FIELD'),
+			),
+			'PS_CARD_NUMBER' => array(
+				'data_type' => 'string',
+				'validation' => array(__CLASS__, 'validatePsCardNumber'),
+				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_PS_CARD_NUMBER_FIELD'),
+			),
 			'PAY_VOUCHER_NUM' => array(
 				'data_type' => 'string',
 				'validation' => array(__CLASS__, 'validatePayVoucherNum'),
@@ -138,10 +153,12 @@ class PaymentTable extends Main\Entity\DataManager
 				'validation' => array(__CLASS__, 'validateXmlId'),
 				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_XML_ID_FIELD'),
 			),
-			'SUM' => array(
-				'data_type' => 'float',
-				'default_value' => '0.0000',
-				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_SUM_FIELD'),
+			new Main\Entity\FloatField(
+				'SUM',
+				array(
+					'default_value' => '0.0000',
+					'required' => true,
+				)
 			),
 			'PRICE_COD' => array(
 				'data_type' => 'float',
@@ -220,12 +237,37 @@ class PaymentTable extends Main\Entity\DataManager
 				'data_type' => 'string',
 				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_PAY_RETURN_COMMENT_FIELD'),
 			),
-			new Main\Entity\BooleanField(
+			new Main\Entity\EnumField(
 				'IS_RETURN',
+				array(
+					'values' => array('N','Y','P'),
+					'default_value' => 'N'
+				)
+			),
+
+			new Main\Entity\BooleanField(
+				'MARKED',
 				array(
 					'values' => array('N','Y'),
 					'default_value' => 'N'
 				)
+			),
+
+			new Main\Entity\DatetimeField('DATE_MARKED'),
+
+			new Main\Entity\IntegerField('EMP_MARKED_ID'),
+
+			new Main\Entity\ReferenceField(
+				'EMP_MARKED_BY',
+				'\Bitrix\Main\User',
+				array('=this.EMP_MARKED_ID' => 'ref.ID'),
+				array('join_type' => 'INNER')
+			),
+
+			'REASON_MARKED' => array(
+				'data_type' => 'string',
+				'validation' => array(__CLASS__, 'validateReasonMarked'),
+				'title' => Loc::getMessage('ORDER_PAYMENT_ENTITY_REASON_MARKED_FIELD'),
 			),
 
 			new Main\Entity\BooleanField(
@@ -239,10 +281,10 @@ class PaymentTable extends Main\Entity\DataManager
 
 			new Main\Entity\StringField('VERSION_1C'),
 
-			new Main\Entity\BooleanField(
+			new Main\Entity\EnumField(
 				'EXTERNAL_PAYMENT',
 				array(
-					'values' => array('N', 'Y')
+					'values' => array('N', 'Y', 'F')
 				)
 			),
 		);
@@ -289,7 +331,7 @@ class PaymentTable extends Main\Entity\DataManager
 	public static function validatePsStatusDescription()
 	{
 		return array(
-			new Main\Entity\Validator\Length(null, 250),
+			new Main\Entity\Validator\Length(null, 512),
 		);
 	}
 	/**
@@ -367,6 +409,41 @@ class PaymentTable extends Main\Entity\DataManager
 	{
 		return array(
 			new Main\Entity\Validator\Length(null, 128),
+		);
+	}
+	/**
+	 * Returns validators for REASON_MARKED field.
+	 *
+	 * @return array
+	 */
+	public static function validateReasonMarked()
+	{
+		return array(
+			new Main\Entity\Validator\Length(null, 255),
+		);
+	}
+
+	/**
+	 * Returns validators for PS_RECURRING_TOKEN field.
+	 *
+	 * @return array
+	 */
+	public static function validatePsRecurringToken()
+	{
+		return array(
+			new Main\Entity\Validator\Length(null, 255),
+		);
+	}
+	
+	/**
+	 * Returns validators for PS_CARD_NUMBER field.
+	 *
+	 * @return array
+	 */
+	public static function validatePsCardNumber()
+	{
+		return array(
+			new Main\Entity\Validator\Length(null, 64),
 		);
 	}
 }

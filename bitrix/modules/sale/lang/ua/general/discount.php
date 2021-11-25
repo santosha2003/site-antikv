@@ -15,4 +15,7 @@ $MESS["BT_MOD_SALE_ERR_DSC_VALUE_BAD"] = "Невірна величина зни
 $MESS["BT_MOD_SALE_ERR_DSC_ABSENT"] = "Неправильна ID знижки";
 $MESS["BT_MOD_SALE_DISC_ERR_EMPTY_ACTIONS_EXT"] = "Не вказані дії, які має виконати правило. Правило не може бути збережено.";
 $MESS["BT_MOD_SALE_DISC_ERR_BAD_ACTIONS_EXT"] = "Дії, задані для правила, некоректні. Правило не може бути збережено.";
+$MESS["BX_SALE_DISCOUNT_APPLY_MODE_ADD"] = "доповнювати вже застосовані знижки";
+$MESS["BX_SALE_DISCOUNT_APPLY_MODE_LAST"] = "не діяти, якщо є прапор \"Припинити подальше застосування знижок\"";
+$MESS["BX_SALE_DISCOUNT_APPLY_MODE_DISABLE"] = "не діяти, якщо вже були застосовані будь-які знижки";
 ?>

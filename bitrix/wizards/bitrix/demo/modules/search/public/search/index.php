@@ -23,6 +23,7 @@ $APPLICATION->SetTitle(GetMessage("SEARCH_INSTALL_PUBLIC_TITLE"));?>
 	"TAGS_PERIOD"	=>	"",
 	"TAGS_URL_SEARCH"	=>	"",
 	"TAGS_INHERIT"	=>	"Y",
+	"SHOW_RATING" => "Y",
 	"FONT_MAX"	=>	"50",
 	"FONT_MIN"	=>	"10",
 	"COLOR_NEW"	=>	"000000",
@@ -30,7 +31,9 @@ $APPLICATION->SetTitle(GetMessage("SEARCH_INSTALL_PUBLIC_TITLE"));?>
 	"PERIOD_NEW_TAGS"	=>	"",
 	"SHOW_CHAIN"	=>	"Y",
 	"COLOR_TYPE"	=>	"Y",
-	"WIDTH"	=>	"100%"
+	"WIDTH"	=>	"100%",
+	"SHOW_RATING" => "Y",
+	"PATH_TO_USER_PROFILE" => "#SITE_DIR#people/user/#USER_ID#/",
 	)
 );?>
 

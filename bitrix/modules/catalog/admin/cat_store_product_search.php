@@ -38,7 +38,7 @@ function GetProductSku($userId, $lid, $productId, $productName = '', $currency =
 		return false;
 
 	$lid = trim($lid);
-	if(strlen($lid) <= 0)
+	if($lid === '')
 		return false;
 
 	$productName = trim($productName);
@@ -336,7 +336,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["BARCODE_AJAX"]) && 
 	$arElement = array();
 	$elementId = 0;
 
-	if(strlen($barcode) > 0)
+	if($barcode <> '')
 	{
 		$rsBarCode = CCatalogStoreBarCode::getList(array(), array("BARCODE" => $barcode), false, false, array('PRODUCT_ID'));
 		$arBarCode = $rsBarCode->Fetch();
@@ -374,12 +374,10 @@ $addDefault = "Y";
 
 $iblockId = intval($_REQUEST["IBLOCK_ID"]);
 
-$lid = htmlspecialcharsbx($_REQUEST["LID"]);
-if(strlen($lid) <= 0)
-	$lid = false;
+$lid = (isset($_REQUEST['LID']) ? (string)$_REQUEST['LID'] : '');
 
 $func_name = preg_replace("/[^a-zA-Z0-9_\-\.]/is", "", $_REQUEST["func_name"]);
-$caller = htmlspecialcharsbx($_REQUEST['caller']);
+$caller = (isset($_REQUEST['caller']) ? (string)$_REQUEST['caller'] : '');
 $buyerId = intval($USER->GetID());
 $sTableID = "tbl_product_search";
 if($caller)
@@ -406,7 +404,7 @@ if(!($arIBlock = $dbIBlock->Fetch()))
 {
 	$arFilterTmp = array("MIN_PERMISSION" => "R");
 
-	if(strlen($lid) > 0)
+	if($lid !== '')
 		$arFilterTmp["LID"] = $lid;
 
 	$arCatalogFilter = array();
@@ -452,6 +450,10 @@ $QUANTITY = intval($QUANTITY);
 if($QUANTITY <= 0)
 	$QUANTITY = 1;
 
+$arProps = [];
+$arPrices = [];
+$arSKUProps = [];
+
 if(!$bBadBlock)
 {
 	$arFilterFields = array(
@@ -492,7 +494,6 @@ if(!$bBadBlock)
 		)
 	);
 
-	$arProps = $arPrices = array();
 	while ($arProp = $dbrFProps->GetNext())
 	{
 		$arProp["PROPERTY_USER_TYPE"] = (!empty($arProp["USER_TYPE"]) ? CIBlockProperty::GetUserType($arProp["USER_TYPE"]) : array());
@@ -500,7 +501,6 @@ if(!$bBadBlock)
 	}
 
 	//filter sku props
-	$arSKUProps = array();
 	$arCatalog = CCatalogSKU::GetInfoByProductIBlock($iblockId);
 
 	if (!empty($arCatalog))
@@ -555,7 +555,7 @@ if(!$bBadBlock)
 					&$filtered,
 				));
 			}
-			elseif(is_array($value) || strlen($value))
+			elseif(is_array($value) || mb_strlen($value))
 			{
 				if($value === "NOT_REF")
 					$value = false;
@@ -584,7 +584,7 @@ if(!$bBadBlock)
 				else
 				{
 					$value = ${"filter_sub_el_property_".$arSKUProps[$i]["ID"]};
-					if(strlen($value) || is_array($value))
+					if(mb_strlen($value) || is_array($value))
 					{
 						if($value === "NOT_REF")
 							$value = false;
@@ -600,7 +600,7 @@ if(!$bBadBlock)
 		$arFilter['ID'] = CIBlockElement::SubQuery('PROPERTY_'.$arCatalog['SKU_PROPERTY_ID'], $arSubQuery);
 	}
 
-	if(intval($_REQUEST['filter_section']) < 0 || strlen($_REQUEST['filter_section']) <= 0)
+	if(intval($_REQUEST['filter_section']) < 0 || $_REQUEST['filter_section'] == '')
 		unset($arFilter["SECTION_ID"]);
 	elseif($_REQUEST['filter_subsections'] == "Y")
 	{
@@ -896,7 +896,7 @@ if(!$bBadBlock)
 					$arSkuProperty = array();
 					foreach($val as $kk => $vv)
 					{
-						if(is_int($kk) && strlen($vv) > 0)
+						if(is_int($kk) && $vv <> '')
 						{
 							if($skuProperty != "")
 								$skuProperty .= " <br> ";
@@ -1447,8 +1447,8 @@ foreach($arCatalog as $submenu)
 		<input type="hidden" name="BUYER_ID" value="<?echo htmlspecialcharsbx($buyerId)?>">
 		<input type="hidden" name="QUANTITY" value="<?echo htmlspecialcharsbx($QUANTITY)?>">
 		<input type="hidden" name="lang" value="<?echo LANGUAGE_ID?>">
-		<input type="hidden" id="LID" name="LID" value="<?echo $lid?>">
-		<input type="hidden" id="caller" name="caller" value="<?echo $caller?>">
+		<input type="hidden" id="LID" name="LID" value="<?echo htmlspecialcharsbx($lid)?>">
+		<input type="hidden" id="caller" name="caller" value="<?echo htmlspecialcharsbx($caller)?>">
 		<input type="hidden" name="subscribe" value="<? echo ($boolSubscribe ? 'Y' : 'N'); ?>">
 <?
 	if ($orderForm)
@@ -1487,7 +1487,7 @@ foreach($arCatalog as $submenu)
 		$sTableID."_filter",
 		$arFindFields
 	);
-	$oFilter->SetDefaultRows("find_iblock_id", "find_name");
+	$oFilter->SetDefaultRows("find_iblock_id");
 
 	$oFilter->Begin();
 	?>
@@ -1646,7 +1646,7 @@ foreach($arCatalog as $submenu)
 					{
 						?>
 						<tr>
-							<td><? echo ('' != $strSKUName ? $strSKUName.' - ' : ''); ?><? echo $arProp["NAME"]?>:</td>
+							<td><? echo $arProp["NAME"]?> (<?=GetMessage("SPS_OFFER")?>):</td>
 							<td>
 								<?if(array_key_exists("GetAdminFilterHTML", $arProp["PROPERTY_USER_TYPE"])):
 									echo "<script type='text/javascript'>var arClearHiddenFields = [];</script>";
@@ -1704,4 +1704,4 @@ foreach($arCatalog as $submenu)
 	</td>
 </tr>
 </table>
-<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_popup_admin.php");?>
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_popup_admin.php");

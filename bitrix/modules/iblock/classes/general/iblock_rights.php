@@ -1,4 +1,7 @@
 <?
+use Bitrix\Main,
+	Bitrix\Iblock;
+
 class CIBlockRights
 {
 	const GROUP_CODE = 1;
@@ -8,6 +11,11 @@ class CIBlockRights
 	const ANY_OPERATION = 1;
 	const ALL_OPERATIONS = 2;
 	const RETURN_OPERATIONS = 4;
+
+	/** @var string Public reading */
+	public const PUBLIC_READ = 'R';
+	/** @var string Admin access */
+	public const FULL_ACCESS = 'X';
 
 	protected $IBLOCK_ID = 0;
 	protected $id = 0;
@@ -40,45 +48,48 @@ class CIBlockRights
 		return $this->IBLOCK_ID == $this->id;
 	}
 
-	function Post2Array($ar)
+	public static function Post2Array($ar)
 	{
 		$arRights = array();
 		$RIGHT_ID = "";
 		$i = 0;
-		foreach($ar as $arRight)
+		if (!empty($ar) && is_array($ar))
 		{
-			if(isset($arRight["RIGHT_ID"]))
+			foreach ($ar as $arRight)
 			{
-				if(strlen($arRight["RIGHT_ID"]) > 0)
-					$RIGHT_ID = $arRight["RIGHT_ID"];
-				else
-					$RIGHT_ID = "n".$i++;
+				if (isset($arRight["RIGHT_ID"]))
+				{
+					if ($arRight["RIGHT_ID"] <> '')
+						$RIGHT_ID = $arRight["RIGHT_ID"];
+					else
+						$RIGHT_ID = "n".$i++;
 
-				$arRights[$RIGHT_ID] = array(
-					"GROUP_CODE" => "",
-					"DO_CLEAN" => "N",
-					"TASK_ID" => 0,
-				);
-			}
-			elseif(isset($arRight["GROUP_CODE"]))
-			{
-				$arRights[$RIGHT_ID]["GROUP_CODE"] = $arRight["GROUP_CODE"];
-			}
-			elseif(isset($arRight["DO_CLEAN"]))
-			{
-				$arRights[$RIGHT_ID]["DO_CLEAN"] = $arRight["DO_CLEAN"] == "Y"? "Y": "N";
-			}
-			elseif(isset($arRight["TASK_ID"]))
-			{
-				$arRights[$RIGHT_ID]["TASK_ID"] = $arRight["TASK_ID"];
+					$arRights[$RIGHT_ID] = array(
+						"GROUP_CODE" => "",
+						"DO_CLEAN" => "N",
+						"TASK_ID" => 0,
+					);
+				}
+				elseif (isset($arRight["GROUP_CODE"]))
+				{
+					$arRights[$RIGHT_ID]["GROUP_CODE"] = $arRight["GROUP_CODE"];
+				}
+				elseif (isset($arRight["DO_CLEAN"]))
+				{
+					$arRights[$RIGHT_ID]["DO_CLEAN"] = $arRight["DO_CLEAN"] == "Y" ? "Y" : "N";
+				}
+				elseif (isset($arRight["TASK_ID"]))
+				{
+					$arRights[$RIGHT_ID]["TASK_ID"] = $arRight["TASK_ID"];
+				}
 			}
 		}
 
 		foreach($arRights as $RIGHT_ID => $arRightSet)
 		{
-			if(substr($RIGHT_ID, 0, 1) == "n")
+			if(mb_substr($RIGHT_ID, 0, 1) == "n")
 			{
-				if(strlen($arRightSet["GROUP_CODE"]) <= 0)
+				if($arRightSet["GROUP_CODE"] == '')
 					unset($arRights[$RIGHT_ID]);
 				elseif($arRightSet["TASK_ID"] > 0)
 				{
@@ -86,7 +97,7 @@ class CIBlockRights
 					foreach($arRights as $RIGHT_ID2 => $arRightSet2)
 					{
 						if(
-							$RIGHT_ID2 > 0
+							(int)$RIGHT_ID2 > 0
 							&& $arRightSet2["GROUP_CODE"] === $arRightSet["GROUP_CODE"]
 						)
 						{
@@ -181,7 +192,7 @@ class CIBlockRights
 		return $arRights;
 	}
 
-	function GetRightsList($bTitle = true)
+	public static function GetRightsList($bTitle = true)
 	{
 		global $DB;
 		$arResult = array();
@@ -416,8 +427,6 @@ class CIBlockRights
 
 	function SetRights($arRights)
 	{
-		global $DB;
-
 		if(!$this->_self_check())
 			return false;
 
@@ -428,7 +437,7 @@ class CIBlockRights
 		$arUniqCodes = array();
 		foreach($arRights as $RIGHT_ID => $arRightSet)
 		{
-			if(strlen($arRightSet["GROUP_CODE"]) > 0)
+			if($arRightSet["GROUP_CODE"] <> '')
 			{
 				if(isset($arUniqCodes[$arRightSet["GROUP_CODE"]]))
 					unset($arRights[$RIGHT_ID]);
@@ -457,7 +466,7 @@ class CIBlockRights
 			$bInherit = true;//$arRightSet["DO_INHERIT"] == "Y";
 			$bChildrenSet = false;
 
-			if(strlen($GROUP_CODE) <= 0 || is_array($arRightSet["TASK_ID"]))
+			if($GROUP_CODE == '' || is_array($arRightSet["TASK_ID"]))
 				continue;
 
 			if(!array_key_exists($arRightSet["TASK_ID"], $arTasks))
@@ -474,7 +483,7 @@ class CIBlockRights
 				$bCleanUp = true;
 			}
 
-			if(substr($RIGHT_ID, 0, 1) == "n")
+			if(mb_substr($RIGHT_ID, 0, 1) == "n")
 			{
 				$arAddedCodes[$GROUP_CODE] = $GROUP_CODE;
 				$NEW_RIGHT_ID = $this->_add(
@@ -509,7 +518,6 @@ class CIBlockRights
 
 		foreach($arDBRights as $RIGHT_ID => $arRightSet)
 		{
-
 			if($arRightSet["IS_INHERITED"] == "Y")
 				continue;
 
@@ -551,7 +559,7 @@ class CIBlockRights
 			"TASK_ID" => $TASK_ID,
 			"OP_SREAD" => in_array("section_read", $arOperations)? "Y": "N",
 			"OP_EREAD" => in_array("element_read", $arOperations)? "Y": "N",
-			"XML_ID" => (strlen($XML_ID) > 0? $XML_ID: false),
+			"XML_ID" => ($XML_ID <> ''? $XML_ID: false),
 		));
 
 		return $NEW_RIGHT_ID;
@@ -595,6 +603,13 @@ class CIBlockRights
 		return CIBlockRights::_check_if_user_has_right($obRights, $ID, $permission, $flags);
 	}
 
+	/**
+	 * @param CIBlockRights $obRights
+	 * @param array|integer $ID
+	 * @param string $permission
+	 * @param integer $flags
+	 * @return array|boolean
+	 */
 	static function _check_if_user_has_right($obRights, $ID, $permission, $flags = 0)
 	{
 		global $DB, $USER;
@@ -629,15 +644,15 @@ class CIBlockRights
 		$RIGHTS_MODE = CIBlock::GetArrayByID($obRights->GetIBlockID(), "RIGHTS_MODE");
 		if($RIGHTS_MODE === "E")
 		{
-			static $Ecache;
 			if(is_array($ID))
 				$arOperations = $obRights->GetUserOperations($ID, $user_id);
 			else
 			{
-				$cache_id = $user_id."|".$ID;
-				if(!isset($Ecache[$cache_id]))
-					$Ecache[$cache_id] = $obRights->GetUserOperations($ID, $user_id);
-				$arOperations = $Ecache[$cache_id];
+				static $cache;
+				$cache_id = get_class($obRights).$user_id."|".$ID;
+				if(!isset($cache[$cache_id]))
+					$cache[$cache_id] = $obRights->GetUserOperations($ID, $user_id);
+				$arOperations = $cache[$cache_id];
 			}
 
 			if($flags & CIBlockRights::RETURN_OPERATIONS)
@@ -721,6 +736,69 @@ class CIBlockRights
 			return $arResult[$arID];
 		else
 			return array();
+	}
+
+	public static function setGroupRight($groupId, $iblockType, $letter, $iblockId = 0)
+	{
+		$groupId = (int)$groupId;
+		if ($groupId <= 0)
+			return;
+
+		$iblockId = (int)$iblockId;
+		if ($iblockId < 0)
+			return;
+
+		$groupCode = "G".$groupId;
+		$availableLetters = ["E", "R", "S", "T", "U", "W", "X"];
+		if (!in_array($letter, $availableLetters))
+			return;
+		unset($availableLetters);
+
+		$task = Main\TaskTable::getList([
+			"select" => ["ID"],
+			"filter" => ["=LETTER" => $letter, "=MODULE_ID" => "iblock", "=SYS" => "Y"]
+		])->fetch();
+		$rightId = (!empty($task) ? $task["ID"] : null);
+		unset($task);
+
+		$filter = ["=IBLOCK_TYPE_ID" => $iblockType, "=ACTIVE"=>"Y"];
+		if ($iblockId > 0)
+			$filter["=ID"] = $iblockId;
+		$queryObject = Iblock\IblockTable::getList([
+			'select' => ['ID'],
+			'filter' => $filter
+		]);
+		while ($iblock = $queryObject->fetch())
+		{
+			$iblockId = $iblock["ID"];
+
+			$rightsMode = CIBlock::getArrayByID($iblockId, "RIGHTS_MODE");
+			if ($rightsMode == Bitrix\Iblock\IblockTable::RIGHTS_SIMPLE)
+			{
+				$rights = \CIBlock::getGroupPermissions($iblockId);
+				$rights[$groupId] = $letter;
+				\CIBlock::SetPermission($iblockId, $rights);
+				unset($rights);
+			}
+			elseif ($rightsMode == Bitrix\Iblock\IblockTable::RIGHTS_EXTENDED && $rightId !== null)
+			{
+				$rightsObject = new \CIBlockRights($iblockId);
+				$rights = $rightsObject->GetRights();
+				$rights["n0"] = [
+					"GROUP_CODE"  => $groupCode,
+					"DO_INHERIT" => "Y",
+					"IS_INHERITED" => "N",
+					"OVERWRITED" => 0,
+					"TASK_ID" => $rightId,
+					"XML_ID" => null,
+					"ENTITY_TYPE" => "iblock",
+					"ENTITY_ID" => $iblockId
+				];
+				$rightsObject->SetRights($rights);
+				unset($rights, $rightsObject);
+			}
+		}
+		unset($rightsMode, $iblockId, $iblock, $queryObject);
 	}
 }
 
@@ -1882,7 +1960,7 @@ class CIBlockRightsStorage
 		}
 	}
 
-	function OnTaskOperationsChanged($TASK_ID, $arOld, $arNew)
+	public static function OnTaskOperationsChanged($TASK_ID, $arOld, $arNew)
 	{
 		global $DB;
 		$TASK_ID = intval($TASK_ID);
@@ -1898,7 +1976,7 @@ class CIBlockRightsStorage
 			$DB->Query("UPDATE b_iblock_right SET OP_SREAD = 'N' WHERE TASK_ID = ".$TASK_ID);
 	}
 
-	function OnGroupDelete($GROUP_ID)
+	public static function OnGroupDelete($GROUP_ID)
 	{
 		global $DB;
 		$GROUP_ID = intval($GROUP_ID);
@@ -1918,7 +1996,7 @@ class CIBlockRightsStorage
 		");
 	}
 
-	function OnUserDelete($USER_ID)
+	public static function OnUserDelete($USER_ID)
 	{
 		global $DB;
 		$USER_ID = intval($USER_ID);

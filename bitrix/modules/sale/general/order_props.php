@@ -5,6 +5,7 @@ use
 	Bitrix\Sale\Compatible\OrderQuery,
 	Bitrix\Sale\Compatible\FetchAdapter,
 	Bitrix\Main\Entity,
+	Bitrix\Main\DB,
 	Bitrix\Main\Application,
 	Bitrix\Main\SystemException,
 	Bitrix\Main\Localization\Loc;
@@ -24,57 +25,90 @@ class CSaleOrderProps
 	 * @param int $paysystemId - id of the paysystem, will be used to get order properties related to this paysystem
 	 * @param int $deliveryId - id of the delivery sysetm, will be used to get order properties related to this delivery system
 	 */
-	static function DoProcessOrder(&$arOrder, $arOrderPropsValues, &$arErrors, &$arWarnings, $paysystemId = 0, $deliveryId = "", $arOptions = array())
+	public static function DoProcessOrder(&$arOrder, $arOrderPropsValues, &$arErrors, &$arWarnings, $paysystemId = 0, $deliveryId = "", $arOptions = array())
 	{
 		if (!is_array($arOrderPropsValues))
 			$arOrderPropsValues = array();
 
 		$arUser = null;
 
-		$arFilter = array(
+		$arFilter = [
 			"PERSON_TYPE_ID" => $arOrder["PERSON_TYPE_ID"],
 			"ACTIVE" => "Y"
-		);
+		];
 
-		if ($paysystemId != 0)
+		$relationFilter = [];
+		if ($paysystemId > 0)
 		{
-			$arFilter["RELATED"]["PAYSYSTEM_ID"] = $paysystemId;
-			$arFilter["RELATED"]["TYPE"] = "WITH_NOT_RELATED";
+			$relationFilter[] = [
+				'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_TYPE' => 'P',
+				'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_ID' => $paysystemId,
+			];
 		}
 
-		if (strlen($deliveryId) > 0)
+		if ($deliveryId <> '')
 		{
-			$arFilter["RELATED"]["DELIVERY_ID"] = $deliveryId;
-			$arFilter["RELATED"]["TYPE"] = "WITH_NOT_RELATED";
+			if ($paysystemId > 0)
+			{
+				$relationFilter['LOGIC'] = 'OR';
+			}
+
+			$relationFilter[] = [
+				'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_TYPE' => 'D',
+				'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_ID' => \CSaleDelivery::getIdByCode($deliveryId),
+			];
 		}
 
-		$dbOrderProps = CSaleOrderProps::GetList(
-			array("SORT" => "ASC"),
-			$arFilter,
-			false,
-			false,
-			array("ID", "NAME", "TYPE", "IS_LOCATION", "IS_LOCATION4TAX", "IS_PROFILE_NAME", "IS_PAYER", "IS_EMAIL",
-				"REQUIED", "SORT", "IS_ZIP", "CODE", "DEFAULT_VALUE")
-		);
-		while ($arOrderProp = $dbOrderProps->Fetch())
+		$arFilter[] = [
+			'LOGIC' => 'OR',
+			$relationFilter,
+			[
+				'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.PROPERTY_ID' => null
+			],
+		];
+
+		if (isset($arOptions['ORDER'])
+			&& $arOptions['ORDER'] instanceof \Bitrix\Sale\Order
+		)
 		{
+			$registry = \Bitrix\Sale\Registry::getInstance($arOptions['ORDER']::getRegistryType());
+			$property = $registry->getPropertyClassName();
+		}
+		else
+		{
+			$property = \Bitrix\Sale\Property::class;
+		}
+
+		/** @var Bitrix\Main\DB\Result $dbRes */
+		$dbRes = $property::getlist([
+			'select' => [
+				'ID', 'NAME', 'TYPE', 'IS_LOCATION', 'IS_LOCATION4TAX', 'IS_PROFILE_NAME', 'IS_PAYER', 'IS_EMAIL',
+				'REQUIRED', 'SORT', 'IS_ZIP', 'CODE', 'DEFAULT_VALUE'
+			],
+			'filter' => $arFilter,
+			'order' => ['SORT' => 'ASC']
+		]);
+
+		while ($arOrderProp = $dbRes->fetch())
+		{
+			$arOrderProp = CSaleOrderPropsAdapter::convertNewToOld($arOrderProp);
 			if (!array_key_exists($arOrderProp["ID"], $arOrderPropsValues))
 			{
 				$curVal = $arOrderProp["DEFAULT_VALUE"];
 
-				if (strlen($curVal) <= 0)
+				if (!is_array($curVal) && $curVal == '')
 				{
 					if ($arOrderProp["IS_EMAIL"] == "Y" || $arOrderProp["IS_PAYER"] == "Y")
 					{
 						if ($arUser == null)
 						{
-							$dbUser = CUser::GetList($by = "ID", $order = "desc", array("ID_EQUAL_EXACT" => $arOrder["USER_ID"]));
+							$dbUser = CUser::GetList("ID", "desc", array("ID_EQUAL_EXACT" => $arOrder["USER_ID"]));
 							$arUser = $dbUser->Fetch();
 						}
 						if ($arOrderProp["IS_EMAIL"] == "Y")
 							$curVal = is_array($arUser) ? $arUser["EMAIL"] : "";
 						elseif ($arOrderProp["IS_PAYER"] == "Y")
-							$curVal = is_array($arUser) ? $arUser["NAME"].(strlen($arUser["NAME"]) <= 0 || strlen($arUser["LAST_NAME"]) <= 0 ? "" : " ").$arUser["LAST_NAME"] : "";
+							$curVal = is_array($arUser) ? $arUser["NAME"].($arUser["NAME"] == '' || $arUser["LAST_NAME"] == '' ? "" : " ").$arUser["LAST_NAME"] : "";
 					}
 				}
 			}
@@ -83,7 +117,7 @@ class CSaleOrderProps
 				$curVal = $arOrderPropsValues[$arOrderProp["ID"]];
 			}
 
-			if ((!is_array($curVal) && strlen($curVal) > 0) || (is_array($curVal) && count($curVal) > 0))
+			if ((!is_array($curVal) && $curVal <> '') || (is_array($curVal) && count($curVal) > 0))
 			{
 				//if ($arOrderProp["TYPE"] == "SELECT" || $arOrderProp["TYPE"] == "MULTISELECT" || $arOrderProp["TYPE"] == "RADIO")
 				if ($arOrderProp["TYPE"] == "SELECT" || $arOrderProp["TYPE"] == "RADIO")
@@ -176,14 +210,14 @@ class CSaleOrderProps
 						$arWarnings[] = array("CODE" => "PARAM", "TEXT" => str_replace(array("#EMAIL#", "#NAME#"), array(htmlspecialcharsbx($curVal), htmlspecialcharsbx($arOrderProp["NAME"])), GetMessage("SALE_GOPE_WRONG_EMAIL")));
 				}
 
-				if (strlen($curVal) <= 0)
+				if ($curVal == '')
 					$bErrorField = true;
 			}
 			elseif ($arOrderProp["REQUIED"] == "Y")
 			{
 				if ($arOrderProp["TYPE"] == "TEXT" || $arOrderProp["TYPE"] == "TEXTAREA" || $arOrderProp["TYPE"] == "RADIO" || $arOrderProp["TYPE"] == "SELECT" || $arOrderProp["TYPE"] == "CHECKBOX")
 				{
-					if (strlen($curVal) <= 0)
+					if ($curVal == '')
 						$bErrorField = true;
 				}
 				elseif ($arOrderProp["TYPE"] == "LOCATION")
@@ -194,7 +228,7 @@ class CSaleOrderProps
 				elseif ($arOrderProp["TYPE"] == "MULTISELECT")
 				{
 					//if (!is_array($curVal) || count($curVal) <= 0)
-					if (strlen($curVal) <= 0)
+					if ($curVal == '')
 						$bErrorField = true;
 				}
 				elseif ($arOrderProp["TYPE"] == "FILE")
@@ -232,7 +266,7 @@ class CSaleOrderProps
 	 * @param array $arOrderProps - array of order properties values
 	 * @param array $arErrors
 	 */
-	static function DoSaveOrderProps($orderId, $personTypeId, $arOrderProps, &$arErrors, $paysystemId = 0, $deliveryId = "")
+	public static function DoSaveOrderProps($orderId, $personTypeId, $arOrderProps, &$arErrors, $paysystemId = 0, $deliveryId = "")
 	{
 		$arIDs = array();
 		$dbResult = CSaleOrderPropsValue::GetList(
@@ -257,7 +291,7 @@ class CSaleOrderProps
 			$arFilter["RELATED"]["TYPE"] = "WITH_NOT_RELATED";
 		}
 
-		if (strlen($deliveryId) > 0)
+		if ($deliveryId <> '')
 		{
 			$arFilter["RELATED"]["DELIVERY_ID"] = $deliveryId;
 			$arFilter["RELATED"]["TYPE"] = "WITH_NOT_RELATED";
@@ -294,7 +328,7 @@ class CSaleOrderProps
 						else
 						{
 							$bModify = false;
-							if (strlen($tmpVal) > 0)
+							if ($tmpVal <> '')
 								$tmpVal .= ", ".$fileData["file_id"];
 							else
 								$tmpVal = $fileData["file_id"];
@@ -303,13 +337,13 @@ class CSaleOrderProps
 					else // new file array
 						$arFile = $fileData;
 
-					if (isset($arFile["name"]) && strlen($arFile["name"]) > 0 && $bModify)
+					if (isset($arFile["name"]) && $arFile["name"] <> '' && $bModify)
 					{
 						$arFile["MODULE_ID"] = "sale";
 						$fid = CFile::SaveFile($arFile, "sale");
 						if (intval($fid) > 0)
 						{
-							if (strlen($tmpVal) > 0)
+							if ($tmpVal <> '')
 								$tmpVal .= ", ".$fid;
 							else
 								$tmpVal = $fid;
@@ -320,7 +354,7 @@ class CSaleOrderProps
 				$curVal = $tmpVal;
 			}
 
-			if (strlen($curVal) > 0)
+			if ($curVal <> '')
 			{
 				$arFields = array(
 					"ORDER_ID" => $orderId,
@@ -346,13 +380,13 @@ class CSaleOrderProps
 			CSaleOrderPropsValue::Delete($id);
 	}
 
-	function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		if (!is_array($arOrder) && !is_array($arFilter))
 		{
 			$arOrder = strval($arOrder);
 			$arFilter = strval($arFilter);
-			if (strlen($arOrder) > 0 && strlen($arFilter) > 0)
+			if ($arOrder <> '' && $arFilter <> '')
 				$arOrder = array($arOrder => $arFilter);
 			else
 				$arOrder = array();
@@ -365,81 +399,169 @@ class CSaleOrderProps
 			$arSelectFields = array();
 		}
 
+		if (is_array($arFilter))
+		{
+			$arFilter['ENTITY_REGISTRY_TYPE'] = \Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER;
+		}
+
+		$defaultSelectFields = array(
+			"ID",
+			"PERSON_TYPE_ID",
+			"NAME",
+			"TYPE",
+			"REQUIED",
+			"DEFAULT_VALUE",
+			"DEFAULT_VALUE_ORIG",
+			"SORT",
+			"USER_PROPS",
+			"IS_LOCATION",
+			"PROPS_GROUP_ID",
+			"SIZE1",
+			"SIZE2",
+			"DESCRIPTION",
+			"IS_EMAIL",
+			"IS_PROFILE_NAME",
+			"IS_PAYER",
+			"IS_LOCATION4TAX",
+			"IS_ZIP",
+			"CODE",
+			"IS_FILTERED",
+			"ACTIVE",
+			"UTIL",
+			"INPUT_FIELD_LOCATION",
+			"MULTIPLE",
+			"PAYSYSTEM_ID",
+			"DELIVERY_ID"
+		);
+
 		if (! $arSelectFields)
-			$arSelectFields = array(
-				"ID", "PERSON_TYPE_ID", "NAME", "TYPE", "REQUIED", "DEFAULT_VALUE", "DEFAULT_VALUE_ORIG", "SORT", "USER_PROPS",
-				"IS_LOCATION", "PROPS_GROUP_ID", "SIZE1", "SIZE2", "DESCRIPTION", "IS_EMAIL", "IS_PROFILE_NAME",
-				"IS_PAYER", "IS_LOCATION4TAX", "IS_ZIP", "CODE", "IS_FILTERED", "ACTIVE", "UTIL",
-				"INPUT_FIELD_LOCATION", "MULTIPLE", "PAYSYSTEM_ID", "DELIVERY_ID"
-			);
+		{
+			$arSelectFields = $defaultSelectFields;
+		}
+
+		if (is_array($arSelectFields) && in_array("*", $arSelectFields))
+		{
+			$key = array_search('*', $arSelectFields);
+			unset($arSelectFields[$key]);
+
+			$arSelectFields = array_merge($arSelectFields, $defaultSelectFields);
+
+			$arSelectFields = array_unique($arSelectFields);
+		}
 
 		// add aliases
 
 		$query = new \Bitrix\Sale\Compatible\OrderQueryLocation(OrderPropsTable::getEntity());
 		$query->addLocationRuntimeField('DEFAULT_VALUE');
-		$query->addAliases(array(
-			'REQUIED'              => 'REQUIRED',
-			'GROUP_ID'             => 'GROUP.ID',
+
+		$aliases = [
+			'REQUIED' => 'REQUIRED',
+			'GROUP_ID' => 'GROUP.ID',
 			'GROUP_PERSON_TYPE_ID' => 'GROUP.PERSON_TYPE_ID',
-			'GROUP_NAME'           => 'GROUP.NAME',
-			'GROUP_SORT'           => 'GROUP.SORT',
-			'PERSON_TYPE_LID'      => 'PERSON_TYPE.LID',
-			'PERSON_TYPE_NAME'     => 'PERSON_TYPE.NAME',
-			'PERSON_TYPE_SORT'     => 'PERSON_TYPE.SORT',
-			'PERSON_TYPE_ACTIVE'   => 'PERSON_TYPE.ACTIVE',
-			'PAYSYSTEM_ID'         => 'Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.PROPERTY_ID',
-			'DELIVERY_ID'          => 'Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.PROPERTY_ID',
-		));
+			'GROUP_NAME' => 'GROUP.NAME',
+			'GROUP_SORT' => 'GROUP.SORT',
+			'PERSON_TYPE_LID' => 'PERSON_TYPE.LID',
+			'PERSON_TYPE_NAME' => 'PERSON_TYPE.NAME',
+			'PERSON_TYPE_SORT' => 'PERSON_TYPE.SORT',
+			'PERSON_TYPE_ACTIVE' => 'PERSON_TYPE.ACTIVE',
+		];
+
+		if (isset($arFilter['RELATED']) && is_array($arFilter['RELATED']))
+		{
+			$aliases['PAYSYSTEM_ID'] = 'RELATION_PS.ENTITY_ID';
+			$aliases['DELIVERY_ID'] = 'RELATION_DLV.ENTITY_ID';
+		}
+
+		$query->addAliases($aliases);
 
 		// relations
-
 		if (isset($arFilter['RELATED']))
 		{
-			// 1. filter related to something
 			if (is_array($arFilter['RELATED']))
 			{
+				$query->registerRuntimeField(
+					'RELATION_DLV',
+					[
+						'data_type' => '\Bitrix\Sale\Internals\OrderPropsRelationTable',
+						'reference' => [
+							'ref.PROPERTY_ID' => 'this.ID',
+							"=ref.ENTITY_TYPE" => new DB\SqlExpression('?', 'D')
+						],
+						'join_type' => 'left'
+					]
+				);
+
+				$query->registerRuntimeField(
+					'RELATION_PS',
+					[
+						'data_type' => '\Bitrix\Sale\Internals\OrderPropsRelationTable',
+						'reference' => [
+							'ref.PROPERTY_ID' => 'this.ID',
+							"=ref.ENTITY_TYPE" => new DB\SqlExpression('?', 'P')
+						],
+						'join_type' => 'left'
+					]
+				);
+
 				$relationFilter = array();
 
 				if ($arFilter['RELATED']['PAYSYSTEM_ID'])
-					$relationFilter []= array(
-						'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_TYPE' => 'P',
-						'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_ID' => $arFilter['RELATED']['PAYSYSTEM_ID'],
-					);
+				{
+					$relationFilter['=RELATION_PS.ENTITY_ID'] = $arFilter['RELATED']['PAYSYSTEM_ID'];
+				}
 
 				if ($arFilter['RELATED']['DELIVERY_ID'])
 				{
+					$relationFilter['=RELATION_DLV.ENTITY_ID'] = $arFilter['RELATED']['DELIVERY_ID'];
 					if ($relationFilter)
+					{
 						$relationFilter['LOGIC'] = $arFilter['RELATED']['LOGIC'] == 'AND' ? 'AND' : 'OR';
-
-					$relationFilter []= array(
-						'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_TYPE' => 'D',
-						'=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.ENTITY_ID' => \CSaleDelivery::getIdByCode($arFilter['RELATED']['DELIVERY_ID']),
-					);
+					}
 				}
 
-				// all other
-				if ($arFilter['RELATED']['TYPE'] == 'WITH_NOT_RELATED' && $relationFilter)
+
+				if ($arFilter['RELATED']['TYPE'] == 'WITH_NOT_RELATED')
 				{
-					$relationFilter = array(
+					$relationFilter = [
 						'LOGIC' => 'OR',
-						$relationFilter,
-						array('=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.PROPERTY_ID' => null),
-					);
+						[
+							'=RELATION_PS.ENTITY_ID' => null,
+							'=RELATION_DLV.ENTITY_ID' => null
+						],
+						$relationFilter
+					];
 				}
 
 				if ($relationFilter)
+				{
 					$query->addFilter(null, $relationFilter);
+				}
 			}
 			// 2. filter all not related to anything
 			else
 			{
-				$query->addFilter('=Bitrix\Sale\Internals\OrderPropsRelationTable:lPROPERTY.PROPERTY_ID', null);
+				$query->registerRuntimeField(
+					'RELATION',
+					[
+						'data_type' => '\Bitrix\Sale\Internals\OrderPropsRelationTable',
+						'reference' => [
+							'ref.PROPERTY_ID' => 'this.ID',
+						],
+						'join_type' => 'left'
+					]
+				);
+
+				$query->addFilter('RELATION.PROPERTY_ID', null);
 
 				if (($key = array_search('PAYSYSTEM_ID', $arSelectFields)) !== false)
+				{
 					unset($arSelectFields[$key]);
+				}
 
 				if (($key = array_search('DELIVERY_ID', $arSelectFields)) !== false)
+				{
 					unset($arSelectFields[$key]);
+				}
 			}
 
 			unset($arFilter['RELATED']);
@@ -475,7 +597,7 @@ class CSaleOrderProps
 		}
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		$id = (int) $ID;
 		return $id > 0 && $id == $ID
@@ -483,24 +605,24 @@ class CSaleOrderProps
 			: false;
 	}
 
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
 		global $APPLICATION;
 
 		if (is_set($arFields, "PERSON_TYPE_ID") && $ACTION != "ADD")
 			UnSet($arFields["PERSON_TYPE_ID"]);
 
-		if ((is_set($arFields, "PERSON_TYPE_ID") || $ACTION=="ADD") && IntVal($arFields["PERSON_TYPE_ID"]) <= 0)
+		if ((is_set($arFields, "PERSON_TYPE_ID") || $ACTION=="ADD") && intval($arFields["PERSON_TYPE_ID"]) <= 0)
 		{
 			$APPLICATION->ThrowException(Loc::getMessage("SKGOP_EMPTY_PERS_TYPE"), "ERROR_NO_PERSON_TYPE");
 			return false;
 		}
-		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && strlen($arFields["NAME"]) <= 0)
+		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && $arFields["NAME"] == '')
 		{
 			$APPLICATION->ThrowException(Loc::getMessage("SKGOP_EMPTY_PROP_NAME"), "ERROR_NO_NAME");
 			return false;
 		}
-		if ((is_set($arFields, "TYPE") || $ACTION=="ADD") && strlen($arFields["TYPE"]) <= 0)
+		if ((is_set($arFields, "TYPE") || $ACTION=="ADD") && $arFields["TYPE"] == '')
 		{
 			$APPLICATION->ThrowException(Loc::getMessage("SKGOP_EMPTY_PROP_TYPE"), "ERROR_NO_TYPE");
 			return false;
@@ -536,7 +658,7 @@ class CSaleOrderProps
 			return false;
 		}
 
-		if ((is_set($arFields, "PROPS_GROUP_ID") || $ACTION=="ADD") && IntVal($arFields["PROPS_GROUP_ID"])<=0)
+		if ((is_set($arFields, "PROPS_GROUP_ID") || $ACTION=="ADD") && intval($arFields["PROPS_GROUP_ID"])<=0)
 		{
 			$APPLICATION->ThrowException(Loc::getMessage("SKGOP_EMPTY_PROP_GROUP"), "ERROR_NO_GROUP");
 			return false;
@@ -554,7 +676,7 @@ class CSaleOrderProps
 		return true;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		foreach (GetModuleEvents('sale', 'OnBeforeOrderPropsAdd', true) as $arEvent)
 			if (ExecuteModuleEventEx($arEvent, array(&$arFields)) === false)
@@ -564,7 +686,10 @@ class CSaleOrderProps
 			return false;
 
 		$newProperty = CSaleOrderPropsAdapter::convertOldToNew($arFields);
-		$ID = OrderPropsTable::add(array_intersect_key($newProperty, CSaleOrderPropsAdapter::$allFields))->getId();
+		$fields = array_intersect_key($newProperty, CSaleOrderPropsAdapter::$allFields);
+		$fields['ENTITY_REGISTRY_TYPE'] = \Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER;
+
+		$ID = OrderPropsTable::add($fields)->getId();
 
 		foreach(GetModuleEvents('sale', 'OnOrderPropsAdd', true) as $arEvent)
 			ExecuteModuleEventEx($arEvent, array($ID, $arFields));
@@ -572,7 +697,7 @@ class CSaleOrderProps
 		return $ID;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		if (! $ID)
 			return false;
@@ -584,7 +709,10 @@ class CSaleOrderProps
 		if (! self::CheckFields('UPDATE', $arFields, $ID))
 			return false;
 
-		$newProperty = CSaleOrderPropsAdapter::convertOldToNew($arFields + self::GetByID($ID));
+		$oldFields = self::GetList(array(), array('ID' => $ID), false, false, array('SETTINGS', '*' ))->Fetch();
+		$propertyFields = $arFields + $oldFields;
+
+		$newProperty = CSaleOrderPropsAdapter::convertOldToNew($propertyFields);
 		OrderPropsTable::update($ID, array_intersect_key($newProperty, CSaleOrderPropsAdapter::$allFields));
 
 		foreach(GetModuleEvents('sale', 'OnOrderPropsUpdate', true) as $arEvent)
@@ -593,7 +721,7 @@ class CSaleOrderProps
 		return $ID;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		if (! $ID)
 			return false;
@@ -603,6 +731,8 @@ class CSaleOrderProps
 				return false;
 
 		global $DB;
+
+		$ID = (int)$ID;
 
 		$DB->Query("DELETE FROM b_sale_order_props_variant WHERE ORDER_PROPS_ID = ".$ID, true);
 		$DB->Query("UPDATE b_sale_order_props_value SET ORDER_PROPS_ID = NULL WHERE ORDER_PROPS_ID = ".$ID, true);
@@ -616,9 +746,9 @@ class CSaleOrderProps
 		return $DB->Query("DELETE FROM b_sale_order_props WHERE ID = ".$ID, true);
 	}
 
-	function GetRealValue($propertyID, $propertyCode, $propertyType, $value, $lang = false)
+	public static function GetRealValue($propertyID, $propertyCode, $propertyType, $value, $lang = false)
 	{
-		$propertyID = IntVal($propertyID);
+		$propertyID = intval($propertyID);
 		$propertyCode = Trim($propertyCode);
 		$propertyType = Trim($propertyType);
 
@@ -627,7 +757,7 @@ class CSaleOrderProps
 
 		$arResult = array();
 
-		$curKey = ((strlen($propertyCode) > 0) ? $propertyCode : $propertyID);
+		$curKey = (($propertyCode <> '') ? $propertyCode : $propertyID);
 
 		if ($propertyType == "SELECT" || $propertyType == "RADIO")
 		{
@@ -658,7 +788,7 @@ class CSaleOrderProps
 			if(CSaleLocation::isLocationProMigrated())
 			{
 				$curValue = '';
-				if(strlen($value))
+				if($value <> '')
 				{
 					$arValue = array();
 
@@ -674,19 +804,29 @@ class CSaleOrderProps
 							{
 								// copy street to STREET property
 								if($types['ID2CODE'][$item['TYPE_ID']] == 'STREET')
+								{
 									$arResult[$curKey."_STREET"] = $item['LNAME'];
+								}
 
 								if($types['ID2CODE'][$item['TYPE_ID']] == 'COUNTRY')
+								{
 									$arValue["COUNTRY_NAME"] = $item['LNAME'];
+								}
 
 								if($types['ID2CODE'][$item['TYPE_ID']] == 'REGION')
+								{
 									$arValue["REGION_NAME"] = $item['LNAME'];
+								}
 
 								if($types['ID2CODE'][$item['TYPE_ID']] == 'CITY')
+								{
 									$arValue["CITY_NAME"] = $item['LNAME'];
+								}
 
 								if($types['ID2CODE'][$item['TYPE_ID']] == 'VILLAGE')
+								{
 									$arResult[$curKey."_VILLAGE"] = $item['LNAME'];
+								}
 
 								$path[] = $item['LNAME'];
 							}
@@ -702,7 +842,7 @@ class CSaleOrderProps
 			else
 			{
 				$arValue = CSaleLocation::GetByID($value, $lang);
-				$curValue = $arValue["COUNTRY_NAME"].((strlen($arValue["COUNTRY_NAME"])<=0 || strlen($arValue["REGION_NAME"])<=0) ? "" : " - ").$arValue["REGION_NAME"].((strlen($arValue["COUNTRY_NAME"])<=0 || strlen($arValue["CITY_NAME"])<=0) ? "" : " - ").$arValue["CITY_NAME"];
+				$curValue = $arValue["COUNTRY_NAME"].(($arValue["COUNTRY_NAME"] == '' || $arValue["REGION_NAME"] == '') ? "" : " - ").$arValue["REGION_NAME"].(($arValue["COUNTRY_NAME"] == '' || $arValue["CITY_NAME"] == '') ? "" : " - ").$arValue["CITY_NAME"];
 			}
 
 			$arResult[$curKey] = $curValue;
@@ -724,7 +864,7 @@ class CSaleOrderProps
 	 * @param array $arFilter with keys: PROPERTY_ID, ENTITY_ID, ENTITY_TYPE
 	 * @return dbResult
 	 */
-	function GetOrderPropsRelations($arFilter = array())
+	public static function GetOrderPropsRelations($arFilter = array())
 	{
 		global $DB;
 
@@ -753,7 +893,7 @@ class CSaleOrderProps
 			"FROM b_sale_order_props_relation ".
 			"WHERE 1 = 1";
 
-		if (strlen($strSqlSearch) > 0)
+		if ($strSqlSearch <> '')
 			$strSql .= " ".$strSqlSearch;
 
 		$dbRes = $DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
@@ -769,7 +909,7 @@ class CSaleOrderProps
 	 * @param string $entityType - P/D (payment or delivery systems)
 	 * @return dbResult
 	 */
-	function UpdateOrderPropsRelations($ID, $arEntityIDs, $entityType)
+	public static function UpdateOrderPropsRelations($ID, $arEntityIDs, $entityType)
 	{
 		global $DB;
 
@@ -780,26 +920,36 @@ class CSaleOrderProps
 		$strUpdate = "";
 		$arFields = array();
 
-		foreach ($arEntityIDs as &$id)
+		if (is_array($arEntityIDs))
 		{
-			$id = $DB->ForSql($id);
+			foreach ($arEntityIDs as &$id)
+			{
+				$id = $DB->ForSql($id);
+			}
 		}
+
 		unset($id);
 
 		$entityType = $DB->ForSql($entityType, 1);
 
 		$DB->Query("DELETE FROM b_sale_order_props_relation WHERE PROPERTY_ID = '".$DB->ForSql($ID)."' AND ENTITY_TYPE = '".$entityType."'");
 
-		foreach ($arEntityIDs as $val)
+		if (is_array($arEntityIDs))
 		{
-			$arTmp = array("ENTITY_ID" => $val, "ENTITY_TYPE" => $entityType);
-			$arInsert = $DB->PrepareInsert("b_sale_order_props_relation", $arTmp);
+			foreach ($arEntityIDs as $val)
+			{
+				if (strval(trim($val)) == '')
+					continue;
 
-			$strSql =
-				"INSERT INTO b_sale_order_props_relation (PROPERTY_ID, ".$arInsert[0].") ".
-				"VALUES('".$ID."', ".$arInsert[1].")";
+				$arTmp = array("ENTITY_ID" => $val, "ENTITY_TYPE" => $entityType);
+				$arInsert = $DB->PrepareInsert("b_sale_order_props_relation", $arTmp);
 
-			$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
+				$strSql =
+					"INSERT INTO b_sale_order_props_relation (PROPERTY_ID, ".$arInsert[0].") ".
+					"VALUES('".$ID."', ".$arInsert[1].")";
+
+				$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
+			}
 		}
 
 		return true;
@@ -859,7 +1009,10 @@ final class CSaleOrderPropsAdapter implements FetchAdapter
 		}
 
 		$oldProperty = self::convertNewToOld($newProperty);
-		$oldProperty['VALUE'] = self::getOldValue($newProperty['VALUE'], $newProperty['TYPE']);
+		if (array_key_exists('VALUE', $newProperty))
+		{
+			$oldProperty['VALUE'] = self::getOldValue($newProperty['VALUE'], $newProperty['TYPE']);
+		}
 
 		return array_intersect_key($oldProperty, $this->select);
 	}
@@ -1043,7 +1196,13 @@ final class CSaleOrderPropsAdapter implements FetchAdapter
 				break;
 		}
 
-		$property['SETTINGS'] = $settings;
+		$propertySettings = array();
+		if (isset($property['SETTINGS']) && is_array($property['SETTINGS']))
+		{
+			$propertySettings = $property['SETTINGS'];
+		}
+
+		$property['SETTINGS'] = $propertySettings + $settings;
 
 		return $property;
 	}
@@ -1057,13 +1216,33 @@ final class CSaleOrderPropsAdapter implements FetchAdapter
 
 	static function migrate()
 	{
+		$correctFields = array(
+			'REQUIRED',
+			'USER_PROPS',
+			'ACTIVE',
+			'UTIL',
+			'MULTIPLE',
+		);
+
 		$errors = '';
-		$result = Application::getConnection()->query('SELECT * FROM b_sale_order_props');
+		$result = Application::getConnection()->query('SELECT * FROM b_sale_order_props ORDER BY ID ASC');
 
 		while ($oldProperty = $result->fetch())
 		{
 			$newProperty = self::convertOldToNew($oldProperty);
 			$newProperty['IS_ADDRESS'] = 'N'; // fix oracle's mb default
+
+			foreach ($newProperty as $key => $value)
+			{
+				if (mb_strpos($key, 'IS_') === 0)
+				{
+					$newProperty[$key] = ToUpper($value);
+				}
+				elseif(in_array($key, $correctFields))
+				{
+					$newProperty[$key] = ToUpper($value);
+				}
+			}
 
 			$update = OrderPropsTable::update($newProperty['ID'], array_intersect_key($newProperty, self::$allFields));
 

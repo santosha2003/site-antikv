@@ -122,7 +122,7 @@ function DEMO_IBlock_ImportXML($file, $site_id, $xml_force = false, $workflow = 
 	if(strlen($file) <= 0)
 		return false;
 
-	$xml_dir = dirname(__FILE__)."/xml/".LANGUAGE_ID;
+	$xml_dir = $_SERVER['DOCUMENT_ROOT']."/bitrix/wizards/bitrix/demo/modules/iblock/xml/".LANGUAGE_ID;
 	if(file_exists($xml_dir) && is_dir($xml_dir))
 	{
 		if(is_file($xml_dir."/".$file))
@@ -197,16 +197,16 @@ function DEMO_IBlock_CreateType($IBLOCK_TYPES = false)
 				),
 			),
 		),
-		"services" => array(
-			"ID" => "services",
+		"articles" => array(
+			"ID" => "articles",
 			"SECTIONS" => "Y",
 			"IN_RSS" => "N",
-			"SORT" => 500,
+			"SORT" => 20,
 			"LANG" => array(
 				LANGUAGE_ID => array(
-					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_SERVICES_NAME"),
-					"SECTION_NAME" => GetMessage("DEMO_IBLOCK_TYPE_SERVICES_SECTION_NAME"),
-					"ELEMENT_NAME" => GetMessage("DEMO_IBLOCK_TYPE_SERVICES_ELEMENT_NAME"),
+					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_ARTICLES_NAME"),
+					"SECTION_NAME" => GetMessage("DEMO_IBLOCK_TYPE_ARTICLES_SECTION_NAME"),
+					"ELEMENT_NAME" => GetMessage("DEMO_IBLOCK_TYPE_ARTICLES_ELEMENT_NAME"),
 				),
 			),
 		),
@@ -223,11 +223,24 @@ function DEMO_IBlock_CreateType($IBLOCK_TYPES = false)
 				),
 			),
 		),
+		"services" => array(
+			"ID" => "services",
+			"SECTIONS" => "Y",
+			"IN_RSS" => "N",
+			"SORT" => 50,
+			"LANG" => array(
+				LANGUAGE_ID => array(
+					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_SERVICES_NAME"),
+					"SECTION_NAME" => GetMessage("DEMO_IBLOCK_TYPE_SERVICES_SECTION_NAME"),
+					"ELEMENT_NAME" => GetMessage("DEMO_IBLOCK_TYPE_SERVICES_ELEMENT_NAME"),
+				),
+			),
+		),
 		"books" => array(
 			"ID" => "books",
 			"SECTIONS" => "Y",
 			"IN_RSS" => "N",
-			"SORT" => 500,
+			"SORT" => 60,
 			"LANG" => array(
 				LANGUAGE_ID => array(
 					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_BOOKS_NAME"),
@@ -236,24 +249,11 @@ function DEMO_IBlock_CreateType($IBLOCK_TYPES = false)
 				),
 			),
 		),
-		"articles" => array(
-			"ID" => "articles",
-			"SECTIONS" => "Y",
-			"IN_RSS" => "N",
-			"SORT" => 20,
-			"LANG" => array(
-				LANGUAGE_ID => array(
-					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_ARTICLES_NAME"),
-					"SECTION_NAME" => GetMessage("DEMO_IBLOCK_TYPE_ARTICLES_SECTION_NAME"),
-					"ELEMENT_NAME" => GetMessage("DEMO_IBLOCK_TYPE_ARTICLES_ELEMENT_NAME"),
-				),
-			),
-		),
 		"paid" => array(
 			"ID" => "paid",
 			"SECTIONS" => "N",
 			"IN_RSS" => "N",
-			"SORT" => 500,
+			"SORT" => 70,
 			"LANG" => array(
 				LANGUAGE_ID => array(
 					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_PAID_NAME"),
@@ -266,12 +266,25 @@ function DEMO_IBlock_CreateType($IBLOCK_TYPES = false)
 			"ID" => "xmlcatalog",
 			"SECTIONS" => "Y",
 			"IN_RSS" => "N",
-			"SORT" => 500,
+			"SORT" => 80,
 			"LANG" => array(
 				LANGUAGE_ID => array(
 					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_XMLCATALOG_NAME"),
 					"SECTION_NAME" => GetMessage("DEMO_IBLOCK_TYPE_XMLCATALOG_SECTION_NAME"),
 					"ELEMENT_NAME" => GetMessage("DEMO_IBLOCK_TYPE_XMLCATALOG_ELEMENT_NAME"),
+				),
+			),
+		),
+		"lists" => array(
+			"ID" => "lists",
+			"SECTIONS" => "Y",
+			"IN_RSS" => "N",
+			"SORT" => 90,
+			"LANG" => array(
+				LANGUAGE_ID => array(
+					"NAME" => GetMessage("DEMO_IBLOCK_TYPE_LISTS_NAME"),
+					"SECTION_NAME" => GetMessage("DEMO_IBLOCK_TYPE_LISTS_SECTION_NAME"),
+					"ELEMENT_NAME" => GetMessage("DEMO_IBLOCK_TYPE_LISTS_ELEMENT_NAME"),
 				),
 			),
 		),

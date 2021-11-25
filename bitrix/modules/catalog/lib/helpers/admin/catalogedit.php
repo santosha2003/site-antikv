@@ -126,7 +126,8 @@ class CatalogEdit
 	{
 		if (!$this->isSuccess())
 			return;
-		$this->iblockCatalogData = \CCatalogSKU::getInfoByIBlock($this->iblockId);
+		/** @noinspection PhpMethodOrClassCallIsNotCaseSensitiveInspection */
+		$this->iblockCatalogData = \CCatalogSku::getInfoByIBlock($this->iblockId);
 		if ($this->iblockCatalogData === false)
 			$this->iblockCatalogData = array();
 		$this->simpleIblock = self::isSimpleIblock($this->iblockCatalogData);
@@ -285,7 +286,7 @@ class CatalogEdit
 
 				if ($this->isSuccess())
 				{
-					$skuCatalog = \CCatalogSKU::getInfoByIBlock($skuIblockId);
+					$skuCatalog = \CCatalogSku::getInfoByIBlock($skuIblockId);
 					if (!self::isSimpleIblock($skuCatalog))
 					{
 						if (self::isParentIblock($skuCatalog))
@@ -447,8 +448,8 @@ class CatalogEdit
 		return (
 			is_array($iblockCatalog)
 			&& (
-				$iblockCatalog['CATALOG_TYPE'] == \CCatalogSKU::TYPE_CATALOG
-				|| $iblockCatalog['CATALOG_TYPE'] == \CCatalogSKU::TYPE_FULL
+				$iblockCatalog['CATALOG_TYPE'] == \CCatalogSku::TYPE_CATALOG
+				|| $iblockCatalog['CATALOG_TYPE'] == \CCatalogSku::TYPE_FULL
 			)
 		);
 	}
@@ -464,8 +465,8 @@ class CatalogEdit
 		return (
 			is_array($iblockCatalog)
 			&& (
-				$iblockCatalog['CATALOG_TYPE'] == \CCatalogSKU::TYPE_PRODUCT
-				|| $iblockCatalog['CATALOG_TYPE'] == \CCatalogSKU::TYPE_FULL
+				$iblockCatalog['CATALOG_TYPE'] == \CCatalogSku::TYPE_PRODUCT
+				|| $iblockCatalog['CATALOG_TYPE'] == \CCatalogSku::TYPE_FULL
 			)
 		);
 	}
@@ -478,7 +479,7 @@ class CatalogEdit
 	 */
 	protected static function isOfferIblock($iblockCatalog)
 	{
-		return (is_array($iblockCatalog) && $iblockCatalog['CATALOG_TYPE'] == \CCatalogSKU::TYPE_OFFERS);
+		return (is_array($iblockCatalog) && $iblockCatalog['CATALOG_TYPE'] == \CCatalogSku::TYPE_OFFERS);
 	}
 
 	/**

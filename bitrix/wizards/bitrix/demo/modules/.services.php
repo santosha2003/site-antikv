@@ -5,7 +5,7 @@ $arServices = Array(
 
 	"main" => Array(
 		"NAME" => GetMessage("SERVICE_MAIN_BASE"),
-		"STAGES" => Array("files.php", "settings.php"),
+		"STAGES" => Array("files.php", "rating.php", "settings.php"),
 		"INSTALL_ONLY" => "Y",
 	),
 
@@ -56,6 +56,11 @@ $arServices = Array(
 		"ICON" => "images/services/content.gif",
 	),
 
+	"lists" => Array(
+		"NAME" => GetMessage("SERVICE_LISTS"),
+		"INSTALL_ONLY" => "Y",
+	),
+
 	"subscribe" => Array(
 		"NAME" => GetMessage("SERVICE_SUBSCRIBE"),
 		"ICON" => "images/services/subscribe.gif",
@@ -102,6 +107,12 @@ $arServices = Array(
 		'NAME' => GetMessage("SERVICE_BLOGS"),
 		"ICON" => "images/services/blog.gif",
 	),
+    
+	'idea' => array(
+		'NAME' => GetMessage("SERVICE_IDEA"),
+		"ICON" => "images/services/blog.gif",
+                'MODULE_ID' => Array("blog", "iblock"),
+	),
 
 	'support' => array(
 		'NAME' => GetMessage("SERVICE_SUPPORT"),
@@ -132,6 +143,14 @@ $arServices = Array(
 		"ICON" => "images/services/other.gif",
 		"STAGES" => Array("index.php"),
 		"DESCRIPTION" => GetMessage("SERVICE_MEDIALIBRARY_DESC")
+	),
+	
+	"calendar" => Array(
+		"NAME" => GetMessage("SERVICE_CALENDAR"),
+		"MODULE_ID" => Array("calendar"),
+		"ICON" => "images/services/other.gif",
+		"STAGES" => Array("index.php"),
+		"DESCRIPTION" => ""
 	),
 
 	"last_step" => Array(

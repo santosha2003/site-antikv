@@ -54,8 +54,8 @@ class BasketTable extends Main\Entity\DataManager
 
 		$itemsList = BasketPropertyTable::getList(
 			array(
+				"select" => array("ID"),
 				"filter" => array("BASKET_ID" => $id),
-				"select" => array("ID")
 			)
 		);
 		while ($item = $itemsList->fetch())
@@ -64,12 +64,17 @@ class BasketTable extends Main\Entity\DataManager
 		return BasketTable::delete($id);
 	}
 
-
+	/**
+	 * @return string
+	 */
 	public static function getTableName()
 	{
 		return 'b_sale_basket';
 	}
 
+	/**
+	 * @return array
+	 */
 	public static function getMap()
 	{
 		global $DB;
@@ -129,6 +134,9 @@ class BasketTable extends Main\Entity\DataManager
 			'PRODUCT_PRICE_ID' => array(
 				'data_type' => 'integer'
 			),
+			'PRICE_TYPE_ID' => array(
+				'data_type' => 'integer'
+			),
 			'NAME' => array(
 				'data_type' => 'string'
 			),
@@ -139,8 +147,8 @@ class BasketTable extends Main\Entity\DataManager
 				array('NAME', 'PRODUCT_ID')
 			),
 
-			'PRICE' => array(
-				'data_type' => 'float',
+			new Main\Entity\FloatField(
+				'PRICE'
 			),
 
 			'CURRENCY' => array(
@@ -149,8 +157,8 @@ class BasketTable extends Main\Entity\DataManager
 				'validation' => array(__CLASS__, 'validateCurrency'),
 			),
 
-			'BASE_PRICE' => array(
-				'data_type' => 'float',
+			new Main\Entity\FloatField(
+				'BASE_PRICE'
 			),
 
 			'VAT_INCLUDED' => array(
@@ -164,26 +172,39 @@ class BasketTable extends Main\Entity\DataManager
 			new Main\Entity\ExpressionField(
 					'DATE_INS',
 					$DB->datetimeToDateFunction('%s'),
-					array('DATE_INSERT')
+					array('DATE_INSERT'),
+					array('data_type' => 'datetime')
 			),
+
 			'DATE_UPDATE' => array(
 				'data_type' => 'datetime'
 			),
-
 			new Main\Entity\ExpressionField(
 					'DATE_UPD',
 					$DB->datetimeToDateFunction('%s'),
-					array('DATE_UPDATE')
+					array('DATE_UPDATE'),
+					array('data_type' => 'datetime')
 			),
 
-
-			'WEIGHT' => array(
-				'data_type' => 'float'
+			'DATE_REFRESH' => array(
+				'data_type' => 'datetime'
+			),
+			new Main\Entity\ExpressionField(
+					'DATE_REF',
+					$DB->datetimeToDateFunction('%s'),
+					array('DATE_REFRESH'),
+					array('data_type' => 'datetime')
 			),
 
-			'QUANTITY' => array(
-				'data_type' => 'float',
-				'required' => true,
+			new Main\Entity\FloatField(
+				'WEIGHT'
+			),
+
+			new Main\Entity\FloatField(
+				'QUANTITY',
+				array(
+					'required' => true
+				)
 			),
 
 			'DELAY' => array(
@@ -203,6 +224,10 @@ class BasketTable extends Main\Entity\DataManager
 				'values' => array('N','Y')
 			),
 
+			'MARKING_CODE_GROUP' => array(
+				'data_type' => 'string',
+			),
+
 			'MODULE' => array(
 				'data_type' => 'string'
 			),
@@ -219,8 +244,11 @@ class BasketTable extends Main\Entity\DataManager
 				'data_type' => 'string'
 			),
 
-			'DISCOUNT_PRICE' => array(
-				'data_type' => 'float'
+			new Main\Entity\FloatField(
+				'DISCOUNT_PRICE',
+				array(
+					'default_value' => '0.00'
+				)
 			),
 
 			'CATALOG_XML_ID' => array(
@@ -246,8 +274,8 @@ class BasketTable extends Main\Entity\DataManager
 				'validation' => array(__CLASS__, 'validateDiscountCoupon'),
 			),
 
-			'VAT_RATE' => array(
-				'data_type' => 'float'
+			new Main\Entity\FloatField(
+				'VAT_RATE'
 			),
 
 			new Main\Entity\ExpressionField(
@@ -272,10 +300,9 @@ class BasketTable extends Main\Entity\DataManager
 				'values' => array('N', 'Y'),
 			),
 
-			'RESERVE_QUANTITY' => array(
-				'data_type' => 'float',
+			new Main\Entity\FloatField(
+				'RESERVE_QUANTITY'
 			),
-
 
 			'BARCODE_MULTI' => array(
 				'data_type' => 'boolean',
@@ -292,16 +319,14 @@ class BasketTable extends Main\Entity\DataManager
 				'data_type' => 'string'
 			),
 
-			'TYPE' => array(
-				'data_type' => 'integer'
+			new Main\Entity\IntegerField(
+				'TYPE'
 			),
-
-			'SET_PARENT_ID' => array(
-				'data_type' => 'integer'
+			new Main\Entity\IntegerField(
+				'SET_PARENT_ID'
 			),
-
-			'MEASURE_CODE' => array(
-				'data_type' => 'integer'
+			new Main\Entity\IntegerField(
+				'MEASURE_CODE'
 			),
 
 			'MEASURE_NAME' => array(
@@ -332,7 +357,7 @@ class BasketTable extends Main\Entity\DataManager
 			'ALL_PRICE' => array(
 				'data_type' => 'float',
 				'expression' => array(
-					'(%s + %s)', 'QUANTITY', 'DISCOUNT_PRICE'
+					'(%s + %s)', 'PRICE', 'DISCOUNT_PRICE'
 				)
 			),
 
@@ -381,6 +406,10 @@ class BasketTable extends Main\Entity\DataManager
 				array(
 					'default' => '100'
 				)
+			),
+
+			'XML_ID' => array(
+				'data_type' => 'string'
 			),
 		);
 	}

@@ -34,7 +34,7 @@ else
 				$display = "none";
 				if ($arParams['SHOW_BASKET_ORDER'] == 'Y')
 					$display = "block";
-				if (isset($_POST["display_props"]) && strlen($_POST["display_props"]) > 0)
+				if (isset($_POST["display_props"]) && $_POST["display_props"] <> '')
 					$display = htmlspecialcharsbx($_POST["display_props"]);
 			?>
 			<div id="delay_none" style="display:block">

@@ -1,6 +1,8 @@
 <?
 IncludeModuleLangFile(__FILE__);
 
+use Bitrix\Main\Mail;
+
 class CPostingGeneral
 {
 	var $LAST_ERROR="";
@@ -8,7 +10,7 @@ class CPostingGeneral
 	static $current_emails_per_hit = 0;
 
 	//get by ID
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -27,7 +29,7 @@ class CPostingGeneral
 	}
 
 	//list of categories linked with message
-	function GetRubricList($ID)
+	public static function GetRubricList($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -53,7 +55,7 @@ class CPostingGeneral
 	}
 
 	//list of user group linked with message
-	function GetGroupList($ID)
+	public static function GetGroupList($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -76,12 +78,10 @@ class CPostingGeneral
 	}
 
 	// delete by ID
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
-
-		$DB->StartTransaction();
 
 		CPosting::DeleteFile($ID);
 
@@ -93,15 +93,10 @@ class CPostingGeneral
 		if($res)
 			$res = $DB->Query("DELETE FROM b_posting WHERE ID='".$ID."' ", false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		if($res)
-			$DB->Commit();
-		else
-			$DB->Rollback();
-
 		return $res;
 	}
 
-	function OnGroupDelete($group_id)
+	public static function OnGroupDelete($group_id)
 	{
 		global $DB;
 		$group_id = intval($group_id);
@@ -109,19 +104,19 @@ class CPostingGeneral
 		return $DB->Query("DELETE FROM b_posting_group WHERE GROUP_ID=".$group_id, true);
 	}
 
-	function DeleteFile($ID, $file_id=false)
+	public static function DeleteFile($ID, $file_id=false)
 	{
 		global $DB;
 
 		$rsFile = CPosting::GetFileList($ID, $file_id);
 		while($arFile = $rsFile->Fetch())
 		{
-			$rs = $DB->Query("DELETE FROM b_posting_file where POSTING_ID=".intval($ID)." AND FILE_ID=".intval($arFile["ID"]), false, "File: ".__FILE__."<br>Line: ".__LINE__);
+			$DB->Query("DELETE FROM b_posting_file where POSTING_ID=".intval($ID)." AND FILE_ID=".intval($arFile["ID"]), false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			CFile::Delete(intval($arFile["ID"]));
 		}
 	}
 
-	function SplitFileName($file_name)
+	public static function SplitFileName($file_name)
 	{
 		$found = array();
 		// exapmle(2).txt
@@ -212,7 +207,7 @@ class CPostingGeneral
 		}
 	}
 
-	function GetFileList($ID, $file_id=false)
+	public static function GetFileList($ID, $file_id=false)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -253,25 +248,25 @@ class CPostingGeneral
 
 		if(array_key_exists("FROM_FIELD", $arFields))
 		{
-			if(strlen($arFields["FROM_FIELD"])<3 || !check_email($arFields["FROM_FIELD"]))
+			if(mb_strlen($arFields["FROM_FIELD"]) < 3 || !check_email($arFields["FROM_FIELD"]))
 				$aMsg[] = array("id"=>"FROM_FIELD", "text"=>GetMessage("class_post_err_email"));
 		}
 
 		if(!array_key_exists("DIRECT_SEND", $arFields) || $arFields["DIRECT_SEND"]=="N")
 		{
-			if(array_key_exists("TO_FIELD", $arFields) && strlen($arFields["TO_FIELD"])<=0)
+			if(array_key_exists("TO_FIELD", $arFields) && $arFields["TO_FIELD"] == '')
 				$aMsg[] = array("id"=>"TO_FIELD", "text"=>GetMessage("class_post_err_to"));
 		}
 
 		if(array_key_exists("SUBJECT", $arFields))
 		{
-			if(strlen($arFields["SUBJECT"])<=0)
+			if($arFields["SUBJECT"] == '')
 				$aMsg[] = array("id"=>"SUBJECT", "text"=>GetMessage("class_post_err_subj"));
 		}
 
 		if(array_key_exists("BODY", $arFields))
 		{
-			if(strlen($arFields["BODY"])<=0)
+			if($arFields["BODY"] == '')
 				$aMsg[] = array("id"=>"BODY", "text"=>GetMessage("class_post_err_text"));
 		}
 
@@ -283,9 +278,12 @@ class CPostingGeneral
 
 		if(array_key_exists("CHARSET", $arFields))
 		{
-			$aCharset = explode(",", COption::GetOptionString("subscribe", "posting_charset"));
-			if(!in_array($arFields["CHARSET"], $aCharset))
+			$sCharset = COption::GetOptionString("subscribe", "posting_charset");
+			$aCharset = explode(",", ToLower($sCharset));
+			if (!in_array(ToLower($arFields["CHARSET"]), $aCharset))
+			{
 				$aMsg[] = array("id"=>"CHARSET", "text"=>GetMessage("class_post_err_charset"));
+			}
 		}
 
 		if(!empty($aMsg))
@@ -420,7 +418,7 @@ class CPostingGeneral
 		if(count($aPostGrp)>0)
 		{
 			$user = CUser::GetList(
-				($b="id"), ($o="asc"),
+				"id", "asc",
 				array("GROUP_MULTI"=>$aPostGrp, "ACTIVE"=>"Y", "EMAIL"=>$post_arr["EMAIL_FILTER"])
 			);
 			while(($user_arr = $user->Fetch()))
@@ -449,7 +447,7 @@ class CPostingGeneral
 		return $aEmail;
 	}
 
-	function AutoSend($ID=false, $limit=false, $site_id=false)
+	public static function AutoSend($ID=false, $limit=false, $site_id=false)
 	{
 		if($ID===false)
 		{
@@ -506,7 +504,7 @@ class CPostingGeneral
 	{
 		global $DB, $APPLICATION;
 
-		$eol = CEvent::GetMailEOL();
+		$eol = \Bitrix\Main\Mail\Mail::getMailEol();
 		$ID = intval($ID);
 		$timeout = intval($timeout);
 		$start_time = getmicrotime();
@@ -529,8 +527,8 @@ class CPostingGeneral
 
 		if(
 			$check_charset
-			&& (strlen($post_arr["MSG_CHARSET"]) > 0)
-			&& (strtoupper($post_arr["MSG_CHARSET"]) != strtoupper(LANG_CHARSET))
+			&& ($post_arr["MSG_CHARSET"] <> '')
+			&& (mb_strtoupper($post_arr["MSG_CHARSET"]) != mb_strtoupper(LANG_CHARSET))
 		)
 		{
 			return "CONTINUE";
@@ -541,7 +539,7 @@ class CPostingGeneral
 			if($e = $APPLICATION->GetException())
 			{
 				$this->LAST_ERROR .= GetMessage("class_post_err_lock")."<br>".$e->GetString();
-				if(strpos($this->LAST_ERROR, "PLS-00201") !== false && strpos($this->LAST_ERROR, "'DBMS_LOCK'") !== false)
+				if(mb_strpos($this->LAST_ERROR, "PLS-00201") !== false && mb_strpos($this->LAST_ERROR, "'DBMS_LOCK'") !== false)
 					$this->LAST_ERROR .= "<br>".GetMessage("class_post_err_lock_advice");
 				$APPLICATION->ResetException();
 				return false;
@@ -554,21 +552,21 @@ class CPostingGeneral
 
 		if($post_arr["VERSION"] <> '2')
 		{
-			if(is_string($post_arr["BCC_TO_SEND"]) && strlen($post_arr["BCC_TO_SEND"])>0)
+			if(is_string($post_arr["BCC_TO_SEND"]) && $post_arr["BCC_TO_SEND"] <> '')
 			{
 				$a =  explode(",", $post_arr["BCC_TO_SEND"]);
 				foreach($a as $e)
 					$DB->Query("INSERT INTO b_posting_email (POSTING_ID, STATUS, EMAIL) VALUES (".$ID.", 'Y', '".$DB->ForSQL($e)."')");
 			}
 
-			if(is_string($post_arr["ERROR_EMAIL"]) && strlen($post_arr["ERROR_EMAIL"])>0)
+			if(is_string($post_arr["ERROR_EMAIL"]) && $post_arr["ERROR_EMAIL"] <> '')
 			{
 				$a =  explode(",", $post_arr["ERROR_EMAIL"]);
 				foreach($a as $e)
 					$DB->Query("INSERT INTO b_posting_email (POSTING_ID, STATUS, EMAIL) VALUES (".$ID.", 'E', '".$DB->ForSQL($e)."')");
 			}
 
-			if(is_string($post_arr["SENT_BCC"]) && strlen($post_arr["SENT_BCC"])>0)
+			if(is_string($post_arr["SENT_BCC"]) && $post_arr["SENT_BCC"] <> '')
 			{
 				$a =  explode(",", $post_arr["SENT_BCC"]);
 				foreach($a as $e)
@@ -585,7 +583,7 @@ class CPostingGeneral
 			$post_arr["BODY"] = $tools->ReplaceImages($post_arr["BODY"]);
 		}
 
-		if(strlen($post_arr["CHARSET"]) > 0)
+		if($post_arr["CHARSET"] <> '')
 		{
 			$from_charset = $post_arr["MSG_CHARSET"]? $post_arr["MSG_CHARSET"]: SITE_CHARSET;
 			$post_arr["BODY"] = $APPLICATION->ConvertCharset($post_arr["BODY"], $from_charset, $post_arr["CHARSET"]);
@@ -623,6 +621,9 @@ class CPostingGeneral
 		}
 
 		$bHasAttachments = false;
+		$sHeader = "";
+		$sBoundary = "";
+
 		if(count($tools->aMatches) > 0)
 		{
 			$bHasAttachments = true;
@@ -643,7 +644,7 @@ class CPostingGeneral
 
 			foreach($tools->aMatches as $attachment)
 			{
-				if(strlen($post_arr["CHARSET"]) > 0)
+				if($post_arr["CHARSET"] <> '')
 				{
 					$from_charset = $post_arr["MSG_CHARSET"]? $post_arr["MSG_CHARSET"]: SITE_CHARSET;
 					$attachment["DEST"] = $APPLICATION->ConvertCharset($attachment["DEST"], $from_charset, $post_arr["CHARSET"]);
@@ -701,7 +702,7 @@ class CPostingGeneral
 
 			foreach ($arFiles as $arFile)
 			{
-				if(strlen($post_arr["CHARSET"]) > 0)
+				if($post_arr["CHARSET"] <> '')
 				{
 					$from_charset = $post_arr["MSG_CHARSET"]? $post_arr["MSG_CHARSET"]: SITE_CHARSET;
 					$file_name = $APPLICATION->ConvertCharset($arFile["ORIGINAL_NAME"], $from_charset, $post_arr["CHARSET"]);
@@ -744,6 +745,11 @@ class CPostingGeneral
 		}
 
 		$mail_additional_parameters = trim(COption::GetOptionString("subscribe", "mail_additional_parameters"));
+
+		$context = new Mail\Context();
+		$context->setCategory(Mail\Context::CAT_EXTERNAL);
+		$context->setPriority(Mail\Context::PRIORITY_LOW);
+
 		if($post_arr["DIRECT_SEND"] == "Y")
 		{
 			//personal delivery
@@ -772,7 +778,8 @@ class CPostingGeneral
 
 				if(is_array($arFields))
 				{
-					$result = bxmail($arFields["EMAIL"], $arFields["SUBJECT"], $arFields["BODY"], $arFields["HEADER"], $mail_additional_parameters);
+					$to = CMailTools::EncodeHeaderFrom($arFields["EMAIL"], $post_arr["CHARSET"]);
+					$result = bxmail($to, $arFields["SUBJECT"], $arFields["BODY"], $arFields["HEADER"], $mail_additional_parameters, $context);
 				}
 				else
 				{
@@ -808,7 +815,7 @@ class CPostingGeneral
 			{
 				$BCC = implode(",", $aStep);
 				$sHeaderStep = $sHeader.$eol."Bcc: ".$BCC;
-				$result = bxmail($post_arr["TO_FIELD"], $sSubject, $sBody, $sHeaderStep, $mail_additional_parameters);
+				$result = bxmail($post_arr["TO_FIELD"], $sSubject, $sBody, $sHeaderStep, $mail_additional_parameters, $context);
 				if($result)
 				{
 					$DB->Query("UPDATE b_posting_email SET STATUS='N' WHERE ID in (".implode(", ", array_keys($aStep)).")");
@@ -841,7 +848,7 @@ class CPostingGeneral
 		return ($STATUS=="P"? "CONTINUE": true);
 	}
 
-	function GetEmailStatuses($ID)
+	public static function GetEmailStatuses($ID)
 	{
 		global $DB;
 		$arStatuses = array();
@@ -856,7 +863,7 @@ class CPostingGeneral
 		return $arStatuses;
 	}
 
-	function GetEmailsByStatus($ID, $STATUS)
+	public static function GetEmailsByStatus($ID, $STATUS)
 	{
 		global $DB;
 
@@ -915,8 +922,17 @@ class CPostingGeneral
 						AND S.CONFIRMED = 'Y'
 						AND S.ACTIVE = 'Y'
 						AND (U.ID IS NULL OR U.ACTIVE = 'Y')
-						".(strlen($post_arr["SUBSCR_FORMAT"]) <= 0 || $post_arr["SUBSCR_FORMAT"]==="NOT_REF" ? "": "AND S.FORMAT='".($post_arr["SUBSCR_FORMAT"]=="text"? "text": "html")."'")."
-						".(strlen($post_arr["EMAIL_FILTER"]) <= 0 || $post_arr["EMAIL_FILTER"]==="NOT_REF" ? "": "AND ".GetFilterQuery("S.EMAIL", $post_arr["EMAIL_FILTER"], "Y", array("@", ".", "_")))."
+						".($post_arr["SUBSCR_FORMAT"] == '' || $post_arr["SUBSCR_FORMAT"]==="NOT_REF" ? "": "AND S.FORMAT='".($post_arr["SUBSCR_FORMAT"]=="text"? "text": "html")."'")."
+						".($post_arr["EMAIL_FILTER"] == '' || $post_arr["EMAIL_FILTER"]==="NOT_REF" ? "": "AND ".GetFilterQuery("S.EMAIL", $post_arr["EMAIL_FILTER"], "Y", array("@", ".", "_")))."
+				");
+				$DB->Query("
+					DELETE pe
+					from b_posting_email pe
+					left join b_posting_email pe0 on
+						pe0.POSTING_ID = pe.POSTING_ID
+						and pe0.EMAIL = pe.EMAIL
+					WHERE pe.POSTING_ID = ".$ID."
+					AND pe0.ID < pe.ID
 				");
 
 				//send to user groups
@@ -931,7 +947,7 @@ class CPostingGeneral
 							b_user U
 						WHERE
 							U.ACTIVE = 'Y'
-							".(strlen($post_arr["EMAIL_FILTER"]) <= 0 || $post_arr["EMAIL_FILTER"]==="NOT_REF" ? "": "AND ".GetFilterQuery("U.EMAIL", $post_arr["EMAIL_FILTER"], "Y", array("@", ".", "_")))."
+							".($post_arr["EMAIL_FILTER"] == '' || $post_arr["EMAIL_FILTER"]==="NOT_REF" ? "": "AND ".GetFilterQuery("U.EMAIL", $post_arr["EMAIL_FILTER"], "Y", array("@", ".", "_")))."
 							and U.EMAIL not in (SELECT EMAIL FROM b_posting_email WHERE POSTING_ID = ".$ID.")
 						GROUP BY U.EMAIL
 					");
@@ -951,7 +967,7 @@ class CPostingGeneral
 							and (UG.DATE_ACTIVE_FROM is null or UG.DATE_ACTIVE_FROM <= ".$DB->CurrentTimeFunction().")
 							and (UG.DATE_ACTIVE_TO is null or UG.DATE_ACTIVE_TO >= ".$DB->CurrentTimeFunction().")
 							and U.ACTIVE = 'Y'
-							".(strlen($post_arr["EMAIL_FILTER"]) <= 0 || $post_arr["EMAIL_FILTER"]==="NOT_REF" ? "": "AND ".GetFilterQuery("U.EMAIL", $post_arr["EMAIL_FILTER"], "Y", array("@", ".", "_")))."
+							".($post_arr["EMAIL_FILTER"] == '' || $post_arr["EMAIL_FILTER"]==="NOT_REF" ? "": "AND ".GetFilterQuery("U.EMAIL", $post_arr["EMAIL_FILTER"], "Y", array("@", ".", "_")))."
 							and U.EMAIL not in (SELECT EMAIL FROM b_posting_email WHERE POSTING_ID = ".$ID.")
 						GROUP BY PG.POSTING_ID, U.EMAIL
 					");
@@ -1035,40 +1051,40 @@ class CMailTools
 	var $server_name = null;
 	var $maxFileSize = 0;
 
-	function IsEightBit($str)
+	public static function IsEightBit($str)
 	{
-		$len = strlen($str);
+		$len = mb_strlen($str);
 		for($i=0; $i<$len; $i++)
-			if(ord(substr($str, $i, 1))>>7)
+			if(ord(mb_substr($str, $i, 1))>>7)
 				return true;
 		return false;
 	}
 
-	function EncodeMimeString($text, $charset)
+	public static function EncodeMimeString($text, $charset)
 	{
 		if(!CMailTools::IsEightBit($text))
 			return $text;
 
-		$maxl = IntVal((76 - strlen($charset) + 7)*0.4);
+		$maxl = intval((76 - mb_strlen($charset) + 7)*0.4);
 
 		$res = "";
-		$eol = CEvent::GetMailEOL();
-		$len = strlen($text);
+		$eol = \Bitrix\Main\Mail\Mail::getMailEol();
+		$len = mb_strlen($text);
 		for($i=0; $i<$len; $i=$i+$maxl)
 		{
 			if($i>0)
 				$res .= $eol."\t";
-			$res .= "=?".$charset."?B?".base64_encode(substr($text, $i, $maxl))."?=";
+			$res .= "=?".$charset."?B?".base64_encode(mb_substr($text, $i, $maxl))."?=";
 		}
 		return $res;
 	}
 
-	function EncodeSubject($text, $charset)
+	public static function EncodeSubject($text, $charset)
 	{
 		return "=?".$charset."?B?".base64_encode($text)."?=";
 	}
 
-	function EncodeHeaderFrom($text, $charset)
+	public static function EncodeHeaderFrom($text, $charset)
 	{
 		$i = CUtil::BinStrlen($text);
 		while($i > 0)
@@ -1133,7 +1149,7 @@ class CMailTools
 	{
 		if($this->pcre_backtrack_limit === false)
 			$this->pcre_backtrack_limit = intval(ini_get("pcre.backtrack_limit"));
-		$text_len = defined("BX_UTF")? mb_strlen($text, 'latin1'): strlen($text);
+		$text_len = defined("BX_UTF")? mb_strlen($text, 'latin1') : mb_strlen($text);
 		$text_len++;
 		if($this->pcre_backtrack_limit < $text_len)
 		{
@@ -1158,7 +1174,7 @@ class CMailTools
 	{
 		if($this->pcre_backtrack_limit === false)
 			$this->pcre_backtrack_limit = intval(ini_get("pcre.backtrack_limit"));
-		$text_len = defined("BX_UTF")? mb_strlen($text, 'latin1'): strlen($text);
+		$text_len = defined("BX_UTF")? mb_strlen($text, 'latin1') : mb_strlen($text);
 		$text_len++;
 		if($this->pcre_backtrack_limit < $text_len)
 		{
@@ -1190,9 +1206,9 @@ class CMailTools
 		return $text;
 	}
 
-	function ImageTypeToMimeType($type)
+	public static function ImageTypeToMimeType($type)
 	{
-		$aTypes = array(
+		static $aTypes = array(
 			1 => "image/gif",
 			2 => "image/jpeg",
 			3 => "image/png",
@@ -1210,7 +1226,7 @@ class CMailTools
 			15 => "image/vnd.wap.wbmp",
 			16 => "image/xbm",
 		);
-		if(!empty($aTypes[$type]))
+		if (isset($aTypes[$type]))
 			return $aTypes[$type];
 		else
 			return "application/octet-stream";

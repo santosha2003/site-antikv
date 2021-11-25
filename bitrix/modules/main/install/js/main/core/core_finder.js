@@ -1,10 +1,23 @@
 (function(window) {
 
 if (BX.Finder)
-	return;
-
-BX.Finder = function(container, context, panels, lang)
 {
+	return;
+}
+
+BX.FinderManager = {
+	checkInitHandlerAdded: false,
+	initHandlerAdded: false,
+	initHandler2Added: false
+};
+
+BX.Finder = function(container, context, panels, lang, oContext)
+{
+	if (typeof oContext == 'undefined')
+	{
+		oContext = window;
+	}
+
 	BX.Finder.container = container;
 	BX.Finder.context = context.toLowerCase();
 	BX.Finder.panels = panels;
@@ -41,6 +54,7 @@ BX.Finder = function(container, context, panels, lang)
 		stores: [
 			{
 				name: 'users',
+				keyPath: 'id',
 				autoIncrement: true,
 				indexes: [
 					{
@@ -54,18 +68,56 @@ BX.Finder = function(container, context, panels, lang)
 						unique: true
 					}
 				]
+			},
+			{
+				name: 'sonetgroups',
+				keyPath: 'id',
+				autoIncrement: true,
+				indexes: [
+					{
+						name: 'id',
+						keyPath: 'id',
+						unique: true
+					},
+					{
+						name: 'checksum',
+						keyPath: 'checksum',
+						unique: true
+					}
+				]
+			},
+			{
+				name: 'menuitems',
+				keyPath: 'id',
+				autoIncrement: true,
+				indexes: [
+					{
+						name: 'id',
+						keyPath: 'id',
+						unique: false
+					},
+					{
+						name: 'checksum',
+						keyPath: 'checksum',
+						unique: true
+					}
+				]
 			}
 		],
-		version: "1"
+		version: "2"
 	};
 
-	BX.Finder.dBVersion = false;
+	BX.Finder.dBVersion = 8;
 
-	if (BX.Finder.context == 'destination')
+	if (BX.util.in_array(BX.Finder.context, ['destination', 'searchtitle']))
 	{
-		BX.addCustomEvent("initFinderDb", BX.Finder.checkInitFinderDb);
+		BX.addCustomEvent(oContext, "initFinderDb", function(obDestination, name, version, entities, oContext) {
+			setTimeout(function() {
+				BX.Finder.checkInitFinderDb(obDestination, name, BX.Finder.dBVersion, entities, oContext)
+			}, 600)
+		});
 	}
-}
+};
 
 BX.Finder.onAddItem = function(provider, type, element)
 {
@@ -126,7 +178,7 @@ BX.Finder.onAddItem = function(provider, type, element)
 	if (type == 'structure-checkbox')
 		elementText = elementTextBox.getAttribute('rel');
 	else
-		elementText = elementTextBox.innerHTML;
+		elementText = elementTextBox.textContent;
 
 	if (BX.Finder.context == 'access')
 		BX.Access.AddSelection({'provider': provider, 'id': elementId, 'name': elementText});
@@ -158,16 +210,18 @@ BX.Finder.onAfterPopupShow = function()
 
 		BX.Finder.onUnDisableItem();
 
+		BX.removeCustomEvent(BX.Access, "onDeleteItem", BX.Finder.onDeleteItem);
 		BX.addCustomEvent(BX.Access, "onDeleteItem", BX.Finder.onDeleteItem);
 	}
-}
+};
+
 BX.Finder.onSelectProvider = function(arParams)
 {
 	if (!BX.Finder.searchBox[arParams['provider']])
 		BX.Finder.searchBox[arParams['provider']] = BX.findChild(BX('access_provider_'+arParams['provider']), { tagName : "input", className : "bx-finder-box-search-textbox" }, true);
 
 	BX.focus(BX.Finder.searchBox[arParams['provider']]);
-}
+};
 
 BX.Finder.onDisableItem = function(mapId)
 {
@@ -195,7 +249,7 @@ BX.Finder.onDisableItem = function(mapId)
 			BX.Finder.disabledElement.push(element);
 		}
 	}
-}
+};
 
 BX.Finder.onUnDisableItem = function()
 {
@@ -213,7 +267,7 @@ BX.Finder.onUnDisableItem = function()
 		delete BX.Finder.disabledId[i];
 		delete BX.Finder.disabledElement[i];
 	}
-}
+};
 
 BX.Finder.SwitchTab = function(currentTab, bSearchFocus)
 {
@@ -223,7 +277,9 @@ BX.Finder.SwitchTab = function(currentTab, bSearchFocus)
 	);
 
 	if (!tabsContent)
+	{
 		return false;
+	}
 
 	if (bSearchFocus !== false)
 		bSearchFocus = true;
@@ -251,7 +307,7 @@ BX.Finder.SwitchTab = function(currentTab, bSearchFocus)
 			BX.removeClass(tabsContent[i], "bx-finder-box-tab-content-selected");
 	}
 	return false;
-}
+};
 
 BX.Finder.OpenCompanyDepartment = function(provider, id, department)
 {
@@ -265,11 +321,14 @@ BX.Finder.OpenCompanyDepartment = function(provider, id, department)
 	{
 		BX.Finder.loadPlace[id] = BX.findChild(nextDiv, { className : "bx-finder-company-department-employees" });
 
+		var ajaxSendUrl = null;
 		if (BX.Finder.context == 'access')
-			var ajaxSendUrl = '/bitrix/tools/access_dialog.php';
+		{
+			ajaxSendUrl = '/bitrix/tools/access_dialog.php';
+		}
 		else
 		{
-			var ajaxSendUrl = location.href.split('#');
+			ajaxSendUrl = location.href.split('#');
 			ajaxSendUrl = ajaxSendUrl[0];
 		}
 		BX.ajax({
@@ -295,7 +354,7 @@ BX.Finder.OpenCompanyDepartment = function(provider, id, department)
 	}
 
 	return false;
-}
+};
 
 BX.Finder.OpenItemFolder = function(department)
 {
@@ -306,7 +365,7 @@ BX.Finder.OpenItemFolder = function(department)
 		BX.toggleClass(nextDiv, "bx-finder-company-department-children-opened");
 
 	return false;
-}
+};
 
 BX.Finder.Search = function(element, provider)
 {
@@ -320,11 +379,14 @@ BX.Finder.Search = function(element, provider)
 	if (!BX.Finder.searchPanel[provider])
 		BX.Finder.searchPanel[provider] = BX.findChild(element.parentNode.parentNode, { className : "bx-finder-box-tab-content-selected" }, true);
 
+	var ajaxSendUrl = null;
 	if (BX.Finder.context == 'access')
-		var ajaxSendUrl = '/bitrix/tools/access_dialog.php';
+	{
+		ajaxSendUrl = '/bitrix/tools/access_dialog.php';
+	}
 	else
 	{
-		var ajaxSendUrl = location.href.split('#');
+		ajaxSendUrl = location.href.split('#');
 		ajaxSendUrl = ajaxSendUrl[0];
 	}
 
@@ -372,118 +434,171 @@ BX.Finder.Search = function(element, provider)
 			});
 		}, 500);
 	}
-}
+};
 
-BX.Finder.checkInitFinderDb = function(obDestination, name, version)
+BX.Finder.checkInitFinderDb = function(obDestination, name, version, entities, oContext)
 {
 	if (
 		typeof version == 'undefined'
 		|| parseInt(version) <= 0
 	)
 	{
-		version = 2;
+		version = 6;
 	}
 
-	BX.Finder.dBVersion = parseInt(version);
+	if (typeof entities == 'undefined')
+	{
+		entities = ['users'];
+	}
+
+	if (typeof oContext == 'undefined')
+	{
+		oContext = window;
+	}
 
 	BX.indexedDB({
-		name: 'BX.Finder' + BX.Finder.dBVersion + '.' + BX.message('USER_ID'),
-		oScheme: BX.Finder.dBScheme.stores,
-		version: BX.Finder.dBScheme.version,
-		callback: function (dbObject)
+		name: 'BX.Finder' + version + '.' + BX.message('USER_ID'),
+		scheme: BX.Finder.dBScheme.stores,
+		version: BX.Finder.dBScheme.version
+	}).then(BX.delegate(function (dbObject) {
+
+		obDestination.obClientDb = dbObject;
+
+		if (!BX.FinderManager.checkInitHandlerAdded)
 		{
-			if (typeof dbObject == 'object')
-			{
-				obDestination.obClientDb = dbObject;
-
-				BX.indexedDB.count(dbObject, 'users', {
-					callback: function(count)
-					{
-						if (parseInt(count) > 0) // already not empty
-						{
-							BX.Finder.initFinderDb(obDestination);
-						}
-						else
-						{
-							BX.addCustomEvent("onFinderAjaxLoadAll", BX.Finder.onFinderAjaxLoadAll);
-
-							BX.Finder.loadAll({
-								ob: obDestination,
-								name: name,
-								callback: function()
-								{
-									BX.Finder.initFinderDb(obDestination);
-
-									if (BX.Finder.dBVersion > 1)
-									{
-										for (var i = 1; i < BX.Finder.dBVersion; i++)
-										{
-											BX.indexedDB.deleteDatabase('BX.Finder' + i + '.' + BX.message('USER_ID'))
-										}
-									}
-								}
-							});
-						}
-					}
-				});
-			}
+			BX.addCustomEvent("onFinderAjaxLoadAll", BX.Finder.onFinderAjaxLoadAll);
+			BX.FinderManager.checkInitHandlerAdded = true;
 		}
-	});
-}
 
-BX.Finder.initFinderDb = function(obDestination)
-{
-	BX.indexedDB({
-		name: 'BX.Finder' + BX.Finder.dBVersion + '.' + BX.message('USER_ID'),
-		oScheme: BX.Finder.dBScheme.stores,
-		version: BX.Finder.dBScheme.version,
-		callback: function(dbObject)
+		var entity = null;
+		var entitiesToInit = [];
+
+		for(var i=0;i<this.entities.length;i++)
 		{
-			if (typeof dbObject == 'object')
-			{
-				BX.indexedDB.openCursor(dbObject, 'users', {}, {
-					callback: function(cursorValue)
-					{
-						if (typeof obDestination.obClientDbData.users == 'undefined')
+			entity = this.entities[i];
+
+			BX.indexedDB.count(dbObject, entity).then(BX.delegate(function(count) {
+				if (parseInt(count) > 0) // already not empty
+				{
+					entitiesToInit.push(this.entity);
+				}
+				else if (BX.message('USER_ID'))
+				{
+					BX.Finder.loadAll({
+						ob: obDestination,
+						name: name,
+						entity: this.entity,
+						callback: BX.delegate(function()
 						{
-							obDestination.obClientDbData.users = {};
+							BX.Finder.initFinderDb(obDestination, [ this.entity ], oContext, version);
+
+							if (version > 1)
+							{
+								for (var i = 1; i < version; i++)
+								{
+									BX.indexedDB.deleteDatabase('BX.Finder' + i + '.' + BX.message('USER_ID'), null);
+								}
+							}
+						}, { entity: this.entity })
+					});
+				}
+			}, { entity: entity }));
+		}
+
+		setTimeout(function() {
+			BX.Finder.initFinderDb(obDestination, entitiesToInit, oContext, version);
+		}, 1000);
+
+	}, { entities: entities }));
+};
+
+BX.Finder.initFinderDb = function(obDestination, entities, oContext, version)
+{
+	if (typeof entities == 'undefined')
+	{
+		entities = [ 'users' ];
+	}
+
+	if (typeof oContext == 'undefined')
+	{
+		oContext = window;
+	}
+
+	BX.indexedDB({
+		name: 'BX.Finder' + version + '.' + BX.message('USER_ID'),
+		scheme: BX.Finder.dBScheme.stores,
+		version: BX.Finder.dBScheme.version
+	}).then(BX.delegate(function(dbObject) {
+		for (var i=0;i<entities.length;i++)
+		{
+			BX.indexedDB.openCursor(dbObject, entities[i]).then(BX.proxy(function(values) {
+				var cursorValue = '';
+				for (var j = 0; j < values.length; j++)
+				{
+					cursorValue = values[j].value;
+
+					if (typeof obDestination.obClientDbData[this.entity] == 'undefined')
+					{
+						obDestination.obClientDbData[this.entity] = {};
+						if (!BX.FinderManager.initHandlerAdded)
+						{
 							BX.addCustomEvent("findEntityByName", BX.Finder.findEntityByName);
 							BX.addCustomEvent("syncClientDb", BX.Finder.syncClientDb);
+							if (BX.type.isNotEmptyObject(BX.UI.SelectorManager))
+							{
+								BX.addCustomEvent(BX.UI.SelectorManager, "syncClientDb", BX.Finder.syncClientDbNew);
+							}
 							BX.addCustomEvent("removeClientDbObject", BX.Finder.removeClientDbObject);
+							BX.FinderManager.initHandlerAdded = true;
 						}
-
-						obDestination.obClientDbData.users[cursorValue.id] = cursorValue;
-						BX.Finder.addSearchIndex(obDestination, cursorValue);
 					}
-				});
 
-				BX.addCustomEvent("onFinderAjaxSuccess", BX.Finder.onFinderAjaxSuccess);
+					obDestination.obClientDbData[this.entity][cursorValue.id] = cursorValue;
+					BX.Finder.addSearchIndex(obDestination, cursorValue);
+				}
+			}, { entity: entities[i] }));
+		}
+
+		if (!BX.FinderManager.initHandler2Added)
+		{
+			BX.removeAllCustomEvents(oContext, "onFinderAjaxSuccess");
+			BX.addCustomEvent(oContext, "onFinderAjaxSuccess", BX.Finder.onFinderAjaxSuccess);
+			if (typeof oContext.finderInitialized != 'undefined')
+			{
+				BX.FinderManager.initHandler2Added[oContext] = true;
 			}
 		}
-	});
-}
+
+	}, { entities: entities }));
+};
 
 BX.Finder.addSearchIndex = function(obDestination, ob)
 {
-	var partsSearchText = ob.name.toLowerCase().split(" ");
-	for (var i in partsSearchText)
+	if (
+		BX.type.isNotEmptyObject(ob)
+		&& BX.type.isNotEmptyString(ob.name)
+	)
 	{
-		if (typeof obDestination.obClientDbDataSearchIndex[partsSearchText[i]] == 'undefined')
+		var partsSearchText = ob.name.toLowerCase().split(" ");
+		for (var i in partsSearchText)
 		{
-			obDestination.obClientDbDataSearchIndex[partsSearchText[i]] = [];
-		}
+			if (typeof obDestination.obClientDbDataSearchIndex[partsSearchText[i]] == 'undefined')
+			{
+				obDestination.obClientDbDataSearchIndex[partsSearchText[i]] = [];
+			}
 
-		if (!BX.util.in_array(ob.id, partsSearchText[i]))
-		{
-			obDestination.obClientDbDataSearchIndex[partsSearchText[i]].push(ob.id);
+			if (!BX.util.in_array(ob.id, obDestination.obClientDbDataSearchIndex[partsSearchText[i]]))
+			{
+				obDestination.obClientDbDataSearchIndex[partsSearchText[i]].push(ob.id);
+			}
 		}
 	}
-}
+};
 
 BX.Finder.findEntityByName = function(obDestination, obSearch, oParams, oResult)
 {
 	var keysFiltered = Object.keys(obDestination.obClientDbDataSearchIndex).filter(function(key) {
-		return (key.indexOf(obSearch.searchString) === 0);
+		return (key.indexOf(obSearch.searchString.toLowerCase()) === 0);
 	});
 	if (
 		keysFiltered.length <= 0
@@ -493,75 +608,94 @@ BX.Finder.findEntityByName = function(obDestination, obSearch, oParams, oResult)
 	{
 		obSearch.searchString = BX.correctText(obSearch.searchString);
 		keysFiltered = Object.keys(obDestination.obClientDbDataSearchIndex).filter(function(key) {
-			return (key.indexOf(obSearch.searchString) === 0);
+			return (key.indexOf(obSearch.searchString.toLowerCase()) === 0);
 		});
 	}
 
 	var arResult = [];
 	for (var key in keysFiltered)
 	{
-		BX.util.array_merge(arResult, obDestination.obClientDbDataSearchIndex[keysFiltered[key]]);
+		if (keysFiltered.hasOwnProperty(key))
+		{
+			BX.util.array_merge(arResult, obDestination.obClientDbDataSearchIndex[keysFiltered[key]]);
+		}
 	}
 
-	oResult[obSearch.searchString] = BX.util.array_unique(arResult);
-}
+	oResult[obSearch.searchString.toLowerCase()] = BX.util.array_unique(arResult);
+};
 
-BX.Finder.onFinderAjaxSuccess = function(data, obDestination)
+BX.Finder.onFinderAjaxSuccess = function(data, obDestination, entity)
 {
-	if (typeof data.USERS != 'undefined')
+	if (typeof entity == 'undefined')
 	{
-		for (var key in data.USERS)
+		entity = 'users'
+	}
+
+	if (typeof data != 'undefined')
+	{
+		for (var key in data)
 		{
-			oUser = data.USERS[key];
-
-			if (
-				typeof obDestination.obClientDbData.users == 'undefined'
-				|| typeof obDestination.obClientDbData.users[oUser.id] == 'undefined'
-				|| obDestination.obClientDbData.users[oUser.id].checksum != oUser.checksum
-			)
+			if (data.hasOwnProperty(key))
 			{
-				if (typeof obDestination.obClientDbData.users == 'undefined')
+				oEntity = data[key];
+				if (
+					typeof obDestination.obClientDbData[entity] == 'undefined'
+					|| typeof obDestination.obClientDbData[entity][oEntity.id] == 'undefined'
+					|| obDestination.obClientDbData[entity][oEntity.id].checksum != oEntity.checksum
+				)
 				{
-					obDestination.obClientDbData.users = [];
-				}
-
-				BX.indexedDB.updateValue(obDestination.obClientDb, 'users', oUser, key, {
-					error: function(event, key) {
-						if (
-							typeof event != 'undefined'
-							&& typeof event.srcElement != 'undefined'
-							&& typeof event.srcElement.error != 'undefined'
-							&& typeof event.srcElement.error.name != 'undefined'
-							&& event.srcElement.error.name == 'ConstraintError'
-						)
-						{
-							BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, 'users', 'id', key, {});
-						}
+					if (typeof obDestination.obClientDbData[entity] == 'undefined')
+					{
+						obDestination.obClientDbData[entity] = [];
 					}
-				});
 
-				obDestination.obClientDbData.users[oUser.id] = oUser;
-				BX.Finder.addSearchIndex(obDestination, oUser);
+					BX.indexedDB.updateValue(obDestination.obClientDb, entity, oEntity).catch(function(error) {
+						BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, entity, 'id', error.params.id);
+					});
+
+					obDestination.obClientDbData[entity][oEntity.id] = oEntity;
+					BX.Finder.addSearchIndex(obDestination, oEntity);
+				}
 			}
 		}
 	}
-}
+};
 
-BX.Finder.onFinderAjaxLoadAll = function(data, obDestination)
+BX.Finder.onFinderAjaxLoadAll = function(data, obDestination, entity)
 {
-	if (typeof data.USERS != 'undefined')
+	if (typeof BX.Finder.onFinderAjaxLoadAll.loadedEntities == 'undefined')
 	{
-		for (var key in data.USERS)
+		BX.Finder.onFinderAjaxLoadAll.loadedEntities = [];
+	}
+
+	if (BX.util.in_array(entity, BX.Finder.onFinderAjaxLoadAll.loadedEntities))
+	{
+		return;
+	}
+
+	BX.Finder.onFinderAjaxLoadAll.loadedEntities.push(entity);
+
+	if (typeof entity == 'undefined')
+	{
+		entity = 'users';
+	}
+	if (typeof data != 'undefined')
+	{
+		for (var key in data)
 		{
-			oUser = data.USERS[key];
-			BX.indexedDB.updateValue(obDestination.obClientDb, 'users', oUser);
+			if (data.hasOwnProperty(key))
+			{
+				oEntity = data[key];
+				BX.indexedDB.updateValue(obDestination.obClientDb, entity, oEntity);
+			}
 		}
 	}
-}
+};
 
-
-BX.Finder.syncClientDb = function(obDestination, name, oDbData, oAjaxData)
+BX.Finder.syncClientDb = function(obDestination, name, oDbData, oAjaxData, store)
 {
+	store = (BX.type.isNotEmptyString(store) ? store : 'users');
+
 	if (
 		typeof oDbData != 'undefined'
 		&& typeof oAjaxData != 'undefined'
@@ -569,15 +703,50 @@ BX.Finder.syncClientDb = function(obDestination, name, oDbData, oAjaxData)
 	{
 		for (var key in oDbData)
 		{
-			if (!BX.util.in_array(oDbData[key], oAjaxData))
+			if (
+				oDbData.hasOwnProperty(key)
+				&& !BX.util.in_array(oDbData[key], oAjaxData)
+			)
 			{
-				BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, 'users', 'id', oDbData[key], {});
-				delete obDestination.obItems[name].users[oDbData[key]];
-				obDestination.deleteItem(oDbData[key], 'users', name);
+				BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, store, 'id', oDbData[key]);
+
+				if (BX.type.isNotEmptyString(name))
+				{
+					delete obDestination.obItems[name].users[oDbData[key]];
+					obDestination.deleteItem(oDbData[key], store, name);
+				}
 			}
 		}
 	}
-}
+};
+
+BX.Finder.syncClientDbNew = function(params)
+{
+	var
+		selectorInstance = (BX.type.isNotEmptyObject(params.selectorInstance) ? params.selectorInstance : false),
+		store = (BX.type.isNotEmptyString(params.store) ? params.store : 'users'),
+		clientDBData = (typeof params.clientDBData != 'undefined' ? params.clientDBData : []),
+		ajaxData = (typeof params.ajaxData != 'undefined' ? params.ajaxData : []);
+
+	if (!selectorInstance)
+	{
+		return;
+	}
+
+	for (var key = 0; key < clientDBData.length; key++)
+	{
+		if (!BX.util.in_array(clientDBData[key], ajaxData))
+		{
+			BX.indexedDB.deleteValueByIndex(selectorInstance.manager.obClientDb, store, 'id', clientDBData[key]);
+
+			delete selectorInstance.entities.USERS.items[clientDBData[key]];
+			selectorInstance.getRenderInstance().deleteItem({
+				itemId: clientDBData[key],
+				entityType: store
+			});
+		}
+	}
+};
 
 BX.Finder.removeClientDbObject = function(obDestination, id, type)
 {
@@ -586,17 +755,18 @@ BX.Finder.removeClientDbObject = function(obDestination, id, type)
 		&& type == 'users'
 	)
 	{
-		BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, 'users', 'id', id, {});
+		BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, 'users', 'id', id);
 	}
-}
+};
+
+BX.Finder.clearEntityDb = function(obClientDb, type)
+{
+	BX.indexedDB.clearObjectStore(obClientDb, type);
+};
 
 BX.Finder.loadAll = function(params)
 {
 	BX.onCustomEvent('loadAllFinderDb', [ params ]);
-	if (typeof BX.SocNetLogDestination.loadAll != 'function')
-	{
-		BX.Finder.initFinderDb(params.ob);
-	}
-}
+};
 
 })(window);

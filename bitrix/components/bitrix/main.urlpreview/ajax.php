@@ -8,10 +8,10 @@ define('BX_SECURITY_SESSION_READONLY', true);
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_before.php');
 global $USER, $APPLICATION;
 
-if(!check_bitrix_sessid())
+if(!$USER->IsAuthorized() || !check_bitrix_sessid())
 	die();
 
-if($_REQUEST['action'] === 'getUrlPreviewEditForm')
+if($_REQUEST['action'] === 'attachUrlPreview')
 {
 	session_write_close();
 
@@ -28,8 +28,8 @@ if($_REQUEST['action'] === 'getUrlPreviewEditForm')
 	{
 		$urlPattern = "~^
 				(https?://|//)?       # protocol (optional)
-				(([\w-]+:)?([\w-]+)@)?    # basic auth
-				([\w-\.]+?)               # hostname or ip address
+				(([\w\-]+:)?([\w\-]+)@)?    # basic auth
+				([\w\-\.]+?)               # hostname or ip address
 				(:[0-9]+)?                # a port (optional)
 				(/?|/\S+|\?\S*|\#\S*)   # a /, nothing, a / with something, a query or a fragment
 			$~ixu";
@@ -41,7 +41,10 @@ if($_REQUEST['action'] === 'getUrlPreviewEditForm')
 		if(!\Bitrix\Main\Application::isUtfMode())
 			$url = \Bitrix\Main\Text\Encoding::convertEncoding($url, 'UTF-8', \Bitrix\Main\Context::getCurrent()->getCulture()->getCharset());
 
-		$urlMetadata = UrlPreview::getMetadataByUrl($url);
+		if(UrlPreview::isEnabled())
+		{
+			$urlMetadata = UrlPreview::getMetadataByUrl($url, true, false);
+		}
 	}
 	else if(isset($_REQUEST['id']))
 	{
@@ -55,9 +58,14 @@ if($_REQUEST['action'] === 'getUrlPreviewEditForm')
 			die();
 		}
 
-		$metadata = UrlPreview::getMetadataAndHtmlByIds(array($id), true);
-		if(isset($metadata[$id]))
-			$urlMetadata = $metadata[$id];
+		if(UrlPreview::isEnabled())
+		{
+			$metadata = UrlPreview::getMetadataAndHtmlByIds(array($id), true);
+			if(isset($metadata[$id]))
+			{
+				$urlMetadata = $metadata[$id];
+			}
+		}
 	}
 
 	if(!isset($urlMetadata['ID']))

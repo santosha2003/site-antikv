@@ -59,7 +59,7 @@ $arComponentParameters = array(
 			"DEFAULT" => "AMOUNT",
 		),
 
-		
+
 		"PERIOD" => Array(
 			"NAME" => GetMessage("SBP_PERIOD"),
 			"PARENT" => "ADDITIONAL_SETTINGS",
@@ -75,7 +75,7 @@ $arComponentParameters = array(
 			"VALUES" => $statuses,
 			"DEFAULT" => ""
 		),
-		
+
 		/*"FILTER_NAME" => array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("SBP_FILTER_NAME"),
@@ -146,16 +146,6 @@ $arComponentParameters = array(
 			"DEFAULT" => "N",
 			"HIDDEN" => (isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N' ? 'Y' : 'N')
 		),
-
-		"DISPLAY_COMPARE" => array(
-			"PARENT" => "ADDITIONAL_SETTINGS",
-			"NAME" => GetMessage("SBP_DESC_DISPLAY_COMPARE"),
-			"TYPE" => "CHECKBOX",
-			"DEFAULT" => "N",
-			"HIDDEN" => true
-		),
-
-
 
 		"SHOW_OLD_PRICE" => array(
 			"PARENT" => "PRICES",
@@ -262,13 +252,21 @@ while ($iblock = $iblockIterator->fetch())
 $catalogs = array();
 $productsCatalogs = array();
 $skuCatalogs = array();
-$catalogIterator = CCatalog::getList(array("IBLOCK_ID" => "ASC"), array("@IBLOCK_ID" => array_keys($iblockMap)));
+$catalogIterator = CCatalog::GetList(
+	array("IBLOCK_ID" => "ASC"),
+	array("@IBLOCK_ID" => array_keys($iblockMap)),
+	false,
+	false,
+	array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID', 'SKU_PROPERTY_ID')
+);
 while($catalog = $catalogIterator->fetch())
 {
 	$isOffersCatalog = (int)$catalog['PRODUCT_IBLOCK_ID'] > 0;
 	if($isOffersCatalog)
 	{
 		$skuCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
+		if (!isset($productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']]))
+			$productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
 	}
 	else
 	{
@@ -419,7 +417,7 @@ foreach ($catalogs as $catalog)
 
 $arComponentParameters["PARAMETERS"]['HIDE_NOT_AVAILABLE'] = array(
 	'PARENT' => 'DATA_SOURCE',
-	'NAME' => GetMessage('SBP_HIDE_NOT_AVAILABLE'),
+	'NAME' => GetMessage('SBP_HIDE_NOT_AVAILABLE_EXT'),
 	'TYPE' => 'CHECKBOX',
 	'DEFAULT' => 'N',
 );
@@ -436,9 +434,7 @@ if (Loader::includeModule('currency'))
 	if (isset($arCurrentValues['CONVERT_CURRENCY']) && 'Y' == $arCurrentValues['CONVERT_CURRENCY'])
 	{
 		$arCurrencyList = array();
-		$by = 'SORT';
-		$order = 'ASC';
-		$rsCurrencies = CCurrency::GetList($by, $order);
+		$rsCurrencies = CCurrency::GetList('sort', 'asc');
 		while ($arCurrency = $rsCurrencies->Fetch())
 		{
 			$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];

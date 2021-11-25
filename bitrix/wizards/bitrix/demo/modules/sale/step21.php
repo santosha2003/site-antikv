@@ -49,8 +49,7 @@ if($arLocation = $dbLocation->Fetch())//if there are no data in module
 			"PROFILES" => "",
 			"TAX_RATE" => 0,
 			"CONFIG" => Array("price_".$locationGroupID => "100"),
-		),
-		"ALL"
+		)
 	);
 	//Tax
 	$taxID = CSaleTax::Add(Array(

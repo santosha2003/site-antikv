@@ -136,13 +136,8 @@ if (!empty($arResult['ITEMS']))
 	<? if(empty($arParams['HIDE_BLOCK_TITLE']) || $arParams['HIDE_BLOCK_TITLE'] !== 'Y'){ ?><div class="bx_item_list_title"><? echo ($arParams['BLOCK_TITLE']? htmlspecialcharsbx($arParams['BLOCK_TITLE']) : GetMessage('SGB_TPL_BLOCK_TITLE_DEFAULT')) ?></div><? } ?>
 	<div class="bx_item_list_section">
 	<div class="bx_item_list_slide active"><?
-	$elementEdit = CIBlock::GetArrayByID($arParams['IBLOCK_ID'], 'ELEMENT_EDIT');
-	$elementDelete = CIBlock::GetArrayByID($arParams['IBLOCK_ID'], 'ELEMENT_DELETE');
-	$elementDeleteParams = array('CONFIRM' => GetMessage('CVP_TPL_ELEMENT_DELETE_CONFIRM'));
 	foreach ($arResult['ITEMS'] as $key => $arItem)
 	{
-		$this->AddEditAction($arItem['ID'], $arItem['EDIT_LINK'], $elementEdit);
-		$this->AddDeleteAction($arItem['ID'], $arItem['DELETE_LINK'], $elementDelete, $elementDeleteParams);
 		$strMainID = $this->GetEditAreaId($arItem['ID'] . $key);
 
 		$arItemIDs = array(
@@ -441,7 +436,7 @@ if (!empty($arResult['ITEMS']))
 	else // Wth Sku
 	{
 	?>
-		<div class="bx_catalog_item_controls no_touch">
+		<div class="bx_catalog_item_controls">
 			<?
 			if ('Y' == $arParams['USE_PRODUCT_QUANTITY'])
 			{
@@ -461,12 +456,6 @@ if (!empty($arResult['ITEMS']))
 					?></a>
 			</div>
 			<div style="clear: both;"></div>
-		</div>
-
-		<div class="bx_catalog_item_controls touch">
-			<a class="bx_bt_button_type_2 bx_medium" href="<? echo $arItem['DETAIL_PAGE_URL']; ?>"><?
-				echo('' != $arParams['MESS_BTN_DETAIL'] ? $arParams['MESS_BTN_DETAIL'] : GetMessage('CVP_TPL_MESS_BTN_DETAIL'));
-				?></a>
 		</div>
 	<?
 	$boolShowOfferProps =  !!$arItem['OFFERS_PROPS_DISPLAY'];
@@ -599,7 +588,6 @@ if (!empty($arResult['ITEMS']))
 	}
 	?></div></div><?
 	}
-	unset($elementDeleteParams, $elementDelete, $elementEdit);
 	?>
 	<div style="clear: both;"></div>
 	</div>

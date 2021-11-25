@@ -1,2 +1,42 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE41"><presentation><material><mattext>Поле «Установить данные настройки для всех пользователей по умолчанию», расположенное на странице настроек интерфейса, позволяет:</mattext></material><response_lid ident="LID41" rcardinality="Single"><render_choice><response_label ident="ANS970"><material><mattext>установить выбранные настройки интерфейса для всех зарегистрированных пользователей</mattext></material></response_label><response_label ident="ANS971"><material><mattext>установить выбранные настройки интерфейса для всех пользователей, если ими не установлены собственные (персональные) настройки интерфейса</mattext></material></response_label><response_label ident="ANS972"><material><mattext>установить параметры интерфейса по умолчанию для всех пользователей, отменив все персональные настройки</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID41">ANS971</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>N</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>911</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>800</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) РРІР°РЅ РРІР°РЅРѕРІ</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Р Р°Р±РѕС‚Р° СЃ Р±РёР·РЅРµСЃ-РїСЂРѕС†РµСЃСЃР°РјРё</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p>РћР±С‹С‡РЅРѕ РєРѕРЅС‚РµРЅС‚-РјРµРЅРµРґР¶РµСЂС‹ РЅРµ СЂР°Р±РѕС‚Р°СЋС‚ СЃ Р±РёР·РЅРµСЃ-РїСЂРѕС†РµСЃСЃР°РјРё. РќРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹ РјРѕРіСѓС‚ РІРєР»СЋС‡РёС‚СЊ РЅР° СЃР°Р№С‚Рµ РїРѕРґРґРµСЂР¶РєСѓ Р±РёР·РЅРµСЃ-РїСЂРѕС†РµСЃСЃРѕРІ, РЅР°РїСЂРёРјРµСЂ РґР»СЏ Р°РІС‚РѕРјР°С‚РёР·Р°С†РёРё СЂР°Р±РѕС‚С‹.</p>
+
+<p>Р’ РѕР±С‰РµРј СЃР»СѓС‡Р°Рµ Р±РёР·РЅРµСЃ-РїСЂРѕС†РµСЃСЃС‹ РїСЂРµРґСЃС‚Р°РІР»СЏСЋС‚ РЅРµРєСѓСЋ Р°РІС‚РѕРјР°С‚РёР·РёСЂРѕРІР°РЅРЅСѓСЋ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РґРµР№СЃС‚РІРёР№, РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ, РЅР°РїСЂРёРјРµСЂ, РЅР°Рґ СЌР»РµРјРµРЅС‚РѕРј РёРЅС„РѕР±Р»РѕРєР° РїСЂРё РµРіРѕ СЃРѕР·РґР°РЅРёРё РёР»Рё РёР·РјРµРЅРµРЅРёРё.</p>
+
+<br>
+
+<p>РџРѕРґСЂРѕР±РЅРµРµ РїСЂРѕ СЂР°Р±РѕС‚Сѓ СЃ Р±РёР·РЅРµСЃ-РїСЂРѕС†РµСЃСЃР°РјРё РјРѕР¶РЅРѕ РїРѕСЃРјРѕС‚СЂРµС‚СЊ РІ СѓСЂРѕРєРµ <a href="/learning/course/index.php?COURSE_ID=41&LESSON_ID=3140&LESSON_PATH=3911.4549.5274.3140">РџСЂРёРјРµСЂ СЂР°Р±РѕС‚С‹ СЃ Р±РёР·РЅРµСЃ-РїСЂРѕС†РµСЃСЃР°РјРё</a> РєСѓСЂСЃР° <b>РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ. РњРѕРґСѓР»Рё</b>. 
+<br>
+Р’ РЅРµРј СЂР°СЃСЃРјРѕС‚СЂРµРЅ СЃР»СѓС‡Р°Р№, РєРѕРіРґР° РєРѕРЅС‚РµРЅС‚-РјРµРЅРµРґР¶РµСЂ СЃРѕР·РґР°РµС‚ РЅРѕРІРѕСЃС‚СЊ РЅР° СЃР°Р№С‚Рµ, РєРѕС‚РѕСЂР°СЏ Р±СѓРґРµС‚ РѕРїСѓР±Р»РёРєРѕРІР°РЅР° С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ СЂР°СЃСЃРјРѕС‚СЂРµРЅРёСЏ Р°РґРјРёРЅРёСЃС‚СЂР°С†РёРµР№ СЃР°Р№С‚Р°.</p>
+
+<br>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>800</edge_sort>
+<id>911</id>
+</content>

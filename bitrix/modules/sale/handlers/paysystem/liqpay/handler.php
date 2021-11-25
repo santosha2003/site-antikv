@@ -2,23 +2,34 @@
 
 namespace Sale\Handlers\PaySystem;
 
+use Bitrix\Main;
 use Bitrix\Main\Error;
 use Bitrix\Main\Request;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\PaymentCollection;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\Payment;
+use Bitrix\Sale\PriceMaths;
 
+/**
+ * Class LiqPayHandler
+ * @package Sale\Handlers\PaySystem
+ */
 class LiqPayHandler extends PaySystem\ServiceHandler
 {
 	/**
 	 * @param Payment $payment
 	 * @param Request|null $request
 	 * @return PaySystem\ServiceResult
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotImplementedException
 	 */
 	public function initiatePay(Payment $payment, Request $request = null)
 	{
 		$busValues = $this->getParamsBusValue($payment);
+		$busValues['LIQPAY_PATH_TO_RESULT_URL'] = $this->getPathResultUrl($payment);
 
 		$xml = "<request>
 			<version>1.2</version>
@@ -28,7 +39,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 			<order_id>PAYMENT_".$busValues['PAYMENT_ID']."</order_id>
 			<amount>".$busValues["PAYMENT_SHOULD_PAY"]."</amount>
 			<currency>".$busValues['PAYMENT_CURRENCY']."</currency>
-			<description>Payment for payment ".$busValues['PAYMENT_ID']."</description>
+			<description>".$this->getPaymentDescription($payment)."</description>
 			<default_phone>".$busValues['BUYER_PERSON_PHONE']."</default_phone>
 			<pay_way>".$busValues['LIQPAY_PAY_METHOD']."</pay_way>
 			</request>";
@@ -36,7 +47,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		$signature = base64_encode(sha1($busValues['LIQPAY_SIGN'].$xml.$busValues['LIQPAY_SIGN'], 1));
 
 		$params = array(
-			'URL' => $this->getUrl('pay'),
+			'URL' => $this->getUrl($payment, 'pay'),
 			'OPERATION_XML' => base64_encode($xml),
 			'SIGNATURE' => $signature,
 		);
@@ -87,7 +98,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		$sum = $this->getValueByTag($this->getOperationXml($request), 'amount');
 		$paymentSum = $this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY');
 
-		return (float)$paymentSum == (float)$sum;
+		return PriceMaths::roundPrecision($paymentSum) === PriceMaths::roundPrecision($sum);
 	}
 
 	/**
@@ -96,7 +107,8 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 	 */
 	public function getPaymentIdFromRequest(Request $request)
 	{
-		return $this->getValueByTag($this->getOperationXml($request), 'payment_id');
+		$orderId = $this->getValueByTag($this->getOperationXml($request), 'order_id');
+		return str_replace("PAYMENT_", "", $orderId);
 	}
 
 	/**
@@ -106,7 +118,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 	{
 		return array(
 			'pay' => array(
-				self::ACTIVE_URL => 'https://liqpay.com/?do=clickNbuy'
+				self::ACTIVE_URL => 'https://www.liqpay.ua/?do=clickNbuy'
 			)
 		);
 	}
@@ -124,29 +136,27 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		{
 			$errorMessage = Loc::getMessage('SALE_HPS_LIQPAY_POST_ERROR');
 			$result->addError(new Error($errorMessage));
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => $errorMessage
-			));
+
+			PaySystem\Logger::addError('LiqPay: processRequest: '.$errorMessage);
 		}
+
+		$status = $this->getValueByTag($this->getOperationXml($request), 'status');
 
 		if ($this->isCorrectHash($payment, $request))
 		{
-			if ($request->get('status') == 'success')
+			if ($status === 'success' || $status === 'wait_reserve')
 			{
 				return $this->processNoticeAction($payment, $request);
 			}
-			else if (($request->get('status') == 'wait_secure'))
+
+			if ($status === 'wait_secure')
 			{
 				return new PaySystem\ServiceResult();
 			}
 		}
 		else
 		{
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => 'Incorrect hash'
-			));
+			PaySystem\Logger::addError('LiqPay: processRequest: Incorrect hash');
 			$result->addError(new Error('Incorrect hash'));
 		}
 
@@ -171,12 +181,12 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		$statusMessage = 'status: '.$this->getValueByTag($response, 'status').'; ';
 		$statusMessage .= 'transaction_id: '.$this->getValueByTag($response, 'transaction_id').'; ';
 		$statusMessage .= 'pay_way: '.$this->getValueByTag($response, 'pay_way').'; ';
-		$statusMessage .= 'payment_id: '.$this->getValueByTag($response, 'payment_id').'; ';
+		$statusMessage .= 'payment_id: '.$this->getValueByTag($response, 'order_id').'; ';
 
 
 		$fields = array(
 			"PS_STATUS" => "Y",
-			"PS_STATUS_CODE" => substr($this->getValueByTag($response, 'status'), 0, 5),
+			"PS_STATUS_CODE" => mb_substr($this->getValueByTag($response, 'status'), 0, 5),
 			"PS_STATUS_DESCRIPTION" => $description,
 			"PS_STATUS_MESSAGE" => $statusMessage,
 			"PS_SUM" => $this->getValueByTag($response, 'amount'),
@@ -192,10 +202,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		}
 		else
 		{
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => 'processNoticeAction',
-				'MESSAGE' => 'Incorrect sum'
-			));
+			PaySystem\Logger::addError('LiqPay: processNoticeAction: Incorrect sum');
 			$result->addError(new Error('Incorrect sum'));
 		}
 
@@ -207,7 +214,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 	 */
 	public function getCurrencyList()
 	{
-		return array('RUB', 'USD', 'EUR');
+		return ['RUB', 'USD', 'EUR', 'UAH'];
 	}
 
 	/**
@@ -220,10 +227,10 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		$string = str_replace("\n", "", str_replace("\r", "", $string));
 		$open = '<'.$tag.'>';
 		$close = '</'.$tag;
-		$start = strpos($string, $open) + strlen($open);
-		$end = strpos($string, $close);
+		$start = mb_strpos($string, $open) + mb_strlen($open);
+		$end = mb_strpos($string, $close);
 
-		return substr($string, $start, ($end-$start));
+		return mb_substr($string, $start, ($end - $start));
 	}
 
 	/**
@@ -238,5 +245,49 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 			$operationXml = base64_decode($request->get('operation_xml'));
 
 		return $operationXml;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotImplementedException
+	 */
+	private function getPaymentDescription(Payment $payment)
+	{
+		/** @var PaymentCollection $collection */
+		$collection = $payment->getCollection();
+		$order = $collection->getOrder();
+		$userEmail = $order->getPropertyCollection()->getUserEmail();
+
+		return str_replace(
+			[
+				'#PAYMENT_NUMBER#',
+				'#ORDER_NUMBER#',
+				'#PAYMENT_ID#',
+				'#ORDER_ID#',
+				'#USER_EMAIL#'
+			],
+			[
+				$payment->getField('ACCOUNT_NUMBER'),
+				$order->getField('ACCOUNT_NUMBER'),
+				$payment->getId(),
+				$order->getId(),
+				($userEmail) ? $userEmail->getValue() : ''
+			],
+			$this->getBusinessValue($payment, 'LIQPAY_PAYMENT_DESCRIPTION')
+		);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getPathResultUrl(Payment $payment)
+	{
+		$url = $this->getBusinessValue($payment, 'LIQPAY_PATH_TO_RESULT_URL') ?: $this->service->getContext()->getUrl();
+
+		return str_replace('&', '&amp;', $url);
 	}
 }

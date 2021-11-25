@@ -2,10 +2,8 @@
 namespace Bitrix\Sale\Services\PaySystem\Restrictions;
 
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Sale\Delivery\Restrictions;
-use Bitrix\Sale\Order;
-use Bitrix\Sale\Payment;
-use Bitrix\Sale\PaymentCollection;
+use Bitrix\Sale;
+use Bitrix\Sale\Services\Base;
 
 Loc::loadMessages(__FILE__);
 
@@ -13,20 +11,22 @@ Loc::loadMessages(__FILE__);
  * Class Site
  * @package Bitrix\Sale\Services\PaySystem\Restrictions
  */
-class Site extends Restrictions\BySite
+class Site extends Base\SiteRestriction
 {
 	/**
-	 * @param Payment $payment
-	 * @return null|string
+	 * @param Sale\Internals\Entity $entity
+	 * @return Sale\Order|null
 	 */
-	protected static function extractParams(Payment $payment)
+	protected static function getOrder(Sale\Internals\Entity $entity)
 	{
-		/** @var PaymentCollection $collection */
-		$collection = $payment->getCollection();
+		if (!($entity instanceof Sale\Payment))
+		{
+			return null;
+		}
 
-		/** @var Order $order */
-		$order = $collection->getOrder();
+		/** @var \Bitrix\Sale\PaymentCollection $collection */
+		$collection = $entity->getCollection();
 
-		return $order->getSiteId();
+		return $collection->getOrder();
 	}
 } 

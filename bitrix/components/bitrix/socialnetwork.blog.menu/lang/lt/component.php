@@ -1,6 +1,0 @@
-<?
-$MESS["BLOG_MODULE_NOT_INSTALL"] = "Tinklaraðèiø modulis nëra ádiegtas";
-$MESS["BM_BLOG_CHAIN_USER"] = "Tinklaraðtis";
-$MESS["BM_BLOG_CHAIN_GROUP"] = "Ataskaitos";
-$MESS["BM_BLOG_POST"] = "Pokalbiai";
-?>

@@ -55,7 +55,7 @@ jsDD = {
 	{
 		jsDD.arObjects = [];
 		jsDD.arDestinations = [];
-		arDestinationsPriority = [];
+		jsDD.arDestinationsPriority = [];
 		jsDD.bStarted = false;
 		jsDD.current_node = null;
 		jsDD.current_dest_index = false;
@@ -78,7 +78,7 @@ jsDD = {
 	registerObject: function (obNode)
 	{
 		BX.bind(obNode, 'mousedown', jsDD.startDrag);
-		BX.bind(obNode, 'touchstart', jsDD.startDrag);
+		BX.Event.bind(obNode, 'touchstart', jsDD.startDrag, { passive: true });
 
 		obNode.__bxddid = jsDD.arObjects.length;
 
@@ -409,16 +409,18 @@ jsDD = {
 		jsDD.x = e.clientX + jsDD.wndSize.scrollLeft;
 		jsDD.y = e.clientY + jsDD.wndSize.scrollTop;
 
-		var delta = 5;
-		if(jsDD.x >= jsDD.start_x-delta && jsDD.x <= jsDD.start_x+delta && jsDD.y >= jsDD.start_y-delta && jsDD.y <= jsDD.start_y+delta)
-			return true;
-
 		if (!jsDD.bStarted)
+		{
+			var delta = 5;
+			if(jsDD.x >= jsDD.start_x-delta && jsDD.x <= jsDD.start_x+delta && jsDD.y >= jsDD.start_y-delta && jsDD.y <= jsDD.start_y+delta)
+				return true;
+
 			jsDD.start();
+		}
 
 		if (jsDD.current_node.onbxdrag)
 		{
-			jsDD.current_node.onbxdrag(jsDD.x, jsDD.y);
+			jsDD.current_node.onbxdrag(jsDD.x, jsDD.y, e);
 		}
 
 		var containersScroll = jsDD.getContainersScrollPos(jsDD.x, jsDD.y);
@@ -465,7 +467,7 @@ jsDD = {
 			}
 
 			if (null != jsDD.current_node.onbxdragstop)
-				jsDD.current_node.onbxdragstop(jsDD.x, jsDD.y);
+				jsDD.current_node.onbxdragstop(jsDD.x, jsDD.y, e);
 
 			var containersScroll = jsDD.getContainersScrollPos(jsDD.x, jsDD.y);
 			var dest_index = jsDD.searchDest(jsDD.x+containersScroll.left, jsDD.y+containersScroll.top);
@@ -558,7 +560,7 @@ jsDD = {
 		{
 			if (jsDD.arDestinationsPriority[p] && BX.type.isArray(jsDD.arDestinationsPriority[p]))
 			{
-				for (p1 = 0, len1 = jsDD.arDestinationsPriority[p].length; p1 < len; p1++)
+				for (p1 = 0, len1 = jsDD.arDestinationsPriority[p].length; p1 < len1; p1++)
 				{
 					i = jsDD.arDestinationsPriority[p][p1];
 					if (jsDD.arDestinations[i] && !jsDD.arDestinations[i].__bxdddisabled)

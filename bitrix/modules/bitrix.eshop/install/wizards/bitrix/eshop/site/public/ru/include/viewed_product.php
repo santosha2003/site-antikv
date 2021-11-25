@@ -1,5 +1,5 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
-<?$APPLICATION->IncludeComponent("bitrix:catalog.viewed.products", "", array(
+<?$APPLICATION->IncludeComponent("bitrix:catalog.viewed.products", "bootstrap_v4", array(
 		"HIDE_NOT_AVAILABLE" => "N",
 		"PAGE_ELEMENT_COUNT" => "5",
 		"SHOW_DISCOUNT_PERCENT" => "Y",
@@ -19,7 +19,7 @@
 		"PRICE_VAT_INCLUDE" => "Y",
 		"CONVERT_CURRENCY" => "N",
 		"BASKET_URL" => "#SITE_DIR#personal/cart/",
-		"ACTION_VARIABLE" => "action",
+		"ACTION_VARIABLE" => "action_cvp",
 		"PRODUCT_ID_VARIABLE" => "id",
 		"ADD_PROPERTIES_TO_BASKET" => "Y",
 		"PRODUCT_PROPS_VARIABLE" => "prop",

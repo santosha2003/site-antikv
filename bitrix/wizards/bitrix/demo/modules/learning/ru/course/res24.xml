@@ -1,2 +1,126 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE24"><presentation><material><mattext>��� ����� ������� ��� �������� � �������� �������������� ��������� � ������?</mattext></material><response_lid ident="LID24" rcardinality="Single"><render_choice><response_label ident="ANS28"><material><mattext>������� ������ �������� � ���� ����������</mattext></material></response_label><response_label ident="ANS29"><material><mattext>�������� ������ �������� � �������� ������� � ������ ������ [ x ] (�������)</mattext></material></response_label><response_label ident="ANS30"><material><mattext>�������� ������ �������� � �������� ������� � ������ ������ ����������</mattext></material></response_label><response_label ident="ANS31"><material><mattext>���������� ���� � ���� ���� �����, ����� ������� ������ �������� � ���� ���������� ������ �� ���������</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID24">ANS30</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>894</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>500</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Пример быстрого редактирования группы элементов</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<h4>Пример быстрого редактирования группы элементов</h4>
+<p>Допустим необходимо отредактировать список новостей из новостного инфоблока: изменить порядок их вывода, поменять название, одну новость сделать неактивной на определенный промежуток времени, и одну новость удалить. Рассмотрим как это сделать наиболее быстрым способом.</p>
+
+<p>В административном разделе зайдите на страницу со списком элементов инфоблока новостей:</p>
+
+<p><img height="408" width="700" src="cid:resources/res24/4hyrB.lNwsD.news_list_11.png" /></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Список элементов в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p><a href="javascript:ShowImg('/images/content_manager/examples/tasks/news_list.png',775,296,'Список новостей')">
+<img height="229" border="0" width="600" src="cid:resources/res24/dPTOZ.SPY2X.news_list_sm.png" alt="Нажмите на рисунок, чтобы увеличить" style="cursor: pointer;" /></a>
+</p></td></tr>
+</tbody>
+</table></div>
+
+
+<p>В меню действий новости, которую требуется удалить, выберите <b>Удалить</b>:</p>
+
+<p><img height="375" width="338" src="cid:resources/res24/kjBjH.IpPCt.del_news_11.png" /></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Удаление элемента в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p><img src="cid:resources/res24/l5vJb.6KiTo.del_news.png" width="399" height="126"></p></td></tr>
+</tbody>
+</table></div>
+
+
+<p>Нажмите <b>ОK</b> в окне подтверждения и новость будет удалена:</p>
+
+<p><img height="230" width="536" src="cid:resources/res24/OLYEJ.8hgDO.OK_11.png" /></p>
+
+<br>
+
+
+<p>Отметьте все оставшиеся новости, выставив галочку в поле <b>Отметить все/Снять отметку у всех</b>:</p>
+
+<p><img height="320" width="495" src="cid:resources/res24/cn4pa.2W0fH.check_all_11.png" /></p>
+
+
+<p><div class="hint"><b>Примечание</b>: для удаления, активациидеактивации всех элементов инфоблока, в том числе размещенных на нескольких страницах, удобно использовать опцию <b>Для всех</b>. Кроме того, вы можете изменять количество элементов, выводимых на одну страницу списка, выставив нужное значение в поле <b>На странице</b>.</div></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Выбор всех элементов в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td>
+<p><img src="cid:resources/res24/etWca.eBy3R.check_all.png" width="449" height="218"></p></td></tr>
+</tbody>
+</table></div>
+
+
+<p><div class="hint"><b>Примечание</b>: При отметке хотя бы одной новости станет видна <b>Панель действий</b> каким бы большим не был список элементов.</div></p>
+
+
+<p>На панели групповых действий нажмите <img src="cid:resources/res24/stll2.dKdZC.pen_11.png" width="33" height="33">, после чего изменится вид списка элементов инфоблока, и их станет возможно редактировать прямо на данной странице:</p>
+
+<p><img height="187" width="700" src="cid:resources/res24/jz8AM.RNeaS.edit_name_11.png" /></p>
+
+<p><div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Групповое редактирование в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p>Непосредственно в колонке <b>Название</b> отредактируйте заголовок нужной новости:</p>
+
+<p><img src="cid:resources/res24/ENoHd.MsbPt.edit_name.png" width="343" height="31"></p>
+
+<p>Поменяйте порядок сортировки другой новости:</p>
+
+<p><img src="cid:resources/res24/aCH1d.waIKj.change_index.png" width="478" height="59"></p>
+
+<p>Снимите галочку активности, чтобы сделать на время новость недоступной для просмотра в публичном разделе:</p>
+
+<p><img src="cid:resources/res24/cHC27.jMs0f.edit_activ.png" width="407" height="90"></p>
+<br>
+
+<p>Нажмите <b>Сохранить</b> и все внесенные вами изменения вступят в силу.</p></td></tr>
+</tbody>
+</table></div></p>
+<br>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>500</edge_sort>
+<id>894</id>
+</content>

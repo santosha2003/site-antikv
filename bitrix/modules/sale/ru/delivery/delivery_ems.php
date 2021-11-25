@@ -12,12 +12,12 @@ CModule::IncludeModule("sale");
 IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].'/bitrix/modules/sale/delivery/delivery_ems.php');
 
 define('DELIVERY_EMS_CACHE_LIFETIME', 2592000); // cache lifetime - 30 days (60*60*24*30)
-define('DELIVERY_EMS_PRICE_TARIFF', 0.01); // price koefficient - 1%
+define('DELIVERY_EMS_PRICE_TARIFF', 0.004956); // declared value koeff - 0,42% + VAT. https://www.pochta.ru/support/post-rules/valuable-departure
 define('DELIVERY_EMS_WRITE_LOG', 0); // flag 'write to log'. use CDeliveryEMS::__WriteToLog() for logging.
 
 class CDeliveryEMS
 {
-	function Init()
+	public static function Init()
 	{
 		if (\Bitrix\Main\Loader::includeModule('currency') && $arCurrency = CCurrency::GetByID('RUR'))
 		{
@@ -46,6 +46,8 @@ class CDeliveryEMS
 			"COMPABILITY" => array("CDeliveryEMS", "Compability"),
 			"CALCULATOR" => array("CDeliveryEMS", "Calculate"),
 
+			"DEPRECATED" => "Y",
+
 			/* List of delivery profiles */
 			"PROFILES" => array(
 				"delivery" => array(
@@ -59,7 +61,7 @@ class CDeliveryEMS
 		);
 	}
 
-	function GetConfig()
+	public static function GetConfig()
 	{
 		$arConfig = array(
 			"CONFIG_GROUPS" => array(
@@ -83,19 +85,19 @@ class CDeliveryEMS
 		return $arConfig;
 	}
 
-	function GetSettings($strSettings)
+	public static function GetSettings($strSettings)
 	{
 		return array(
 			"category" => $strSettings == 'doc' ? 'doc' : 'att'
 		);
 	}
 
-	function SetSettings($arSettings)
+	public static function SetSettings($arSettings)
 	{
 		return ($arSettings["category"] == 'doc' ? 'doc' : 'att');
 	}
 
-	function ConvertCharsetArray($arData, $charset_from, $charset_to)
+	public static function ConvertCharsetArray($arData, $charset_from, $charset_to)
 	{
 		if (!is_array($arData))
 			return $GLOBALS['APPLICATION']->ConvertCharset($arData, $charset_from, $charset_to);
@@ -108,150 +110,22 @@ class CDeliveryEMS
 		return $arData;
 	}
 
-	function JsObjectToPhp($data)
+	public static function JsObjectToPhp($data)
 	{
-		$arResult = array();
+		$data = $GLOBALS['APPLICATION']->ConvertCharset($data, LANG_CHARSET, 'utf-8');
 
-		if (function_exists('json_decode')) // php > 5.2.0 + php_json
+		// json_decode recognize only UTF strings
+		$arResult = json_decode($data, true);
+
+		if (is_array($arResult))
 		{
-			$data = $GLOBALS['APPLICATION']->ConvertCharset($data, LANG_CHARSET, 'utf-8');
-
-			// json_decode recognize only UTF strings
-			$arResult = json_decode($data, true);
-
-			if (is_array($arResult))
-			{
-				$arResult = CDeliveryEMS::ConvertCharsetArray($arResult, 'utf-8', LANG_CHARSET);
-			}
-		}
-		elseif (substr($data, 0, 1) == '{') // object
-		{
-			$arResult = array();
-
-			$depth = 0;
-			$end_pos = 0;
-			$arCommaPos = array();
-			for ($i = 1, $len = strlen($data); $i < $len; $i++)
-			{
-				$cur_symbol = substr($data, $i, 1);
-				if ($cur_symbol == '{' || $cur_symbol == '[')
-					$depth++;
-				elseif ($cur_symbol == ']')
-					$depth--;
-				elseif ($cur_symbol == '}')
-				{
-					if ($depth == 0)
-					{
-						$end_pos = $i;
-						break;
-					}
-					else
-					{
-						$depth--;
-					}
-				}
-				elseif ($cur_symbol == ',' && $depth == 0)
-				{
-					$arCommaPos[] = $i;
-				}
-			}
-
-			if ($end_pos == 0)
-				return false;
-
-			$token = substr($data, 1, $end_pos-1);
-
-			$arTokens = array();
-			if (count($arCommaPos) > 0)
-			{
-				$prev_index = 0;
-				foreach ($arCommaPos as $pos)
-				{
-					$arTokens[] = substr($token, $prev_index, $pos - $prev_index - 1);
-					$prev_index = $pos;
-				}
-				$arTokens[] = substr($token, $prev_index);
-			}
-			else
-			{
-				$arTokens[] = $token;
-			}
-
-			foreach ($arTokens as $token)
-			{
-				$arTokenData = explode(":", $token, 2);
-
-				if (substr($arTokenData[0], 0, 1) == '"')
-					$arTokenData[0] = substr($arTokenData[0], 1, -1);
-
-				$arResult[$arTokenData[0]] = CDeliveryEMS::JsObjectToPhp($arTokenData[1]);
-			}
-		}
-		elseif (substr($data, 0, 1) == '[') // array
-		{
-			$arResult = array();
-
-			$depth = 0;
-			$end_pos = 0;
-			$arCommaPos = array();
-
-			for ($i = 1, $len = strlen($data); $i < $len; $i++)
-			{
-				$cur_symbol = substr($data, $i, 1);
-				if ($cur_symbol == '{' || $cur_symbol == '[')
-					$depth++;
-				elseif ($cur_symbol == '}')
-					$depth--;
-				elseif ($cur_symbol == ']')
-				{
-					if ($depth == 0)
-					{
-						$end_pos = $i;
-						break;
-					}
-					else
-					{
-						$depth--;
-					}
-				}
-				elseif ($cur_symbol == ',' && $depth == 0)
-				{
-					$arCommaPos[] = $i;
-				}
-			}
-
-			if ($end_pos == 0)
-				return false;
-
-			$token = substr($data, 1, $end_pos-1);
-
-			if (count($arCommaPos) > 0)
-			{
-				$prev_index = 0;
-				foreach ($arCommaPos as $pos)
-				{
-					$arResult[] = CDeliveryEMS::JsObjectToPhp(substr($token, $prev_index, $pos - $prev_index - 1));
-					$prev_index = $pos;
-				}
-				$arResult[] = CDeliveryEMS::JsObjectToPhp(substr($token, $prev_index));
-			}
-			else
-			{
-				$arResult[] = CDeliveryEMS::JsObjectToPhp($token);
-			}
-		}
-		else // scalar
-		{
-			if (substr($data, 0, 1) == '"')
-				$data = substr($data, 1, -1);
-
-			$arResult = $data;
+			$arResult = CDeliveryEMS::ConvertCharsetArray($arResult, 'utf-8', LANG_CHARSET);
 		}
 
 		return $arResult;
 	}
 
-	function __EMSQuery($method, $arParams = array())
+	public static function __EMSQuery($method, $arParams = array())
 	{
 		$arQuery = array('method='.$method);
 
@@ -270,9 +144,9 @@ class CDeliveryEMS
 
 		$data = $GLOBALS['APPLICATION']->ConvertCharset($data, 'utf-8', LANG_CHARSET);
 
-		if (($pos = strpos($data, "\n")) !== false)
+		if (($pos = mb_strpos($data, "\n")) !== false)
 		{
-			$data = trim(substr($data, 0, $pos));
+			$data = trim(mb_substr($data, 0, $pos));
 		}
 
 		CDeliveryEMS::__Write2Log($error_number.": ".$error_text);
@@ -283,7 +157,7 @@ class CDeliveryEMS
 		return $arResult;
 	}
 
-	function __GetLocation($location)
+	public static function __GetLocation($location)
 	{
 		$arLocation = CSaleHelper::getLocationByIdHitCached($location);
 		$arLocation["IS_RUSSIAN"] = CDeliveryEMS::__IsRussian($arLocation) ? "Y" : "N";
@@ -338,6 +212,27 @@ class CDeliveryEMS
 					if (file_exists(dirname(__FILE__).'/ems/region.php'))
 						require_once(dirname(__FILE__).'/ems/region.php');
 				}
+
+				if($arLocation['REGION_NAME_ORIG'] == 'Саха /Якутия/ Респ' || $arLocation['REGION_NAME_ORIG'] == 'Республика Саха (Якутия)')
+					$arLocation['REGION_NAME_ORIG']  = 'САХА (ЯКУТИЯ) РЕСПУБЛИКА';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Еврейская Аобл')
+					$arLocation['REGION_NAME_ORIG']  = 'ЕВРЕЙСКАЯ АВТОНОМНАЯ ОБЛАСТЬ';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Ненецкий АО')
+					$arLocation['REGION_NAME_ORIG']  = 'НЕНЕЦКИЙ АВТОНОМНЫЙ ОКРУГ';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Северная Осетия - Алания Респ')
+					$arLocation['REGION_NAME_ORIG']  = 'СЕВЕРНАЯ ОСЕТИЯ-АЛАНИЯ РЕСПУБЛИКА';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Ханты-Мансийский Автономный округ - Югра АО' || $arLocation['REGION_NAME_ORIG'] == 'Ханты-Мансийский автономный округ')
+					$arLocation['REGION_NAME_ORIG']  = 'ХАНТЫ-МАНСИЙСКИЙ-ЮГРА АВТОНОМНЫЙ ОКРУГ';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Чукотский АО')
+					$arLocation['REGION_NAME_ORIG']  = 'ЧУКОТСКИЙ АВТОНОМНЫЙ ОКРУГ';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Ямало-Ненецкий АО')
+					$arLocation['REGION_NAME_ORIG']  = 'ЯМАЛО-НЕНЕЦКИЙ АВТОНОМНЫЙ ОКРУГ';
+				elseif($arLocation['REGION_NAME_ORIG'] == 'Крым')
+					$arLocation['REGION_NAME_ORIG']  = 'КРЫМ РЕСПУБЛИКА';
+
+				$arLocation['REGION_NAME_ORIG'] = preg_replace('/\sОБЛ$/i'.BX_UTF_PCRE_MODIFIER, ' ОБЛАСТЬ', ToUpper($arLocation['REGION_NAME_ORIG']));
+				$arLocation['REGION_NAME_ORIG'] = preg_replace('/\sРЕСП$/'.BX_UTF_PCRE_MODIFIER, ' РЕСПУБЛИКА', ToUpper($arLocation['REGION_NAME_ORIG']));
+				$arLocation['REGION_NAME_ORIG'] = preg_replace('/^(РЕСПУБЛИКА)\s*(.*)$/'.BX_UTF_PCRE_MODIFIER, '$2 $1', ToUpper($arLocation['REGION_NAME_ORIG']));
 
 				$arLocation['REGION_NAME_ORIG'] = ToUpper($arLocation['REGION_NAME_ORIG']);
 				$arLocation['REGION_SHORT_NAME'] = ToUpper($arLocation['REGION_SHORT_NAME']);
@@ -397,7 +292,7 @@ class CDeliveryEMS
 		return $arLocation;
 	}
 
-	function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
+	public static function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
 	{
 		//echo '<pre style="text-align: left;">'; print_r($arOrder); print_r($arConfig); echo '</pre>';
 
@@ -594,22 +489,14 @@ class CDeliveryEMS
 		$arParams = array();
 
 		if ($arLocationTo['IS_RUSSIAN'] != 'Y')
-		{
 			$arParams['type'] = $arConfig["category"]["VALUE"];
-		}
 		else
-		{
 			$arParams['from'] = $arLocationFrom['EMS_ID'];
-		}
 
 		$arParams['to'] = $arLocationTo['EMS_ID'];
 		$arParams['weight'] = $arOrder['WEIGHT'] / 1000;
-
 		$arParams['plain'] = 'true';
-
 		$data = CDeliveryEMS::__EMSQuery('ems.calculate', $arParams);
-
-		//echo '<pre style="text-align: left;">answer: '; print_r($data); echo '</pre>';
 
 		if (is_array($data) && $data['rsp']['stat'] == 'ok')
 		{
@@ -632,7 +519,7 @@ class CDeliveryEMS
 
 			return array(
 				"RESULT" => "OK",
-				"VALUE" => $data['rsp']['price'],
+				"VALUE" => $result,
 				'TRANSIT' => $data['rsp']['term']['min'].'-'.$data['rsp']['term']['max']." ".GetMessage("SALE_DH_EMS_DAYS")
 			);
 		}
@@ -643,8 +530,11 @@ class CDeliveryEMS
 		);
 	}
 
-	function Compability($arOrder, $arConfig)
+	public static function Compability($arOrder, $arConfig)
 	{
+		//It will work never.
+		return array();
+
 		$arLocationFrom = CSaleHelper::getLocationByIdHitCached($arOrder["LOCATION_FROM"]);
 		$arLocationTo = CDeliveryEMS::__GetLocation($arOrder["LOCATION_TO"]);
 
@@ -656,7 +546,7 @@ class CDeliveryEMS
 			return array();
 	}
 
-	function __IsRussian($arLocation)
+	public static function __IsRussian($arLocation)
 	{
 		return
 			(ToUpper($arLocation["COUNTRY_NAME_ORIG"]) == "РОССИЯ"
@@ -675,7 +565,7 @@ class CDeliveryEMS
 		);
 	}
 
-	function __Write2Log($data)
+	public static function __Write2Log($data)
 	{
 		if (defined('DELIVERY_EMS_WRITE_LOG') && DELIVERY_EMS_WRITE_LOG === 1)
 		{

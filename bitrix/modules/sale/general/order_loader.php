@@ -1,6 +1,7 @@
 <?
 IncludeModuleLangFile(__FILE__);
 use \Bitrix\Main\Type\RandomSequence;
+use \Bitrix\Sale;
 
 class CSaleOrderLoader
 {
@@ -9,6 +10,9 @@ class CSaleOrderLoader
 
 	const DEBUG_FILE = "1c_order_exchange.log";
 	const DEBUG_MODE = true;
+
+	/** @var Sale\Exchange\ImportOneCBase  */
+	public $importer;
 
 	var $strError = "";
 	var $SumFormat = ".";
@@ -20,20 +24,292 @@ class CSaleOrderLoader
 	var $arExportInfo = array();
 	var $arIBInfo = array();
 
+	public $crmCompatibleMode = false;
+	public $marked_code = '[1C_Exchange:Order.deducted]';
+	public $delimiter_reason = "&nbsp;&nbsp;<br/>";
+
 	static $useStoreControl = null;
 	static $operationType = "";
+	static $documentType = "";
 	static $versionSchema = "";
 
 	public $strErrorDocument = "";
 	public $version1C = "";
 	public $xmlid1C = "";
 	public $orderIdOrig = "";
-	public $orederStatusId = "";
+
 	public $modifyItem = array();
 	public $needModifyItem = array();
-	public $availableQuentityProduct = array();
-	public $availableQuentityProductFromSystem = array();
-	public $typeModifyShipment = '';
+
+
+	public function getSiteId()
+	{
+		static $siteId = null;
+		if($siteId === null)
+		{
+			$siteId = \Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS");
+
+			if($siteId == "")
+				$siteId = \Bitrix\Main\Application::getInstance()->getContext()->getSite();
+		}
+		return $siteId;
+	}
+
+	function deleteDocumentShipment(\Bitrix\Sale\Shipment $shipment)
+	{
+		if($shipment->isShipped())
+			$shipment->setField('DEDUCTED','N');
+
+		return $shipment->delete();
+	}
+
+	function deleteDocumentPayment(\Bitrix\Sale\Payment $payment)
+	{
+		if($payment->isPaid())
+			$payment->setPaid('N');
+
+		return $payment->delete();
+	}
+
+	public function afterShippedCompatible1C(\Bitrix\Sale\Order $order)
+	{
+		if($this->isMarkedOrder($order))
+		{
+			if( $order->isShipped())
+			{
+				$this->unMarkedOrder($order);
+			}
+		}
+	}
+	public function setMarkedOrder(\Bitrix\Sale\Order $order)
+	{
+		$order->setField('MARKED', 'Y');
+		$oldReasonMarked = $order->getField('REASON_MARKED');
+		$newReasonMarked = ($oldReasonMarked == '' ? '':$oldReasonMarked.$this->delimiter_reason).GetMessage("CC_BSC1_ERROR_EXCHANGE_1C_ORDER_DEDUCTED").$this->marked_code;
+		$order->setField('REASON_MARKED', $newReasonMarked);
+	}
+	public function unMarkedOrder(\Bitrix\Sale\Order $order)
+	{
+		$manyReason = array();
+		if(mb_strpos($order->getField('REASON_MARKED'), $this->marked_code) !== false)
+		{
+			$arReason = explode($this->delimiter_reason, $order->getField('REASON_MARKED'));
+
+			if(count($arReason) > 1)
+			{
+				foreach($arReason as $reason)
+				{
+					if(mb_strpos($reason, $this->marked_code) === false)
+						$manyReason[] = $reason;
+				}
+				if(count($manyReason)>0)
+					$order->setField('REASON_MARKED', implode($this->delimiter_reason, $manyReason));
+			}
+			else
+			{
+				$order->setField('MARKED', 'N');
+				$order->setField('REASON_MARKED', '');
+			}
+		}
+	}
+	public function isMarkedOrder(\Bitrix\Sale\Order $order)
+	{
+		return 	(
+				$order->getField('MARKED') == 'Y'
+				&& mb_strpos($order->getField('REASON_MARKED'), $this->marked_code) !== false
+		) ?
+				true : false;
+	}
+
+	public function createPaymentCompatible1C(\Bitrix\Sale\Order $order, $arDocument)
+	{
+		if( !$order->isCanceled())
+		{
+			if(
+					(  $needAmount = $order->getPrice() - $order->getSumPaid())
+					&& $needAmount > 0
+			)
+			{
+				/** @var Bitrix\Sale\Order $order */
+				$paymentCollection = $order->getPaymentCollection();
+				$paymentServiceId =	self::getDefaultPaySystem();
+
+				$paySystem = \Bitrix\Sale\PaySystem\Manager::getObjectById($paymentServiceId);
+				$payment = $paymentCollection->createItem($paySystem);
+
+				$date = new Bitrix\Main\Type\Date(CDatabase::FormatDate(str_replace("T", " ", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG)));
+				$payment->setField("PAY_VOUCHER_DATE", $date);
+				$payment->setField("SUM", $needAmount);
+				$payment->setField("CURRENCY", CSaleLang::GetLangCurrency($this->getSiteId())) ;
+				$payment->setField("COMMENTS", GetMessage("CC_BSC1_PAYMENT_COMMENTS_1C"));
+				$payment->setField("PAID", "Y");
+				$payment->setField("EXTERNAL_PAYMENT", "F");
+			}
+		}
+	}
+	public function beforePaidCompatible1C(\Bitrix\Sale\Order $order)
+	{
+		if( !$order->isCanceled())
+		{
+			$paymentCompatible1CId = $this->getPaymentCompatible1CByOrder($order);
+
+			$paymentCollection = $order->getPaymentCollection();
+
+			if(is_set($paymentCompatible1CId))
+			{
+				/** @var Bitrix\Sale\Payment $payment */
+				$payment = $paymentCollection->getItemById($paymentCompatible1CId);
+
+				if(is_set($payment))
+				{
+					/*if(
+                            !$payment->isPaid()
+                            || !$order->isPaid()
+                    )
+                        $payment->delete();
+                    else*/
+					if($payment->isPaid())
+						$payment->setPaid('N');
+				}
+			}
+		}
+	}
+	public function afterPaidCompatible1C(\Bitrix\Sale\Order $order)
+	{
+		if( !$order->isCanceled())
+		{
+			$paymentCompatible1CId = $this->getPaymentCompatible1CByOrder($order);
+			$paymentCollection = $order->getPaymentCollection();
+
+			if(is_set($paymentCompatible1CId))
+			{
+				/** @var Bitrix\Sale\Payment $payment */
+				$payment = $paymentCollection->getItemById($paymentCompatible1CId);
+
+				if(is_set($payment))
+				{
+					if(
+							($needAmount = $order->getPrice() - $order->getSumPaid())
+							&& $needAmount > 0
+					)
+					{
+
+						/*$originalValues = $payment->getFields()->getOriginalValues();
+                        if(array_key_exists('PAID', $originalValues))
+                            $oldPaid = $originalValues['PAID'];
+
+                        if(!$onlyLastPaid || $oldPaid == 'Y')
+                        {*/
+						$payment->setField('SUM', $needAmount);
+						$payment->setPaid('Y');
+						/*}*/
+					}
+					elseif(!$payment->isPaid())
+					{
+						$payment->delete();
+					}
+				}
+			}
+		}
+	}
+	public function getPaymentCompatible1CByOrder(\Bitrix\Sale\Order $order)
+	{
+		$paymentCompatible1CId = null;
+		/** @var Bitrix\Sale\Payment $payment */
+		$paymentCollection = $order->getPaymentCollection();
+
+		foreach($paymentCollection as $payment)
+		{
+			if($payment->getField('EXTERNAL_PAYMENT') == 'F')
+				$paymentCompatible1CId = $payment->getId();
+		}
+
+		return $paymentCompatible1CId;
+	}
+
+	public function createEntityCompatible1C(\Bitrix\Sale\Order $order, $arDocument)
+	{
+		if ($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")] <> '')
+		{
+			$paymentCompatible1CId = $this->getPaymentCompatible1CByOrder($order);
+
+			if(!is_set($paymentCompatible1CId))
+			{
+				$this->createPaymentCompatible1C($order, $arDocument);
+			}
+		}
+
+		if($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_DATE")] <> '')
+		{
+			if(!$order->isShipped())
+			{
+				$this->setMarkedOrder($order);
+			}
+		}
+	}
+	public function updateEntityCompatible1C(\Bitrix\Sale\Order $order, $arDocument)
+	{
+		if($arDocument["VERSION_1C"] != $order->getField('VERSION_1C') || ($order->getField('VERSION_1C') == '' || $arDocument["VERSION_1C"] == ''))
+		{
+			if ( $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")] <> '')
+			{
+				if(
+						(  $paymentCompatible1CId = $this->getPaymentCompatible1CByOrder($order))
+						&& $paymentCompatible1CId > 0
+				)
+				{
+					$this->beforePaidCompatible1C($order);
+					$this->afterPaidCompatible1C($order);
+				}
+				else
+				{
+					$this->createPaymentCompatible1C($order, $arDocument);
+				}
+			}
+			elseif( !$order->isCanceled())
+			{
+				$paymentCompatible1CId = $this->getPaymentCompatible1CByOrder($order);
+				if(
+						is_set($paymentCompatible1CId)
+						&& $paymentCompatible1CId > 0
+				)
+				{
+					$paymentCollection = $order->getPaymentCollection();
+
+					/** @var Bitrix\Sale\Payment $payment */
+					$payment = $paymentCollection->getItemById($paymentCompatible1CId);
+
+					if(is_set($payment))
+					{
+						$payment->setField('PAID','N');
+						$payment->delete();
+					}
+				}
+			}
+
+			if($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_DATE")] <> '')
+			{
+				if($this->isMarkedOrder($order))
+				{
+					$this->afterShippedCompatible1C($order);
+				}
+				else
+				{
+					if(!$order->isShipped())
+					{
+						$this->setMarkedOrder($order);
+					}
+				}
+			}
+			else
+			{
+				if($this->isMarkedOrder($order))
+				{
+					$this->unMarkedOrder($order);
+				}
+			}
+		}
+	}
 
 	public function getLogFileDir()
 	{
@@ -47,7 +323,7 @@ class CSaleOrderLoader
 
 	public function logMessage($message = '')
 	{
-		if(!static::DEBUG_MODE || !strlen($message))
+		if(!static::DEBUG_MODE || !mb_strlen($message))
 			return;
 
 		file_put_contents(
@@ -60,7 +336,6 @@ class CSaleOrderLoader
 	{
 		return '['.date('H:i:s').']';
 	}
-
 
 	public static function onBeforeUpdateOrderWithoutShipmentsPayments(Bitrix\Main\Event $event)
 	{
@@ -83,12 +358,29 @@ class CSaleOrderLoader
 				$shipment->delete();
 			}
 		}
+
 		/** @var Bitrix\Sale\Payment $payment */
 		foreach($order->getPaymentCollection() as $payment)
 		{
 			if ($payment->getId() == null)
 			{
 				$payment->delete();
+			}
+		}
+
+		foreach($order->getPaymentCollection() as $payment)
+		{
+			$changedKey = $payment->getFields()->getChangedKeys();
+			$originalValues = $payment->getFields()->getOriginalValues();
+			if(is_array($changedKey) && count($changedKey)>0)
+			{
+				foreach($changedKey as $key)
+				{
+					if(is_set($originalValues, $key))
+					{
+						$payment->setField($key, $originalValues[$key]);
+					}
+				}
 			}
 		}
 		return new Bitrix\Main\EventResult( Bitrix\Main\EventResult::SUCCESS, null, 'sale');
@@ -149,16 +441,16 @@ class CSaleOrderLoader
 		{
 			case 'Shipment':
 			case 'Payment':
-				if(strlen($code)>0)
+				if($code <> '')
 					$result = array('ID'=>$code);
 				break;
 			case 'Order':
-				if(strlen($code)>0)
+				if($code <> '')
 					$result = array('ID'=>$this->getOrderIdByDocument($code));
 				break;
 		}
 
-		if(strlen($code) <= 0 && strlen($xmlId1CDocument) > 0)//try to search document from 1C
+		if(($code == '' ||  $result['ID'] === false) && $xmlId1CDocument <> '')//try to search document from 1C // !==false fix for accountNumberPrefix
 		{
 			switch($type)
 			{
@@ -200,9 +492,9 @@ class CSaleOrderLoader
 	function getOrderIdByDocument($orderCode)
 	{
 		$accountNumberPrefix = \Bitrix\Main\Config\Option::get("sale", "1C_SALE_ACCOUNT_NUMBER_SHOP_PREFIX", "");
-		if(strlen($orderCode)>0)
+		if($orderCode <> '')
 		{
-			if(intval($orderCode)>0)
+			if(is_numeric($orderCode))
 			{
 				if (!$orderByID = \Bitrix\Sale\Internals\OrderTable::getById($orderCode)->fetch())
 				{
@@ -222,9 +514,9 @@ class CSaleOrderLoader
 						{
 							if ($accountNumberPrefix != "")
 							{
-								if(strpos($orderCode,$accountNumberPrefix)===0)
+								if(mb_strpos($orderCode, $accountNumberPrefix) === 0)
 								{
-									$orderCode = substr($orderCode, strlen($accountNumberPrefix));
+									$orderCode = mb_substr($orderCode, mb_strlen($accountNumberPrefix));
 									if ($orderByID = \Bitrix\Sale\Internals\OrderTable::getById($orderCode)->fetch())
 									{
 										return $orderByID['ID'];
@@ -259,13 +551,23 @@ class CSaleOrderLoader
 					{
 						if ($accountNumberPrefix != "")
 						{
-							if(strpos($orderCode,$accountNumberPrefix)===0)
+							if(mb_strpos($orderCode, $accountNumberPrefix) === 0)
 							{
-								$orderCode = substr($orderCode, strlen($accountNumberPrefix));
-								if ($orderByID = \Bitrix\Sale\Internals\OrderTable::getById($orderCode)->fetch())
+								$orderCode = mb_substr($orderCode, mb_strlen($accountNumberPrefix));
+								if (!$orderByID = \Bitrix\Sale\Internals\OrderTable::getById($orderCode)->fetch())
 								{
-									return $orderByID['ID'];
+									if ($orderByAccountNumber = \Bitrix\Sale\Internals\OrderTable::getList(array(
+											'select' => array('ID'),
+											'filter' => array('ACCOUNT_NUMBER' => $orderCode),
+											'order' => array('ID' => 'DESC')
+									))->fetch()
+									)
+									{
+										return $orderByAccountNumber['ID'];
+									}
 								}
+								else
+									return $orderByID['ID'];
 							}
 						}
 					}
@@ -298,7 +600,7 @@ class CSaleOrderLoader
 					{
 						$documentShipmentItems = $arItem;
 						//$documentShipmentItems['CURRENCY'] = $newBasketItems['CURRENCY'];
-						$documentShipmentItems['CURRENCY'] = CSaleLang::GetLangCurrency(\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1"));
+						$documentShipmentItems['CURRENCY'] = CSaleLang::GetLangCurrency($this->getSiteId());
 						$documentShipmentItems['DELIVERY_PRICE'] = $arItem['PRICE'];
 					}
 				}
@@ -317,10 +619,10 @@ class CSaleOrderLoader
 		$eventManager = \Bitrix\Main\EventManager::getInstance();
 		$key = $eventManager->addEventHandler('sale', 'OnSaleOrderBeforeSaved', Array($this, "onBeforeUpdateOrderWithoutShipmentsPayments"));
 
-		$dbOrder = CSaleOrder::GetList(array(), array("ACCOUNT_NUMBER" => $arOrder["ID"]), false, false, array("ID", "LID", "PERSON_TYPE_ID", "PAYED", "DATE_PAYED", "CANCELED", "DATE_CANCELED", "REASON_CANCELED", "STATUS_ID", "DATE_STATUS", "PAY_VOUCHER_NUM", "PAY_VOUCHER_DATE", "PRICE_DELIVERY", "ALLOW_DELIVERY", "DATE_ALLOW_DELIVERY", "PRICE", "CURRENCY", "DISCOUNT_VALUE", "USER_ID", "PAY_SYSTEM_ID", "DELIVERY_ID", "DATE_INSERT", "DATE_INSERT_FORMAT", "DATE_UPDATE", "USER_DESCRIPTION", "ADDITIONAL_INFO", "COMMENTS", "TAX_VALUE", "DELIVERY_DOC_NUM", "DELIVERY_DOC_DATE", "STORE_ID", "ACCOUNT_NUMBER", "VERSION", "VERSION_1C", "ID_1C"));
+		$dbOrder = CSaleOrder::GetList(array(), array("ID" => $arOrder["ID"]), false, false, array("ID", "LID", "PERSON_TYPE_ID", "PAYED", "DATE_PAYED", "CANCELED", "DATE_CANCELED", "REASON_CANCELED", "STATUS_ID", "DATE_STATUS", "PAY_VOUCHER_NUM", "PAY_VOUCHER_DATE", "PRICE_DELIVERY", "ALLOW_DELIVERY", "DATE_ALLOW_DELIVERY", "PRICE", "CURRENCY", "DISCOUNT_VALUE", "USER_ID", "PAY_SYSTEM_ID", "DELIVERY_ID", "DATE_INSERT", "DATE_INSERT_FORMAT", "DATE_UPDATE", "USER_DESCRIPTION", "ADDITIONAL_INFO", "COMMENTS", "TAX_VALUE", "DELIVERY_DOC_NUM", "DELIVERY_DOC_DATE", "STORE_ID", "ACCOUNT_NUMBER", "VERSION", "VERSION_1C", "ID_1C"));
 		if($orderInfo = $dbOrder->Fetch())
 		{
-			if($arOrder["VERSION_1C"] != $orderInfo["VERSION_1C"] || (strlen($orderInfo["VERSION_1C"]) <= 0 || strlen($arOrder["VERSION_1C"]) <= 0)) // skip update if the same version
+			if($arOrder["VERSION_1C"] != $orderInfo["VERSION_1C"] || ($orderInfo["VERSION_1C"] == '' || $arOrder["VERSION_1C"] == '')) // skip update if the same version
 			{
 				$this->logMessage("Order.VERSION_1C: ".$orderInfo["VERSION_1C"]);
 				$this->logMessage("Document.VERSION_1C: ".$arOrder["VERSION_1C"]);
@@ -331,11 +633,20 @@ class CSaleOrderLoader
 				$arOrderFields = array();
 				$orderId = $orderInfo["ID"];
 				CSaleOrderChange::AddRecord($orderId, "ORDER_1C_IMPORT");
-				if($arOrder["ID_1C"] != $orderInfo["ID_1C"])
-					$arOrderFields["ID_1C"] = $arOrder["ID_1C"];
-				$arOrderFields["VERSION_1C"] = $arOrder["VERSION_1C"];
+				if($arOrder["XML_1C_DOCUMENT_ID"] != $orderInfo["ID_1C"])
+					$arOrderFields["ID_1C"] = $arOrder["XML_1C_DOCUMENT_ID"];
 
-				if($orderInfo["PAYED"] != "Y" /*&& $orderInfo["ALLOW_DELIVERY"] != "Y"*/ && $orderInfo["STATUS_ID"] != "F")
+				$registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
+
+				/** @var \Bitrix\Sale\Order $orderClass */
+				$orderClass = $registry->getOrderClassName();
+
+				$order = $orderClass::load($orderId);
+
+				if(
+						($orderInfo["PAYED"] != "Y" || is_set($this->getPaymentCompatible1CByOrder($order)))
+						/*&& $orderInfo["ALLOW_DELIVERY"] != "Y"*/
+						&& $orderInfo["STATUS_ID"] != "F")
 				{
 					$dbOrderTax = CSaleOrderTax::GetList(
 							array(),
@@ -348,9 +659,9 @@ class CSaleOrderLoader
 					if($arOrderTax = $dbOrderTax->Fetch())
 					{
 						$bTaxFound = true;
-						if(IntVal($arOrderTax["VALUE_MONEY"]) != IntVal($arOrder["TAX"]["VALUE_MONEY"]) || IntVal($arOrderTax["VALUE"]) != IntVal($arOrder["TAX"]["VALUE"]) || ($arOrderTax["IS_IN_PRICE"] != $arOrder["TAX"]["IS_IN_PRICE"]))
+						if(intval($arOrderTax["VALUE_MONEY"]) != intval($arOrder["TAX"]["VALUE_MONEY"]) || intval($arOrderTax["VALUE"]) != intval($arOrder["TAX"]["VALUE"]) || ($arOrderTax["IS_IN_PRICE"] != $arOrder["TAX"]["IS_IN_PRICE"]))
 						{
-							if(IntVal($arOrder["TAX"]["VALUE"])>0)
+							if(intval($arOrder["TAX"]["VALUE"])>0)
 							{
 								$arFields = Array(
 										"TAX_NAME" => $arOrder["TAX"]["NAME"],
@@ -375,7 +686,7 @@ class CSaleOrderLoader
 
 					if(!$bTaxFound)
 					{
-						if(IntVal($arOrder["TAX"]["VALUE"])>0)
+						if(intval($arOrder["TAX"]["VALUE"])>0)
 						{
 							$arFields = Array(
 									"TAX_NAME" => $arOrder["TAX"]["NAME"],
@@ -383,7 +694,9 @@ class CSaleOrderLoader
 									"VALUE" => $arOrder["TAX"]["VALUE"],
 									"IS_PERCENT" => "Y",
 									"IS_IN_PRICE" => $arOrder["TAX"]["IS_IN_PRICE"],
-									"VALUE_MONEY" => $arOrder["TAX"]["VALUE_MONEY"]
+									"VALUE_MONEY" => $arOrder["TAX"]["VALUE_MONEY"],
+									"CODE" => 'VAT1C',
+									"APPLY_ORDER" => '100',
 							);
 							CSaleOrderTax::Add($arFields);
 							$arOrderFields["TAX_VALUE"] = $arOrder["TAX"]["VALUE_MONEY"];
@@ -393,10 +706,9 @@ class CSaleOrderLoader
 					$arShoppingCart = array();
 					$bNeedUpdate = false;
 
-					$order = \Bitrix\Sale\Order::load($orderId);
-					$basket = $order->getBasket();
-
 					$this->logMessage("Document.items: ".print_r($arOrder["items"], true));
+
+					$basket = $order->getBasket();
 
 					foreach($basket as $basketItem)
 					{
@@ -454,7 +766,7 @@ class CSaleOrderLoader
 
 						if(!$foundedBasketItem)
 						{
-							if($arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] != "true" && $orderInfo["CANCELED"] == "N")
+							if($arOrder["CANCELED"] != "true" && $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")] != "true" && $orderInfo["CANCELED"] == "N")
 							{
 								$bNeedUpdate = true;
 							}
@@ -480,7 +792,7 @@ class CSaleOrderLoader
 									}
 									elseif ($item["TYPE"] == GetMessage("CC_BSC1_SERVICE"))
 									{
-										if (IntVal($item["PRICE"]) != IntVal($orderInfo["PRICE_DELIVERY"]))
+										if (intval($item["PRICE"]) != intval($orderInfo["PRICE_DELIVERY"]))
 											$arOrderFields["PRICE_DELIVERY"] = $item["PRICE"];
 									}
 								}
@@ -490,6 +802,9 @@ class CSaleOrderLoader
 
 					$this->logMessage("Order.NewItems: ".print_r($arShoppingCart, true));
 
+					$isUsed = \Bitrix\Sale\Compatible\DiscountCompatibility::isUsed();
+					\Bitrix\Sale\Compatible\DiscountCompatibility::stopUsageCompatible();
+
 					if($bNeedUpdate)
 					{
 						$arErrors = array();
@@ -497,7 +812,7 @@ class CSaleOrderLoader
 						{
 							$e = $APPLICATION->GetException();
 							if(is_object($e))
-								$this->strErrorDocument .= "\r\n ".GetMessage("CC_BSC1_ORDER_ERROR_3", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID())).$e->GetString();
+								$this->strErrorDocument .= "\n ".GetMessage("CC_BSC1_ORDER_ERROR_3", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID())).$e->GetString();
 
 						}
 					}
@@ -507,15 +822,23 @@ class CSaleOrderLoader
 					$this->logMessage("Document.COMMENT: ".$arOrder["COMMENT"]);
 					$this->logMessage("Order.COMMENTS: ".$orderInfo["COMMENTS"]);
 
-					if(DoubleVal($arOrder["AMOUNT"]) > 0 && $arOrder["AMOUNT"] != $orderInfo["PRICE"])
-						$arOrderFields["PRICE"] = $arOrder["AMOUNT"];
-					if(DoubleVal($orderInfo["DISCOUNT_VALUE"]) > 0)
-						$arOrderFields["DISCOUNT_VALUE"] = 0;
-					if(strlen($arOrder["COMMENT"]) > 0 && $arOrder["COMMENT"] != $orderInfo["COMMENTS"])
-						$arOrderFields["COMMENTS"] = $arOrder["COMMENT"];
-					$arOrderFields["UPDATED_1C"] = "Y";
-					if(!empty($arOrderFields))
-						CSaleOrder::Update($orderId, $arOrderFields);
+					if($this->strErrorDocument == '')
+					{
+						//if(DoubleVal($arOrder["AMOUNT"]) > 0 && $arOrder["AMOUNT"] != $orderInfo["PRICE"])
+						//	$arOrderFields["PRICE"] = $arOrder["AMOUNT"];
+						if(DoubleVal($orderInfo["DISCOUNT_VALUE"]) > 0)
+							$arOrderFields["DISCOUNT_VALUE"] = 0;
+						if($arOrder["COMMENT"] <> '' && $arOrder["COMMENT"] != $orderInfo["COMMENTS"])
+							$arOrderFields["COMMENTS"] = $arOrder["COMMENT"];
+						$arOrderFields["UPDATED_1C"] = "Y";
+						if(!empty($arOrderFields))
+							CSaleOrder::Update($orderId, $arOrderFields);
+					}
+
+					if($isUsed === true)
+					{
+						\Bitrix\Sale\Compatible\DiscountCompatibility::revertUsageCompatible();
+					}
 				}
 				else
 				{
@@ -523,12 +846,12 @@ class CSaleOrderLoader
 				}
 			}
 
-			$this->logMessage("Document.CANCELED: ".$arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")]);
-			$this->logMessage("Document.CANCELED: ".$arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")]);
+			$this->logMessage("Document.CANCELED: ".$arOrder["CANCELED"]);
+			$this->logMessage("Document.CANCEL: ".$arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")]);
 			$this->logMessage("Order.CANCELED: ".$orderInfo["CANCELED"]);
 
 			$arAditFields = Array();
-			if($arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] == "true" || $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")] == "true")
+			if($arOrder["CANCELED"] == "true" || $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")] == "true")
 			{
 				if($orderInfo["CANCELED"] == "N")
 				{
@@ -538,7 +861,7 @@ class CSaleOrderLoader
 			}
 			else
 			{
-				if($arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] != "true")
+				if($arOrder["CANCELED"] != "true" && $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")] != "true")
 				{
 					if($orderInfo["CANCELED"] == "Y")
 					{
@@ -549,7 +872,7 @@ class CSaleOrderLoader
 			}
 
 
-			if(\Bitrix\Main\Config\Option::get("sale", "1C_CHANGE_STATUS_FROM_1C", "") && strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")])>0)
+			if(\Bitrix\Main\Config\Option::get("sale", "1C_CHANGE_STATUS_FROM_1C", "") && $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")] <> '')
 			{
 				if($orderInfo["STATUS_ID"] != $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")])
 				{
@@ -574,7 +897,7 @@ class CSaleOrderLoader
 
 		$this->logMessage("Document.items: ".print_r($arDocument["items"], true));
 
-		if(!empty($arDocument["items"]) && strlen($arDocument['AMOUNT'])>0)
+		if(!empty($arDocument["items"]) && $arDocument['AMOUNT'] <> '')
 		{
 			if($this->documentMustHaveProducts($arDocument))
 			{
@@ -586,15 +909,15 @@ class CSaleOrderLoader
 				$this->logMessage("personTypesIDs: ".print_r($this->arPersonTypesIDs, true));
 				$this->logMessage("exportInfo: ".print_r($this->arExportInfo, true));
 
-				if(IntVal($arDocument["PERSON_TYPE_ID"]) <= 0)
+				if(intval($arDocument["PERSON_TYPE_ID"]) <= 0)
 				{
 					$arDocument = $this->getPersonType($arDocument);
 				}
-				if(IntVal($arDocument["PERSON_TYPE_ID"]) > 0)
+				if(intval($arDocument["PERSON_TYPE_ID"]) > 0)
 				{
 					$arAgent = $this->getExportInfo($arDocument);
 
-					if(IntVal($arDocument["USER_ID"]) > 0)
+					if(intval($arDocument["USER_ID"]) > 0)
 					{
 						$orderFields = $this->prepareOrderFields($arDocument);
 
@@ -660,20 +983,16 @@ class CSaleOrderLoader
 		{
 			if ($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED")] == "true")
 			{
-				if($arDocument["TRAITS"][GetMessage("CC_BSC1_CANCELED")] !== "true" && $arDocument["TRAITS"][GetMessage("CC_BSC1_CANCEL")] !== "true")
+				if($arDocument["CANCELED"] !== "true" && $arDocument["TRAITS"][GetMessage("CC_BSC1_CANCEL")] !== "true")
 				{
 					if (!$payment->isPaid())
 					{
 						$this->logMessage("PaidPayment: Y");
-						$payment->setField('PAID', 'Y');
+						$r = $payment->setPaid('Y');
+						if (!$r->isSuccess())
+							$this->strErrorDocument .=  "\n".GetMessage("CC_BSC1_ORDER_ERROR_4", Array('#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']))." ".array_shift($r->getErrors())->getMessage();
 					}
 				}
-
-				$date = new Bitrix\Main\Type\Date(CDatabase::FormatDate(str_replace("T", " ", $arDocument["DATE"]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG)));
-				$payment->setField("PAY_VOUCHER_DATE", $date);
-
-				if (strlen($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")]) > 0)
-					$payment->setField("PAY_VOUCHER_NUM", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")]);
 
 				return true;
 			}
@@ -683,40 +1002,25 @@ class CSaleOrderLoader
 
 	function Ship(\Bitrix\Sale\Shipment $shipment, $arDocument)
 	{
-
-		$this->logMessage("ShipShipment: ");
-		$this->logMessage("ShipmentId: ".$shipment->getId());
-		$this->logMessage("Document.DELIVERY_DATE: ".$arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_DATE")]);
-		$this->logMessage("Document.DELIVERY_NUM: ".$arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")]);
-		$this->logMessage("Document.TRACKING_NUMBER: ".$arDocument['TRACKING_NUMBER']);
-
 		/** @var Bitrix\Sale\Order $order */
 		$order = $shipment->getCollection()->getOrder();
 
-		if(strlen($arDocument["DATE"])>1)
+		if(mb_strlen($arDocument["DATE"]) > 1)
 		{
 			if($arDocument["TRAITS"][GetMessage("CC_BSC1_DEDUCTED")] == "true" && !$shipment->isShipped())
 			{
 				$shipment->setField('ALLOW_DELIVERY','Y');
 				$shipment->setField('DEDUCTED','Y');
-				$this->logMessage("Shipment.ALLOW_DELIVERY: Y");
-				$this->logMessage("Shipment.DEDUCTED: Y");
 			}
 
 			$date = new Bitrix\Main\Type\Date(CDatabase::FormatDate(str_replace("T", " ", $arDocument["DATE"]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG)));
 			$shipment->setField("DELIVERY_DOC_DATE", $date);
 
-			$statusDelivery = \Bitrix\Main\Config\Option::get("sale", "1C_FINAL_STATUS_ON_DELIVERY", "DA");
-			if(strlen($statusDelivery)>0 && $order->getField("STATUS_ID") != "F" && $shipment->getField("STATUS_ID") != $statusDelivery)
-			{
-				$shipment->setField('STATUS_ID', $statusDelivery);
-			}
-
-			if(strlen($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")])>0)
+			if($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")] <> '')
 				$shipment->setField("DELIVERY_DOC_NUM", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")]);
 
-			if (isset($arDocument['TRACKING_NUMBER']) && strval($arDocument['TRACKING_NUMBER']) != '')
-				$shipment->setField('TRACKING_NUMBER', $arDocument['TRACKING_NUMBER']);
+			if (isset($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_TRACKING_NUMBER")]) && strval($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_TRACKING_NUMBER")]) != '')
+				$shipment->setField('TRACKING_NUMBER', $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_TRACKING_NUMBER")]);
 		}
 	}
 	function saveOrder($arDocument, $orderFields, $arAditFields)
@@ -727,10 +1031,10 @@ class CSaleOrderLoader
 		if($arOrder["ID"] = CSaleOrder::DoSaveOrder($orderFields, $arAditFields, 0, $arErrors))
 		{
 			//add/update user profile
-			if(IntVal($arOrder["USER_PROFILE_ID"]) > 0)
+			if(intval($arOrder["USER_PROFILE_ID"]) > 0)
 			{
 				if($arOrder["USER_PROFILE_VERSION"] != $arOrder["AGENT"]["VERSION"])
-					CSaleOrderUserProps::Update($arOrder["USER_PROFILE_ID"], array("VERSION_1C" => $arOrder["AGENT"]["VERSION"], "NAME" => $arOrder["AGENT"]["AGENT_NAME"]));
+					CSaleOrderUserProps::Update($arOrder["USER_PROFILE_ID"], array("VERSION_1C" => $arOrder["AGENT"]["VERSION"], "NAME" => $arOrder["AGENT"]["AGENT_NAME"], "USER_ID" => $arOrder["USER_ID"]));
 				$dbUPV = CSaleOrderUserPropsValue::GetList(array(), array("USER_PROPS_ID" =>$arOrder["USER_PROFILE_ID"]));
 				while($arUPV = $dbUPV->Fetch())
 				{
@@ -738,7 +1042,7 @@ class CSaleOrderLoader
 				}
 			}
 
-			if(IntVal($arOrder["USER_PROFILE_ID"]) <= 0 || (IntVal($arOrder["USER_PROFILE_ID"]) > 0 && $arOrder["USER_PROFILE_VERSION"] != $arOrder["AGENT"]["VERSION"]))
+			if(intval($arOrder["USER_PROFILE_ID"]) <= 0 || (intval($arOrder["USER_PROFILE_ID"]) > 0 && $arOrder["USER_PROFILE_VERSION"] != $arOrder["AGENT"]["VERSION"]))
 			{
 				$dbOrderProperties = CSaleOrderProps::GetList(
 						array("SORT" => "ASC"),
@@ -756,9 +1060,9 @@ class CSaleOrderLoader
 				{
 					$curVal = $orderFields["ORDER_PROP"][$arOrderProperties["ID"]];
 
-					if (strlen($curVal) > 0)
+					if ($curVal <> '')
 					{
-						if (IntVal($arOrder["USER_PROFILE_ID"]) <= 0)
+						if (intval($arOrder["USER_PROFILE_ID"]) <= 0)
 						{
 							$arFields = array(
 									"NAME" => $arOrder["AGENT"]["AGENT_NAME"],
@@ -769,7 +1073,7 @@ class CSaleOrderLoader
 							);
 							$arOrder["USER_PROFILE_ID"] = CSaleOrderUserProps::Add($arFields);
 						}
-						if(IntVal($arOrder["USER_PROFILE_ID"]) > 0)
+						if(intval($arOrder["USER_PROFILE_ID"]) > 0)
 						{
 							$arFields = array(
 									"USER_PROPS_ID" => $arOrder["USER_PROFILE_ID"],
@@ -802,7 +1106,6 @@ class CSaleOrderLoader
 
 	function addProduct($arDocument, $documentBasketItems, $documentShipmentItems, \Bitrix\Sale\Shipment $shipment)
 	{
-
 		$this->logMessage("addProduct.documentBasketItems: ".print_r($documentBasketItems, true));
 		$this->logMessage("addProduct.shipment: ".$shipment->getId());
 		$this->logMessage("addProduct.documentShipmentItems: ".print_r($documentShipmentItems, true));
@@ -835,17 +1138,10 @@ class CSaleOrderLoader
 			}
 		}
 
-		if (isset($documentShipmentItems['DELIVERY_PRICE']) && floatval($documentShipmentItems['DELIVERY_PRICE']) > 0)
-		{
-			$basePriceDelivery = $documentShipmentItems['DELIVERY_PRICE'];
-			$shipment->setFieldNoDemand('BASE_PRICE_DELIVERY', $basePriceDelivery);
-			$shipment->setFieldNoDemand('CURRENCY', $order->getField('CURRENCY'));
-			$shipment->setFieldNoDemand('PRICE_DELIVERY', $basePriceDelivery);
-		}
 		$this->updateShipmentQuantityFromDocument($arDocument, $shipment);
 	}
 
-	function updatePaymentFromDocument(array $arDocument, \Bitrix\Sale\Payment $payment, \Bitrix\Sale\Order $order)
+	function updatePaymentFromDocument(array $arDocument, \Bitrix\Sale\Payment $payment)
 	{
 		$this->logMessage("UpdatePayment: ");
 		$this->logMessage("ID: ".$arDocument['ID']);
@@ -853,7 +1149,7 @@ class CSaleOrderLoader
 		$this->logMessage("Payment.VERSION_1C: ".$payment->getField('VERSION_1C'));
 		$this->logMessage("Document.VERSION_1C: ".$arDocument["VERSION_1C"]);
 
-		if($arDocument["VERSION_1C"] != $payment->getField('VERSION_1C') || (strlen($payment->getField('VERSION_1C')) <= 0 || strlen($arDocument["VERSION_1C"]) <= 0)) // skip update if the same version
+		if($arDocument["VERSION_1C"] != $payment->getField('VERSION_1C') || ($payment->getField('VERSION_1C') == '' || $arDocument["VERSION_1C"] == '')) // skip update if the same version
 		{
 			$this->logMessage("Payment.isPaid: ".($payment->isPaid()? 'Y':'N'));
 
@@ -865,20 +1161,30 @@ class CSaleOrderLoader
 				$this->logMessage("Document.isPaid: ".$arDocument["COMMENT"]);
 
 				if ($arDocument["AMOUNT"] != $payment->getField('SUM'))
+
 					$payment->setField("SUM", $arDocument["AMOUNT"]);
-				if (strlen($arDocument["COMMENT"]) > 0 && $arDocument["COMMENT"] != $payment->getField('COMMENT'))
+				if ($arDocument["COMMENT"] <> '' && $arDocument["COMMENT"] != $payment->getField('COMMENT'))
 					$payment->setField("COMMENTS", $arDocument["COMMENT"]);
 			}
+
+			if ($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")] <> '')
+			{
+				$date = new Bitrix\Main\Type\Date(CDatabase::FormatDate(str_replace("T", " ", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG)));
+				$payment->setField("PAY_VOUCHER_DATE", $date);
+			}
+
+			if ($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")] <> '')
+				$payment->setField("PAY_VOUCHER_NUM", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")]);
 		}
 
-		$this->logMessage("Document.CANCELED: ".$arDocument["TRAITS"][GetMessage("CC_BSC1_CANCELED")]);
+		$this->logMessage("Document.CANCELED: ".$arDocument["CANCELED"]);
 		$this->logMessage("Document.CANCEL: ".$arDocument["TRAITS"][GetMessage("CC_BSC1_CANCEL")]);
 
-		if($arDocument["TRAITS"][GetMessage("CC_BSC1_CANCELED")] == "true" || $arDocument["TRAITS"][GetMessage("CC_BSC1_CANCEL")] == "true")
+		if($arDocument["TRAITS"][GetMessage("CC_BSC1_CANCEL")] == "true")
 		{
 			if($payment->isPaid())
 			{
-				$payment->setField("PAID","N");
+				$payment->setPaid('N');
 				$payment->setField("COMMENTS",$arDocument["COMMENT"]);
 			}
 		}
@@ -895,7 +1201,7 @@ class CSaleOrderLoader
 	{
 		$this->logMessage("NewPayment: ");
 		$this->logMessage("ORDER_ID: ".$arDocument['ORDER_ID']);
-		$this->logMessage("CURRENCY: ".CSaleLang::GetLangCurrency(\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1")));
+		$this->logMessage("CURRENCY: ".CSaleLang::GetLangCurrency($this->getSiteId()));
 		$this->logMessage("Document.VERSION_1C: ".$arDocument["VERSION_1C"]);
 		$this->logMessage("Document.AMOUNT: ".$arDocument["AMOUNT"]);
 		$this->logMessage("Document.COMMENT: ".$arDocument["COMMENT"]);
@@ -912,8 +1218,9 @@ class CSaleOrderLoader
 			/** @var Bitrix\Sale\Payment $payment */
 			$paymentCollection = $order->getPaymentCollection();
 			$payment = $paymentCollection->createItem($paySystem);
+
 			$payment->setField("SUM", $arDocument["AMOUNT"]);
-			$payment->setField("CURRENCY", CSaleLang::GetLangCurrency(\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1"))) ;
+			$payment->setField("CURRENCY", CSaleLang::GetLangCurrency($this->getSiteId())) ;
 
 			$payment->setField("COMMENTS", $arDocument["COMMENT"]);
 
@@ -923,13 +1230,13 @@ class CSaleOrderLoader
 
 				$payment->setField('PAID', 'Y');
 
-				if (strlen($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")]) > 0)
+				if ($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")] <> '')
 				{
 					$date = new Bitrix\Main\Type\Date(CDatabase::FormatDate(str_replace("T", " ", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG)));
 					$payment->setField("PAY_VOUCHER_DATE", $date);
 				}
 
-				if (strlen($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")]) > 0)
+				if ($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")] <> '')
 					$payment->setField("PAY_VOUCHER_NUM", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")]);
 			}
 
@@ -937,7 +1244,7 @@ class CSaleOrderLoader
 
 		}
 		else
-			$this->strErrorDocument .= "\n\r ".GetMessage("CC_BSC1_PAYMENT_ERROR_7", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID())).GetMessage("CC_BSC1_ORDER_NOT_FOUND");
+			$this->strErrorDocument .= "\n ".GetMessage("CC_BSC1_PAYMENT_ERROR_7", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID())).GetMessage("CC_BSC1_ORDER_NOT_FOUND");
 
 		return null;
 	}
@@ -949,6 +1256,7 @@ class CSaleOrderLoader
 		$eventManager = \Bitrix\Main\EventManager::getInstance();
 		$key = $eventManager->addEventHandler('sale', 'OnSaleOrderBeforeSaved', Array($this, "onBeforeSaveOrderWithoutShipmentsPayments"));
 
+		$addOrderField['EXTERNAL_ORDER'] = 'Y';
 		$arOrder = $this->saveOrderCompatibility($arDocument, $addOrderField);
 
 		removeEventHandler('sale', 'OnSaleOrderBeforeSaved', $key);
@@ -983,14 +1291,6 @@ class CSaleOrderLoader
 	}
 	function updateShipmentQuantityFromDocument(array $arDocument, \Bitrix\Sale\Shipment $shipment)
 	{
-		$this->logMessage("UpdateShipment: ");
-		$this->logMessage("ID: ".$arDocument['ID']);
-		$this->logMessage("ORDER_ID: ".$arDocument['ORDER_ID']);
-		$this->logMessage("Shipment.VERSION_1C: ".$shipment->getField('VERSION_1C'));
-		$this->logMessage("Document.VERSION_1C: ".$arDocument["VERSION_1C"]);
-		$this->logMessage("Document.items: ".print_r($arDocument['items'], true));
-		$this->logMessage("shipment.ID: ".$shipment->getId());
-
 		if ($this->checkVersion1C($shipment)) // skip update if the same version
 		{
 			$basket = $shipment->getCollection()->getOrder()->getBasket();
@@ -999,10 +1299,6 @@ class CSaleOrderLoader
 			{
 				foreach ($arDocument['items'] as $k=>$item)
 				{
-					if($this->existsBasketItem($basketItem, $item))
-						$this->logMessage("Document.Price BasketItem.Price: ".$item[$basketItem->getField('PRODUCT_XML_ID')]['PRICE']." ".$basketItem->getField('PRICE'));
-
-
 					if(
 						$this->existsBasketItem($basketItem, $item) &&
 						$item[$basketItem->getField('PRODUCT_XML_ID')]['PRICE'] == $basketItem->getField('PRICE')
@@ -1018,10 +1314,8 @@ class CSaleOrderLoader
 						else
 							$shipmentItemQuantity = $shipmentItem->getQuantity();
 
-						$this->logMessage("shipmentItemQuantity: ".$shipmentItemQuantity);
 
 						$externalQuantity = intval($item[$basketItem->getField('PRODUCT_XML_ID')]['QUANTITY']);
-						$this->logMessage("externalQuantity: ".$externalQuantity);
 
 						if($externalQuantity < $shipmentItemQuantity)
 						{
@@ -1032,12 +1326,10 @@ class CSaleOrderLoader
 						elseif($externalQuantity > $shipmentItemQuantity)
 						{
 							$availableQuantityByProducts = $this->getAvailableQuentityProduct($basketItem, $shipment);
-							$this->logMessage("availableQuantityByProducts: ".$availableQuantityByProducts);
 
 							if($externalQuantity <= $availableQuantityByProducts)
 							{
 								$needQuantity = $externalQuantity-$shipmentItemQuantity;
-								$this->logMessage("needQuantity: ".$needQuantity);
 
 								$this->updateShipmentItemQuantity($needQuantity, $basketItem, $shipment);
 
@@ -1048,7 +1340,7 @@ class CSaleOrderLoader
 							}
 							else
 							{
-								$this->strErrorDocument .= "\n\r ".GetMessage("CC_BSC1_SHIPMENT_ERROR_8", Array('#ID#'=>$shipment->getId(),'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+								$this->strErrorDocument .= "\n ".GetMessage("CC_BSC1_SHIPMENT_ERROR_8", Array('#ID#'=>$shipment->getId(),'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
 							}
 						}
 
@@ -1082,7 +1374,7 @@ class CSaleOrderLoader
 						{
 							if ($product = $this->getProductChangePrice($itemID, $arItem['PRICE_ONE']))
 							{
-								$this->strErrorDocument .= GetMessage("CC_BSC1_SHIPMENT_ERROR_9", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+								$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_9", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
 							}
 							else
 							{
@@ -1096,7 +1388,7 @@ class CSaleOrderLoader
 				if(is_array($newBasketItems) && count($newBasketItems)>0)
 				{
 					$newBasketItems['ORDER_ID'] = $arDocument['ORDER_ID'];
-					$newBasketItems['CURRENCY'] = CSaleLang::GetLangCurrency(\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1"));
+					$newBasketItems['CURRENCY'] = CSaleLang::GetLangCurrency($this->getSiteId());
 					$this->addBasketForShipment($arDocument, $newBasketItems, $shipment);
 				}
 			}
@@ -1110,41 +1402,29 @@ class CSaleOrderLoader
 				{
 					if($arItem["TYPE"] == GetMessage("CC_BSC1_SERVICE"))
 					{
-						if (IntVal($arItem["PRICE"]) != IntVal($shipment->getField('PRICE_DELIVERY')))
+						if (intval($arItem["PRICE"]) != intval($shipment->getField('PRICE_DELIVERY')))
 						{
-							$shipment->setFieldNoDemand("PRICE_DELIVERY", $arItem["PRICE"]);
-							$shipment->setFieldNoDemand('BASE_PRICE_DELIVERY', $arItem["PRICE"]);
-							$shipment->setFieldNoDemand('CURRENCY',CSaleLang::GetLangCurrency(\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1")));
+							$shipment->setBasePriceDelivery($arItem["PRICE"], true);
+							$shipment->setField('CURRENCY',CSaleLang::GetLangCurrency($this->getSiteId()));
 						}
 
 					}
 				}
 			}
-			if (strlen($arDocument["COMMENT"]) > 0 && $arDocument["COMMENT"] != $shipment->getField('COMMENT'))
+			if ($arDocument["COMMENT"] <> '' && $arDocument["COMMENT"] != $shipment->getField('COMMENT'))
 				$shipment->setField("COMMENTS", $arDocument["COMMENT"]);
 		}
 
-		$this->logMessage("Document.DELIVERY_NUM: ".$arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")]);
-		$this->logMessage("Document.TRACKING_NUMBER: ".$arDocument['TRACKING_NUMBER']);
-		$this->logMessage("Document.CANCELED: ".$arDocument["TRAITS"][GetMessage("CC_BSC1_CANCELED")]);
-
-
-		$statusPartialDelivery = \Bitrix\Main\Config\Option::get("sale", "1C_FINAL_STATUS_ON_DELIVERY", "F");
-		if(strlen($statusPartialDelivery)>0 && $shipment->getCollection()->getOrder()->getField("STATUS_ID") != "F" && $shipment->getField("STATUS_ID") != $statusPartialDelivery)
-		{
-			$shipment->setField('STATUS_ID', $statusPartialDelivery);
-		}
-		if(strlen($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")])>0)
+		if($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")] <> '')
 			$shipment->setField("DELIVERY_DOC_NUM", $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")]);
 
-		if (isset($arDocument['TRACKING_NUMBER']) && strval($arDocument['TRACKING_NUMBER']) != '')
-			$shipment->setField('TRACKING_NUMBER', $arDocument['TRACKING_NUMBER']);
+        if (isset($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_TRACKING_NUMBER")]) && strval($arDocument["TRAITS"][GetMessage("CC_BSC1_1C_TRACKING_NUMBER")]) != '')
+            $shipment->setField('TRACKING_NUMBER', $arDocument["TRAITS"][GetMessage("CC_BSC1_1C_TRACKING_NUMBER")]);
 
-		if($arDocument["TRAITS"][GetMessage("CC_BSC1_CANCELED")] == "true")
+		if($arDocument["TRAITS"][GetMessage("CC_BSC1_CANCEL")] == "true")
 		{
 			if($shipment->isShipped())
 			{
-				$this->logMessage("Shipment.DEDUCTED: N");
 				$shipment->setField('DEDUCTED','N');
 			}
 		}
@@ -1202,9 +1482,6 @@ class CSaleOrderLoader
 	}
 	function updateShipmentNeedQuantityFromBasketItems( $needQuantityWithoutSystem, $needQuantity, \Bitrix\Sale\BasketItem $basketItem, \Bitrix\Sale\Shipment $shipment)
 	{
-		$this->logMessage("updateShipmentNeedQuantityFromBasketItems.needQuantityWithoutSystem: ".$needQuantityWithoutSystem);
-		$this->logMessage("updateShipmentNeedQuantityFromBasketItems.needQuantity: ".$needQuantity);
-
 		$order = $basketItem->getCollection()->getOrder();
 
 		foreach($order->getShipmentCollection() as $shipmentAny)
@@ -1220,9 +1497,6 @@ class CSaleOrderLoader
 			if($shipmentItemAny === null)
 				continue;
 
-			$this->logMessage("updateShipmentNeedQuantityFromBasketItems.BasketCode: ".$basketItem->getBasketCode());
-			$this->logMessage("updateShipmentNeedQuantityFromBasketItems.shipmentItemQuantity: ".$shipmentItemAny->getQuantity());
-
 			if($needQuantityWithoutSystem < $shipmentItemAny->getQuantity())
 			{
 				$this->setShipmentItemQuantity(array('minus',$needQuantityWithoutSystem), $basketItem, $shipmentAny);
@@ -1231,12 +1505,10 @@ class CSaleOrderLoader
 			}
 			elseif($needQuantityWithoutSystem >= $shipmentItemAny->getQuantity())
 			{
-				$shipmentItemAnyQuantity = 0;
 				$shipmentItemAnyQuantity = $shipmentItemAny->getQuantity();
 				$this->setShipmentItemQuantity(array('minus',$shipmentItemAnyQuantity), $basketItem, $shipmentAny);
 
 				$needQuantityWithoutSystem = $needQuantityWithoutSystem - $shipmentItemAnyQuantity;
-				$this->logMessage("updateShipmentNeedQuantityFromBasketItems.NewNeedQuantityWithoutSystem: ".$needQuantityWithoutSystem);
 			}
 
 			if($needQuantityWithoutSystem == 0)
@@ -1319,9 +1591,29 @@ class CSaleOrderLoader
 			$this->updateShipmentItemQuantity($externalQuantity, $basketItem, $shipment);
 		}
 		else
-			$this->strErrorDocument .= "\n\r".GetMessage("CC_BSC1_SHIPMENT_ERROR_11", Array('#ID#'=>$shipment->getId(),'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+			$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_11", Array('#ID#'=>$shipment->getId(),'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
 	}
+	function setDocumentType($operationType)
+	{
+		$documentType = '';
 
+		switch ($operationType)
+		{
+			case 'pay_system_c_operation':
+			case 'pay_system_b_operation':
+			case 'pay_system_a_operation':
+				$documentType = 'payment';
+				break;
+			case 'shipment_operation':
+				$documentType = 'shipment';
+				break;
+			case 'order_operation':
+				$documentType = 'order';
+				break;
+		}
+
+		return $documentType;
+	}
 	function setOperationType($type)
 	{
 		switch ($type)
@@ -1331,6 +1623,9 @@ class CSaleOrderLoader
 				break;
 			case GetMessage("CC_BSC1_PAYMENT_B"):
 				self::$operationType = 'pay_system_b_operation';
+				break;
+			case GetMessage("CC_BSC1_PAYMENT_A"):
+				self::$operationType = 'pay_system_a_operation';
 				break;
 			case GetMessage("CC_BSC1_SHIPMENT"):
 				self::$operationType = 'shipment_operation';
@@ -1377,99 +1672,92 @@ class CSaleOrderLoader
 
 		return true;
 	}
-	function SyncShipmenttoBasket($arDocument)
+
+    /**
+     * @return bool|int
+     */
+    protected static function getDefaultPaySystem()
+    {
+        static $id = null;
+        static $innerPsId = null;
+
+        if (!is_set($id))
+            $id =  (int)\Bitrix\Main\Config\Option::get('sale', '1C_IMPORT_DEFAULT_PS_ORDER_PAID', 0);
+
+        if (!is_set($innerPsId))
+            $innerPsId = (int)Bitrix\Sale\PaySystem\Manager::getInnerPaySystemId();
+
+        if($id > 0)
+        {
+            if($innerPsId > 0)
+            {
+                if($innerPsId == $id)
+                    return false;
+            }
+        }
+        else
+        {
+            $r = \Bitrix\Sale\PaySystem\Manager::getList(array(
+                'select' => array('ID'),
+                'filter' => array('!ACTION_FILE' => 'inner', 'ACTIVE'=>'Y'),
+                'order' => array('ID'=>'ASC')
+            ));
+            if($result = $r->fetch())
+            {
+                $id = (int)$result['ID'];
+            }
+            else
+                return false;
+        }
+
+        return $id;
+    }
+
+	function checkPSOnStatusPaymentOrder()
 	{
-		$order = \Bitrix\Sale\Order::load($arDocument["ID"]);
-		if($arDocument["VERSION_1C"] != $order->getField("VERSION_1C") || (strlen($order->getField("VERSION_1C")) <= 0 || strlen($arDocument["VERSION_1C"]) <= 0)) // skip update if the same version
+		static $psOnStatusPaymentOrder = null;
+		static $innerPsId = null;
+
+		if (!is_set($psOnStatusPaymentOrder))
+			$psOnStatusPaymentOrder =  \Bitrix\Main\Config\Option::get('sale', '1C_IMPORT_DEFAULT_PS_ORDER_PAID', 0);
+
+		if (!is_set($innerPsId))
+			$innerPsId = Bitrix\Sale\PaySystem\Manager::getInnerPaySystemId();
+
+		if($psOnStatusPaymentOrder > 0)
 		{
-			$order = \Bitrix\Sale\Order::load($arDocument["ID"]);
-			$shipmentItems = $order->getShipmentCollection();
-			$basketItems = $order->getBasket();
-			$documentItems = $arDocument['items'];
-			foreach($basketItems as $basketItem)
+			if($innerPsId > 0)
 			{
-				if(!empty($documentItems[$basketItem->getField('PRODUCT_XML_ID')]))
-				{
-					$externalQuantity = intval($documentItems[$basketItem->getField('PRODUCT_XML_ID')]['QUANTITY']);
-
-					if($basketItem->getQuantity() + $externalQuantity <=0 )
-					{
-						$basketItem->delete();
-					}
-					else
-					{
-						$availableQuantity = 0;
-						foreach($shipmentItems as $shipment)
-						{
-							if(!$this->checkConditionForShipmentByBasket($basketItem, $shipment))
-								continue;
-
-							/** @var Bitrix\Sale\Shipment $shipment */
-							$shipmentItem = $shipment->getShipmentItemCollection();
-
-							/** @var Bitrix\Sale\ShipmentItem $shipmentItem */
-							if($shipmentItem !== null)
-								$availableQuantity =+ $shipmentItem->getBasketItemQuantity($basketItem);
-						}
-
-						if($externalQuantity < $availableQuantity)
-						{
-							foreach($order->getShipmentCollection() as $shipmentAny)
-							{
-								if($shipmentAny->isSystem())
-									continue;
-
-								if(!$this->checkConditionForShipmentByBasket($basketItem, $shipmentAny))
-									continue;
-
-								$shipmentItemAny = $shipmentAny->getShipmentItemCollection()->getItemByBasketCode($basketItem->getBasketCode());
-								if($shipmentItemAny === null)
-									continue;
-
-								$needQuantity = $availableQuantity-$externalQuantity;
-								if($needQuantity < $shipmentItemAny->getQuantity())
-								{
-									$this->setShipmentItemQuantity(array('minus',$needQuantity), $basketItem, $shipmentAny);
-
-									$externalQuantity = 0;
-								}
-								elseif($needQuantity >= $shipmentItemAny->getQuantity())
-								{
-									$this->setShipmentItemQuantity(array('minus',$shipmentItemAny->getQuantity()), $basketItem, $shipmentAny);
-
-									$needQuantity =-  $shipmentItemAny->getQuantity();
-								}
-
-								if($needQuantity==0)
-									break;
-							}
-						}
-					}
-				}
-				else
-				{
-					$basketItem->delete();
-				}
-				$order->isShipped();
+				if($innerPsId == $psOnStatusPaymentOrder)
+					return false;
 			}
 		}
+		else
+			return false;
+
+		return true;
 	}
 	function checkVersion1C(\Bitrix\Sale\Shipment $shipment)
 	{
-		if ($this->getVersion1C() != $shipment->getField('VERSION_1C') || (strlen($shipment->getField('VERSION_1C')) <= 0 || strlen($this->getVersion1C()) <= 0))
+		if ($this->getVersion1C() != $shipment->getField('VERSION_1C') || ($shipment->getField('VERSION_1C') == '' || $this->getVersion1C() == ''))
 			return true;
 		else
 			return false;
 	}
 	function setVersionSchema($versionSchema=false)
 	{
-		$_SESSION['versionSchema'] = $versionSchema;
+		if($this->crmCompatibleMode)
+		{
+			$_SESSION['versionSchema'] = self::DEFUALT_VERSION;
+		}
+		else
+			$_SESSION['versionSchema'] = $versionSchema;
 	}
 	function setPersonTypesID()
 	{
 		if(empty($this->arPersonTypesIDs))
 		{
-			$dbPT = CSalePersonType::GetList(array(), array("ACTIVE" => "Y", "LIDS" => \Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1")));
+			$dbPT = CSalePersonType::GetList(array(), array("ACTIVE" => "Y", "LIDS" => $this->getSiteId()));
 			while($arPT = $dbPT->Fetch())
 			{
 				$this->arPersonTypesIDs[] = $arPT["ID"];
@@ -1483,7 +1771,7 @@ class CSaleOrderLoader
 			$dbExport = CSaleExport::GetList(array(), array("PERSON_TYPE_ID" => $this->arPersonTypesIDs));
 			while($arExport = $dbExport->Fetch())
 			{
-				$this->arExportInfo[$arExport["PERSON_TYPE_ID"]] = unserialize($arExport["VARS"]);
+				$this->arExportInfo[$arExport["PERSON_TYPE_ID"]] = unserialize($arExport["VARS"], ['allowed_classes' => false]);
 			}
 		}
 	}
@@ -1519,13 +1807,13 @@ class CSaleOrderLoader
 	function prepareOrderFields($arOrder)
 	{
 		return array(
-				"SITE_ID" => \Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1"),
+				"SITE_ID" => $this->getSiteId(),
 				"PERSON_TYPE_ID" => $arOrder["PERSON_TYPE_ID"],
 				"PAYED" => "N",
 				"CANCELED" => "N",
 				"STATUS_ID" => "N",
 				"PRICE" => $arOrder["AMOUNT"],
-				"CURRENCY" => CSaleLang::GetLangCurrency(\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1")),
+				"CURRENCY" => CSaleLang::GetLangCurrency($this->getSiteId()),
 				"USER_ID" => $arOrder["USER_ID"],
 				"TAX_VALUE" => doubleval($arOrder["TAX"]["VALUE_MONEY"]),
 				"COMMENTS" => $arOrder["COMMENT"],
@@ -1545,6 +1833,8 @@ class CSaleOrderLoader
 					"VALUE" => $arOrder["TAX"]["VALUE"],
 					"VALUE_MONEY" => $arOrder["TAX"]["VALUE_MONEY"],
 					"IS_IN_PRICE" => $arOrder["TAX"]["IS_IN_PRICE"],
+					"CODE" => 'VAT1C',
+					"APPLY_ORDER" => '100',
 			);
 		}
 		return $orderFields;
@@ -1554,9 +1844,9 @@ class CSaleOrderLoader
 		$result = array();
 		if(is_array($item['ATTRIBUTES']))
 		{
-			foreach($item['ATTRIBUTES'] as $name=>$value)
+			foreach($item['ATTRIBUTES'] as $id=>$value)
 			{
-				$result[] = array('NAME'=>$name,'VALUE'=>$value);
+				$result[] = array('CODE'=>$id, 'VALUE'=>$value);
 			}
 		}
 
@@ -1587,6 +1877,9 @@ class CSaleOrderLoader
 				break;
 			case 'pay_system_c_operation':
 				$optionName = '1C_IMPORT_DEFAULT_PS';
+				break;
+			case 'pay_system_a_operation':
+				$optionName = '1C_IMPORT_DEFAULT_PS_A';
 				break;
 		}
 		return $optionName;
@@ -1658,7 +1951,7 @@ class CSaleOrderLoader
 
 	function getUserByProperty($arOrder)
 	{
-		if(!empty($arOrder["AGENT"]) && strlen($arOrder["AGENT"]["ID"]) > 0)
+		if(!empty($arOrder["AGENT"]) && $arOrder["AGENT"]["ID"] <> '')
 		{
 			$arOrder["PERSON_TYPE_ID"] = 0;
 			$arOrder["USER_ID"] = 0;
@@ -1675,31 +1968,48 @@ class CSaleOrderLoader
 					$arOrder["USER_PROPS"][$arUPropValue["ORDER_PROPS_ID"]] = $arUPropValue["VALUE"];
 				}
 			} else {
-				if (strlen($arOrder["AGENT"]["ID"]) > 0) {
+				if ($arOrder["AGENT"]["ID"] <> '') {
 					$arAI = explode("#", $arOrder["AGENT"]["ID"]);
-					if (IntVal($arAI[0]) > 0) {
+					if (intval($arAI[0]) > 0) {
 						$dbUser = CUser::GetByID($arAI[0]);
 						if ($arU = $dbUser->Fetch()) {
-							if (htmlspecialcharsback(substr(htmlspecialcharsbx($arU["ID"] . "#" . $arU["LOGIN"] . "#" . $arU["LAST_NAME"] . " " . $arU["NAME"] . " " . $arU["SECOND_NAME"]), 0, 80)) == $arOrder["AGENT"]["ID"]) {
+							if (htmlspecialcharsback(mb_substr(htmlspecialcharsbx($arU["ID"]."#".$arU["LOGIN"]."#".$arU["LAST_NAME"]." ".$arU["NAME"]." ".$arU["SECOND_NAME"]), 0, 80)) == $arOrder["AGENT"]["ID"]) {
 								$arOrder["USER_ID"] = $arU["ID"];
 							}
 						}
 					}
 				}
 
-				if (IntVal($arOrder["USER_ID"]) <= 0) {
+				if (intval($arOrder["USER_ID"]) <= 0) {
 					//create new user
 					$arUser = array(
 							"NAME" => $arOrder["AGENT"]["ITEM_NAME"],
 							"EMAIL" => $arOrder["AGENT"]["CONTACT"]["MAIL_NEW"],
 					);
 
-					if (strlen($arUser["NAME"]) <= 0)
+					if ($arUser["NAME"] == '')
 						$arUser["NAME"] = $arOrder["AGENT"]["CONTACT"]["CONTACT_PERSON"];
-					if (strlen($arUser["EMAIL"]) <= 0)
-						$arUser["EMAIL"] = "buyer" . time() . GetRandomCode(2) . "@" . $_SERVER["SERVER_NAME"];
 
-					$arOrder["USER_ID"] = CSaleUser::DoAutoRegisterUser($arUser["EMAIL"], $arUser["NAME"],\Bitrix\Main\Config\Option::get("sale", "1C_SITE_NEW_ORDERS", "s1"), $arErrors, array("XML_ID"=>$arOrder["AGENT"]["ID"]));
+					$emServer = $_SERVER["SERVER_NAME"];
+					if(mb_strpos($_SERVER["SERVER_NAME"], ".") === false)
+						$emServer .= ".bx";
+
+					if ($arUser["EMAIL"] == '')
+						$arUser["EMAIL"] = "buyer" . time() . GetRandomCode(2) . "@" . $emServer;
+
+					$arOrder["USER_ID"] = CSaleUser::DoAutoRegisterUser($arUser["EMAIL"], $arUser["NAME"], $this->getSiteId(), $arErrors, array("XML_ID"=>$arOrder["AGENT"]["ID"], "EXTERNAL_AUTH_ID"=>Sale\Exchange\Entity\UserImportBase::EXTERNAL_AUTH_ID));
+
+					$obUser = new CUser;
+					$userFields[] = array();
+
+					if($arOrder["AGENT"]["CONTACT"]["PHONE"] <> '')
+						$userFields["WORK_PHONE"] = $arOrder["AGENT"]["CONTACT"]["PHONE"];
+
+					if(count($userFields)>0)
+					{
+						if(!$obUser->Update($arOrder["USER_ID"], $userFields, true))
+							$this->strErrorDocument .= "\n".$obUser->LAST_ERROR;
+					}
 				}
 			}
 		}
@@ -1709,7 +2019,7 @@ class CSaleOrderLoader
 	function elementHandler($path, $attr)
 	{
 		$val = $attr[GetMessage("SALE_EXPORT_FORM_SUMM")];
-		if(strlen($val) > 0)
+		if($val <> '')
 		{
 			if(preg_match("#".GetMessage("SALE_EXPORT_FORM_CRD")."=(.);{0,1}#", $val, $match))
 			{
@@ -1742,11 +2052,429 @@ class CSaleOrderLoader
 		return false;
 	}
 
-	function nodeHandler(CDataXML $value)
+	protected function getXMLStream(CXMLFileStream $fileStream)
 	{
-		$value = $value->GetArray();
-		$this->strErrorDocument = '';
+		$startPosition = 0;
+		$endPosition = 0;
 
+		$positionLast = $fileStream->getPosition();
+
+		if(isset($positionLast[1]))
+			$endPosition = $positionLast[1];
+
+		if(is_array($_SESSION["BX_CML2_EXPORT"]["proccess_xml_entry"]))
+		{
+			$position = $_SESSION["BX_CML2_EXPORT"]["proccess_xml_entry"];
+
+			if(isset($position[1]))
+				$startPosition = $position[1];
+		}
+		else
+		{
+			foreach(explode("/", $positionLast[2]) as $pathPart)
+			{
+				@list($elementPosition, $elementName) = explode("@", $pathPart, 2);
+				$positionStack[] = $elementPosition;
+			}
+			$startPosition = array_pop($positionStack);
+		}
+
+		$_SESSION["BX_CML2_EXPORT"]["proccess_xml_entry"] = $fileStream->getPosition();
+
+		$xmlChunk = $fileStream->readFilePart($startPosition, $endPosition);
+
+		return \Bitrix\Main\Text\Encoding::convertEncoding($xmlChunk, $positionLast[0], LANG_CHARSET, $error);
+	}
+
+	protected function nodeHandlerPartialVersion($arDocument)
+	{
+		/**
+		 * @deprecated scheme
+		 */
+
+		if(Sale\Configuration::useStoreControl() || \Bitrix\Main\Config\Option::get('catalog', 'enable_reservation', 'N')=='Y')
+			$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_USE_STORE_SALE");
+		else
+		{
+			if(\Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N') <> 'Y')
+				$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_CONVERT_SALE");
+			else
+			{
+				if(\Bitrix\Main\Config\Option::get("sale", "allow_deduction_on_delivery", "N") == 'Y')
+					$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SALE_ALLOW_DEDUCTION_ON_DELIVERY_ERROR");
+				else
+				{
+					if(!self::getDefaultPaySystem())
+						$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PS_ON_STATUS_PAYMENT_ORDER_ERROR");
+					else
+					{
+						$this->logMessage("OperationType: ".$arDocument['OPERATION_TYPE']);
+
+						$registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
+
+						/** @var \Bitrix\Sale\Order $orderClass */
+						$orderClass = $registry->getOrderClassName();
+
+						switch($arDocument['OPERATION_TYPE'])
+						{
+							case 'order_operation':
+
+								/** @var Bitrix\Sale\Order $order */
+								if($arDocument["XML_1C_DOCUMENT_ID"] <> '')
+								{
+									$this->setVersion1C($arDocument["VERSION_1C"]);
+									$this->setXMLDocumentID($arDocument["XML_1C_DOCUMENT_ID"]);
+
+									$this->logMessage("Document.XML_1C_DOCUMENT_ID: ".$arDocument['XML_1C_DOCUMENT_ID']);
+									$this->logMessage("Document.VERSION_1C: ".$arDocument['VERSION_1C']);
+
+									if(intval($arDocument["ID"])>0)
+									{
+										$this->logMessage("UpdateOrder:");
+										$this->logMessage("ID: ".$arDocument['ID']);
+
+										$this->updateOrderWithoutShipmentsPayments($arDocument);
+										if($this->strErrorDocument == '')
+										{
+											$order = $orderClass::load($arDocument["ID"]);
+
+											$this->updateEntityCompatible1C($order, $arDocument);
+
+											$order->setField('UPDATED_1C', 'Y');
+											$order->setField('VERSION_1C', $this->getVersion1C());
+											$order->setField('ID_1C', $this->getXMLDocumentID());
+											$r = $order->save();
+											if (!$r->isSuccess())
+												$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
+										}
+									}
+									elseif(\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_ORDERS", "Y") == "Y")
+									{
+										$this->logMessage("NewOrder:");
+
+										$arOrder = $this->addOrderWithoutShipmentsPayments($arDocument);
+
+										if(intval($arOrder['ID'])>0)
+										{
+											$order = $orderClass::load($arOrder["ID"]);
+											if($this->strErrorDocument == '')
+											{
+												$this->createEntityCompatible1C($order, $arDocument);
+
+												$order->setField('EXTERNAL_ORDER','Y');
+												$order->setField('UPDATED_1C','Y');
+												$order->setField('VERSION_1C', $this->getVersion1C());
+												$order->setField('ID_1C', $this->getXMLDocumentID());
+
+												if($arDocument["DATE"] <> '')
+													$order->setField('DATE_INSERT', new Bitrix\Main\Type\DateTime(CDatabase::FormatDate($arDocument["DATE"]." ".$arDocument["TIME"], "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG))));
+												$r = $order->save();
+												if(!$r->isSuccess())
+													$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
+											}
+										}
+										else
+											$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_ORDER_ERROR_2", Array('#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+									}
+								}
+								else
+								{
+									$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_ORDER_ERROR_1");
+								}
+								break;
+							case 'pay_system_b_operation':
+							case 'pay_system_c_operation':
+							case 'pay_system_a_operation':
+
+								/** @var Bitrix\Sale\Order $order */
+								if(isset($arDocument['PAYMENT_ORDER_ID']) && $arDocument['ORDER_ID'] == '')
+									$arDocument['ORDER_ID'] = $arDocument['PAYMENT_ORDER_ID'];
+
+								if($arDocument["XML_1C_DOCUMENT_ID"] <> '')
+								{
+									$this->setVersion1C($arDocument["VERSION_1C"]);
+									$this->setXMLDocumentID($arDocument["XML_1C_DOCUMENT_ID"]);
+
+									$this->logMessage("Document.XML_1C_DOCUMENT_ID: ".$arDocument['XML_1C_DOCUMENT_ID']);
+									$this->logMessage("Document.VERSION_1C: ".$arDocument['VERSION_1C']);
+
+									if($arDocument['ORDER_ID'] !== false)
+									{
+										if($order = $orderClass::load($arDocument['ORDER_ID']))
+										{
+											if (!$order->isCanceled())
+											{
+												if ($order->getField("STATUS_ID") != "F")
+												{
+													if($arDocument['CANCELED'] == "true")
+													{
+														$paymentCollection = $order->getPaymentCollection();
+
+														if($arDocument["ID"] <> '' && ($payment = $paymentCollection->getItemById($arDocument["ID"])))
+														{
+															$deletePayment = $this->deleteDocumentPayment($payment);
+															if(!$deletePayment->isSuccess())
+																$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_ORDER_ERROR_4", Array('#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID'])).array_shift($deletePayment->getErrors())->getMessage();
+														}
+														else
+															$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_9", Array( '#ORDER_ID#'=>$arDocument['ORDER_ID'], '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+													}
+													else
+													{
+														if($arDocument["ID"] <> '')
+														{
+															$paymentCollection = $order->getPaymentCollection();
+
+															if($payment = $paymentCollection->getItemById($arDocument["ID"]))
+															{
+																$this->beforePaidCompatible1C($order);
+
+																$this->updatePaymentFromDocument($arDocument, $payment);
+
+																if($this->strErrorDocument == '')
+																{
+																	$this->Paid($payment, $arDocument);
+
+																	$this->afterPaidCompatible1C($order);
+
+																	if($this->strErrorDocument == '')
+																	{
+																		$payment->setField('UPDATED_1C','Y');
+																		$payment->setField('VERSION_1C', $this->getVersion1C());
+																		$payment->setField('ID_1C',$this->getXMLDocumentID());
+																	}
+																}
+															}
+															else
+																$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_3", Array("#ID#" => $arDocument["ID"], '#ORDER_ID#'=>$arDocument['ORDER_ID'], '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+														}
+														elseif (\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_PAYMENT", "Y") == 'Y') // create new payment (ofline 1C))
+														{
+															$this->beforePaidCompatible1C($order);
+
+															$payment = $this->addPaymentFromDocumentByOrder($arDocument, $order);
+															if($this->strErrorDocument == '' && !is_null($payment))
+															{
+																$this->Paid($payment, $arDocument);
+
+																$this->afterPaidCompatible1C($order);
+
+																if($this->strErrorDocument == '')
+																{
+																	$payment->setField('EXTERNAL_PAYMENT','Y');
+																	$payment->setField('VERSION_1C', $this->getVersion1C());
+																	$payment->setField('ID_1C',$this->getXMLDocumentID());
+																}
+															}
+														}
+													}
+												}
+												else
+													$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_10", Array('#ORDER_ID#'=>$order->getId(), '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+											}
+											else
+											{
+												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_11", Array('#ORDER_ID#'=>$order->getId(), '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+											}
+
+										}
+										else
+											$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_8",array('#ORDER_ID#'=>$order->getId(), '#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+									}
+									else
+										$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_5",array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+								}
+								else
+									$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_6");
+
+								if($this->strErrorDocument == '')
+								{
+									$order->setField('UPDATED_1C', 'Y');
+
+									$r = $order->save();
+									if(!$r->isSuccess())
+										$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
+								}
+
+								break;
+							case 'shipment_operation':
+
+								if(isset($arDocument['SHIPMENT_ORDER_ID']) && $arDocument['ORDER_ID'] == '')
+									$arDocument['ORDER_ID'] = $arDocument['SHIPMENT_ORDER_ID'];
+
+								if($arDocument["XML_1C_DOCUMENT_ID"] <> '')
+								{
+									$this->setVersion1C($arDocument["VERSION_1C"]);
+									$this->setXMLDocumentID($arDocument["XML_1C_DOCUMENT_ID"]);
+									$this->setOrderIdOriginal($arDocument["ORDER_ID_ORIG"]);
+
+									$this->logMessage("Document.XML_1C_DOCUMENT_ID: ".$arDocument['XML_1C_DOCUMENT_ID']);
+									$this->logMessage("Document.VERSION_1C: ".$arDocument['VERSION_1C']);
+									$this->logMessage("Document.ORDER_ID_ORIG: ".$arDocument['ORDER_ID_ORIG']);
+
+									if($arDocument['ORDER_ID'] !== false)
+									{
+										/** @var Bitrix\Sale\Order $order */
+										if($order = $orderClass::load($arDocument['ORDER_ID']))
+										{
+											if ($order->getField("STATUS_ID") != "F")
+											{
+												if($arDocument["CANCELED"] == "true")
+												{
+													if ($arDocument["ID"] <> '' && ($shipment = $order->getShipmentCollection()->getItemById($arDocument['ID'])))
+													{
+														$deleteShipment = $this->deleteDocumentShipment($shipment);
+														if(!$deleteShipment->isSuccess())
+															$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_ORDER_ERROR_4", Array('#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID'])).array_shift($deleteShipment->getErrors())->getMessage();
+													}
+													else
+														$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_16", Array( '#ORDER_ID#'=>$arDocument['ORDER_ID'], '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+												}
+												else
+												{
+													if($arDocument["ID"] <> '')
+													{
+														if ($shipment = $order->getShipmentCollection()->getItemById($arDocument['ID']))
+														{
+															/** @var Bitrix\Sale\Shipment $shipment */
+															if (!$shipment->isSystem())
+															{
+																if (!$shipment->isShipped())
+																{
+																	$this->deleteShipmentItemsByDocument($arDocument, $shipment);
+
+																	$this->updateShipmentQuantityFromDocument($arDocument, $shipment);
+
+																	if($this->strErrorDocument == '')
+																	{
+																		$this->Ship($shipment, $arDocument);
+
+																		$this->afterShippedCompatible1C($order);
+
+																		if($this->strErrorDocument == '')
+																		{
+																			$shipment->setField('UPDATED_1C','Y');
+																			$shipment->setField('VERSION_1C', $this->getVersion1C());
+																			$shipment->setField('ID_1C',$this->getXMLDocumentID());
+																		}
+																	}
+																}
+																else
+																	$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_2", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+															}
+															else
+																$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_14", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+														}
+														else
+															$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_3", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
+													}
+													elseif(\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_SHIPMENT", 'Y')=='Y')
+													{
+														$shipment = $this->addShipmentFromDocumentByOrder($arDocument, $order);
+
+														if($this->strErrorDocument == '')
+														{
+															$this->Ship($shipment, $arDocument);
+
+															$this->afterShippedCompatible1C($order);
+
+															if($this->strErrorDocument == '')
+															{
+																$shipment->setField('VERSION_1C',$this->getVersion1C());
+																$shipment->setField('ID_1C', $this->getXMLDocumentID());
+																$shipment->setField('EXTERNAL_DELIVERY','Y');
+																$shipment->setField('UPDATED_1C','Y');
+															}
+														}
+													}
+												}
+											}
+											else
+												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_18", Array('#ORDER_ID#'=>$order->getId(), '#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+										}
+										else
+											$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_15",array('#ORDER_ID#'=>$order->getId(),'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+									}
+									elseif(\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_ORDER_NEW_SHIPMENT", "Y") == 'Y') // create new shipment (ofline 1C))
+									{
+										if($arDocument["CANCELED"] != "true")
+										{
+											/** @var Bitrix\Sale\Order $order */
+											$arOrder = $this->addOrderWithoutShipmentsPayments($arDocument);
+											if($arOrder['ID']>0)
+											{
+												$order = $orderClass::load($arOrder['ID']);
+												$shipment = $this->addShipmentFromDocumentByOrder($arDocument, $order);
+
+												if($this->strErrorDocument == '')
+												{
+													$this->Ship($shipment, $arDocument);
+
+													if($this->strErrorDocument == '')
+													{
+														$shipment->setField('VERSION_1C', $this->getVersion1C());
+														$shipment->setField('ID_1C', $this->getXMLDocumentID());
+														$shipment->setField('EXTERNAL_DELIVERY', 'Y');
+														$shipment->setField('UPDATED_1C', 'Y');
+
+														$order->setField('VERSION_1C', $this->getVersion1C());
+														$order->setField('ID_1C', $this->getOrderIdOriginal());
+														$order->setField('EXTERNAL_ORDER', 'Y');
+
+													}
+												}
+											}
+											else
+												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_7", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+										}
+										else
+											$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_17", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+									}
+									else
+										$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_5", Array("#ID#" => $arDocument["ID"],'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
+								}
+								else
+									$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_6", Array("#ID#" => $arDocument["ID"]));
+
+								if($this->strErrorDocument == '')
+								{
+									if($order->isShipped())
+									{
+										if($this->arParams["FINAL_STATUS_ON_DELIVERY"] <> '' &&
+											$order->getField("STATUS_ID") != "F" &&
+											$order->getField("STATUS_ID") != $this->arParams["FINAL_STATUS_ON_DELIVERY"]
+										)
+										{
+											$order->setField("STATUS_ID", $this->arParams["FINAL_STATUS_ON_DELIVERY"]);
+										}
+									}
+
+									$order->setField('UPDATED_1C', 'Y');
+
+									$r=$order->save();
+									if (!$r->isSuccess())
+										$this->strErrorDocument .= array_shift($r->getErrorMessages());
+								}
+
+								break;
+						}
+					}
+				}
+			}
+		}
+		$this->logMessage("FinalExchange \r\n\r\n");
+
+		\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_type', 'partial');
+		\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_last_time', time());
+	}
+
+	public function nodeHandlerDefaultModuleOneCCRM(CDataXML $dataXml)
+	{
+		$value = $dataXml->GetArray();
+
+		/**
+		 * @deprecated
+		 */
 		if(!empty($value[GetMessage("CC_BSC1_DOCUMENT")]))
 		{
 			$value = $value[GetMessage("CC_BSC1_DOCUMENT")];
@@ -1760,313 +2488,126 @@ class CSaleOrderLoader
 
 				if (self::getVersionSchema() >= self::PARTIAL_VERSION)
 				{
-					if(\Bitrix\Main\Config\Option::get('catalog', 'default_use_store_control', 'N')=='Y' || \Bitrix\Main\Config\Option::get('catalog', 'enable_reservation', 'N')=='Y')
-						$this->strErrorDocument .= "\n ".GetMessage("CC_BSC1_USE_STORE_SALE");
-					else
-					{
-						if(\Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N') <> 'Y')
-							$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_CONVERT_SALE");
-						else
-						{
-							$this->logMessage("OperationType: ".$arDocument['OPERATION_TYPE']);
-
-							switch($arDocument['OPERATION_TYPE'])
-							{
-								case 'order_operation':
-
-									/** @var Bitrix\Sale\Order $order */
-									if(strlen($arDocument["XML_1C_DOCUMENT_ID"])>0)
-									{
-										$this->setVersion1C($arDocument["VERSION_1C"]);
-										$this->setXMLDocumentID($arDocument["XML_1C_DOCUMENT_ID"]);
-
-										$this->logMessage("Document.XML_1C_DOCUMENT_ID: ".$arDocument['XML_1C_DOCUMENT_ID']);
-										$this->logMessage("Document.VERSION_1C: ".$arDocument['VERSION_1C']);
-
-										if(intval($arDocument["ID"])>0)
-										{
-											$this->logMessage("UpdateOrder:");
-											$this->logMessage("ID: ".$arDocument['ID']);
-
-											$this->updateOrderWithoutShipmentsPayments($arDocument);
-											if(strlen($this->strErrorDocument)<=0)
-											{
-												$order = \Bitrix\Sale\Order::load($arDocument["ID"]);
-												$order->setField('UPDATED_1C', 'Y');
-												$order->setField('VERSION_1C', $this->getVersion1C());
-												$order->setField('ID_1C', $this->getXMLDocumentID());
-												$r = $order->save();
-												if (!$r->isSuccess())
-													$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
-											}
-										}
-										elseif(\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_ORDERS", "Y") == "Y")
-										{
-											$this->logMessage("NewOrder:");
-
-											$arOrder = $this->addOrderWithoutShipmentsPayments($arDocument);
-											if(intval($arOrder['ID'])>0)
-											{
-												$order = \Bitrix\Sale\Order::load($arOrder["ID"]);
-												if(strlen($this->strErrorDocument)<=0)
-												{
-													$order->setField('EXTERNAL_ORDER','Y');
-													$order->setField('UPDATED_1C','Y');
-													$order->setField('VERSION_1C', $this->getVersion1C());
-													$order->setField('ID_1C', $this->getXMLDocumentID());
-													if(strlen($arDocument["DATE"])>0)
-														$order->setField('DATE_INSERT', new Bitrix\Main\Type\DateTime(CDatabase::FormatDate($arDocument["DATE"]." ".$arDocument["TIME"], "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG))));
-													$r = $order->save();
-													if(!$r->isSuccess())
-														$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
-												}
-											}
-											else
-												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_ORDER_ERROR_2", Array('#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-										}
-									}
-									else
-									{
-										$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_ORDER_ERROR_1");
-									}
-									break;
-								case 'pay_system_b_operation':
-								case 'pay_system_c_operation':
-
-									/** @var Bitrix\Sale\Order $order */
-									if(isset($arDocument['PAYMENT_ORDER_ID']) && strlen($arDocument['ORDER_ID'])<=0)
-										$arDocument['ORDER_ID'] = $arDocument['PAYMENT_ORDER_ID'];
-
-									if(strlen($arDocument["XML_1C_DOCUMENT_ID"])>0)
-									{
-										$this->setVersion1C($arDocument["VERSION_1C"]);
-										$this->setXMLDocumentID($arDocument["XML_1C_DOCUMENT_ID"]);
-
-										$this->logMessage("Document.XML_1C_DOCUMENT_ID: ".$arDocument['XML_1C_DOCUMENT_ID']);
-										$this->logMessage("Document.VERSION_1C: ".$arDocument['VERSION_1C']);
-
-										if(strlen($arDocument["ID"])>0)
-										{
-											if($arDocument['ORDER_ID'] !== false)
-											{
-
-												$order = \Bitrix\Sale\Order::load($arDocument['ORDER_ID']);
-
-												if ($order->getField("STATUS_ID") == "F")
-													$this->strErrorDocument .= "\n ".GetMessage("CC_BSC1_PAYMENT_ERROR_1", Array("#ID#" => $arDocument["ID"],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-												else
-												{
-													/** @var Bitrix\Sale\Payment $payment */
-													$payments = $order->getPaymentCollection();
-
-													if ($payment = $payments->getItemById($arDocument['ID']))
-													{
-														$this->updatePaymentFromDocument($arDocument, $payment, $order);
-
-														if(strlen($this->strErrorDocument)<=0)
-														{
-															$this->Paid($payment, $arDocument);
-
-															$payment->setField('UPDATED_1C','Y');
-															$payment->setField('VERSION_1C', $this->getVersion1C());
-															$payment->setField('ID_1C',$this->getXMLDocumentID());
-															$order->setField('UPDATED_1C', 'Y');
-
-															$r = $order->save();
-															if(!$r->isSuccess())
-																$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
-														}
-													}
-													else
-														$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_3", Array("#ID#" => $arDocument["ID"], '#ORDER_ID#'=>$arDocument['ORDER_ID'], '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-												}
-											}
-											else
-												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_4", Array("#ID#" => $arDocument["ID"]));
-										}
-										elseif (\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_PAYMENT", "Y") == 'Y') // create new payment (ofline 1C))
-										{
-											if ($arDocument['ORDER_ID'] !== false)
-											{
-												$order = \Bitrix\Sale\Order::load($arDocument['ORDER_ID']);
-												if($order)
-												{
-													$payment = $this->addPaymentFromDocumentByOrder($arDocument, $order);
-													if(strlen($this->strErrorDocument)<=0 && !is_null($payment))
-													{
-														$this->Paid($payment, $arDocument);
-
-														$payment->setField('EXTERNAL_PAYMENT','Y');
-														$payment->setField('UPDATED_1C','Y');
-														$payment->setField('VERSION_1C', $this->getVersion1C());
-														$payment->setField('ID_1C',$this->getXMLDocumentID());
-														$order->setField('UPDATED_1C', 'Y');
-
-														$r = $order->save();
-														if(!$r->isSuccess())
-															$this->strErrorDocument .= array_shift($r->getErrors())->getMessage();
-													}
-												}
-												else
-												{
-													$this->strErrorDocument .= "\n\r ".GetMessage("CC_BSC1_PAYMENT_ERROR_8",array('#ORDER_ID#'=>$order->getId(),'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
-												}
-											}
-											else
-												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_PAYMENT_ERROR_5",array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
-										}
-									}
-									else
-									{
-										$this->strErrorDocument .= "\n ".GetMessage("CC_BSC1_PAYMENT_ERROR_6");
-									}
-									break;
-								case 'shipment_operation':
-
-									if(isset($arDocument['SHIPMENT_ORDER_ID']) && strlen($arDocument['ORDER_ID'])<=0)
-										$arDocument['ORDER_ID'] = $arDocument['SHIPMENT_ORDER_ID'];
-
-									if(strlen($arDocument["XML_1C_DOCUMENT_ID"])>0)
-									{
-										$this->setVersion1C($arDocument["VERSION_1C"]);
-										$this->setXMLDocumentID($arDocument["XML_1C_DOCUMENT_ID"]);
-										$this->setOrderIdOriginal($arDocument["ORDER_ID_ORIG"]);
-
-										$this->logMessage("Document.XML_1C_DOCUMENT_ID: ".$arDocument['XML_1C_DOCUMENT_ID']);
-										$this->logMessage("Document.VERSION_1C: ".$arDocument['VERSION_1C']);
-										$this->logMessage("Document.ORDER_ID_ORIG: ".$arDocument['ORDER_ID_ORIG']);
-
-										if(strlen($arDocument["ID"])>0)
-										{
-											if ($arDocument['ORDER_ID'] !== false)
-											{
-												/** @var Bitrix\Sale\Order $order */
-												$order = \Bitrix\Sale\Order::load($arDocument['ORDER_ID']);
-
-												if ($order->getField("STATUS_ID") == "F")
-													$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_1", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'], '#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-												else
-												{
-													if ($shipment = $order->getShipmentCollection()->getItemById($arDocument['ID']))
-													{
-														/** @var Bitrix\Sale\Shipment $shipment */
-														if (!$shipment->isShipped())
-														{
-															$this->deleteShipmentItemsByDocument($arDocument, $shipment);
-
-															$this->updateShipmentQuantityFromDocument($arDocument, $shipment);
-
-															if(strlen($this->strErrorDocument)<=0)
-															{
-																$this->Ship($shipment, $arDocument);
-
-																if(strlen($this->strErrorDocument)<=0)
-																{
-																	//$shipment->setField('EXTERNAL_DELIVERY','N');
-																	$shipment->setField('UPDATED_1C','Y');
-																	$shipment->setField('VERSION_1C', $this->getVersion1C());
-																	$shipment->setField('ID_1C',$this->getXMLDocumentID());
-																	$order->setField('UPDATED_1C',"Y");
-																}
-																$r=$order->save();
-																if (!$r->isSuccess())
-																	$this->strErrorDocument .= array_shift($r->getErrorMessages());
-															}
-														}
-														else
-															$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_2", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-													}
-													else
-														$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_3", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-												}
-											}
-											else
-												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_4", Array("#ID#" => $arDocument["ID"],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-										}
-										elseif($arDocument['ORDER_ID']!==false && \Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_SHIPMENT", 'Y')=='Y')
-										{
-											/** @var Bitrix\Sale\Order $order */
-											$order = \Bitrix\Sale\Order::load($arDocument['ORDER_ID']);
-
-											if ($order->getField("STATUS_ID") == "F")
-												$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_SHIPMENT_ERROR_1", Array("#ID#" => $arDocument["ID"],'#ORDER_ID#'=>$arDocument['ORDER_ID'],'#XML_1C_DOCUMENT_ID#'=>$arDocument['XML_1C_DOCUMENT_ID']));
-											else
-											{
-												$shipment = $this->addShipmentFromDocumentByOrder($arDocument, $order);
-
-												if(strlen($this->strErrorDocument)<=0)
-												{
-													$this->Ship($shipment, $arDocument);
-
-													$shipment->setField('VERSION_1C',$this->getVersion1C());
-													$shipment->setField('ID_1C', $this->getXMLDocumentID());
-													$shipment->setField('EXTERNAL_DELIVERY','Y');
-													$shipment->setField('UPDATED_1C','Y');
-													$order->setField('UPDATED_1C',"Y");
-
-													$r=$order->save();
-													if (!$r->isSuccess())
-														$this->strErrorDocument .= array_shift($r->getErrorMessages());
-												}
-											}
-										}
-										elseif(\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_ORDER_NEW_SHIPMENT", "Y") == 'Y') // create new shipment (ofline 1C))
-										{
-											/** @var Bitrix\Sale\Order $order */
-											$arOrder = $this->addOrderWithoutShipmentsPayments($arDocument);
-											if($arOrder['ID']>0)
-											{
-												$order = \Bitrix\Sale\Order::load($arOrder['ID']);
-												$shipment = $this->addShipmentFromDocumentByOrder($arDocument, $order);
-
-												if(strlen($this->strErrorDocument)<=0)
-												{
-													$this->Ship($shipment, $arDocument);
-
-													$shipment->setField('VERSION_1C',$this->getVersion1C());
-													$shipment->setField('ID_1C', $this->getXMLDocumentID());
-													$shipment->setField('EXTERNAL_DELIVERY','Y');
-													$shipment->setField('UPDATED_1C','Y');
-													$order->setField('VERSION_1C',$this->getVersion1C());
-													$order->setField('ID_1C',$this->getOrderIdOriginal());
-													$order->setField('EXTERNAL_ORDER','Y');
-													$order->setField('UPDATED_1C',"Y");
-
-
-													$r=$order->save();
-													if (!$r->isSuccess())
-														$this->strErrorDocument .= array_shift($r->getErrorMessages());
-												}
-											}
-											else
-												$this->strErrorDocument .= "\n\r ".GetMessage("CC_BSC1_SHIPMENT_ERROR_7", Array('#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));;
-
-										}
-										else
-										{
-											$this->strErrorDocument .= "\n\r".GetMessage("CC_BSC1_SHIPMENT_ERROR_5", Array("#ID#" => $arDocument["ID"],'#XML_1C_DOCUMENT_ID#'=>$this->getXMLDocumentID()));
-										}
-									}
-									else
-									{
-										$this->strErrorDocument .= "\n\r ".GetMessage("CC_BSC1_SHIPMENT_ERROR_6", Array("#ID#" => $arDocument["ID"]));
-									}
-									break;
-							}
-						}
-					}
-					$this->logMessage("FinalExchange \r\n\r\n");
+					$this->strErrorDocument .= "\n".GetMessage("CC_BSC1_CRM_SCHEME_NOT_SUPPORTED");
 				}
 				else
 				{
-					self::oldSaveOrder($arDocument);
+					self::oldSaveOrder($arDocument, ['CRM'=>'Y']);
+
+					\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_type', 'default_crm');
+					\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_last_time', time());
 				}
 			}
 			$this->strError .= $this->strErrorDocument;
 		}
+	}
+
+	public function nodeHandlerDefaultModuleOneC(CDataXML $dataXml)
+	{
+		$value = $dataXml->GetArray();
+
+		/**
+		 * @deprecated
+		 */
+		if(!empty($value[GetMessage("CC_BSC1_DOCUMENT")]))
+		{
+			$value = $value[GetMessage("CC_BSC1_DOCUMENT")];
+
+			$arDocument = $this->collectDocumentInfo($value);
+
+			if(!empty($arDocument))
+			{
+				$this->logMessage("StartExchange:");
+				$this->logMessage("VersionSchema: ".self::getVersionSchema());
+
+				if (self::getVersionSchema() >= self::PARTIAL_VERSION)
+				{
+					$this->nodeHandlerPartialVersion($arDocument);
+				}
+				else
+				{
+					self::oldSaveOrder($arDocument);
+
+					\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_type', 'default');
+					\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_last_time', time());
+				}
+			}
+			$this->strError .= $this->strErrorDocument;
+		}
+	}
+
+	function nodeHandler(CDataXML $dataXml, CXMLFileStream $fileStream)
+	{
+		$value = $dataXml->GetArray();
+		$xmlStream = $this->getXMLStream($fileStream);
+		$importer = $this->importer;
+
+		if($importer instanceof Sale\Exchange\ImportOneCBase)
+		{
+			$r = new Sale\Result();
+
+			if($importer instanceof Sale\Exchange\ImportOneCSubordinateSale)
+			{
+				$documentData = array($value[GetMessage("CC_BSC1_DOCUMENT")]);
+			}
+			elseif($importer instanceof Sale\Exchange\ImportOneCPackage)
+			{
+				$documentData = $value[GetMessage("CC_BSC1_CONTAINER")]['#'][GetMessage("CC_BSC1_DOCUMENT")];
+			}
+			else
+			{
+				$documentData = array($value[GetMessage("CC_BSC1_AGENT")]["#"]);
+			}
+
+			if(!is_array($documentData) || count($documentData)<=0)
+				$r->addError(new \Bitrix\Main\Error(GetMessage("CC_BSC1_DOCUMENT_XML_EMPTY")));
+
+			if($r->isSuccess())
+			{
+				/** @var Sale\Result $r */
+				$r = $importer::checkSettings();
+				if($r->isSuccess())
+				{
+					if($xmlStream <> '')
+						$importer->setRawData($xmlStream);
+
+					$r = $importer->process($documentData);
+				}
+			}
+
+			if(!$r->isSuccess())
+			{
+				foreach($r->getErrorMessages() as $errorMessages)
+				{
+					if($errorMessages <> '')
+						$this->strError .= "\n".$errorMessages;
+				}
+			}
+
+			if($r->hasWarnings())
+			{
+				if(count($r->getWarningMessages())>0)
+				{
+					foreach($r->getWarningMessages() as $warningMessages)
+					{
+						if($warningMessages <> '')
+							$this->strError .= "\n".$warningMessages;
+					}
+				}
+			}
+
+			\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_type', 'container');
+			\Bitrix\Main\Config\Option::set('sale', 'onec_exchange_last_time', time());
+		}
+		elseif(!empty($value[GetMessage("CC_BSC1_DOCUMENT")]))
+		{
+			//$this->nodeHandlerDefaultModuleOneC($dataXml);
+		}
 		elseif(\Bitrix\Main\Config\Option::get("sale", "1C_IMPORT_NEW_ORDERS", "Y") == "Y")
 		{
-
+			/**
+			 * @deprecated
+			 */
 			$value = $value[GetMessage("CC_BSC1_AGENT")]["#"];
 			$arAgentInfo = $this->collectAgentInfo($value);
 
@@ -2082,28 +2623,50 @@ class CSaleOrderLoader
 						$mode = "update";
 						$arAgentInfo["PROFILE_ID"] = $arUProp["ID"];
 						$arAgentInfo["PERSON_TYPE_ID"] = $arUProp["PERSON_TYPE_ID"];
+						$arAgentInfo["USER_ID"] = $arUProp["USER_ID"];
 					}
 				}
 				else
 				{
-					$arUser = array(
+					$user = Sale\Exchange\Entity\UserProfileImportLoader::getUserByCode($arAgentInfo["AGENT"]["ID"]);
+					if(!empty($user))
+					{
+						$arAgentInfo["USER_ID"] = $user['ID'];
+					}
+					else
+					{
+						$arUser = array(
 							"NAME" => $arAgentInfo["AGENT"]["ITEM_NAME"],
 							"EMAIL" => $arAgentInfo["AGENT"]["CONTACT"]["MAIL_NEW"],
-					);
+						);
 
-					if(strlen($arUser["NAME"]) <= 0)
-						$arUser["NAME"] = $arAgentInfo["AGENT"]["CONTACT"]["CONTACT_PERSON"];
+						if($arUser["NAME"] == '')
+							$arUser["NAME"] = $arAgentInfo["AGENT"]["CONTACT"]["CONTACT_PERSON"];
 
-					$emServer = $_SERVER["SERVER_NAME"];
-					if(strpos($_SERVER["SERVER_NAME"], ".") === false)
-						$emServer .= ".bx";
-					if(strlen($arUser["EMAIL"]) <= 0)
-						$arUser["EMAIL"] = "buyer".time().GetRandomCode(2)."@".$emServer;
-					$arAgentInfo["USER_ID"] = CSaleUser::DoAutoRegisterUser($arUser["EMAIL"], $arUser["NAME"], $this->arParams["SITE_NEW_ORDERS"], $arErrors, array("XML_ID"=>$arAgentInfo["AGENT"]["ID"]));
+						$emServer = $_SERVER["SERVER_NAME"];
+						if(mb_strpos($_SERVER["SERVER_NAME"], ".") === false)
+							$emServer .= ".bx";
+						if($arUser["EMAIL"] == '')
+							$arUser["EMAIL"] = "buyer".time().GetRandomCode(2)."@".$emServer;
 
-					if(IntVal($arAgentInfo["USER_ID"]) > 0)
+						$arAgentInfo["USER_ID"] = CSaleUser::DoAutoRegisterUser($arUser["EMAIL"], $arUser["NAME"], $this->arParams["SITE_NEW_ORDERS"], $arErrors, array("XML_ID"=>$arAgentInfo["AGENT"]["ID"], "EXTERNAL_AUTH_ID"=>Sale\Exchange\Entity\UserImportBase::EXTERNAL_AUTH_ID));
+					}
+
+					if(intval($arAgentInfo["USER_ID"]) > 0)
 					{
 						$mode = "add";
+
+						$obUser = new CUser;
+						$userFields[] = array();
+
+						if($arAgentInfo["AGENT"]["CONTACT"]["PHONE"] <> '')
+							$userFields["WORK_PHONE"] = $arAgentInfo["AGENT"]["CONTACT"]["PHONE"];
+
+						if(count($userFields)>0)
+						{
+							if(!$obUser->Update($arAgentInfo["USER_ID"], $userFields, true))
+								$this->strError .= "\n".$obUser->LAST_ERROR;
+						}
 					}
 					else
 					{
@@ -2134,11 +2697,11 @@ class CSaleOrderLoader
 						$dbExport = CSaleExport::GetList(array(), array("PERSON_TYPE_ID" => $arPersonTypesIDs));
 						while($arExport = $dbExport->Fetch())
 						{
-							$arExportInfo[$arExport["PERSON_TYPE_ID"]] = unserialize($arExport["VARS"]);
+							$arExportInfo[$arExport["PERSON_TYPE_ID"]] = unserialize($arExport["VARS"], ['allowed_classes' => false]);
 						}
 					}
 
-					if(IntVal($arAgentInfo["PERSON_TYPE_ID"]) <= 0)
+					if(intval($arAgentInfo["PERSON_TYPE_ID"]) <= 0)
 					{
 						foreach($arExportInfo as $pt => $value)
 						{
@@ -2149,7 +2712,7 @@ class CSaleOrderLoader
 						}
 					}
 
-					if(IntVal($arAgentInfo["PERSON_TYPE_ID"]) > 0)
+					if(intval($arAgentInfo["PERSON_TYPE_ID"]) > 0)
 					{
 						$arAgentInfo["ORDER_PROPS_VALUE"] = array();
 						$arAgentInfo["PROFILE_PROPS_VALUE"] = array();
@@ -2158,7 +2721,7 @@ class CSaleOrderLoader
 
 						foreach($arAgent as $k => $v)
 						{
-							if(strlen($v["VALUE"]) <= 0 || $v["TYPE"] != "PROPERTY")
+							if($v["VALUE"] == '' || $v["TYPE"] != "PROPERTY")
 								unset($arAgent[$k]);
 						}
 
@@ -2168,9 +2731,9 @@ class CSaleOrderLoader
 								$arAgentInfo["ORDER_PROPS_VALUE"][$v["VALUE"]] = $arAgentInfo["ORDER_PROPS"][$k];
 						}
 
-						if (IntVal($arAgentInfo["PROFILE_ID"]) > 0)
+						if (intval($arAgentInfo["PROFILE_ID"]) > 0)
 						{
-							CSaleOrderUserProps::Update($arUProp["ID"], array("VERSION_1C" => $arAgentInfo["AGENT"]["VERSION"], "NAME" => $arAgentInfo["AGENT"]["AGENT_NAME"]));
+							CSaleOrderUserProps::Update($arUProp["ID"], array("VERSION_1C" => $arAgentInfo["AGENT"]["VERSION"], "NAME" => $arAgentInfo["AGENT"]["AGENT_NAME"], "USER_ID" => $arAgentInfo["USER_ID"]));
 							$dbUPV = CSaleOrderUserPropsValue::GetList(array(), array("USER_PROPS_ID" => $arAgentInfo["PROFILE_ID"]));
 							while($arUPV = $dbUPV->Fetch())
 							{
@@ -2202,9 +2765,9 @@ class CSaleOrderLoader
 						{
 							$curVal = $arAgentInfo["ORDER_PROPS_VALUE"][$arOrderProperties["ID"]];
 
-							if (strlen($curVal) > 0)
+							if ($curVal <> '')
 							{
-								if (IntVal($arAgentInfo["PROFILE_ID"]) <= 0)
+								if (intval($arAgentInfo["PROFILE_ID"]) <= 0)
 								{
 									$arFields = array(
 											"NAME" => $arAgentInfo["AGENT"]["AGENT_NAME"],
@@ -2215,7 +2778,7 @@ class CSaleOrderLoader
 									);
 									$arAgentInfo["PROFILE_ID"] = CSaleOrderUserProps::Add($arFields);
 								}
-								if(IntVal($arAgentInfo["PROFILE_ID"]) > 0)
+								if(intval($arAgentInfo["PROFILE_ID"]) > 0)
 								{
 									$arFields = array(
 											"USER_PROPS_ID" => $arAgentInfo["PROFILE_ID"],
@@ -2245,7 +2808,7 @@ class CSaleOrderLoader
 			{
 				$this->strError .= "\n".GetMessage("CC_BSC1_AGENT_NO_AGENT_ID");
 			}
-		}
+		};
 	}
 
 	function ToFloat($str)
@@ -2254,7 +2817,7 @@ class CSaleOrderLoader
 		static $replace = false;
 		if(!$search)
 		{
-			if(strlen($this->sdp))
+			if($this->sdp <> '')
 			{
 				$search = array("\xc2\xa0", "\xa0", " ", $this->sdp, ",");
 				$replace = array("", "", "", ".", ".");
@@ -2278,7 +2841,7 @@ class CSaleOrderLoader
 		static $replace = false;
 		if(!$search)
 		{
-			if(strlen($this->sdp))
+			if($this->sdp <> '')
 			{
 				$search = array("\xa0", " ", $this->sdp, ",");
 				$replace = array("", "", ".", ".");
@@ -2301,118 +2864,111 @@ class CSaleOrderLoader
 		$bNeedFull = false;
 		$arOrder = array();
 
+		$arOrder["ORDER_ID"] = false;
+
 		$arOrder["OPERATION"] = $value["#"][GetMessage("CC_BSC1_OPERATION")][0]["#"];
 
 		self::setOperationType($value["#"][GetMessage("CC_BSC1_OPERATION")][0]["#"]);
 
 		$arOrder["OPERATION_TYPE"] = self::$operationType ;
 
+		$this->documentType = self::setDocumentType(self::$operationType);
+
 		if(in_array(
-				self::$operationType,
+				$this->documentType,
 				array(
-						'shipment_operation',
-						'pay_system_c_operation',
-						'pay_system_b_operation',
-						'order_operation'
+						'shipment',
+						'payment',
+						'order'
 				))
 		)
 		{
-
-			$accountNumberPrefix = \Bitrix\Main\Config\Option::get("sale", "1C_SALE_ACCOUNT_NUMBER_SHOP_PREFIX", "");
 			$arOrder["ID"] = $value["#"][GetMessage("CC_BSC1_NUMBER")][0]["#"];
 			$arOrder["XML_1C_DOCUMENT_ID"] = $value["#"][GetMessage("CC_BSC1_ID")][0]["#"];
 
-
-			switch (self::$operationType)
+			switch ($this->documentType)
 			{
-				case 'pay_system_c_operation':
-				case 'pay_system_b_operation':
+				case 'payment':
+
 					$paymentResult = $this->getDocumentId('Payment', $arOrder["ID"], $arOrder["XML_1C_DOCUMENT_ID"]);
 
 					if(isset($paymentResult['ID']))
 						$arOrder['ID'] = $paymentResult['ID'];
 					if(isset($paymentResult['ORDER_ID']))
 						$arOrder['PAYMENT_ORDER_ID'] = $paymentResult['ORDER_ID'];
+
+					$arOrder["ORDER_ID_ORIG"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
+					$arOrder["ORDER_ID"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
+
+					$arOrder["ORDER_ID"] = $this->getOrderIdByDocument($arOrder["ORDER_ID"]);
+
 					break;
-				case 'shipment_operation':
+				case 'shipment':
+
 					$shipmentResult = $this->getDocumentId('Shipment', $arOrder["ID"], $arOrder["XML_1C_DOCUMENT_ID"]);
 
 					if(isset($shipmentResult['ID']))
 						$arOrder['ID'] = $shipmentResult['ID'];
 					if(isset($shipmentResult['ORDER_ID']))
 						$arOrder['SHIPMENT_ORDER_ID'] = $shipmentResult['ORDER_ID'];
+
+					$arOrder["ORDER_ID_ORIG"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
+					$arOrder["ORDER_ID"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
+
+					$arOrder["ORDER_ID"] = $this->getOrderIdByDocument($arOrder["ORDER_ID"]);
+
 					break;
-				case 'order_operation':
+				case 'order':
+
 					$orderResult = $this->getDocumentId('Order', $arOrder["ID"], $arOrder["XML_1C_DOCUMENT_ID"]);
 					if(isset($orderResult['ID']))
 						$arOrder['ID'] = $orderResult['ID'];
 
+					//if ($accountNumberPrefix != "")
+					//	$arOrder["ID"] = substr($arOrder["ID"], strlen($accountNumberPrefix));
 					break;
 			}
 
-			if($accountNumberPrefix == "" || (strlen($arOrder["ID"]) > 0 && strpos($arOrder["ID"], $accountNumberPrefix) === 0) || strlen($arOrder["ID"]) <= 0)
+			$arOrder["AMOUNT"] = $value["#"][GetMessage("CC_BSC1_SUMM")][0]["#"];
+			$arOrder["AMOUNT"] = $this->ToFloat($arOrder["AMOUNT"]);
+
+			$arOrder["COMMENT"] = $value["#"][GetMessage("CC_BSC1_COMMENT")][0]["#"];
+
+			$arOrder["CANCELED"] = $value["#"][GetMessage("CC_BSC1_CANCELED")][0]["#"];
+			$arOrder["VERSION_1C"] = $value["#"][GetMessage("CC_BSC1_VERSION_1C")][0]["#"];
+			$arOrder["ID_1C"] = $value["#"][GetMessage("CC_BSC1_ID_1C")][0]["#"];
+			$arOrder["DATE"] = $value["#"][GetMessage("CC_BSC1_1C_DATE")][0]["#"];
+
+			$arOrder["OPERATION"] = $value["#"][GetMessage("CC_BSC1_OPERATION")][0]["#"];
+			$arOrder["TRAITS"] = array();
+
+			switch ($this->documentType)
 			{
-				switch (self::$operationType)
-				{
-					case 'pay_system_c_b_operation':
-					case 'pay_system_c_operation':
-					case 'pay_system_b_operation':
-						$arOrder["ORDER_ID_ORIG"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
-						$arOrder["ORDER_ID"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
-
-						$arOrder["ORDER_ID"] = $this->getOrderIdByDocument($arOrder["ORDER_ID"]);
-
-						break;
-					case 'shipment_operation':
-						$arOrder["ORDER_ID_ORIG"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
-						$arOrder["ORDER_ID"] = $value["#"][GetMessage("CC_BSC1_NUMBER_BASE")][0]["#"];
-
-						$arOrder["ORDER_ID"] = $this->getOrderIdByDocument($arOrder["ORDER_ID"]);
-
-						break;
-					case 'order_operation':
-						//if ($accountNumberPrefix != "")
-						//	$arOrder["ID"] = substr($arOrder["ID"], strlen($accountNumberPrefix));
-						break;
-				}
-
-				$arOrder["AMOUNT"] = $value["#"][GetMessage("CC_BSC1_SUMM")][0]["#"];
-				$arOrder["AMOUNT"] = $this->ToFloat($arOrder["AMOUNT"]);
-
-				$arOrder["COMMENT"] = $value["#"][GetMessage("CC_BSC1_COMMENT")][0]["#"];
-
-				$arOrder["VERSION_1C"] = $value["#"][GetMessage("CC_BSC1_VERSION_1C")][0]["#"];
-				$arOrder["ID_1C"] = $value["#"][GetMessage("CC_BSC1_ID_1C")][0]["#"];
-				$arOrder["DATE"] = $value["#"][GetMessage("CC_BSC1_1C_DATE")][0]["#"];
-
-				$arOrder["OPERATION"] = $value["#"][GetMessage("CC_BSC1_OPERATION")][0]["#"];
-				$arOrder["TRAITS"] = array();
-
-				switch (self::$operationType)
-				{
-					case 'order_operation':
-						//if (strlen($arOrder["ID"]) <= 0 && strlen($arOrder["ID_1C"]) > 0)
-							$bNeedFull = true;
-						break;
-					case 'shipment_operation':
+				case 'order':
+					//if (strlen($arOrder["ID"]) <= 0 && strlen($arOrder["ID_1C"]) > 0)
 						$bNeedFull = true;
-						break;
+					break;
+				case 'shipment':
+					$bNeedFull = true;
+					break;
+			}
+
+			if (is_array($value["#"][GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")]) && !empty($value["#"][GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")])) {
+				foreach ($value["#"][GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")] as $val) {
+					$arOrder["TRAITS"][$val["#"][GetMessage("CC_BSC1_NAME")][0]["#"]] = $val["#"][GetMessage("CC_BSC1_VALUE")][0]["#"];
 				}
+			}
 
-				if (is_array($value["#"][GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")]) && !empty($value["#"][GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")])) {
-					foreach ($value["#"][GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")] as $val) {
-						$arOrder["TRAITS"][$val["#"][GetMessage("CC_BSC1_NAME")][0]["#"]] = $val["#"][GetMessage("CC_BSC1_VALUE")][0]["#"];
-					}
-				}
+			$taxValue = 0;
+			$taxName = "";
+			$arOrder["items"] = array();
+			$basketItems = array();
+			if (is_array($value["#"][GetMessage("CC_BSC1_ITEMS")][0]["#"]) && is_array($value["#"][GetMessage("CC_BSC1_ITEMS")][0]["#"][GetMessage("CC_BSC1_ITEM")])) {
+				foreach ($value["#"][GetMessage("CC_BSC1_ITEMS")][0]["#"][GetMessage("CC_BSC1_ITEM")] as $val) {
 
-				$taxValue = 0;
-				$taxName = "";
-				$arOrder["items"] = array();
-				$basketItems = array();
-				if (is_array($value["#"][GetMessage("CC_BSC1_ITEMS")][0]["#"][GetMessage("CC_BSC1_ITEM")])) {
-					foreach ($value["#"][GetMessage("CC_BSC1_ITEMS")][0]["#"][GetMessage("CC_BSC1_ITEM")] as $val) {
-
-						$val = $val["#"];
+					$val = $val["#"];
+					if(is_array($val))
+					{
 						$productID = $val[GetMessage("CC_BSC1_ID")][0]["#"];
 
 						$discountPrice = "";
@@ -2423,12 +2979,16 @@ class CSaleOrderLoader
 
 						$quantity = $this->ToFloat($val[GetMessage("CC_BSC1_QUANTITY")][0]["#"]);
 						if (doubleval($quantity) > 0) {
-							$price = roundEx($priceAll / $quantity, 4);
-							$priceone = roundEx($priceone, 4);
+							$price = Sale\PriceMaths::roundPrecision($priceAll / $quantity);
+							$priceone = Sale\PriceMaths::roundPrecision($priceone);
 
-							if ($priceone != $price)
-								$discountPrice = DoubleVal($priceone - $price);
-
+							if(isset($val[GetMessage("CC_BSC1_DISCOUNTS")]) && $val[GetMessage("CC_BSC1_DISCOUNTS")][0]["#"][GetMessage("CC_BSC1_DISCOUNT")][0]["#"][GetMessage("CC_BSC1_SUMM")][0]['#']<>'')
+							{
+								if ($priceone != $price)
+									$discountPrice = DoubleVal($priceone - $price);
+							}
+							else
+								$price = $priceone;
 
 							//DISCOUNTS!
 							$basketItems = Array(
@@ -2445,29 +3005,27 @@ class CSaleOrderLoader
 								$basketItems["MEASURE_NAME"] = $val[GetMessage("CC_BSC1_ITEM_UNIT")][0]["#"][GetMessage("CC_BSC1_ITEM_UNIT_NAME")][0]["#"];
 							}
 
-							if (is_array($val[GetMessage("CC_BSC1_PROPS_ITEMS")][0]["#"][GetMessage("CC_BSC1_PROP_ITEM")])) {
-								foreach ($val[GetMessage("CC_BSC1_PROPS_ITEMS")][0]["#"][GetMessage("CC_BSC1_PROP_ITEM")] as $val1)
-								{
-									$basketItems["ATTRIBUTES"][$val1["#"][GetMessage("CC_BSC1_NAME")][0]["#"]] = $val1["#"][GetMessage("CC_BSC1_VALUE")][0]["#"];
-								}
-
-							}
-
 							if (is_array($val[GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")])) {
 								foreach ($val[GetMessage("CC_BSC1_REK_VALUES")][0]["#"][GetMessage("CC_BSC1_REK_VALUE")] as $val1) {
 									if ($val1["#"][GetMessage("CC_BSC1_NAME")][0]["#"] == GetMessage("CC_BSC1_ITEM_TYPE"))
 									{
 										$basketItems["TYPE"] = $val1["#"][GetMessage("CC_BSC1_VALUE")][0]["#"];
 									}
+									elseif (mb_strpos($val1["#"][GetMessage("CC_BSC1_NAME")][0]["#"], GetMessage("CC_BSC1_PROP_BASKET")."#") === 0)
+									{
+										$markerPosition = mb_strpos($val1["#"][GetMessage("CC_BSC1_NAME")][0]["#"], GetMessage("CC_BSC1_PROP_BASKET")."#");
+										$idBasketProperty = mb_substr($val1["#"][GetMessage("CC_BSC1_NAME")][0]["#"], $markerPosition + mb_strlen(GetMessage("CC_BSC1_PROP_BASKET")."#"));
+										$basketItems["ATTRIBUTES"][$idBasketProperty] = $val1["#"][GetMessage("CC_BSC1_VALUE")][0]["#"];
+									}
 
 								}
 							}
 
-							if (strlen($value["#"][GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_NAME")][0]["#"]) > 0) {
+							if ($value["#"][GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_NAME")][0]["#"] <> '') {
 								$taxValueTmp = $val[GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_TAX_VALUE")][0]["#"];
 								$basketItems["VAT_RATE"] = $taxValueTmp / 100;
 
-								if (IntVal($taxValueTmp) > IntVal($taxValue)) {
+								if (intval($taxValueTmp) > intval($taxValue)) {
 									$taxName = $val[GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_NAME")][0]["#"];
 									$taxValue = $taxValueTmp;
 								}
@@ -2480,37 +3038,38 @@ class CSaleOrderLoader
 							$arOrder["items"][$productID] = $basketItems;
 					}
 				}
+			}
 
-				if(IntVal($taxValue)>0)
+			if(intval($taxValue)>0)
+			{
+				$price = $this->ToFloat($value["#"][GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_SUMM")][0]["#"]);
+				$arOrder["TAX"] = Array(
+						"NAME" => $taxName,
+						"VALUE" =>$taxValue,
+						"IS_IN_PRICE" => ($value["#"][GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_IN_PRICE")][0]["#"]=="true"?"Y":"N"),
+						"VALUE_MONEY" => $price,
+				);
+			}
+
+			if($bNeedFull)
+			{
+				IncludeModuleLangFile($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/sale/general/export.php");
+				$arOrder["DATE"] = $value["#"][GetMessage("CC_BSC1_1C_DATE")][0]["#"];
+				$arOrder["TIME"] = $value["#"][GetMessage("CC_BSC1_1C_TIME")][0]["#"];
+
+				if(!empty($value["#"][GetMessage("SALE_EXPORT_CONTRAGENTS")][0]["#"]))
 				{
-					$price = $this->ToFloat($value["#"][GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_SUMM")][0]["#"]);
-					$arOrder["TAX"] = Array(
-							"NAME" => $taxName,
-							"VALUE" =>$taxValue,
-							"IS_IN_PRICE" => ($value["#"][GetMessage("CC_BSC1_TAXES")][0]["#"][GetMessage("CC_BSC1_TAX")][0]["#"][GetMessage("CC_BSC1_IN_PRICE")][0]["#"]=="true"?"Y":"N"),
-							"VALUE_MONEY" => $price,
-					);
-				}
+					$arAgentInfo = $this->collectAgentInfo($value["#"][GetMessage("SALE_EXPORT_CONTRAGENTS")][0]["#"][GetMessage("SALE_EXPORT_CONTRAGENT")][0]["#"]);
+					$arOrder["AGENT"] = $arAgentInfo["AGENT"];
 
-				if($bNeedFull)
-				{
-					IncludeModuleLangFile($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/sale/general/export.php");
-					$arOrder["DATE"] = $value["#"][GetMessage("CC_BSC1_1C_DATE")][0]["#"];
-					$arOrder["TIME"] = $value["#"][GetMessage("CC_BSC1_1C_TIME")][0]["#"];
+					$arOrder["ORDER_PROPS"] = $arAgentInfo["ORDER_PROPS"];
 
-					if(!empty($value["#"][GetMessage("SALE_EXPORT_CONTRAGENTS")][0]["#"]))
+					if($arOrder["TRAITS"][GetMessage("SALE_EXPORT_DELIVERY_ADDRESS")] <> '')
 					{
-						$arAgentInfo = $this->collectAgentInfo($value["#"][GetMessage("SALE_EXPORT_CONTRAGENTS")][0]["#"][GetMessage("SALE_EXPORT_CONTRAGENT")][0]["#"]);
-						$arOrder["AGENT"] = $arAgentInfo["AGENT"];
-						$arOrder["ORDER_PROPS"] = $arAgentInfo["ORDER_PROPS"];
-
-						if(strlen($arOrder["TRAITS"][GetMessage("SALE_EXPORT_DELIVERY_ADDRESS")]) > 0)
-						{
-							if(!empty($arOrder["AGENT"]["REGISTRATION_ADDRESS"]))
-								$arOrder["AGENT"]["REGISTRATION_ADDRESS"]["PRESENTATION"] = $arOrder["TRAITS"][GetMessage("SALE_EXPORT_DELIVERY_ADDRESS")];
-							if(!empty($arOrder["AGENT"]["ADDRESS"]))
-								$arOrder["AGENT"]["ADDRESS"]["PRESENTATION"] = $arOrder["TRAITS"][GetMessage("SALE_EXPORT_DELIVERY_ADDRESS")];
-						}
+						if(!empty($arOrder["AGENT"]["REGISTRATION_ADDRESS"]))
+							$arOrder["AGENT"]["REGISTRATION_ADDRESS"]["PRESENTATION"] = $arOrder["TRAITS"][GetMessage("SALE_EXPORT_DELIVERY_ADDRESS")];
+						if(!empty($arOrder["AGENT"]["ADDRESS"]))
+							$arOrder["AGENT"]["ADDRESS"]["PRESENTATION"] = $arOrder["TRAITS"][GetMessage("SALE_EXPORT_DELIVERY_ADDRESS")];
 					}
 				}
 			}
@@ -2552,7 +3111,7 @@ class CSaleOrderLoader
 									foreach($adr[GetMessage("SALE_EXPORT_".$kk)] as $val)
 									{
 										if($val["#"][GetMessage("SALE_EXPORT_TYPE")][0]["#"] == GetMessage("SALE_EXPORT_".$vvv)
-												&& strlen($val["#"][GetMessage("SALE_EXPORT_VALUE")][0]["#"]) > 0
+												&& $val["#"][GetMessage("SALE_EXPORT_VALUE")][0]["#"] <> ''
 										)
 											$result["AGENT"][$kk][$vvv] = $val["#"][GetMessage("SALE_EXPORT_VALUE")][0]["#"];
 										elseif(empty($val["#"][GetMessage("SALE_EXPORT_TYPE")][0]["#"]) && $val["#"][GetMessage("SALE_EXPORT_RELATION")][0]["#"] == GetMessage("SALE_EXPORT_CONTACT_PERSON"))
@@ -2564,7 +3123,7 @@ class CSaleOrderLoader
 						}
 						else
 						{
-							if(isset($adr[GetMessage("SALE_EXPORT_".$vv)]) && strlen($adr[GetMessage("SALE_EXPORT_".$vv)][0]["#"]) > 0)
+							if(isset($adr[GetMessage("SALE_EXPORT_".$vv)]) && $adr[GetMessage("SALE_EXPORT_".$vv)][0]["#"] <> '')
 							{
 								$result["AGENT"][$k][$vv] = $adr[GetMessage("SALE_EXPORT_".$vv)][0]["#"];
 							}
@@ -2575,7 +3134,7 @@ class CSaleOrderLoader
 									foreach($adr[GetMessage("SALE_EXPORT_ADDRESS_FIELD")] as $val)
 									{
 										if($val["#"][GetMessage("SALE_EXPORT_TYPE")][0]["#"] == GetMessage("SALE_EXPORT_".$vv)
-												&& strlen($val["#"][GetMessage("SALE_EXPORT_VALUE")][0]["#"]) > 0
+												&& $val["#"][GetMessage("SALE_EXPORT_VALUE")][0]["#"] <> ''
 										)
 											$result["AGENT"][$k][$vv] = $val["#"][GetMessage("SALE_EXPORT_VALUE")][0]["#"];
 									}
@@ -2587,7 +3146,7 @@ class CSaleOrderLoader
 			}
 			else
 			{
-				if(isset($data[GetMessage("SALE_EXPORT_".$v)]) && strlen($data[GetMessage("SALE_EXPORT_".$v)][0]["#"]) > 0)
+				if(isset($data[GetMessage("SALE_EXPORT_".$v)]) && $data[GetMessage("SALE_EXPORT_".$v)][0]["#"] <> '')
 					$result["AGENT"][$v] = $data[GetMessage("SALE_EXPORT_".$v)][0]["#"];
 			}
 		}
@@ -2620,7 +3179,7 @@ class CSaleOrderLoader
 					$result["ORDER_PROPS"]["INDEX"] = $v["POST_CODE"];
 					foreach($v as $k1 => $v1)
 					{
-						if(strlen($v1) > 0 && empty($result["ORDER_PROPS"][$k1]))
+						if($v1 <> '' && empty($result["ORDER_PROPS"][$k1]))
 							$result["ORDER_PROPS"][$k1] = $v1;
 					}
 				}
@@ -2630,16 +3189,16 @@ class CSaleOrderLoader
 					$result["ORDER_PROPS"]["F_INDEX"] = $v["POST_CODE"];
 					foreach($v as $k1 => $v1)
 					{
-						if(strlen($v1) > 0 && empty($result["ORDER_PROPS"]["F_".$k1]))
+						if($v1 <> '' && empty($result["ORDER_PROPS"]["F_".$k1]))
 							$result["ORDER_PROPS"]["F_".$k1] = $v1;
 					}
 				}
 			}
 		}
 
-		if(strlen($result["AGENT"]["OFICIAL_NAME"]) > 0 && strlen($result["AGENT"]["INN"]) > 0)
+		if($result["AGENT"]["OFICIAL_NAME"] <> '' && $result["AGENT"]["INN"] <> '')
 			$result["AGENT"]["TYPE"] = "UR";
-		elseif(strlen($result["AGENT"]["INN"]) > 0)
+		elseif($result["AGENT"]["INN"] <> '')
 			$result["AGENT"]["TYPE"] = "IP";
 		else
 			$result["AGENT"]["TYPE"] = "FIZ";
@@ -2650,10 +3209,38 @@ class CSaleOrderLoader
 	function prepareProduct4Basket($itemID, $arItem, $orderId, $orderInfo)
 	{
 		$arFields = array();
+
+		$products = array();
+		$productType = array();
+		$arIBlockElement = array();
+
 		if(CModule::IncludeModule("iblock"))
 		{
 			$dbIBlockElement = CIBlockElement::GetList(array(), array("XML_ID" => $itemID, "ACTIVE" => "Y", "CHECK_PERMISSIONS" => "Y"), false, false, array("ID", "IBLOCK_ID", "XML_ID", "NAME", "DETAIL_PAGE_URL"));
-			if($arIBlockElement = $dbIBlockElement->Fetch())
+			while($arElement = $dbIBlockElement->Fetch())
+			{
+				$products[] = $arElement;
+			}
+
+			if(count($products)>1)
+			{
+				foreach($products as $product)
+				{
+					$ar = \CCatalogProduct::GetByID($product["ID"]);
+					$productType[$ar['TYPE']] = $product;
+				}
+
+				if(array_key_exists(3, $productType) && array_key_exists(4, $productType))
+				{
+					$arIBlockElement = $productType[4];
+				}
+			}
+			elseif(count($products)==1)
+			{
+				$arIBlockElement = $products[0];
+			}
+
+			if($arIBlockElement)
 			{
 				if(empty($this->arIBInfo[$arIBlockElement["IBLOCK_ID"]]))
 				{
@@ -2733,7 +3320,7 @@ class CSaleOrderLoader
 			$ri = new RandomSequence($itemID);
 			$arFields["PRODUCT_ID"] = $ri->rand(1000000, 9999999);
 		}
-		if(strlen($arFields["LID"]) <= 0)
+		if($arFields["LID"] == '')
 			$arFields["LID"] = $orderInfo["SITE_ID"];
 
 		return $arFields;
@@ -2754,32 +3341,60 @@ class CSaleOrderLoader
 		return false;
 	}
 
-	function oldSaveOrder($arOrder)
+	function oldSaveOrder($arOrder, $option=array())
 	{
-		if (strlen($arOrder["ID"]) <= 0 && strlen($arOrder["ID_1C"]) > 0)//try to search order from 1C
+		global $APPLICATION;
+		global $USER;
+
+		$userId = 0;
+		if (isset($USER) && $USER instanceof CUser)
+			$userId = (int)$USER->GetID();
+
+		$isInvoice = (isset($option['CRM']) && $option['CRM']=='Y');
+
+		/** @var \Bitrix\Crm\Invoice\Compatible\Helper|CSaleOrder $parentEntity */
+		$parentEntity = $isInvoice ? \Bitrix\Crm\Invoice\Compatible\Helper::class: CSaleOrder::class;
+		/** @var \Bitrix\Crm\Invoice\Compatible\BasketHelper|CSaleBasket $basketEntity */
+		$basketEntity = $isInvoice ? \Bitrix\Crm\Invoice\Compatible\BasketHelper::class: CSaleBasket::class;
+		/** @var \Bitrix\Crm\Invoice\Internals\InvoiceChangeTable|\Bitrix\Sale\Internals\OrderChangeTable $changeEntity */
+		$changeEntity = $isInvoice ? \Bitrix\Crm\Invoice\Internals\InvoiceChangeTable::class: \Bitrix\Sale\Internals\OrderChangeTable::class;
+		/** @var CCrmInvoiceTax|CSaleOrderTax $taxEntity */
+		$taxEntity = $isInvoice ? CCrmInvoiceTax::class: CSaleOrderTax::class;
+
+		if ($arOrder["ID"] == '' && $arOrder["ID_1C"] <> '')//try to search order from 1C
 		{
-			$dbOrder = CSaleOrder::GetList(array("ID" => "DESC"), array("ID_1C" => $arOrder["ID_1C"]), false, false, array("ID", "ID_1C"));
+			$dbOrder = $parentEntity::GetList(array("ID" => "DESC"), array("ID_1C" => $arOrder["ID_1C"]), false, false, array("ID", "ID_1C"));
 			if ($orderInfo = $dbOrder->Fetch()) {
 				$arOrder["ID"] = $orderInfo["ID"];
 			}
 		}
-		if(strlen($arOrder["ID"]) > 0) // exists site order
+		if($arOrder["ID"] <> '') // exists site order
 		{
-			$dbOrder = CSaleOrder::GetList(array(), array("ACCOUNT_NUMBER" => $arOrder["ID"]), false, false, array("ID", "LID", "PERSON_TYPE_ID", "PAYED", "DATE_PAYED", "CANCELED", "DATE_CANCELED", "REASON_CANCELED", "STATUS_ID", "DATE_STATUS", "PAY_VOUCHER_NUM", "PAY_VOUCHER_DATE", "PRICE_DELIVERY", "ALLOW_DELIVERY", "DATE_ALLOW_DELIVERY", "PRICE", "CURRENCY", "DISCOUNT_VALUE", "USER_ID", "PAY_SYSTEM_ID", "DELIVERY_ID", "DATE_INSERT", "DATE_INSERT_FORMAT", "DATE_UPDATE", "USER_DESCRIPTION", "ADDITIONAL_INFO", "COMMENTS", "TAX_VALUE", "DELIVERY_DOC_NUM", "DELIVERY_DOC_DATE", "STORE_ID", "ACCOUNT_NUMBER", "VERSION", "VERSION_1C", "ID_1C"));
+			$dbOrder = $parentEntity::GetList(array(), array("ID" => $arOrder["ID"]), false, false, array("ID", "LID", "PERSON_TYPE_ID", "PAYED", "DATE_PAYED", "CANCELED", "DATE_CANCELED", "REASON_CANCELED", "STATUS_ID", "DATE_STATUS", "PAY_VOUCHER_NUM", "PAY_VOUCHER_DATE", "PRICE_DELIVERY", "ALLOW_DELIVERY", "DATE_ALLOW_DELIVERY", "PRICE", "CURRENCY", "DISCOUNT_VALUE", "USER_ID", "PAY_SYSTEM_ID", "DELIVERY_ID", "DATE_INSERT", "DATE_INSERT_FORMAT", "DATE_UPDATE", "USER_DESCRIPTION", "ADDITIONAL_INFO", "COMMENTS", "TAX_VALUE", "DELIVERY_DOC_NUM", "DELIVERY_DOC_DATE", "STORE_ID", "ACCOUNT_NUMBER", "VERSION", "VERSION_1C", "ID_1C"));
 			if($orderInfo = $dbOrder->Fetch())
 			{
-				if($arOrder["VERSION_1C"] != $orderInfo["VERSION_1C"] || (strlen($orderInfo["VERSION_1C"]) <= 0 || strlen($arOrder["VERSION_1C"]) <= 0)) // skip update if the same version
+				if($arOrder["VERSION_1C"] != $orderInfo["VERSION_1C"] || ($orderInfo["VERSION_1C"] == '' || $arOrder["VERSION_1C"] == '')) // skip update if the same version
 				{
 					$arOrderFields = array();
 					$orderId = $orderInfo["ID"];
-					CSaleOrderChange::AddRecord($orderId, "ORDER_1C_IMPORT");
+
+					if($isInvoice)
+					{
+						if ($invoice = \Bitrix\Crm\Invoice\Invoice::load($orderId))
+						{
+							$basket = $invoice->getBasket();
+						}
+					}
+
+					$changeEntity::Add(['ORDER_ID'=>$orderId, 'TYPE'=>'ORDER_1C_IMPORT', 'USER_ID'=>$userId]);
 					if($arOrder["ID_1C"] != $orderInfo["ID_1C"])
 						$arOrderFields["ID_1C"] = $arOrder["ID_1C"];
+
 					$arOrderFields["VERSION_1C"] = $arOrder["VERSION_1C"];
 
 					if($orderInfo["PAYED"] != "Y" && $orderInfo["ALLOW_DELIVERY"] != "Y" && $orderInfo["STATUS_ID"] != "F")
 					{
-						$dbOrderTax = CSaleOrderTax::GetList(
+						$dbOrderTax = $taxEntity::GetList(
 								array(),
 								array("ORDER_ID" => $orderId),
 								false,
@@ -2790,9 +3405,9 @@ class CSaleOrderLoader
 						if($arOrderTax = $dbOrderTax->Fetch())
 						{
 							$bTaxFound = true;
-							if(IntVal($arOrderTax["VALUE_MONEY"]) != IntVal($arOrder["TAX"]["VALUE_MONEY"]) || IntVal($arOrderTax["VALUE"]) != IntVal($arOrder["TAX"]["VALUE"]) || ($arOrderTax["IS_IN_PRICE"] != $arOrder["TAX"]["IS_IN_PRICE"]))
+							if(intval($arOrderTax["VALUE_MONEY"]) != intval($arOrder["TAX"]["VALUE_MONEY"]) || intval($arOrderTax["VALUE"]) != intval($arOrder["TAX"]["VALUE"]) || ($arOrderTax["IS_IN_PRICE"] != $arOrder["TAX"]["IS_IN_PRICE"]))
 							{
-								if(IntVal($arOrder["TAX"]["VALUE"])>0)
+								if(intval($arOrder["TAX"]["VALUE"])>0)
 								{
 									$arFields = Array(
 											"TAX_NAME" => $arOrder["TAX"]["NAME"],
@@ -2804,12 +3419,12 @@ class CSaleOrderLoader
 											"CODE" => "VAT1C",
 											"APPLY_ORDER" => "100"
 									);
-									CSaleOrderTax::Update($arOrderTax["ID"], $arFields);
+									$taxEntity::Update($arOrderTax["ID"], $arFields);
 									$arOrderFields["TAX_VALUE"] = $arOrder["TAX"]["VALUE_MONEY"];
 								}
 								else
 								{
-									CSaleOrderTax::Delete($arOrderTax["ID"]);
+									$taxEntity::Delete($arOrderTax["ID"]);
 									$arOrderFields["TAX_VALUE"] = 0;
 								}
 							}
@@ -2817,7 +3432,7 @@ class CSaleOrderLoader
 
 						if(!$bTaxFound)
 						{
-							if(IntVal($arOrder["TAX"]["VALUE"])>0)
+							if(intval($arOrder["TAX"]["VALUE"])>0)
 							{
 								$arFields = Array(
 										"TAX_NAME" => $arOrder["TAX"]["NAME"],
@@ -2825,16 +3440,18 @@ class CSaleOrderLoader
 										"VALUE" => $arOrder["TAX"]["VALUE"],
 										"IS_PERCENT" => "Y",
 										"IS_IN_PRICE" => $arOrder["TAX"]["IS_IN_PRICE"],
-										"VALUE_MONEY" => $arOrder["TAX"]["VALUE_MONEY"]
+										"VALUE_MONEY" => $arOrder["TAX"]["VALUE_MONEY"],
+										"CODE" => 'VAT1C',
+										"APPLY_ORDER" => '100',
 								);
-								CSaleOrderTax::Add($arFields);
+								$taxEntity::Add($arFields);
 								$arOrderFields["TAX_VALUE"] = $arOrder["TAX"]["VALUE_MONEY"];
 							}
 						}
 
 						$arShoppingCart = array();
 						$bNeedUpdate = false;
-						$dbBasket = CSaleBasket::GetList(
+						$dbBasket = $basketEntity::GetList(
 								array("NAME" => "ASC"),
 								array("ORDER_ID" => $orderId),
 								false,
@@ -2873,11 +3490,29 @@ class CSaleOrderLoader
 
 								if(count($arFields)>0)
 								{
-									$arFields["ID"] = $arBasket["ID"];
-									if(DoubleVal($arFields["QUANTITY"]) <= 0)
-										$arFields["QUANTITY"] = $arBasket["QUANTITY"];
 									$bNeedUpdate = true;
-									$arShoppingCart[] = $arFields;
+
+									if($isInvoice)
+									{
+										/** @var Sale\BasketItem $basketItem */
+										$basketItem = $basket->getItemById($arBasket['ID']);
+										if(isset($arFields['QUANTITY']))
+											$basketItem->setField('QUANTITY', $arFields['QUANTITY']);
+										if(isset($arFields['PRICE']))
+											$basketItem->setPrice($arFields['PRICE']);
+										if(isset($arFields['VAT_RATE']))
+											$basketItem->setField('VAT_RATE', $arFields['VAT_RATE']);
+										if(isset($arFields['DISCOUNT_PRICE']))
+											$basketItem->setField('DISCOUNT_PRICE', $arFields['DISCOUNT_PRICE']);
+									}
+									else
+									{
+										$arFields["ID"] = $arBasket["ID"];
+										if(DoubleVal($arFields["QUANTITY"]) <= 0)
+											$arFields["QUANTITY"] = $arBasket["QUANTITY"];
+
+										$arShoppingCart[] = $arFields;
+									}
 								}
 								else
 								{
@@ -2889,52 +3524,113 @@ class CSaleOrderLoader
 							}
 							else
 							{
-								if($arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] != "true" && $orderInfo["CANCELED"] == "N")
+								if($arOrder['CANCELED'] != "true" && $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] != "true" && $orderInfo["CANCELED"] == "N")
 								{
-									$bNeedUpdate = true;
-									//CSaleBasket::Delete($arBasket["ID"]);
+									if($isInvoice)
+									{
+										$basket->getItemById($arBasket["ID"])
+											->delete();
+									}
+									else
+									{
+										$bNeedUpdate = true;
+										//CSaleBasket::Delete($arBasket["ID"]);
+									}
 								}
 							}
 						}
 
 						if(!empty($arOrder["items"]))
 						{
+							$priceDelivery = 0;
 							foreach ($arOrder["items"] as $itemID => $arItem)
 							{
 								if ($arItem["CHECKED"] != "Y")
 								{
 									if ($arItem["TYPE"] == GetMessage("CC_BSC1_ITEM"))
 									{
-										if ($arBasketFields = $this->prepareProduct4Basket($itemID, $arItem, $orderId, $orderInfo))
+										$currencyTo = CSaleLang::GetLangCurrency($this->arParams["SITE_NEW_ORDERS"]);
+										if($orderInfo['CURRENCY'] == $currencyTo)
 										{
-											$arShoppingCart[] = $arBasketFields;
 											$bNeedUpdate = true;
+
+											if ($arBasketFields = $this->prepareProduct4Basket($itemID, $arItem, $orderId, $orderInfo))
+											{
+												if($isInvoice)
+												{
+													$basketItem = $basket->createItem($arBasketFields['MODULE'], $arBasketFields['PRODUCT_ID']);
+													$basketItem->setPrice($arBasketFields['PRICE'], true);
+													unset($arBasketFields['MODULE'], $arBasketFields['PRODUCT_ID'], $arBasketFields['PRICE'], $arBasketFields['ORDER_ID']);
+
+													$basketItem->setFields($arBasketFields);
+												}
+												else
+												{
+													$arShoppingCart[] = $arBasketFields;
+												}
+											}
+										}
+										else
+										{
+											$this->strError .= "\r\n ".GetMessage("CC_BSC1_ORDER_ERROR_5", Array('#XML_1C_DOCUMENT_ID#'=>$arOrder['ID'], '#CURRENCY_FROM#'=>$orderInfo['CURRENCY'], '#CURRENCY_TO#'=>$currencyTo));
 										}
 									}
 									elseif ($arItem["TYPE"] == GetMessage("CC_BSC1_SERVICE"))
 									{
-										if (IntVal($arItem["PRICE"]) != IntVal($orderInfo["PRICE_DELIVERY"]))
-											$arOrderFields["PRICE_DELIVERY"] = $arItem["PRICE"];
+										$priceDelivery = $arItem["PRICE"];
 									}
+
+									if($hasServiceItem)
+									{
+										if ($priceDelivery != intval($orderInfo["PRICE_DELIVERY"]))
+										{
+											if($arItem["TYPE"] == GetMessage("CC_BSC1_SERVICE"))
+												$arOrderFields["PRICE_DELIVERY"] = $priceDelivery;
+										}
+									}
+									else
+									{
+										if ($priceDelivery != intval($orderInfo["PRICE_DELIVERY"]))
+											$arOrderFields["PRICE_DELIVERY"] = $priceDelivery;
+									}
+
 								}
 							}
 						}
 
+						$isUsed = \Bitrix\Sale\Compatible\DiscountCompatibility::isUsed();
+						\Bitrix\Sale\Compatible\DiscountCompatibility::stopUsageCompatible();
+
 						if($bNeedUpdate)
 						{
-							$arErrors = array();
-							CSaleBasket::DoSaveOrderBasket($orderId, $orderInfo["LID"], $orderInfo["USER_ID"], $arShoppingCart, $arErrors);
+							if($isInvoice)
+							{
+								$invoice->save();
+							}
+							else
+							{
+								$arErrors = array();
+								if(!$basketEntity::DoSaveOrderBasket($orderId, $orderInfo["LID"], $orderInfo["USER_ID"], $arShoppingCart, $arErrors))
+								{
+									$e = $APPLICATION->GetException();
+									if(is_object($e))
+										$this->strError .= "\r\n ".GetMessage("CC_BSC1_ORDER_ERROR_3", Array('#XML_1C_DOCUMENT_ID#'=>$arOrder["ID"])).$e->GetString();
+								}
+							}
 						}
 
-						if(DoubleVal($arOrder["AMOUNT"]) > 0 && $arOrder["AMOUNT"] != $orderInfo["PRICE"])
-							$arOrderFields["PRICE"] = $arOrder["AMOUNT"];
 						if(DoubleVal($orderInfo["DISCOUNT_VALUE"]) > 0)
 							$arOrderFields["DISCOUNT_VALUE"] = 0;
-						if(strlen($arOrder["COMMENT"]) > 0 && $arOrder["COMMENT"] != $orderInfo["COMMENTS"])
+						if($arOrder["COMMENT"] <> '' && $arOrder["COMMENT"] != $orderInfo["COMMENTS"])
 							$arOrderFields["COMMENTS"] = $arOrder["COMMENT"];
 						$arOrderFields["UPDATED_1C"] = "Y";
+
 						if(!empty($arOrderFields))
-							CSaleOrder::Update($orderId, $arOrderFields);
+							$parentEntity::Update($orderId, $arOrderFields);
+						if($isUsed === true)
+						{
+							\Bitrix\Sale\Compatible\DiscountCompatibility::revertUsageCompatible();
+						}
 					}
 					else
 					{
@@ -2943,11 +3639,11 @@ class CSaleOrderLoader
 				}
 
 				$arAditFields = Array();
-				if($arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] == "true")
+				if($arOrder['CANCELED'] == "true" || $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCELED")] == "true" || $arOrder["TRAITS"][GetMessage("CC_BSC1_CANCEL")] == "true")
 				{
 					if($orderInfo["CANCELED"] == "N")
 					{
-						CSaleOrder::CancelOrder($orderInfo["ID"], "Y", $arOrder["COMMENT"]);
+						$parentEntity::CancelOrder($orderInfo["ID"], "Y", $arOrder["COMMENT"]);
 						$arAditFields["UPDATED_1C"] = "Y";
 					}
 				}
@@ -2957,55 +3653,59 @@ class CSaleOrderLoader
 					{
 						if($orderInfo["CANCELED"] == "Y")
 						{
-							CSaleOrder::CancelOrder($orderInfo["ID"], "N", $arOrder["COMMENT"]);
+							$parentEntity::CancelOrder($orderInfo["ID"], "N", $arOrder["COMMENT"]);
 							$arAditFields["UPDATED_1C"] = "Y";
 						}
 					}
 
-					if(strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")])>1)
+					if(mb_strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")]) > 1)
 					{
 						if($orderInfo["PAYED"]=="N")
-							CSaleOrder::PayOrder($orderInfo["ID"], "Y");
+							$parentEntity::PayOrder($orderInfo["ID"], "Y");
 						$arAditFields["PAY_VOUCHER_DATE"] = CDatabase::FormatDate(str_replace("T", " ", $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_DATE")]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG));
-						if(strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")])>0)
+						if($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")] <> '')
 							$arAditFields["PAY_VOUCHER_NUM"] = $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_PAYED_NUM")];
 						$arAditFields["UPDATED_1C"] = "Y";
 					}
 
-					if(strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_DATE")])>1)
+					if(mb_strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_DATE")]) > 1)
 					{
-						if($orderInfo["ALLOW_DELIVERY"]=="N")
-							CSaleOrder::DeliverOrder($orderInfo["ID"], "Y");
+						if(!$isInvoice)
+						{
+							if($orderInfo["ALLOW_DELIVERY"]=="N")
+								CSaleOrder::DeliverOrder($orderInfo["ID"], "Y");
+						}
+
 						$arAditFields["DATE_ALLOW_DELIVERY"] = CDatabase::FormatDate(str_replace("T", " ", $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_DATE")]), "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("FULL", LANG));
 						$arAditFields["DELIVERY_DOC_DATE"] = $arAditFields["DATE_ALLOW_DELIVERY"];
 
-						if(strlen($this->arParams["FINAL_STATUS_ON_DELIVERY"])>0 && $orderInfo["STATUS_ID"] != "F" && $orderInfo["STATUS_ID"] != $this->arParams["FINAL_STATUS_ON_DELIVERY"])
-							CSaleOrder::StatusOrder($orderInfo["ID"], $this->arParams["FINAL_STATUS_ON_DELIVERY"]);
-						if(strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")])>0)
+						if($this->arParams["FINAL_STATUS_ON_DELIVERY"] <> '' && $orderInfo["STATUS_ID"] != "F" && $orderInfo["STATUS_ID"] != $this->arParams["FINAL_STATUS_ON_DELIVERY"])
+							static::setStatus($orderInfo["ID"], $this->arParams["FINAL_STATUS_ON_DELIVERY"], $isInvoice);
+						if($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")] <> '')
 							$arAditFields["DELIVERY_DOC_NUM"] = $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_DELIVERY_NUM")];
 						$arAditFields["UPDATED_1C"] = "Y";
 					}
 				}
 
 
-				if($this->arParams["CHANGE_STATUS_FROM_1C"] && strlen($arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")])>0)
+				if($this->arParams["CHANGE_STATUS_FROM_1C"] && $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")] <> '')
 				{
 					if($orderInfo["STATUS_ID"] != $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")])
 					{
-						CSaleOrder::StatusOrder($orderInfo["ID"], $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")]);
+						static::setStatus($orderInfo["ID"], $arOrder["TRAITS"][GetMessage("CC_BSC1_1C_STATUS_ID")], $isInvoice);
 						$arAditFields["UPDATED_1C"] = "Y";
 					}
 				}
 
 				if(count($arAditFields)>0)
-					CSaleOrder::Update($orderInfo["ID"], $arAditFields);
+					$parentEntity::Update($orderInfo["ID"], $arAditFields);
 			}
 			else
 				$this->strError .= "\n".GetMessage("CC_BSC1_ORDER_NOT_FOUND", Array("#ID#" => $arOrder["ID"]));
 		}
 		elseif($this->arParams["IMPORT_NEW_ORDERS"] == "Y") // create new order (ofline 1C)
 		{
-			if(!empty($arOrder["AGENT"]) && strlen($arOrder["AGENT"]["ID"]) > 0)
+			if(!empty($arOrder["AGENT"]) && $arOrder["AGENT"]["ID"] <> '')
 			{
 				$arOrder["PERSON_TYPE_ID"] = 0;
 				$arOrder["USER_ID"] = 0;
@@ -3026,15 +3726,15 @@ class CSaleOrderLoader
 				}
 				else
 				{
-					if(strlen($arOrder["AGENT"]["ID"]) > 0)
+					if($arOrder["AGENT"]["ID"] <> '')
 					{
 						$arAI = explode("#", $arOrder["AGENT"]["ID"]);
-						if(IntVal($arAI[0]) > 0)
+						if(intval($arAI[0]) > 0)
 						{
 							$dbUser = CUser::GetByID($arAI[0]);
 							if($arU = $dbUser->Fetch())
 							{
-								if(htmlspecialcharsback(substr(htmlspecialcharsbx($arU["ID"]."#".$arU["LOGIN"]."#".$arU["LAST_NAME"]." ".$arU["NAME"]." ".$arU["SECOND_NAME"]), 0, 80)) == $arOrder["AGENT"]["ID"])
+								if(htmlspecialcharsback(mb_substr(htmlspecialcharsbx($arU["ID"]."#".$arU["LOGIN"]."#".$arU["LAST_NAME"]." ".$arU["NAME"]." ".$arU["SECOND_NAME"]), 0, 80)) == $arOrder["AGENT"]["ID"])
 								{
 									$arOrder["USER_ID"] = $arU["ID"];
 								}
@@ -3042,7 +3742,7 @@ class CSaleOrderLoader
 						}
 					}
 
-					if(IntVal($arOrder["USER_ID"]) <= 0)
+					if(intval($arOrder["USER_ID"]) <= 0)
 					{
 						//create new user
 						$arUser = array(
@@ -3050,12 +3750,29 @@ class CSaleOrderLoader
 								"EMAIL" => $arOrder["AGENT"]["CONTACT"]["MAIL_NEW"],
 						);
 
-						if (strlen($arUser["NAME"]) <= 0)
+						if ($arUser["NAME"] == '')
 							$arUser["NAME"] = $arOrder["AGENT"]["CONTACT"]["CONTACT_PERSON"];
-						if (strlen($arUser["EMAIL"]) <= 0)
-							$arUser["EMAIL"] = "buyer".time().GetRandomCode(2)."@".$_SERVER["SERVER_NAME"];
 
-						$arOrder["USER_ID"] = CSaleUser::DoAutoRegisterUser($arUser["EMAIL"], $arUser["NAME"], $this->arParams["SITE_NEW_ORDERS"], $arErrors, array("XML_ID"=>$arOrder["AGENT"]["ID"]));
+						$emServer = $_SERVER["SERVER_NAME"];
+						if(mb_strpos($_SERVER["SERVER_NAME"], ".") === false)
+							$emServer .= ".bx";
+
+						if ($arUser["EMAIL"] == '')
+							$arUser["EMAIL"] = "buyer".time().GetRandomCode(2)."@".$emServer;
+
+						$arOrder["USER_ID"] = CSaleUser::DoAutoRegisterUser($arUser["EMAIL"], $arUser["NAME"], $this->arParams["SITE_NEW_ORDERS"], $arErrors, array("XML_ID"=>$arOrder["AGENT"]["ID"], "EXTERNAL_AUTH_ID"=>Sale\Exchange\Entity\UserImportBase::EXTERNAL_AUTH_ID));
+
+						$obUser = new CUser;
+						$userFields[] = array();
+
+						if($arOrder["AGENT"]["CONTACT"]["PHONE"] <> '')
+							$userFields["WORK_PHONE"] = $arOrder["AGENT"]["CONTACT"]["PHONE"];
+
+						if(count($userFields)>0)
+						{
+							if(!$obUser->Update($arOrder["USER_ID"], $userFields, true))
+								$this->strError .= "\n".$obUser->LAST_ERROR;
+						}
 					}
 				}
 
@@ -3073,11 +3790,11 @@ class CSaleOrderLoader
 					$dbExport = CSaleExport::GetList(array(), array("PERSON_TYPE_ID" => $arPersonTypesIDs));
 					while($arExport = $dbExport->Fetch())
 					{
-						$arExportInfo[$arExport["PERSON_TYPE_ID"]] = unserialize($arExport["VARS"]);
+						$arExportInfo[$arExport["PERSON_TYPE_ID"]] = unserialize($arExport["VARS"], ['allowed_classes' => false]);
 					}
 				}
 
-				if(IntVal($arOrder["PERSON_TYPE_ID"]) <= 0)
+				if(intval($arOrder["PERSON_TYPE_ID"]) <= 0)
 				{
 					foreach($arExportInfo as $pt => $value)
 					{
@@ -3089,7 +3806,7 @@ class CSaleOrderLoader
 					}
 				}
 
-				if(IntVal($arOrder["PERSON_TYPE_ID"]) > 0)
+				if(intval($arOrder["PERSON_TYPE_ID"]) > 0)
 				{
 					$arAgent = $arExportInfo[$arOrder["PERSON_TYPE_ID"]];
 					foreach($arAgent as $k => $v)
@@ -3105,7 +3822,7 @@ class CSaleOrderLoader
 							unset($arAgent[$k]);
 					}
 
-					if(IntVal($arOrder["USER_ID"]) > 0)
+					if(intval($arOrder["USER_ID"]) > 0)
 					{
 						$orderFields = array(
 								"SITE_ID" => $this->arParams["SITE_NEW_ORDERS"],
@@ -3143,6 +3860,8 @@ class CSaleOrderLoader
 									"VALUE" => $arOrder["TAX"]["VALUE"],
 									"VALUE_MONEY" => $arOrder["TAX"]["VALUE_MONEY"],
 									"IS_IN_PRICE" => $arOrder["TAX"]["IS_IN_PRICE"],
+									"CODE" => 'VAT1C',
+									"APPLY_ORDER" => '100',
 							);
 						}
 
@@ -3158,16 +3877,20 @@ class CSaleOrderLoader
 							}
 						}
 
-						if($arOrder["ID"] = CSaleOrder::DoSaveOrder($orderFields, $arAditFields, 0, $arErrors))
+						$importSettings = Sale\Exchange\OneC\ImportSettings::getCurrent();
+						$deliverySystemId = $importSettings->shipmentServiceFor(Sale\Exchange\EntityType::SHIPMENT);
+						$orderFields['DELIVERY_ID'] = ($deliverySystemId? $deliverySystemId : null);
+
+						if($arOrder["ID"] = $parentEntity::DoSaveOrder($orderFields, $arAditFields, 0, $arErrors))
 						{
 							$arAditFields = array("UPDATED_1C" => "Y");
-							CSaleOrder::Update($arOrder["ID"], $arAditFields);
+							$parentEntity::Update($arOrder["ID"], $arAditFields);
 
 							//add/update user profile
-							if(IntVal($arOrder["USER_PROFILE_ID"]) > 0)
+							if(intval($arOrder["USER_PROFILE_ID"]) > 0)
 							{
 								if($arOrder["USER_PROFILE_VERSION"] != $arOrder["AGENT"]["VERSION"])
-									CSaleOrderUserProps::Update($arOrder["USER_PROFILE_ID"], array("VERSION_1C" => $arOrder["AGENT"]["VERSION"], "NAME" => $arOrder["AGENT"]["AGENT_NAME"]));
+									CSaleOrderUserProps::Update($arOrder["USER_PROFILE_ID"], array("VERSION_1C" => $arOrder["AGENT"]["VERSION"], "NAME" => $arOrder["AGENT"]["AGENT_NAME"], "USER_ID" => $arOrder["USER_ID"]));
 								$dbUPV = CSaleOrderUserPropsValue::GetList(array(), array("USER_PROPS_ID" =>$arOrder["USER_PROFILE_ID"]));
 								while($arUPV = $dbUPV->Fetch())
 								{
@@ -3175,7 +3898,7 @@ class CSaleOrderLoader
 								}
 							}
 
-							if(IntVal($arOrder["USER_PROFILE_ID"]) <= 0 || (IntVal($arOrder["USER_PROFILE_ID"]) > 0 && $arOrder["USER_PROFILE_VERSION"] != $arOrder["AGENT"]["VERSION"]))
+							if(intval($arOrder["USER_PROFILE_ID"]) <= 0 || (intval($arOrder["USER_PROFILE_ID"]) > 0 && $arOrder["USER_PROFILE_VERSION"] != $arOrder["AGENT"]["VERSION"]))
 							{
 								$dbOrderProperties = CSaleOrderProps::GetList(
 										array("SORT" => "ASC"),
@@ -3193,9 +3916,9 @@ class CSaleOrderLoader
 								{
 									$curVal = $orderFields["ORDER_PROP"][$arOrderProperties["ID"]];
 
-									if (strlen($curVal) > 0)
+									if ($curVal <> '')
 									{
-										if (IntVal($arOrder["USER_PROFILE_ID"]) <= 0)
+										if (intval($arOrder["USER_PROFILE_ID"]) <= 0)
 										{
 											$arFields = array(
 													"NAME" => $arOrder["AGENT"]["AGENT_NAME"],
@@ -3206,7 +3929,7 @@ class CSaleOrderLoader
 											);
 											$arOrder["USER_PROFILE_ID"] = CSaleOrderUserProps::Add($arFields);
 										}
-										if(IntVal($arOrder["USER_PROFILE_ID"]) > 0)
+										if(intval($arOrder["USER_PROFILE_ID"]) > 0)
 										{
 											$arFields = array(
 													"USER_PROPS_ID" => $arOrder["USER_PROFILE_ID"],
@@ -3230,6 +3953,8 @@ class CSaleOrderLoader
 						else
 						{
 							$this->strError .= "\n".GetMessage("CC_BSC1_ORDER_ADD_PROBLEM", Array("#ID#" => $arOrder["ID_1C"]));
+							if(is_array($arErrors))
+								$this->strError .= "\n".implode(', ',$arErrors);
 						}
 					}
 					else
@@ -3253,6 +3978,20 @@ class CSaleOrderLoader
 			{
 				$this->strError .= "\n".GetMessage("CC_BSC1_ORDER_NO_AGENT_ID", Array("#ID#" => $arOrder["ID_1C"]));
 			}
+		}
+	}
+
+	static public function setStatus($id, $statusId, $isInvoice)
+	{
+		if($isInvoice)
+		{
+			$invoice = new \CCrmInvoice(false);
+			$invoice->SetStatus($id, $statusId);
+		}
+		else
+		{
+			$order = new CSaleOrder();
+			$order->StatusOrder($id, $statusId);
 		}
 	}
 }

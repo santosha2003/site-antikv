@@ -1,0 +1,7 @@
+Array
+(
+    [src] => /upload/resize_cache/medialibrary/6fc/154_154_140cd750bba9870f18aada2478b24840a/6fc1ac51751cdc071025458ce053561f.png
+    [width] => 154
+    [height] => 103
+    [size] => 31069
+)

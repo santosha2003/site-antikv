@@ -5,7 +5,15 @@ global $APPLICATION;
 global $DB;
 global $USER;
 
-if(!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_store')))
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
+
+$publicMode = $adminPage->publicMode;
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+
+if(!$USER->CanDoOperation('catalog_store'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 CModule::IncludeModule("catalog");
 $bReadOnly = !$USER->CanDoOperation('catalog_store');
@@ -27,13 +35,13 @@ ClearVars();
 
 $sTableID = "b_catalog_store_docs";
 
-$oSort = new CAdminSorting($sTableID, "ID", "desc");
-$lAdmin = new CAdminList($sTableID, $oSort);
+$oSort = new CAdminUiSorting($sTableID, "ID", "DESC");
+$lAdmin = new CAdminUiList($sTableID, $oSort);
 
 $errorMessage = "";
 $bVarsFromForm = false;
 
-$ID = IntVal($_REQUEST["ID"]);
+$ID = (isset($_REQUEST["ID"]) ? (int)$_REQUEST["ID"] : 0);
 $TAB_TITLE = (isset($TAB_TITLE)) ? GetMessage("CAT_DOC_$TAB_TITLE") : GetMessage("CAT_DOC_NEW");
 
 $str_ACTIVE = "Y";
@@ -78,7 +86,7 @@ function getSiteTitle($siteId)
 
 	if($rsSites === '')
 	{
-		$rsSites = CSite::GetList($b="id", $o="asc", Array("ACTIVE" => "Y"));
+		$rsSites = CSite::GetList("id", "asc", Array("ACTIVE" => "Y"));
 		while($arSite = $rsSites->GetNext())
 			$arSitesShop[] = array("ID" => $arSite["ID"], "NAME" => $arSite["NAME"]);
 	}
@@ -98,68 +106,111 @@ if($bVarsFromForm)
 
 $documentTypes = CCatalogDocs::$types;
 $arSiteMenu = array();
-
+$listDocType = array();
 foreach($documentTypes as $type => $class)
+{
+	$listDocType[$type] = GetMessage("CAT_DOC_".$type);
+	$addUrl = $selfFolderUrl."cat_store_document_edit.php?lang=".LANGUAGE_ID."&DOCUMENT_TYPE=".$type."";
+	$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
+	if ($publicMode)
+	{
+		$action = "BX.adminSidePanel.onOpenPage('".$addUrl."');";
+	}
+	else
+	{
+		$action = "window.location = '".$addUrl."';";
+	}
 	$arSiteMenu[] = array(
 		"TEXT" => GetMessage("CAT_DOC_".$type),
-		"ACTION" => "window.location = 'cat_store_document_edit.php?lang=".LANGUAGE_ID."&DOCUMENT_TYPE=".$type."';"
+		"ACTION" => $action
 	);
+}
 
 $aContext = array(
 	array(
 		"TEXT" => GetMessage("CAT_DOC_ADD"),
 		"ICON" => "btn_new",
-		"LINK" => "cat_store_document_edit.php?lang=".LANG.$siteLID,
 		"TITLE" =>  GetMessage("CAT_DOC_ADD_TITLE"),
+		"DISABLE" => true,
 		"MENU" => $arSiteMenu
 	),
 );
 
+$lAdmin->setContextSettings(array("pagePath" => $selfFolderUrl."cat_store_document_list.php"));
 $lAdmin->AddAdminContextMenu($aContext);
 
-$arFilterFields = array(
-	"filter_site_id",
-	"filter_doc_type",
-	"filter_contractor_id",
-	"filter_status",
-	"filter_date_document_from",
-	"filter_date_document_to",
+$listSite = array();
+$sitesQueryObject = CSite::getList("sort", "asc", array("ACTIVE" => "Y"));
+while ($site = $sitesQueryObject->fetch())
+{
+	$listSite[$site["LID"]] = "[".$site["LID"]."] ".$site["NAME"];
+}
+$listContractors = array();
+$dbContractors = CCatalogContractor::getList(array());
+while($arContractorRes = $dbContractors->fetch())
+{
+	$listContractors[$arContractorRes["ID"]] = getContractorTitle($arContractorRes["ID"]);
+}
+
+$filterFields = array(
+	array(
+		"id" => "ID",
+		"name" => "ID",
+		"filterable" => "",
+		"quickSearch" => ""
+	),
+	array(
+		"id" => "SITE_ID",
+		"name" => GetMessage("CAT_DOC_SITE_ID"),
+		"type" => "list",
+		"items" => $listSite,
+		"filterable" => "",
+		"default" => true
+	),
+	array(
+		"id" => "DOC_TYPE",
+		"name" => GetMessage("CAT_DOC_TYPE"),
+		"type" => "list",
+		"items" => $listDocType,
+		"filterable" => ""
+	),
+	array(
+		"id" => "DATE_DOCUMENT",
+		"name" => GetMessage("CAT_DOC_DATE"),
+		"type" => "date",
+		"filterable" => ""
+	),
+	array(
+		"id" => "CONTRACTOR_ID",
+		"name" => GetMessage("CAT_DOC_CONTRACTOR"),
+		"type" => "list",
+		"items" => $listContractors,
+		"filterable" => ""
+	),
+	array(
+		"id" => "STATUS",
+		"name" => GetMessage("CAT_DOC_STATUS"),
+		"type" => "list",
+		"items" => array(
+			"Y" => GetMessage("CAT_DOC_EXECUTION_Y"),
+			"N" => GetMessage("CAT_DOC_EXECUTION_N")
+		),
+		"filterable" => "",
+	),
 );
-$lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
-if(strlen($_REQUEST["filter_site_id"]) > 0 && $_REQUEST["filter_site_id"] != "NOT_REF") $arFilter["SITE_ID"] = $_REQUEST["filter_site_id"];
-if(strlen($_REQUEST["filter_doc_type"]) > 0) $arFilter["DOC_TYPE"] = $_REQUEST["filter_doc_type"];
-if(strlen($_REQUEST["filter_date_document_from"]) > 0) $arFilter["!<DATE_DOCUMENT"] = $_REQUEST["filter_date_document_from"];
-if(strlen($_REQUEST["filter_date_document_to"])>0)
-{
-	if($arDate = ParseDateTime($_REQUEST["filter_date_document_to"], CSite::GetDateFormat("FULL", SITE_ID)))
-	{
-		if(StrLen($_REQUEST["filter_date_document_to"]) < 11)
-		{
-			$arDate["HH"] = 23;
-			$arDate["MI"] = 59;
-			$arDate["SS"] = 59;
-		}
 
-		$filter_date_document_to = date($DB->DateFormatToPHP(CSite::GetDateFormat("FULL", SITE_ID)), mktime($arDate["HH"], $arDate["MI"], $arDate["SS"], $arDate["MM"], $arDate["DD"], $arDate["YYYY"]));
-		$arFilter["!>DATE_DOCUMENT"] = $filter_date_document_to;
-	}
-	else
-	{
-		$filter_date_document_to = "";
-	}
-}
-if(strlen($_REQUEST["filter_status"]) > 0) $arFilter["STATUS"] = $_REQUEST["filter_status"];
-if(strlen($_REQUEST["filter_contractor_id"]) > 0) $arFilter["CONTRACTOR_ID"] = $_REQUEST["filter_contractor_id"];
+$lAdmin->AddFilter($filterFields, $arFilter);
 
+global $by, $order;
 if (!isset($by))
 	$by = 'ID';
-$by = strtoupper($by);
+$by = mb_strtoupper($by);
 
 if (!isset($order))
 	$order = 'DESC';
-$order = strtoupper($order);
+$order = mb_strtoupper($order);
 $docsOrder = array($by => $order);
 
 if (!$bReadOnly && ($arID = $lAdmin->GroupAction()))
@@ -271,13 +322,21 @@ if (!$bReadOnly && ($arID = $lAdmin->GroupAction()))
 						}
 						$arResult["DATE_DOCUMENT"] = 'now';
 						$arResult["CREATED_BY"] = $arResult["MODIFIED_BY"] = $USER->GetID();
-						$dbDocumentElement = CCatalogStoreDocsElement::getList(array(), array("DOC_ID" => $ID), false, false, array("ID", "STORE_FROM", "STORE_TO", "ELEMENT_ID", "AMOUNT", "PURCHASING_PRICE", "IS_MULTIPLY_BARCODE"));
+						$dbDocumentElement = CCatalogStoreDocsElement::getList(
+							array('ID' => 'ASC'),
+							array("DOC_ID" => $ID),
+							false,
+							false,
+							array("ID", "STORE_FROM", "STORE_TO", "ELEMENT_ID", "AMOUNT", "PURCHASING_PRICE", "IS_MULTIPLY_BARCODE")
+						);
 						while($arDocumentElement = $dbDocumentElement->Fetch())
 						{
 							$arElement = array();
 							foreach($arDocumentElement as $key => $value)
 							{
-									$arElement[$key] = $value;
+								if ($key == 'ID')
+									continue;
+								$arElement[$key] = $value;
 							}
 							if($arDocumentElement['IS_MULTIPLY_BARCODE'] == 'N')
 							{
@@ -328,6 +387,15 @@ if (!$bReadOnly && ($arID = $lAdmin->GroupAction()))
 		unset($ID, $strError);
 	}
 	unset($blockedList);
+
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
+	}
 }
 
 $lAdmin->AddHeaders(array(
@@ -381,22 +449,10 @@ $showCancel = false;
 $showConduct = false;
 $showDelete = false;
 
-$arNavParams = (
-	isset($_REQUEST['mode']) && $_REQUEST['mode'] == 'excel'
-	? false
-	: array('nPageSize' => CAdminResult::GetNavSize($sTableID))
-);
-
-$dbResultList = CCatalogDocs::getList(
-	$docsOrder,
-	$arFilter,
-	false,
-	$arNavParams,
-	$arSelectFields
-);
-$dbResultList = new CAdminResult($dbResultList, $sTableID);
+$dbResultList = CCatalogDocs::getList($docsOrder, $arFilter, false, false, $arSelectFields);
+$dbResultList = new CAdminUiResult($dbResultList, $sTableID);
 $dbResultList->NavStart();
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("group_admin_nav")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => $selfFolderUrl."cat_store_document_list.php"));
 
 while($arRes = $dbResultList->Fetch())
 {
@@ -429,7 +485,7 @@ while($arRes = $dbResultList->Fetch())
 		$showDelete = true;
 	}
 
-	$arRows[$arRes['ID']] = $row = &$lAdmin->AddRow($arRes['ID'], $arRes);
+	$arRows[$arRes['ID']] = $row = &$lAdmin->AddRow($arRes['ID'], $arRes, "cat_store_document_edit.php?ID=".$arRes['ID']."&lang=".LANGUAGE_ID);
 	$row->AddField("ID", $arRes['ID']);
 	if($arSelectFieldsMap['DOC_TYPE'])
 		$row->AddViewField('DOC_TYPE', GetMessage("CAT_DOC_".$arRes['DOC_TYPE']));
@@ -446,7 +502,9 @@ while($arRes = $dbResultList->Fetch())
 		$contractorTitle = '';
 		if(0 < intval($arRes['CONTRACTOR_ID']))
 		{
-			$contractorTitle = '<a href="/bitrix/admin/cat_contractor_edit.php?lang='.LANGUAGE_ID.'&ID='.$arRes['CONTRACTOR_ID'].'">'.htmlspecialcharsbx(getContractorTitle($arRes['CONTRACTOR_ID'])).'</a>';
+			$contractorEditUrl = $selfFolderUrl.'cat_contractor_edit.php?lang='.LANGUAGE_ID.'&ID='. $arRes['CONTRACTOR_ID'];
+			$contractorEditUrl = $adminSidePanelHelper->editUrlToPublicPage($contractorEditUrl);
+			$contractorTitle = '<a href="'.$contractorEditUrl.'">'.htmlspecialcharsbx(getContractorTitle($arRes['CONTRACTOR_ID'])).'</a>';
 		}
 		$row->AddViewField("CONTRACTOR_ID", $contractorTitle);
 	}
@@ -457,7 +515,8 @@ while($arRes = $dbResultList->Fetch())
 
 	if($arSelectFieldsMap['TOTAL'])
 	{
-			$f_TOTAL = ($arRes['CURRENCY']) ? CCurrencyLang::CurrencyFormat(doubleval($arRes['TOTAL']), $arRes['CURRENCY'], false) : '';
+		$f_TOTAL = ($arRes['CURRENCY']) ? CCurrencyLang::CurrencyFormat(
+			doubleval($arRes['TOTAL']), $arRes['CURRENCY'], false) : '';
 
 		$row->AddViewField("TOTAL", $f_TOTAL);
 	}
@@ -469,21 +528,48 @@ while($arRes = $dbResultList->Fetch())
 
 
 	$arActions = array();
-	$arActions[] = array("ICON"=>"edit", "TEXT"=>GetMessage("CAT_DOC_".$strForAction), "ACTION"=>$lAdmin->ActionRedirect("cat_store_document_edit.php?ID=".$arRes['ID']."&lang=".LANGUAGE_ID/*."&".GetFilterParams("filter_").""*/), "DEFAULT"=>true);
+	$editUrl = $selfFolderUrl."cat_store_document_edit.php?lang=".LANGUAGE_ID."&ID=".$arRes['ID'];
+	$editUrl = $adminSidePanelHelper->editUrlToPublicPage($editUrl);
+	$arActions[] = array(
+		"ICON" => "edit",
+		"TEXT" => GetMessage("CAT_DOC_".$strForAction),
+		"LINK" => $editUrl,
+		"DEFAULT" => true
+	);
 
 	if (!$bReadOnly)
 	{
 		if ($bAllowForEdit)
 		{
-			$arActions[] = array("ICON"=>"pack", "TEXT"=>GetMessage("CAT_DOC_CONDUCT"), "ACTION"=>$lAdmin->ActionDoGroup($arRes['ID'], "conduct"));
-			$arActions[] = array("ICON"=>"copy", "TEXT"=>GetMessage("CAT_DOC_COPY"), "ACTION"=>$lAdmin->ActionDoGroup($arRes['ID'], "copy"));
-			$arActions[] = array("SEPARATOR" => true);
-			$arActions[] = array("ICON"=>"delete", "TEXT"=>GetMessage("CAT_DOC_DELETE"), "ACTION"=>"if(confirm('".GetMessageJS('CAT_DOC_DELETE_CONFIRM')."')) ".$lAdmin->ActionDoGroup($arRes['ID'], "delete"));
+			$arActions[] = array(
+				"ICON" => "pack",
+				"TEXT" => GetMessage("CAT_DOC_CONDUCT"),
+				"ACTION" => $lAdmin->ActionDoGroup($arRes['ID'], "conduct")
+			);
+			$arActions[] = array(
+				"ICON" => "copy",
+				"TEXT" => GetMessage("CAT_DOC_COPY"),
+				"ACTION" => $lAdmin->ActionDoGroup($arRes['ID'], "copy")
+			);
+			$arActions[] = array(
+				"ICON" => "delete",
+				"TEXT" => GetMessage("CAT_DOC_DELETE"),
+				"ACTION" => "if(confirm('".GetMessageJS('CAT_DOC_DELETE_CONFIRM')."')) ".
+					$lAdmin->ActionDoGroup($arRes['ID'], "delete")
+			);
 		}
 		else
 		{
-			$arActions[] = array("ICON"=>"unpack", "TEXT"=>GetMessage("CAT_DOC_CANCELLATION"), "ACTION"=>$lAdmin->ActionDoGroup($arRes['ID'], "cancellation"));
-			$arActions[] = array("ICON"=>"copy", "TEXT"=>GetMessage("CAT_DOC_COPY"), "ACTION"=>$lAdmin->ActionDoGroup($arRes['ID'], "copy"));
+			$arActions[] = array(
+				"ICON" => "unpack",
+				"TEXT" => GetMessage("CAT_DOC_CANCELLATION"),
+				"ACTION" => $lAdmin->ActionDoGroup($arRes['ID'], "cancellation")
+			);
+			$arActions[] = array(
+				"ICON" => "copy",
+				"TEXT" => GetMessage("CAT_DOC_COPY"),
+				"ACTION" => $lAdmin->ActionDoGroup($arRes['ID'], "copy")
+			);
 		}
 	}
 
@@ -496,18 +582,22 @@ if($arSelectFieldsMap['CREATED_BY'] || $arSelectFieldsMap['MODIFIED_BY'])
 {
 	if(!empty($arUserID))
 	{
-		$byUser = 'ID';
-		$byOrder = 'ASC';
 		$rsUsers = CUser::GetList(
-			$byUser,
-			$byOrder,
+			'ID',
+			'ASC',
 			array('ID' => implode(' | ', array_keys($arUserID))),
 			array('FIELDS' => array('ID', 'LOGIN', 'NAME', 'LAST_NAME', 'SECOND_NAME', 'EMAIL'))
 		);
 		while($arOneUser = $rsUsers->Fetch())
 		{
 			$arOneUser['ID'] = (int)$arOneUser['ID'];
-			$arUserList[$arOneUser['ID']] = '<a href="/bitrix/admin/user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arOneUser['ID'].'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
+			$urlToUser = $selfFolderUrl."user_edit.php?lang=".LANGUAGE_ID."&ID=".$arOneUser["ID"]."";
+			if ($publicMode)
+			{
+				$urlToUser = $selfFolderUrl."sale_buyers_profile.php?USER_ID=".$arOneUser["ID"]."&lang=".LANGUAGE_ID;
+				$urlToUser = $adminSidePanelHelper->editUrlToPublicPage($urlToUser);
+			}
+			$arUserList[$arOneUser['ID']] = '<a href="'.$urlToUser.'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
 		}
 	}
 	foreach($arRows as &$row)
@@ -524,7 +614,7 @@ if($arSelectFieldsMap['CREATED_BY'] || $arSelectFieldsMap['MODIFIED_BY'])
 		if($arSelectFieldsMap['MODIFIED_BY'])
 		{
 			$strModifiedBy = '';
-			if($row->arRes['MODIFIED_BY'] > 0 && isset($arUserList[$row->arRes['CREATED_BY']]))
+			if($row->arRes['MODIFIED_BY'] > 0 && isset($arUserList[$row->arRes['MODIFIED_BY']]))
 			{
 				$strModifiedBy = $arUserList[$row->arRes['MODIFIED_BY']];
 			}
@@ -534,20 +624,6 @@ if($arSelectFieldsMap['CREATED_BY'] || $arSelectFieldsMap['MODIFIED_BY'])
 	if(isset($row))
 		unset($row);
 }
-
-$lAdmin->AddFooter(
-	array(
-		array(
-			"title" => GetMessage("MAIN_ADMIN_LIST_SELECTED"),
-			"value" => $dbResultList->SelectedRowsCount()
-		),
-		array(
-			"counter" => true,
-			"title" => GetMessage("MAIN_ADMIN_LIST_CHECKED"),
-			"value" => "0"
-		),
-	)
-);
 
 if (!$bReadOnly)
 {
@@ -566,100 +642,10 @@ $lAdmin->CheckListMode();
 
 $APPLICATION->SetTitle(GetMessage("CAT_DOCS"));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-?>
-	<form name="find_form" method="GET" action="<?echo $APPLICATION->GetCurPage()?>?">
-		<?
-		$arContractors = array();
-		$dbContractors = CCatalogContractor::getList(array());
-		while($arContractorRes = $dbContractors->Fetch())
-		{
-			$arContractors[] = $arContractorRes;
-		}
 
-		$oFilter = new CAdminFilter(
-			$sTableID."_filter",
-			array(
-				GetMessage("CAT_DOC_SITE_ID"),
-				GetMessage("CAT_DOC_TYPE"),
-				GetMessage("CAT_DOC_DATE"),
-				GetMessage("CAT_DOC_CONTRACTOR"),
-				GetMessage("CAT_DOC_STATUS"),
-			)
-		);
-
-		$oFilter->Begin();
-		?>
-		<tr>
-			<td><?= GetMessage("CAT_DOC_SITE_ID") ?>:</td>
-			<td>
-				<?echo CSite::SelectBox("filter_site_id", $filter_site_id, "(".GetMessage("CAT_DOC_SITE_ID").")"); ?>
-			</td>
-		</tr>
-		<tr>
-			<td><?= GetMessage("CAT_DOC_TYPE") ?>:</td>
-			<td>
-				<select name="filter_doc_type">
-					<option value=""><?= htmlspecialcharsex("(".GetMessage("CAT_DOC_TYPE").")") ?></option>
-
-					<?
-					foreach($documentTypes as $type => $class)
-					{
-						?>
-						<option value="<?=$type?>"<?if($_REQUEST["filter_doc_type"] == $type) echo " selected"?>><?= htmlspecialcharsex(GetMessage("CAT_DOC_".$type)) ?></option>
-					<?
-					}
-					?>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td><?= GetMessage("CAT_DOC_DATE") ?> (<?= CSite::GetDateFormat("SHORT") ?>):</td>
-			<td>
-				<?echo CalendarPeriod("filter_date_document_from", $_REQUEST["filter_date_document_from"], "filter_date_document_to", $_REQUEST["filter_date_document_to"], "find_form", "Y")?>
-			</td>
-		</tr>
-		<tr>
-			<td><?= GetMessage("CAT_DOC_CONTRACTOR") ?>:</td>
-			<td>
-				<select name="filter_contractor_id">
-					<option value=""><?= htmlspecialcharsex("(".GetMessage("CAT_DOC_CONTRACTOR").")") ?></option>
-
-					<?
-					foreach($arContractors as $arContractor)
-					{
-						?>
-						<option value="<?=$arContractor["ID"]?>"<?if($_REQUEST["filter_doc_type"] == $arContractor["ID"]) echo " selected"?>><?= htmlspecialcharsbx(getContractorTitle($arContractor["ID"])) ?></option>
-					<?
-					}
-					?>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td><?= GetMessage("CAT_DOC_STATUS") ?>:</td>
-			<td>
-				<select name="filter_status">
-					<option value=""><?= htmlspecialcharsex("(".GetMessage("CAT_DOC_STATUS").")") ?></option>
-					<option value="Y"<?if($filter_status == "Y") echo " selected"?>><?= htmlspecialcharsex(GetMessage("CAT_DOC_EXECUTION_Y")) ?></option>
-					<option value="N"<?if($filter_status == "N") echo " selected"?>><?= htmlspecialcharsex(GetMessage("CAT_DOC_EXECUTION_N")) ?></option>
-				</select>
-			</td>
-		</tr>
-
-		<?
-		$oFilter->Buttons(
-			array(
-				"table_id" => $sTableID,
-				"url" => $APPLICATION->GetCurPage(),
-				"form" => "find_form"
-			)
-		);
-		$oFilter->End();
-		?>
-	</form>
-<?
+$lAdmin->DisplayFilter($filterFields);
 $lAdmin->DisplayList();
-if(strlen($errorMessage) > 0)
+if($errorMessage <> '')
 	CAdminMessage::ShowMessage($errorMessage);
-?><?
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");?>
+
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

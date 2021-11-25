@@ -46,7 +46,7 @@
 	<?if($USER->IsAuthorized() && CBlog::CanUserCreateBlog($USER->GetID()))
 	{
 		$bHaveBlog = false;
-		if(IntVal($arParams["GROUP_ID"]) > 0)
+		if(intval($arParams["GROUP_ID"]) > 0)
 		{
 			$dbBl = CBlog::GetList(Array(), Array("GROUP_ID" => $arParams["GROUP_ID"], "OWNER_ID" => $USER->GetID(), "ACTIVE" => "Y", "GROUP_SITE_ID" => SITE_ID));
 			if($dbBl->Fetch())
@@ -67,7 +67,6 @@
 
 ?>
 <script>
-<!--
 function BXBlogTabShow(id, type)
 {
 	if(type == 'post')
@@ -94,7 +93,6 @@ function BXBlogTabShow(id, type)
 	}
 	
 }
-//-->
 </script>
 <table width="100%" style="font-size:100%;">
 <tr>
@@ -124,8 +122,8 @@ function BXBlogTabShow(id, type)
 		);
 		?>
 		<?
-		if(strlen($arResult["PATH_TO_HISTORY"]) <= 0)
-			$arResult["PATH_TO_HISTORY"] = htmlspecialchars($APPLICATION->GetCurPage()."?".$arResult["ALIASES"]["page"]."=history");
+		if($arResult["PATH_TO_HISTORY"] == '')
+			$arResult["PATH_TO_HISTORY"] = htmlspecialcharsbx($APPLICATION->GetCurPage()."?".$arResult["ALIASES"]["page"]."=history");
 		?>
 		<div style="text-align:right;"><a href="<?=$arResult["PATH_TO_HISTORY"]?>"><?=GetMessage("BC_ALL_POSTS")?></a></div>
 	</div>
@@ -186,10 +184,10 @@ $APPLICATION->IncludeComponent(
 	"bitrix:search.tags.cloud",
 	"",
 	Array(
-		"FONT_MAX" => (IntVal($arParams["FONT_MAX"]) >0 ? $arParams["FONT_MAX"] : 20), 
-		"FONT_MIN" => (IntVal($arParams["FONT_MIN"]) >0 ? $arParams["FONT_MIN"] : 10),
-		"COLOR_NEW" => (strlen($arParams["COLOR_NEW"]) >0 ? $arParams["COLOR_NEW"] : "3f75a2"),
-		"COLOR_OLD" => (strlen($arParams["COLOR_OLD"]) >0 ? $arParams["COLOR_OLD"] : "8D8D8D"),
+		"FONT_MAX" => (intval($arParams["FONT_MAX"]) >0 ? $arParams["FONT_MAX"] : 20),
+		"FONT_MIN" => (intval($arParams["FONT_MIN"]) >0 ? $arParams["FONT_MIN"] : 10),
+		"COLOR_NEW" => ($arParams["COLOR_NEW"] <> '' ? $arParams["COLOR_NEW"] : "3f75a2"),
+		"COLOR_OLD" => ($arParams["COLOR_OLD"] <> '' ? $arParams["COLOR_OLD"] : "8D8D8D"),
 		"ANGULARITY" => $arParams["ANGULARITY"], 
 		"PERIOD_NEW_TAGS" => $arResult["PERIOD_NEW_TAGS"], 
 		"SHOW_CHAIN" => "N", 
@@ -256,10 +254,10 @@ $APPLICATION->IncludeComponent(
 			);
 		?>
 		<?
-		if(IntVal($arParams["GROUP_ID"]) > 0)
+		if(intval($arParams["GROUP_ID"]) > 0)
 		{
-			if(strlen($arResult["PATH_TO_GROUP"]) <= 0)
-				$arResult["PATH_TO_GROUP"] = htmlspecialchars($APPLICATION->GetCurPage()."?".$arResult["ALIASES"]["page"]."=group&".$arResult["ALIASES"]["group_id"]."=#group_id#");
+			if($arResult["PATH_TO_GROUP"] == '')
+				$arResult["PATH_TO_GROUP"] = htmlspecialcharsbx($APPLICATION->GetCurPage()."?".$arResult["ALIASES"]["page"]."=group&".$arResult["ALIASES"]["group_id"]."=#group_id#");
 			?>
 			<br />
 			<div style="text-align:right;"><a href="<?=CComponentEngine::MakePathFromTemplate($arResult["PATH_TO_GROUP"], array("group_id" => $arParams["GROUP_ID"]))?>"><?=GetMessage("BC_ALL_BLOGS")?></a></div>

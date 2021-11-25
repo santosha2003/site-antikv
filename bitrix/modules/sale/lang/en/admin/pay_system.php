@@ -1,5 +1,5 @@
 <?
-$MESS["SALE_DELETE_ERROR"] = "Error deleting the payment system. Some orders has probably been placed using this payment system.<br>";
+$MESS["SALE_DELETE_ERROR"] = "Error deleting the payment system. Some orders have probably been placed using this payment system.<br>";
 $MESS["SALE_SECTION_TITLE"] = "Payment systems";
 $MESS["SALE_F_FILTER"] = "Filter";
 $MESS["SALE_F_LANG"] = "Site";
@@ -35,4 +35,7 @@ $MESS["SALE_H_DESCRIPTION"] = "Description";
 $MESS["SALE_H_PERSON_TYPES"] = "Payer types";
 $MESS["SALE_H_ACTION_FILES"] = "Handlers";
 $MESS["SALE_ALLOW_EDIT_PAYMENT"] = "Enable auto recalculation of payment";
+$MESS["SALE_LOGOTIP"] = "Logo";
+$MESS["SPSAN_MARKETPLACE_ADD_NEW"] = "Install from Marketplace";
+$MESS["SPSAN_MARKETPLACE_ADD_NEW_ALT"] = "Click to install from Marketplace";
 ?>

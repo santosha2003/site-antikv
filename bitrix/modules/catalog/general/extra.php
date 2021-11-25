@@ -72,14 +72,14 @@ class CAllExtra
 		return $s.'</select>';
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 
-		$ID = intval($ID);
-		if (0 >= $ID)
+		$ID = (int)$ID;
+		if ($ID <= 0)
 			return false;
-		if (!CExtra::CheckFields('UPDATE', $arFields, $ID))
+		if (!static::CheckFields('UPDATE', $arFields, $ID))
 			return false;
 
 		$strUpdate = $DB->PrepareUpdate("b_catalog_extra", $arFields);
@@ -92,32 +92,32 @@ class CAllExtra
 			{
 				CPrice::ReCalculate('EXTRA', $ID, $arFields['PERCENTAGE']);
 			}
-			CExtra::ClearCache();
+			static::ClearCache();
 		}
 		return true;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
-		$ID = intval($ID);
-		if (0 >= $ID)
+		$ID = (int)$ID;
+		if ($ID <= 0)
 			return false;
 		$DB->Query("UPDATE b_catalog_price SET EXTRA_ID = NULL WHERE EXTRA_ID = ".$ID);
-		CExtra::ClearCache();
+		static::ClearCache();
 		return $DB->Query("DELETE FROM b_catalog_extra WHERE ID = ".$ID, true);
 	}
 
-	function CheckFields($strAction, &$arFields, $ID = 0)
+	public static function CheckFields($strAction, &$arFields, $ID = 0)
 	{
 		global $APPLICATION;
 
 		$arMsg = array();
 		$boolResult = true;
 
-		$strAction = strtoupper($strAction);
+		$strAction = mb_strtoupper($strAction);
 
-		$ID = intval($ID);
+		$ID = (int)$ID;
 		if ('UPDATE' == $strAction && 0 >= $ID)
 		{
 			$arMsg[] = array('id' => 'ID', 'text' => Loc::getMessage('CAT_EXTRA_ERR_UPDATE_NOT_ID'));
@@ -177,12 +177,15 @@ class CAllExtra
 		return $boolResult;
 	}
 
-/*
-* @deprecated deprecated since catalog 12.5.6
-*/
-	function PrepareInsert(&$arFields, &$intID)
+	/**
+	 * @deprecated deprecated since catalog 12.5.6
+	 *
+	 * @param array $arFields
+	 * @param int $intID
+	 * @return false
+	 */
+	public static function PrepareInsert(&$arFields, &$intID)
 	{
 		return false;
 	}
 }
-?>

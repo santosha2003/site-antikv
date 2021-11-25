@@ -14,7 +14,7 @@ $MESS ['COLOR_BLUE'] = "Blue";
 $MESS ['COLOR_GRAY'] = "Grey";
 $MESS ['SERVICE_SEARCH'] = "Search";
 $MESS ['SERVICE_NEWS'] = "News";
-$MESS ['FORM_ANKETA'] = "Visitor survey";
+$MESS ['FORM_ANKETA'] = "Site Visitor Questionnaire";
 $MESS ['FORM_FEEDBACK'] = "Feedback form";
 $MESS ['SERVICE_MAIN_BASE'] = "General settings";
 $MESS ['SERVICE_STATISTICS'] = "Statistics";
@@ -40,4 +40,5 @@ $MESS ['SERVICE_MEDIALIBRARY'] = "Media Library";
 $MESS ['SERVICE_MEDIALIBRARY_DESC'] = "Media Library sample content";
 $MESS ['MAIN_WIZARD_TEMPLATE_INSTALL'] = "Installing template...";
 $MESS ['SERVICE_LAST_STEP'] = "Finishing installation";
+$MESS ['SERVICE_LISTS'] = "Common Lists";
 ?>

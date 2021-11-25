@@ -2,6 +2,8 @@
 
 namespace Bitrix\Main\UrlPreview\Parser;
 
+use Bitrix\Main\Context;
+use Bitrix\Main\Text\Encoding;
 use Bitrix\Main\UrlPreview\HtmlDocument;
 use Bitrix\Main\UrlPreview\Parser;
 
@@ -13,6 +15,8 @@ class SchemaOrg extends Parser
 	/** @var  array */
 	protected $schemaMetadata = array();
 
+	protected $documentEncoding;
+
 	/**
 	 * Parses HTML document's Schema.org metadata.
 	 *
@@ -20,7 +24,8 @@ class SchemaOrg extends Parser
 	 */
 	public function handle(HtmlDocument $document)
 	{
-		if(strpos($document->getHtml(), 'itemscope') === false)
+		$this->documentEncoding = $document->getEncoding();
+		if(mb_strpos($document->getHtml(), 'itemscope') === false)
 			return null;
 
 		if(!$this->initializeDom($document))
@@ -29,17 +34,17 @@ class SchemaOrg extends Parser
 		if(!$this->getSchemaMetadata())
 			return null;
 
-		if(strlen($document->getTitle()) == 0 && isset($this->schemaMetadata['name']))
+		if($document->getTitle() == '' && isset($this->schemaMetadata['name']))
 		{
 			$document->setTitle($this->schemaMetadata['name']);
 		}
 
-		if(strlen($document->getDescription()) == 0 && isset($this->schemaMetadata['description']))
+		if($document->getDescription() == '' && isset($this->schemaMetadata['description']))
 		{
 			$document->setDescription($this->schemaMetadata['description']);
 		}
 
-		if(strlen($document->getImage()) == 0 && isset($this->schemaMetadata['image']))
+		if($document->getImage() == '' && isset($this->schemaMetadata['image']))
 		{
 			$document->setImage($this->schemaMetadata['image']);
 		}
@@ -122,8 +127,10 @@ class SchemaOrg extends Parser
 				break;
 		}
 
+		// dom extension's internal encoding is always utf-8
+		$result = Encoding::convertEncoding($result, 'utf-8', $this->documentEncoding);
 		$result = trim($result);
-		return (strlen($result) > 0 ? $result : null);
+		return ($result <> '' ? $result : null);
 	}
 
 	/**
@@ -133,7 +140,7 @@ class SchemaOrg extends Parser
 	{
 		if($node->hasAttribute('itemprop') && !$node->hasAttribute('itemscope'))
 		{
-			$propertyName = strtolower($node->getAttribute('itemprop'));
+			$propertyName = mb_strtolower($node->getAttribute('itemprop'));
 			$propertyValue = $this->getSchemaPropertyValue($node);
 			$this->schemaMetadata[$propertyName] = $propertyValue;
 		}

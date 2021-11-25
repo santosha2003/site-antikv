@@ -2,19 +2,7 @@ html, body
 {
 	margin: 0;
 	padding: 0;
-}
-
-html
-{
 	height:100%;
-}
-
-body
-{
-	height:auto !important;
-	height:100%;
-	min-height:100%;
-	min-width:760px;
 }
 
 /*Font*/
@@ -23,10 +11,23 @@ body
 	font-size: 80%;
 	font-family: Tahoma, Verdana, Helvetica, sans-serif;
 	color: #333;
-	background-color: #fff;
+	background: white;
 }
 
-table#header
+#outer
+{
+	border: none;
+	border-spacing: 0;
+	height: 100%;
+	width: 100%;
+}
+
+
+#header-row {
+	vertical-align: top;
+}
+
+#header
 {
 	height:53px;
 	width:100%;
@@ -34,12 +35,12 @@ table#header
 	background:#576F9E url(images/top_bg.gif) repeat-x;
 }
 
-table#header td
+#header td
 {
 	padding:0;
 }
 
-td#logo 
+#logo
 {
 	background:transparent url(images/top_left.gif) no-repeat;
 	width:282px;
@@ -49,20 +50,20 @@ td#logo
 }
 
 
-td#logotext
+#logotext
 {
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
 }
 
-table#toolbar
+#toolbar
 {
 	width:100%;
 	border-collapse:collapse;
 }
 
-table#toolbar td
+#toolbar td
 {
 	padding:0;
 }
@@ -105,14 +106,23 @@ table#toolbar td
 
 }
 
+#workarea-row
+{
+	height: 100%;
+	padding: 0;
+	text-align: left;
+	vertical-align: top;
+}
+
 /*Work area container*/
 #workarea
 {
 	height:100%;
+
 }
 
 /*Work area table*/
-#workarea table.learn-work-table
+#workarea-row table.learn-work-table
 {
 	height:100%;
 	width:100%;
@@ -121,7 +131,7 @@ table#toolbar td
 }
 
 /*Left data cell*/
-#workarea table.learn-work-table td.learn-left-data
+#workarea-row table.learn-work-table td.learn-left-data
 {
 	vertical-align:top;
 	width:265px;
@@ -129,10 +139,15 @@ table#toolbar td
 }
 
 /*Right data cell*/
-#workarea table.learn-work-table td.learn-right-data
+#workarea-row table.learn-work-table td.learn-right-data
 {
 	vertical-align:top;
 	padding:12px 16px;
+	height: 100%;
+}
+
+#footer {
+	height: 0;
 }
 
 /*Min-width for left cell*/
@@ -149,7 +164,7 @@ div.learn-course-tree
 	background-color:#eaecf1;
 }
 
-a 
+a
 {
 	color:#1952D3;
 }
@@ -158,4 +173,14 @@ a
 {
 	color:red;
 	font-weight:bold;
+}
+
+#learning-copyright
+{
+	background-color: #EAECF1;
+	border-top: 1px solid #CCCCCC;
+	color: #616161;
+	height: 24px;
+	padding: 9px 0 0 300px;
+
 }

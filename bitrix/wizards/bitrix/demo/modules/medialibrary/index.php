@@ -23,7 +23,8 @@ for($i = 0, $l = count($arCollections); $i < $l; $i++)
 		'name' => $arCollections[$i]['name'],
 		'desc' => $arCollections[$i]['desc'],
 		'keywords' => '',
-		'parent' => isset($arCollections[$i]['ex_parent'], $arExCols[$arCollections[$i]['ex_parent']]) ? intVal($arExCols[$arCollections[$i]['ex_parent']]) : 0
+		'parent' => isset($arCollections[$i]['ex_parent'], $arExCols[$arCollections[$i]['ex_parent']]) ? intVal($arExCols[$arCollections[$i]['ex_parent']]) : 0,
+		'type' => 0
 	));
 }
 

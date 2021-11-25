@@ -14,6 +14,8 @@ if(strlen($arParams["site_id"]) <= 0)
 //Import XML
 if($IBLOCK_ID = DEMO_IBlock_ImportXML("040_services_services-links_".LANGUAGE_ID.".xml", $arParams["site_id"], false, true))
 {
+	$import = new CIBlockCMLImport();
+
 	//Create directory and copy files
 	$search = array(
 		"#IBLOCK.ID(XML_ID=services-links)#",
@@ -23,9 +25,9 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("040_services_services-links_".LANGUAGE_ID
 	);
 	$replace = array(
 		$IBLOCK_ID,
-		CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "services-links-property-url"),
-		CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "services-links-property-email"),
-		CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "services-links-property-user_id"),
+		$import->GetPropertyByXML_ID($IBLOCK_ID, "services-links-property-url"),
+		$import->GetPropertyByXML_ID($IBLOCK_ID, "services-links-property-email"),
+		$import->GetPropertyByXML_ID($IBLOCK_ID, "services-links-property-user_id"),
 	);
 	DEMO_IBlock_CopyFiles("/public/content/links/", "/content/links/", false, $search, $replace);
 	DEMO_IBlock_CopyFiles("/public/content/links/my/", "/content/links/my/", false, $search, $replace);

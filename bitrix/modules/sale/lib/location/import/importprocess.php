@@ -187,6 +187,9 @@ final class ImportProcess extends Location\Util\Process
 			if($opts['SOURCE'] == self::SOURCE_REMOTE)
 			{
 				$this->data['settings']['additional'] = is_array($this->options['REQUEST']['ADDITIONAL']) ? array_flip(array_values($this->options['REQUEST']['ADDITIONAL'])) : array();
+
+				if(isset($this->data['settings']['additional']['ZIP']))
+					$this->data['settings']['additional']['ZIP_LOWER'] = $this->data['settings']['additional']['ZIP'];
 			}
 			elseif($this->checkSource(self::SOURCE_FILE))
 			{
@@ -483,7 +486,7 @@ final class ImportProcess extends Location\Util\Process
 
 	protected static function checkLocationCodeExists($code)
 	{
-		if(!strlen($code))
+		if($code == '')
 			return false;
 
 		$dbConnection = Main\HttpApplication::getConnection();
@@ -574,7 +577,7 @@ final class ImportProcess extends Location\Util\Process
 
 			///////////////////////////////////////////
 			// transform parent
-			if(strlen($data['PARENT_CODE']))
+			if($data['PARENT_CODE'] <> '')
 			{
 				if(isset($this->data['existedlocs']['static'][$data['PARENT_CODE']]))
 				{
@@ -585,10 +588,14 @@ final class ImportProcess extends Location\Util\Process
 					$data['PARENT_ID'] = $this->data['existedlocs'][$gid][$data['PARENT_CODE']];
 				}
 				else
+				{
 					$data['PARENT_ID'] = 0;
+				}
 			}
 			else
+			{
 				$data['PARENT_ID'] = 0;
+			}
 
 			unset($data['PARENT_CODE']);
 
@@ -649,19 +656,36 @@ final class ImportProcess extends Location\Util\Process
 					if($this->checkExternalServiceAllowed($sCode))
 					{
 						$serviceId = $this->data['externalService']['code2id'][$sCode];
+
 						if(!$serviceId)
 							throw new Main\SystemException('Location import failed: external service doesnt exist');
 
-						foreach($values as $val)
+						if($sCode == 'ZIP_LOWER')
 						{
-							if(!strlen($val))
+							if($values == '')
 								continue;
 
-							$this->hitData['HANDLES']['EXTERNAL']->insert(array(
-								'SERVICE_ID' => 	$serviceId,
-								'XML_ID' => 		$val,
-								'LOCATION_ID' => 	$locationId
-							));
+							$values = explode(',', $values);
+
+							if(!is_array($values))
+								continue;
+
+							$values = array_unique($values);
+						}
+
+						if(is_array($values))
+						{
+							foreach($values as $val)
+							{
+								if($val == '')
+									continue;
+
+								$this->hitData['HANDLES']['EXTERNAL']->insert(array(
+									'SERVICE_ID' => 	$serviceId,
+									'XML_ID' => 		$val,
+									'LOCATION_ID' => 	$locationId
+								));
+							}
 						}
 					}
 				}
@@ -932,7 +956,8 @@ final class ImportProcess extends Location\Util\Process
 			return;
 		}
 
-		$this->rebalanceInserter->flush();
+		if($this->rebalanceInserter)
+			$this->rebalanceInserter->flush();
 
 		$this->nextStep();
 	}
@@ -1135,15 +1160,19 @@ final class ImportProcess extends Location\Util\Process
 				if(isset($lay[$currentBundle]))
 				{
 					$chain[] = $currentBundle;
-					if(strlen($lay[$currentBundle]['PARENT_CODE']))
+					if($lay[$currentBundle]['PARENT_CODE'] <> '')
 					{
 						$currentBundle = $lay[$currentBundle]['PARENT_CODE'];
 
 						if(!isset($lay[$currentBundle]))
+						{
 							throw new Main\SystemException('Unknown parent bundle found ('.$currentBundle.'). Layout file is broken');
+						}
 					}
 					else
+					{
 						$currentBundle = false;
+					}
 				}
 			}
 
@@ -1491,6 +1520,9 @@ final class ImportProcess extends Location\Util\Process
 		if($this->data['settings']['additional'] === false)
 			return true; // ANY
 
+		if($code == 'ZIP_LOWER')
+			$code = 'ZIP';
+
 		return isset($this->data['settings']['additional'][$code]);
 	}
 
@@ -1526,7 +1558,7 @@ final class ImportProcess extends Location\Util\Process
 		);
 
 		// get static index, it will be always in memory
-		$parameters['filter'] = array('TYPE_ID' => array('COUNTRY', 'COUNTRY_DISTRICT', 'REGION')); // todo: from typegroup later
+		$parameters['filter'] = array('TYPE.CODE' => array('COUNTRY', 'COUNTRY_DISTRICT', 'REGION')); // todo: from typegroup later
 
 		$this->data['existedlocs'] = array('static' => array());
 		$res = Location\LocationTable::getList($parameters);
@@ -1561,8 +1593,10 @@ final class ImportProcess extends Location\Util\Process
 				$i = -1;
 			}
 
-			if(strlen($code))
+			if($code <> '')
+			{
 				$buffer[] = $code;
+			}
 		}
 
 		// last iteration
@@ -1604,7 +1638,7 @@ final class ImportProcess extends Location\Util\Process
 		$indexName = $this->dbHelper->forSql(trim($indexName));
 		$tableName = $this->dbHelper->forSql(trim($tableName));
 
-		if(!strlen($indexName) || !strlen($tableName))
+		if(!mb_strlen($indexName) || !mb_strlen($tableName))
 			return false;
 
 		if($this->dbConnType == self::DB_TYPE_MYSQL)
@@ -1635,7 +1669,7 @@ final class ImportProcess extends Location\Util\Process
 		$indexName = $this->dbHelper->forSql(trim($indexName));
 		$tableName = $this->dbHelper->forSql(trim($tableName));
 
-		if(!strlen($indexName) || !strlen($tableName))
+		if(!mb_strlen($indexName) || !mb_strlen($tableName))
 			return false;
 
 		if(!$this->checkIndexExistsByName($indexName, $tableName))
@@ -1666,6 +1700,7 @@ final class ImportProcess extends Location\Util\Process
 			'IX_B_SALE_LOC_NAME_NAME_U' => array('TABLE' => $locationNameTable, 'COLUMNS' => array('NAME_UPPER')),
 			'IX_B_SALE_LOC_NAME_LI_LI' => array('TABLE' => $locationNameTable, 'COLUMNS' => array('LOCATION_ID', 'LANGUAGE_ID')),
 			'IX_B_SALE_LOC_EXT_LID_SID' => array('TABLE' => $locationExternalTable, 'COLUMNS' => array('LOCATION_ID', 'SERVICE_ID')),
+			'IX_SALE_LOCATION_TYPE_MARGIN' => array('TABLE' => $locationTable, 'COLUMNS' => array('TYPE_ID', 'LEFT_MARGIN', 'RIGHT_MARGIN')),
 
 			// legacy
 			'IXS_LOCATION_COUNTRY_ID' => array('TABLE' => $locationTable, 'COLUMNS' => array('COUNTRY_ID')),
@@ -1849,7 +1884,11 @@ final class ImportProcess extends Location\Util\Process
 			unlink($storeTo);
 		}
 
-		$query = 'http://'.self::DISTRIBUTOR_HOST.':'.self::DISTRIBUTOR_PORT.self::REMOTE_PATH.$fileName;
+		if(!defined('SALE_LOCATIONS_IMPORT_SOURCE_URL'))
+			$query = 'http://'.self::DISTRIBUTOR_HOST.':'.self::DISTRIBUTOR_PORT.self::REMOTE_PATH.$fileName;
+		else
+			$query = 'http://'.SALE_LOCATIONS_IMPORT_SOURCE_URL.'/'.$fileName;
+
 		$client = new HttpClient();
 
 		if(!$client->download($query, $storeTo))
@@ -1996,8 +2035,10 @@ final class ImportProcess extends Location\Util\Process
 		{
 			foreach($value as $v)
 			{
-				if(strlen($v))
+				if($v <> '')
+				{
 					$result[] = $this->parseQueryCode($v);
+				}
 			}
 		}
 
@@ -2206,7 +2247,7 @@ final class ImportProcess extends Location\Util\Process
 
 			while(time() < $endTime)
 			{
-				$block = $csvReader->ReadBlockLowLevel($descriptior['POS']/*changed inside*/, 100);
+				$block = $csvReader->ReadBlockLowLevel($descriptior['POS']/*changed inside*/, 10);
 
 				if(!count($block))
 					break;
@@ -2228,10 +2269,12 @@ final class ImportProcess extends Location\Util\Process
 					unset($item['TYPE_CODE']);
 
 					// parent id
-					if(strlen($item['PARENT_CODE']))
+					if($item['PARENT_CODE'] <> '')
 					{
 						if(!isset($descriptior['CODES'][$item['PARENT_CODE']]))
+						{
 							$descriptior['CODES'][$item['PARENT_CODE']] = static::checkLocationCodeExists($item['PARENT_CODE']);
+						}
 
 						$item['PARENT_ID'] = $descriptior['CODES'][$item['PARENT_CODE']];
 					}
@@ -2242,7 +2285,7 @@ final class ImportProcess extends Location\Util\Process
 					{
 						foreach($item['EXT'] as $code => $values)
 						{
-							if(is_array($values) && !empty($values))
+							if(!empty($values))
 							{
 								if(!isset($descriptior['SERVICES'][$code]))
 								{
@@ -2251,22 +2294,45 @@ final class ImportProcess extends Location\Util\Process
 									));
 								}
 
-								foreach($values as $value)
+								if($code == 'ZIP_LOWER')
 								{
-									if(!strlen($value))
+									if($values[0] == '')
 										continue;
 
-									$item['EXTERNAL'][] = array(
-										'SERVICE_ID' => $descriptior['SERVICES'][$code],
-										'XML_ID' => $value
-									);
+									$values = explode(',', $values[0]);
+
+									if(!is_array($values))
+										continue;
+
+									$values = array_unique($values);
+								}
+
+								if(is_array($values))
+								{
+									foreach($values as $value)
+									{
+										if($value == '')
+											continue;
+
+										$item['EXTERNAL'][] = array(
+											'SERVICE_ID' => $descriptior['SERVICES'][$code],
+											'XML_ID' => $value
+										);
+									}
 								}
 							}
 						}
 					}
-					unset($item['EXT']);
+					unset($item['EXT'], $item['ZIP_LOWER']);
 
-					$res = Location\LocationTable::add($item, array('REBALANCE' => false, 'RESET_LEGACY' => false));
+					$res = Location\LocationTable::addExtended(
+						$item,
+						array(
+							'RESET_LEGACY' => false,
+							'REBALANCE' => false
+						)
+					);
+
 					if(!$res->isSuccess())
 						throw new Main\SystemException('Cannot create location');
 

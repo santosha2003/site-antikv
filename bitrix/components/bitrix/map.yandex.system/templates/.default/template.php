@@ -1,5 +1,6 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
+$this->setFrameMode(true);
 ?>
 <script type="text/javascript">
 
@@ -9,9 +10,6 @@ if (!window.GLOBAL_arMapObjects)
 function init_<?echo $arParams['MAP_ID']?>()
 {
 	if (!window.ymaps)
-		return;
-
-	if(typeof window.GLOBAL_arMapObjects['<?echo $arParams['MAP_ID']?>'] !== "undefined")
 		return;
 
 	var node = BX("BX_YMAP_<?echo $arParams['MAP_ID']?>");
@@ -135,4 +133,4 @@ function BXMapYandexAfterShow(mapId)
 }
 
 </script>
-<div id="BX_YMAP_<?echo $arParams['MAP_ID']?>" class="bx-yandex-map" style="height: <?echo $arParams['MAP_HEIGHT'];?>; width: <?echo $arParams['MAP_WIDTH']?>;"><?echo GetMessage('MYS_LOADING'.($arParams['WAIT_FOR_EVENT'] ? '_WAIT' : ''));?></div>
+<div id="BX_YMAP_<?echo $arParams['MAP_ID']?>" class="bx-yandex-map" style="height: <?echo $arParams['MAP_HEIGHT'];?>; width: <?echo $arParams['MAP_WIDTH']?>;max-width: 100%;"><?echo GetMessage('MYS_LOADING'.($arParams['WAIT_FOR_EVENT'] ? '_WAIT' : ''));?></div>

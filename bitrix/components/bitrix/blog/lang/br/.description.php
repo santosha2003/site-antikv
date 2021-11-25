@@ -1,5 +1,0 @@
-<?
-$MESS["BLOG_COMPONENT"] = "Blogs";
-$MESS["BLOG_COMPONENT_DESCRIPTION"] = "O componente composto do blog";
-$MESS["BLOG"] = "Blogs";
-?>

@@ -5,16 +5,16 @@ $forumPermissions = $APPLICATION->GetGroupRight("forum");
 if ($forumPermissions == "D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/include.php");
+\Bitrix\Main\Loader::includeModule("forum");
 IncludeModuleLangFile(__FILE__); 
 ClearVars();
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/prolog.php");
 
-$ID = IntVal($ID);
+$ID = intval($ID);
 
 $message = false;
 $bInitVars = false;
-if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $forumPermissions=="W" && check_bitrix_sessid())
+if (($save <> '' || $apply <> '') && $REQUEST_METHOD=="POST" && $forumPermissions=="W" && check_bitrix_sessid())
 {
 	$POINTS_PER_POST = str_replace(",", ".", $POINTS_PER_POST);
 
@@ -27,12 +27,12 @@ if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $forumPe
 	else
 		$res = CForumPoints2Post::Add($arFields);
 		
-	if (intVal($res) <= 0 && $e = $GLOBALS["APPLICATION"]->GetException())
+	if (intval($res) <= 0 && $e = $GLOBALS["APPLICATION"]->GetException())
 	{
 		$message = new CAdminMessage(($ID > 0 ? GetMessage("FORUM_PPE_EDDOR_UPDATE") : GetMessage("FORUM_PPE_ERROR_ADD")), $e);
 		$bInitVars = True;
 	}
-	elseif (strlen($save)>0)
+	elseif ($save <> '')
 		LocalRedirect("forum_points2post.php?lang=".LANG."&".GetFilterParams("filter_", false));
 	else 
 		$ID = $res;
@@ -120,14 +120,14 @@ $tabControl->BeginNextTab();
 			<?= GetMessage("FORUM_PPE_MIN_MES") ?>:
 		</td>
 		<td width="60%">
-			<input type="text" name="MIN_NUM_POSTS" value="<?=htmlspecialcharsEx($str_MIN_NUM_POSTS)?>" size="20" maxlength="18">
+			<input type="text" name="MIN_NUM_POSTS" value="<?=htmlspecialcharsbx($str_MIN_NUM_POSTS)?>" size="20" maxlength="18">
 		</td>
 	</tr>
 
 	<tr>
 		<td><?= GetMessage("FORUM_PPE_PPM") ?>:</td>
 		<td>
-			<input type="text" name="POINTS_PER_POST" value="<?=htmlspecialcharsEx($str_POINTS_PER_POST)?>" size="20" maxlength="19">
+			<input type="text" name="POINTS_PER_POST" value="<?=htmlspecialcharsbx($str_POINTS_PER_POST)?>" size="20" maxlength="19">
 		</td>
 	</tr>
 <?

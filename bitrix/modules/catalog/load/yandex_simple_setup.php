@@ -5,6 +5,8 @@
 /** @global CMain $APPLICATION */
 /** @global string $ACTION */
 /** @global array $arOldSetupVars */
+use Bitrix\Currency\CurrencyTable;
+
 IncludeModuleLangFile($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/catalog/export_setup_templ.php');
 
 global $APPLICATION;
@@ -24,7 +26,7 @@ if (($ACTION == 'EXPORT_EDIT' || $ACTION == 'EXPORT_COPY') && $STEP == 1)
 	if (isset($arOldSetupVars['SETUP_SERVER_NAME']))
 		$SETUP_SERVER_NAME = $arOldSetupVars['SETUP_SERVER_NAME'];
 	if (isset($arOldSetupVars['CURRENCY']))
-		$currency = $arOldSetupVars['CURRENCY'];
+		$currencyYandex = $arOldSetupVars['CURRENCY'];
 	if (isset($arOldSetupVars['USE_HTTPS']))
 		$USE_HTTPS = $arOldSetupVars['USE_HTTPS'];
 }
@@ -34,7 +36,7 @@ if ($STEP > 1)
 	if (empty($YANDEX_EXPORT) || !is_array($YANDEX_EXPORT))
 		$arSetupErrors[] = GetMessage("CET_ERROR_NO_IBLOCKS");
 
-	if (strlen($SETUP_FILE_NAME)<=0)
+	if ($SETUP_FILE_NAME == '')
 	{
 		$arSetupErrors[] = GetMessage("CET_ERROR_NO_FILENAME");
 	}
@@ -54,7 +56,7 @@ if ($STEP > 1)
 	if (!isset($USE_HTTPS) || $USE_HTTPS != 'Y')
 		$USE_HTTPS = 'N';
 
-	if (($ACTION=="EXPORT_SETUP" || $ACTION == 'EXPORT_EDIT' || $ACTION == 'EXPORT_COPY') && strlen($SETUP_PROFILE_NAME)<=0)
+	if (($ACTION=="EXPORT_SETUP" || $ACTION == 'EXPORT_EDIT' || $ACTION == 'EXPORT_COPY') && $SETUP_PROFILE_NAME == '')
 	{
 		$arSetupErrors[] = GetMessage("CET_ERROR_NO_PROFILE_NAME");
 	}
@@ -81,8 +83,13 @@ $context->Show();
 if (!empty($arSetupErrors))
 	ShowError(implode('<br>', $arSetupErrors));
 
+$actionParams = "";
+if ($adminSidePanelHelper->isSidePanel())
+{
+	$actionParams = "?IFRAME=Y&IFRAME_TYPE=SIDE_SLIDER";
+}
 ?>
-<form method="POST" action="<? echo $APPLICATION->GetCurPage(); ?>" enctype="multipart/form-data" name="dataload">
+<form method="POST" action="<? echo $APPLICATION->GetCurPage().$actionParams; ?>" enctype="multipart/form-data" name="dataload">
 <?
 
 $aTabs = array(
@@ -91,8 +98,8 @@ $aTabs = array(
 );
 
 $tabControl = new CAdminTabControl("tabControl", $aTabs, false, true);
-$tabControl->Begin();
 
+$tabControl->Begin();
 $tabControl->BeginNextTab();
 
 if ($STEP==1)
@@ -124,7 +131,7 @@ if ($STEP==1)
 	$arIBlockList = array();
 	$db_res = CIBlock::GetList(
 		array("IBLOCK_TYPE" => "ASC", "NAME" => "ASC"),
-		array('ID' => $arIBlockIDs, 'ACTIVE' => 'Y', 'CHECK_PERMISSIONS' => 'Y', 'MIN_PERMISSION' => 'W')
+		array('ID' => $arIBlockIDs, 'ACTIVE' => 'Y', 'CHECK_PERMISSIONS' => 'Y', 'MIN_PERMISSION' => 'U')
 	);
 	while ($res = $db_res->Fetch())
 	{
@@ -135,7 +142,7 @@ if ($STEP==1)
 			$arSiteList[] = $arSite["SITE_ID"];
 		}
 
-		$boolYandex = array_key_exists($res['ID'], $arYandexKeys);
+		$boolYandex = isset($arYandexKeys[$res['ID']]);
 		$arIBlockList[] = array(
 			'ID' => $res['ID'],
 			'NAME' => $res['NAME'],
@@ -159,7 +166,7 @@ if ($STEP==1)
 	foreach ($arIBlockList as $key => $arIBlock)
 	{
 	?><tr>
-		<td><? echo htmlspecialcharsex("[".$arIBlock["IBLOCK_TYPE_ID"]."] ".$arIBlock["NAME"]." ".$arIBlock['SITE_LIST']); ?></td>
+		<td><? echo htmlspecialcharsEx("[".$arIBlock["IBLOCK_TYPE_ID"]."] ".$arIBlock["NAME"]." ".$arIBlock['SITE_LIST']); ?></td>
 		<td align="center">
 			<input type="checkbox" name="YANDEX_EXPORT[<? echo $key; ?>]" id="YANDEX_EXPORT_<? echo $key; ?>" value="<? echo $arIBlock["ID"]; ?>"<? if ($arIBlock['YANDEX_EXPORT']) echo " checked"; ?> onclick="checkOne(this,<? echo $intCountAvailIBlock; ?>);">
 		</td>
@@ -170,7 +177,8 @@ if ($STEP==1)
 	<script type="text/javascript">
 	function checkAll(obj, cnt)
 	{
-		var boolCheck = obj.checked;
+		var boolCheck = obj.checked,
+			i;
 		for (i = 0; i < cnt; i++)
 		{
 			BX('YANDEX_EXPORT_'+i, true).checked = boolCheck;
@@ -179,10 +187,10 @@ if ($STEP==1)
 	}
 	function checkOne(obj, cnt)
 	{
-		var boolCheck = obj.checked;
-		var intCurrent = parseInt(BX('count_checked', true).value);
+		var boolCheck = obj.checked,
+			intCurrent = parseInt(BX('count_checked', true).value, 10);
 		intCurrent += (boolCheck ? 1 : -1);
-		BX('yandex_export_all', true).checked = (intCurrent < cnt ? false : true);
+		BX('yandex_export_all', true).checked = (intCurrent >= cnt);
 		BX('count_checked', true).value = intCurrent;
 	}
 	</script>
@@ -198,13 +206,13 @@ if ($STEP==1)
 <tr>
 	<td width="40%"><? echo GetMessage("CET_SERVER_NAME");?></td>
 	<td width="60%">
-		<input type="text" name="SETUP_SERVER_NAME" value="<?echo (strlen($SETUP_SERVER_NAME)>0) ? htmlspecialcharsbx($SETUP_SERVER_NAME) : '' ?>" size="50" /> <input type="button" onclick="this.form['SETUP_SERVER_NAME'].value = window.location.host;" value="<?echo GetMessage('CET_SERVER_NAME_SET_CURRENT')?>" />
+		<input type="text" name="SETUP_SERVER_NAME" value="<?echo ($SETUP_SERVER_NAME <> '') ? htmlspecialcharsbx($SETUP_SERVER_NAME) : '' ?>" size="50" /> <input type="button" onclick="this.form['SETUP_SERVER_NAME'].value = window.location.host;" value="<?echo GetMessage('CET_SERVER_NAME_SET_CURRENT')?>" />
 	</td>
 </tr>
 <tr>
 	<td width="40%"><? echo GetMessage("CET_SAVE_FILENAME");?></td>
-	<td width="60%"><b><? echo htmlspecialcharsex($strCatalogDefaultFolder); ?></b>
-		<input type="text" name="SETUP_FILE_NAME" value="<?echo htmlspecialcharsbx(strlen($SETUP_FILE_NAME)>0 ? str_replace($strCatalogDefaultFolder, '', $SETUP_FILE_NAME) : "yandex_".mt_rand(0, 999999).".php"); ?>" size="50">
+	<td width="60%"><b><? echo htmlspecialcharsEx($strCatalogDefaultFolder); ?></b>
+		<input type="text" name="SETUP_FILE_NAME" value="<?echo htmlspecialcharsbx($SETUP_FILE_NAME <> '' ? str_replace($strCatalogDefaultFolder, '', $SETUP_FILE_NAME) : "yandex_".mt_rand(0, 999999).".php"); ?>" size="50">
 	</td>
 </tr>
 <?

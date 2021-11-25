@@ -1,5 +1,0 @@
-<?
-$MESS["BMG_DEFAULT_TEMPLATE_NAME"] = "Tinklaraðèiø grupës";
-$MESS["BMG_DEFAULT_TEMPLATE_DESCRIPTION"] = "Atvaizduoja netuðèias tinklaraðèiø grupes";
-$MESS["BMG_NAME"] = "Tinklaraðèiai";
-?>

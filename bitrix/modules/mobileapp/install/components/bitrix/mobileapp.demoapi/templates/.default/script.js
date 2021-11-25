@@ -595,7 +595,7 @@ var BXMobileDemoApi = {
 					},
 					{
 						name: BXMmessage["MBD_MENU_3"],
-						url: dataPath+"index2.php",
+						url: "https://www.bitrix24.ru/",
 						arrowFlag: "true"
 					}
 				]

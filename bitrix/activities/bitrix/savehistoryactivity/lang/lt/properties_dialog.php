@@ -1,5 +1,0 @@
-<?
-$MESS["BPSHA_PD_NAME"] = "Áraðo pavadinimas istorijoje";
-$MESS["BPSHA_PD_NAME_ALT"] = "Palikite laukelá tuðèià, norëdami gauti pavadinimà ið dokumento";
-$MESS["BPSHA_PD_USER"] = "Registruoti istorijoje kaip naudotojas";
-?>

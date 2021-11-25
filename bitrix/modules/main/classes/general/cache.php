@@ -29,15 +29,7 @@ class CPHPCache
 
 	public function Clean($uniq_str, $initdir = false, $basedir = "cache")
 	{
-		if(is_object($this) && ($this instanceof CPHPCache))
-		{
-			return $this->cache->clean($uniq_str, $initdir, $basedir);
-		}
-		else
-		{
-			$obCache = new CPHPCache();
-			return $obCache->Clean($uniq_str, $initdir, $basedir);
-		}
+		return $this->cache->clean($uniq_str, $initdir, $basedir);
 	}
 
 	public function CleanDir($initdir = false, $basedir = "cache")
@@ -93,7 +85,7 @@ class CPHPCache
 
 	function IsCacheExpired($path)
 	{
-		if(is_object($this) && ($this instanceof CPHPCache))
+		if(isset($this) && is_object($this) && ($this instanceof CPHPCache))
 		{
 			return $this->cache->isCacheExpired($path);
 		}
@@ -124,12 +116,12 @@ class CPageCache
 	function GetPath($uniq_str)
 	{
 		$un = md5($uniq_str);
-		return substr($un, 0, 2)."/".$un.".html";
+		return mb_substr($un, 0, 2)."/".$un.".html";
 	}
 
 	function Clean($uniq_str, $initdir = false, $basedir = "cache")
 	{
-		if(is_object($this) && is_object($this->_cache))
+		if(isset($this) && is_object($this) && is_object($this->_cache))
 		{
 			$basedir = BX_PERSONAL_ROOT."/".$basedir."/";
 			$filename = CPageCache::GetPath($uniq_str);
@@ -172,17 +164,17 @@ class CPageCache
 		{
 			if(isset($_GET["clear_cache_session"]))
 			{
-				if(strtoupper($_GET["clear_cache_session"])=="Y")
-					$_SESSION["SESS_CLEAR_CACHE"] = "Y";
-				elseif(strlen($_GET["clear_cache_session"]) > 0)
-					unset($_SESSION["SESS_CLEAR_CACHE"]);
+				if(mb_strtoupper($_GET["clear_cache_session"]) == "Y")
+					\Bitrix\Main\Application::getInstance()->getKernelSession()["SESS_CLEAR_CACHE"] = "Y";
+				elseif($_GET["clear_cache_session"] <> '')
+					unset(\Bitrix\Main\Application::getInstance()->getKernelSession()["SESS_CLEAR_CACHE"]);
 			}
 
-			if(isset($_GET["clear_cache"]) && strtoupper($_GET["clear_cache"])=="Y")
+			if(isset($_GET["clear_cache"]) && mb_strtoupper($_GET["clear_cache"]) == "Y")
 				return false;
 		}
 
-		if(isset($_SESSION["SESS_CLEAR_CACHE"]) && $_SESSION["SESS_CLEAR_CACHE"] == "Y")
+		if(isset(\Bitrix\Main\Application::getInstance()->getKernelSession()["SESS_CLEAR_CACHE"]) && \Bitrix\Main\Application::getInstance()->getSession()["SESS_CLEAR_CACHE"] == "Y")
 			return false;
 
 		if(!$this->_cache->read($this->content, $this->basedir, $this->initdir, $this->filename, $this->TTL))
@@ -274,7 +266,7 @@ class CPageCache
 			\Bitrix\Main\Diag\CacheTracker::add($written, $path, $this->basedir, $this->initdir, $this->filename, "W");
 		}
 
-		if(strlen($arAllVars)>0)
+		if($arAllVars <> '')
 			ob_end_flush();
 		else
 			ob_end_clean();
@@ -282,7 +274,7 @@ class CPageCache
 
 	function IsCacheExpired($path)
 	{
-		if(is_object($this) && is_object($this->_cache))
+		if(isset($this) && is_object($this) && is_object($this->_cache))
 		{
 			return $this->_cache->IsCacheExpired($path);
 		}
@@ -336,7 +328,7 @@ function BXClearCache($full=false, $initdir="")
 				if(!unlink($path."/".$file))
 					$res = false;
 			}
-			elseif(substr($file, -5)==".html")
+			elseif(mb_substr($file, -5) == ".html")
 			{
 				$obCache = new CPHPCache();
 				if($obCache->IsCacheExpired($path."/".$file))
@@ -346,7 +338,7 @@ function BXClearCache($full=false, $initdir="")
 						$res = false;
 				}
 			}
-			elseif(substr($file, -4)==".php")
+			elseif(mb_substr($file, -4) == ".php")
 			{
 				$obCache = new CPHPCache();
 				if($obCache->IsCacheExpired($path."/".$file))
@@ -624,14 +616,14 @@ class CStackCacheEntry
 		)
 		{
 			$objCache = \Bitrix\Main\Data\Cache::createInstance();
-			//Force cache rewrite
-			$saveClearState = $objCache->setClearCache(true);
 
-			if($objCache->StartDataCache($this->ttl, $this->entity, $DB->type."/".$this->entity,  $this->values, "stack_cache"))
+			//Force cache rewrite
+			$objCache->forceRewriting(true);
+
+			if($objCache->startDataCache($this->ttl, $this->entity, $DB->type."/".$this->entity, $this->values, "stack_cache"))
 			{
-				$objCache->EndDataCache();
+				$objCache->endDataCache();
 			}
-			$objCache->setClearCache($saveClearState);
 
 			$this->cleanGet = true;
 			$this->cleanSet = true;
@@ -770,7 +762,7 @@ class CStackCacheManager
 			$this->cache[$entity]->Save();
 	}
 
-	function SaveAll()
+	public static function SaveAll()
 	{
 		if(defined("BITRIX_SKIP_STACK_CACHE") && BITRIX_SKIP_STACK_CACHE)
 			return;

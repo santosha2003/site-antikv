@@ -34,4 +34,8 @@ $MESS["SALE_F_PERSON_TYPE"] = "Тип платника";
 $MESS["SALE_H_DESCRIPTION"] = "Опис";
 $MESS["SALE_H_PERSON_TYPES"] = "Типи платників";
 $MESS["SALE_H_ACTION_FILES"] = "Оброблювачі";
+$MESS["SALE_LOGOTIP"] = "Логотип";
+$MESS["SALE_ALLOW_EDIT_PAYMENT"] = "Дозволити автоперерахунок оплати";
+$MESS["SPSAN_MARKETPLACE_ADD_NEW"] = "Встановити з Маркетплейс";
+$MESS["SPSAN_MARKETPLACE_ADD_NEW_ALT"] = "Натисніть для встановлення з Маркетплейс";
 ?>

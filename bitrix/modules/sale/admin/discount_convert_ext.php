@@ -65,6 +65,17 @@ if (
 	$discountConvert->initStep($params['counter'], $params['operationCounter'], $params['lastID']);
 	$discountConvert->run();
 	$result = $discountConvert->saveStep();
+	if ($result['finishOperation'])
+	{
+		$adminNotifyIterator = CAdminNotify::GetList(array(), array('MODULE_ID'=>'sale', 'TAG' => 'SALE_CONVERT_15'));
+		if ($adminNotifyIterator)
+		{
+			if ($adminNotify = $adminNotifyIterator->Fetch())
+				CAdminNotify::Delete($adminNotify['ID']);
+			unset($adminNotify);
+		}
+		unset($adminNotifyIterator);
+	}
 
 	header('Content-Type: application/x-javascript; charset='.LANG_CHARSET);
 	echo CUtil::PhpToJSObject($result, false, true);
@@ -77,6 +88,18 @@ else
 	$discountCounter = CSaleDiscountConvertExt::getAllCounter();
 	$oneStepTime = CSaleDiscountConvertExt::getDefaultExecutionTime();
 
+	if ($discountCounter == 0)
+	{
+		$adminNotifyIterator = CAdminNotify::GetList(array(), array('MODULE_ID' => 'sale', 'TAG' => 'SALE_CONVERT_15'));
+		if ($adminNotifyIterator)
+		{
+			if ($adminNotify = $adminNotifyIterator->Fetch())
+				CAdminNotify::Delete($adminNotify['ID']);
+			unset($adminNotify);
+		}
+		unset($adminNotifyIterator);
+	}
+
 	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
 
 	$tabList = array(
@@ -85,6 +108,10 @@ else
 	$tabControl = new CAdminTabControl('saleDiscountReindex', $tabList, true, true);
 	Main\Page\Asset::getInstance()->addJs('/bitrix/js/catalog/step_operations.js');
 
+	if ($discountCounter == 0)
+	{
+		ShowNote(Loc::getMessage('SALE_DISCOUNT_REINDEX_DISCOUNT_ABSENT'));
+	}
 	?><div id="discount_reindex_result_div" style="margin:0; display: none;"></div>
 	<div id="discount_reindex_error_div" style="margin:0; display: none;">
 		<div class="adm-info-message-wrap adm-info-message-red">

@@ -1,3 +1,0 @@
-<?
-$MESS["BLOG_MODULE_NOT_INSTALL"] = "Tinklaraðèiø modulis nëra ádiegtas";
-?>

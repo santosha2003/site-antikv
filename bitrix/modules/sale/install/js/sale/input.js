@@ -148,7 +148,7 @@ BX.Sale.Input = (function () {
 
 	Utils.stopElementEvents = function (event) // TODO remove
 	{
-		if (event.preventDefault)
+		if (event && event.preventDefault)
 		{
 			event.preventDefault();
 			event.stopPropagation();
@@ -741,15 +741,38 @@ BX.Sale.Input = (function () {
 				settings.SIZE = 30;
 			}
 
+			if (settings.PATTERN
+				&& settings.PATTERN.length > 0
+				&& settings.PATTERN[0] === settings.PATTERN[settings.PATTERN.length-1]
+			)
+			{
+				var clearPattern = settings.PATTERN.substr(1, settings.PATTERN.length - 2);
+				if (clearPattern && clearPattern.length)
+				{
+					settings.PATTERN = clearPattern;
+				}
+			}
+
 			Utils.applyBooleanAttributesTo(element, settings, Utils.globalBooleanAttributes, {DISABLED:'', READONLY:'', AUTOFOCUS:'', REQUIRED:'', AUTOCOMPLETE:'on'});
 			Utils.applyValueAttributesTo(element, settings, Utils.globalValueAttributes, {FORM:1, MAXLENGTH:1, PLACEHOLDER:1, DIRNAME:1, SIZE:1, LIST:1, PATTERN:1});
 			this.applyEventAttributesTo(element, settings, Utils.globalEventAttributes);
 		}
 
 		element.name  = name;
-		element.value = value;
+		element.value = value || '';
 
-		return [element];
+		// Deletor
+		var item = [element];
+
+		if (settings.MULTIPLE == 'Y')
+		{
+			var deletor = this.createEditorSingleDeletor(item);
+			deletor.setName(name+'[DELETE]');
+			item.deletor = deletor;
+			item.push(deletor);
+		}
+		
+		return item;
 	};
 
 	StringInput.prototype.afterEditorSingleInsert = function (item)
@@ -796,13 +819,16 @@ BX.Sale.Input = (function () {
 		var s, size = 5, settings = this.settings;
 
 		if ((s = settings.MIN) && s.toString().length > size)
-			size = s;
+			size = s.toString().length;
 
 		if ((s = settings.MAX) && s.toString().length > size)
-			size = s;
+			size = s.toString().length;
 
 		if ((s = settings.STEP) && s.toString().length > size)
-			size = s;
+			size = s.toString().length;
+
+		if (size > 30)
+			size = 30;
 
 		var element = document.createElement('input');
 		element.type  = 'text';
@@ -948,9 +974,23 @@ BX.Sale.Input = (function () {
 		var	variants = [],
 			name = this.name,
 			settings = this.settings,
-			options = settings.OPTIONS;
+			options = [];
 
-		if (options === undefined || options === null || options.constructor !== Object)
+		if (BX.type.isPlainObject(settings.OPTIONS))
+		{
+			for (var sort in settings.OPTIONS_SORT)
+			{
+				var code = settings.OPTIONS_SORT[sort];
+				if (BX.type.isNotEmptyString(settings.OPTIONS[code]))
+					options.push(settings.OPTIONS[code]);
+			}
+		}
+		else if (BX.type.isArray(settings.OPTIONS))
+		{
+			options = settings.OPTIONS
+		}
+
+		if (options === undefined || options === null || (options.constructor !== Object && options.constructor !== Array) || options.length === 0)
 		{
 			this.variants = [];
 			this.items = [document.createTextNode(BX.message('INPUT_ENUM_OPTIONS_ERROR'))];
@@ -1076,6 +1116,19 @@ BX.Sale.Input = (function () {
 				}
 			);
 
+			if (settings.REQUIRED == "N")
+			{
+				var option = document.createElement('option');
+				option.text     = BX.message('INPUT_ENUM_EMPTY_OPTION');
+				option.value    = "";
+
+				if (Object.keys(value).length === 0)
+					option.selected = "selected";
+
+				select.insertBefore(option, select.firstChild);
+				variants.push(option);
+			}
+
 			this.items = [select];
 		}
 
@@ -1084,18 +1137,19 @@ BX.Sale.Input = (function () {
 
 	EnumInput.prototype.createEditorOptions = function (container, options, selected, group, option)
 	{
-		var key, value;
+		var key, value, code;
 
 		for (key in options)
 		{
 			if (options.hasOwnProperty(key))
 			{
 				value = options[key];
+				code = this.settings.OPTIONS_SORT[key];
 
 				if (value.constructor === Object)
-					this.createEditorOptions(group(key), value, selected, group, option);
+					this.createEditorOptions(group(code), value, selected, group, option);
 				else
-					option(container, key, selected.hasOwnProperty(key), value || key);
+					option(container, code, selected.hasOwnProperty(code), value || code);
 			}
 		}
 	};
@@ -1243,6 +1297,7 @@ BX.Sale.Input = (function () {
 
 		button.type  = 'button';
 		button.value = BX.message('INPUT_FILE_BROWSE');
+		button.style.margin = '5px 10px';
 
 		Utils.addEventTo(button, 'click', function ()
 		{
@@ -1283,6 +1338,7 @@ BX.Sale.Input = (function () {
 		if (src)
 		{
 			anchor.href = src;
+			anchor.target = '_blank';
 			anchor.title = BX.message('INPUT_FILE_DOWNLOAD');
 			switch (src.split('.').pop())
 			{
@@ -1292,19 +1348,17 @@ BX.Sale.Input = (function () {
 				case 'jpe':
 				case 'gif':
 				case 'png':
-					if (value.FILE_SIZE < 100000)
-					{
 						child = document.createElement('img');
 						child.src = src;
 						child.style.maxWidth  = '100px';
 						child.style.maxHeight = '100px';
 						anchor.appendChild(child);
-					}
 			}
 		}
 		else
 		{
 			anchor.removeAttribute('href');
+			anchor.removeAttribute('target');
 			anchor.removeAttribute('title');
 		}
 
@@ -1399,6 +1453,7 @@ BX.Sale.Input = (function () {
 		button.type     = 'button';
 		button.value    = BX.message('INPUT_DATE_SELECT');
 		button.disabled = this.disabled;
+		button.style.margin = '0 10px';
 
 		Utils.addEventTo(button, 'click', function ()
 		{
@@ -1550,7 +1605,98 @@ BX.Sale.Input = (function () {
 		return true;
 	};
 
+	// Address ////////////////////////////////////////////////////////////////////////////////////////////////////////
+	Module.AddressInput = AddressInput;
+	Utils.extend(AddressInput, BaseInput);
+	Module.Manager.register('ADDRESS', AddressInput);
 
+	function AddressInput(name, settings, value, publicO)
+	{
+		AddressInput.__super__.constructor.call(this, name, settings, value, publicO);
+	}
+
+	AddressInput.prototype.getValuePath = function ()
+	{
+	};
+
+	AddressInput.prototype.createEditorSingle = function (name, value)
+	{
+		if (!BX.Sale.AddressControlConstructor)
+		{
+			return [document.createElement('span')];
+		}
+
+		var addressControl = new BX.Sale.AddressControlConstructor({
+			propsData: {
+				name: name,
+				initValue: value ? JSON.stringify(value) : null,
+				isLocked: false,
+			}
+		});
+
+		addressControl.$mount();
+
+		return [addressControl.$el];
+	};
+
+	AddressInput.prototype.setValueSingle = function (item, value)
+	{
+	};
+
+	AddressInput.prototype.getValueSingle = function (item)
+	{
+	};
+
+	AddressInput.prototype.setDisabledSingle = function (item, disabled)
+	{
+	};
+
+	AddressInput.prototype.addEventSingle = function (item, name, action)
+	{
+	};
+
+	Module.UserFieldInput = UserFieldInput;
+	Utils.extend(UserFieldInput, BaseInput);
+	Module.Manager.register('UF', UserFieldInput);
+
+	function UserFieldInput(name, settings, value, publicO)
+	{
+		UserFieldInput.__super__.constructor.call(this, name, settings, value, publicO);
+	}
+
+	UserFieldInput.prototype.createEditor = function (value)
+	{
+		var element = document.createElement('div');
+		if (BX.type.isNotEmptyString(this.settings.EDIT_HTML))
+			element.innerHTML = this.settings.EDIT_HTML;
+		this.items = [element];
+	};
+
+	UserFieldInput.prototype.afterEditorSingleInsert = function (item)
+	{
+		item[0].focus();
+	};
+
+	UserFieldInput.prototype.setValueSingle = function (item, value)
+	{
+		item[0].value = value;
+	};
+
+	UserFieldInput.prototype.getValueSingle = function (item)
+	{
+		var element = item[0];
+		return element.disabled ? null : element.value;
+	};
+
+	UserFieldInput.prototype.setDisabledSingle = function (item, disabled)
+	{
+		item[0].disabled = disabled;
+	};
+
+	UserFieldInput.prototype.addEventSingle = function (item, name, action)
+	{
+		Utils.addEventTo(item[0], name, action);
+	};
 
 	return Module;
 

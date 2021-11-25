@@ -3,6 +3,11 @@
  * @var CDatabase $DB
  * @var CMain  $APPLICATION
  */
+use Bitrix\Sale;
+use Bitrix\Main\Localization\Loc;
+use \Bitrix\Sale\Exchange\Integration\Admin\Link,
+	\Bitrix\Sale\Exchange\Integration\Admin\ModeType;
+
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
@@ -10,7 +15,6 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/admin_tool.
 
 $moduleId = "sale";
 Bitrix\Main\Loader::includeModule('sale');
-use Bitrix\Main\Localization\Loc;
 Loc::loadMessages(__FILE__);
 
 $ID = intval($_GET["ID"]);
@@ -18,7 +22,14 @@ $ID = intval($_GET["ID"]);
 /** @var \Bitrix\Sale\Order $saleOrder */
 
 if (!isset($saleOrder) || !($saleOrder instanceof \Bitrix\Sale\Order))
-	$saleOrder = \Bitrix\Sale\Order::load($ID);
+{
+	$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+
+	/** @var Sale\Order $orderClass */
+	$orderClass = $registry->getOrderClassName();
+
+	$saleOrder = $orderClass::load($ID);
+}
 
 $shipmentCollection = $saleOrder->getShipmentCollection();
 $paymentCollection = $saleOrder->getPaymentCollection();
@@ -26,12 +37,14 @@ $paymentCollection = $saleOrder->getPaymentCollection();
 $sTableHistory = "table_order_history";
 $oSortHistory = new CAdminSorting($sTableHistory);
 $lAdminHistory = new CAdminList($sTableHistory, $oSortHistory);
+$link = Link::getInstance();
 
 //FILTER ORDER CHANGE HISTORY
 $arFilterFieldsHistory = array(
 	"filter_user",
 	"filter_date_history",
-	"filter_type"
+	"filter_type",
+	"filter_important"
 );
 
 $lAdminHistory->InitFilter($arFilterFieldsHistory);
@@ -43,6 +56,11 @@ if ('' == $by)
 
 $order = trim(array_key_exists('order', $_REQUEST) ? $_REQUEST['order'] : '');
 
+if (!isset($filter_important))
+{
+	$filter_important = "Y";
+}
+
 if ('' == $order)
 	$order = 'DESC';
 
@@ -51,22 +69,24 @@ $arHistSort["ID"] = $order;
 
 $arFilterHistory = array("ORDER_ID" => $ID);
 
-if (isset($entity))
-	$arFilterHistory = array_merge($entity, $arFilterHistory);
+if (isset($historyEntity) && is_array($historyEntity))
+{
+	$arFilterHistory = array_merge($historyEntity, $arFilterHistory);
+}
 
-if (strlen($filter_type)>0) $arFilterHistory["TYPE"] = trim($filter_type);
-if (IntVal($filter_user)>0) $arFilterHistory["USER_ID"] = intval($filter_user);
+if ($filter_type <> '') $arFilterHistory["TYPE"] = trim($filter_type);
+if (intval($filter_user)>0) $arFilterHistory["USER_ID"] = intval($filter_user);
 
-if (strlen($filters_date_history_from)>0)
+if ($filters_date_history_from <> '')
 {
 	$arFilterHistory["DATE_CREATE_FROM"] = Trim($filters_date_history_from);
 }
 
-if (strlen($filters_date_history_to)>0)
+if ($filters_date_history_to <> '')
 {
 	if ($arDate = ParseDateTime($filters_date_history_to, CSite::GetDateFormat("FULL")))
 	{
-		if (StrLen($filters_date_history_to) < 11)
+		if (mb_strlen($filters_date_history_to) < 11)
 		{
 			$arDate["HH"] = 23;
 			$arDate["MI"] = 59;
@@ -103,6 +123,13 @@ while ($arHistory = $dbHistory->Fetch())
 	}
 }
 
+if ($filter_important === 'Y')
+{
+	$arFilterHistory['@TYPE'] = \Bitrix\Sale\OrderHistory::getManagerLogItems();
+}
+
+CTimeZone::Disable();
+
 // new order history data
 $dbOrderChange = CSaleOrderChange::GetList(
 	$arHistSort,
@@ -114,6 +141,8 @@ $dbOrderChange = CSaleOrderChange::GetList(
 
 while ($arChangeRecord = $dbOrderChange->Fetch())
 	$arHistoryData[] = $arChangeRecord;
+
+CTimeZone::Enable();
 
 // advancing sorting is necessary if old history results are mixed with new order changes
 if ($bUseOldHistory)
@@ -154,19 +183,39 @@ while ($arChangeRecord = $dbRecords->Fetch())
 {
 	$entityName = '';
 	$row =& $lAdminHistory->AddRow($arChangeRecord["ID"], $arChangeRecord, '', '');
-	$stmp = MakeTimeStamp($arChangeRecord["DATE_CREATE"], "DD.MM.YYYY HH:MI:SS");
-	$row->AddField("DATE_CREATE", date("d.m.Y H:i", $stmp));
-	$row->AddField("USER_ID", GetFormatedUserName($arChangeRecord["USER_ID"], false));
+	if ($arChangeRecord["DATE_CREATE"] instanceof \Bitrix\Main\Type\Date)
+	{
+		$datetime = $arChangeRecord["DATE_CREATE"];
+	}
+	else
+	{
+		$datetime = new \Bitrix\Main\Type\DateTime($arChangeRecord["DATE_CREATE"]);
+	}
+
+	$datetime->format(\Bitrix\Main\Type\DateTime::getFormat());
+	$row->AddField("DATE_CREATE", $datetime->toString());
+
+	$fieldValue = GetFormatedUserName($arChangeRecord["USER_ID"], false);
+	if($link->getType() == ModeType::APP_LAYOUT_TYPE)
+	{
+		$fieldValue = strip_tags($fieldValue);
+	}
+	$row->AddField("USER_ID", $fieldValue);
+
+
 	$arRecord = CSaleOrderChange::GetRecordDescription($arChangeRecord["TYPE"], $arChangeRecord["DATA"]);
 	$row->AddField("TYPE", $arRecord["NAME"]);
+
+	$arRecord["INFO"] = str_replace('&nbsp;', ' ', $arRecord["INFO"]);
+
 	$row->AddField("DATA", htmlspecialcharsbx($arRecord["INFO"]));
 	if (!isset($entity) && intval($arChangeRecord["ENTITY_ID"]) > 0)
 	{
 		if ($arChangeRecord["ENTITY"] == 'SHIPMENT')
 		{
-			$shipment = $shipmentCollection->getItemById($arChangeRecord["ENTITY_ID"]);
-			if ($shipment)
-				$entityName = $shipment->getField('DELIVERY_NAME');
+			$shipmentEntity = $shipmentCollection->getItemById($arChangeRecord["ENTITY_ID"]);
+			if ($shipmentEntity)
+				$entityName = $shipmentEntity->getField('DELIVERY_NAME');
 		}
 		else if ($arChangeRecord["ENTITY"] == 'PAYMENT')
 		{
@@ -190,14 +239,10 @@ if($_REQUEST["table_id"] == $sTableHistory)
 	<input type="hidden" name="table_id" value="<?=$sTableHistory?>">
 	<?
 	$arFilterFieldsTmp = array(
-		"filter_user" => Loc::getMessage("SOA_ROW_BUYER"),
-		"filter_date_history" => Loc::getMessage("SALE_F_DATE"),
-		"filter_status_id" => Loc::getMessage("SALE_F_DATE_UPDATE"),
-		"filter_payed" => Loc::getMessage("SALE_F_ID"),
-		"filter_allow_delivery" => Loc::getMessage("SALE_F_LANG_CUR"),
-		"filter_canceled" => Loc::getMessage("SOA_F_PRICE"),
-		"filter_deducted" => Loc::getMessage("SOA_F_PRICE"),
-		"filter_marked" => Loc::getMessage("SOA_F_PRICE")
+		"filter_user" => Loc::getMessage("SOD_HIST_H_USER"),
+		"filter_date_history" => Loc::getMessage("SOD_HIST_H_DATE"),
+		"filter_type" => Loc::getMessage("SOD_HIST_TYPE"),
+		"filter_important" => Loc::getMessage("SOD_HIST_IMPORTANT_TYPES"),
 	);
 
 	$oFilter = new CAdminFilter(
@@ -205,7 +250,7 @@ if($_REQUEST["table_id"] == $sTableHistory)
 		$arFilterFieldsTmp
 	);
 
-	$oFilter->SetDefaultRows(array("filter_user"));
+	$oFilter->SetDefaultRows(array("filter_user", 'filter_important'));
 	$oFilter->Begin();
 	?>
 <tr>
@@ -229,6 +274,15 @@ if($_REQUEST["table_id"] == $sTableHistory)
 			<?foreach ($arOperations as $type => $name):?>
 				<option value="<?=$type?>"<?if ($filter_type== $type) echo " selected"?>><?=htmlspecialcharsbx($name);?></option>
 			<?endforeach;?>
+		</select>
+	</td>
+</tr>
+<tr>
+	<td><?=Loc::getMessage('SOD_HIST_IMPORTANT_TYPES')?>:</td>
+	<td>
+		<select name="filter_important">
+			<option value="Y"<?if ($filter_important === 'Y' || $filter_important === null) echo " selected"?>><?=Loc::getMessage("SOD_HIST_YES");?></option>
+			<option value="N"<?if ($filter_important === 'N') echo " selected"?>><?=Loc::getMessage("SOD_HIST_NO");?></option>
 		</select>
 	</td>
 </tr>

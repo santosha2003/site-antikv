@@ -1,5 +1,18 @@
 <?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
+/** @var SocialnetworkBlogPostComment $this */
+/** @var array $arParams */
+/** @var array $arResult */
+/** @var string $componentPath */
+/** @var string $componentName */
+/** @var string $componentTemplate */
+/** @global CDatabase $DB */
+/** @global CUser $USER */
+/** @global CUserTypeManager $USER_FIELD_MANAGER */
+/** @global CMain $APPLICATION */
+
+use Bitrix\Main\UI\EntitySelector;
+
 __IncludeLang(dirname(__FILE__)."/lang/".LANGUAGE_ID."/result_modifier.php");
 
 /********************************************************************
@@ -35,13 +48,18 @@ $userOption = CUserOptions::GetOption("main.post.form", "postEdit");
 if(isset($userOption["showBBCode"]) && $userOption["showBBCode"] == "Y")
 	$arParams["TEXT"]["SHOW"] = "Y";
 
+$arParams["PIN_EDITOR_PANEL"] = (isset($userOption["pinEditorPanel"]) && $userOption["pinEditorPanel"] == "Y") ? "Y" : "N";
+
 $arParams["ADDITIONAL"] = (is_array($arParams["~ADDITIONAL"]) ? $arParams["~ADDITIONAL"] : array());
+
+$arResult["SELECTOR_VERSION"] = (!empty($arParams["SELECTOR_VERSION"]) ? intval($arParams["SELECTOR_VERSION"]) : 1);
+
 $addSpan = true;
 if (!empty($arParams["ADDITIONAL"]))
 {
 	$res = reset($arParams["ADDITIONAL"]);
 	$res = trim($res);
-	$addSpan = (substr($res, 0, 1) == "<");
+	$addSpan = (mb_substr($res, 0, 1) == "<");
 }
 $arParams["ADDITIONAL_TYPE"] = ($addSpan ? "html" : "popup");
 if ($arParams["TEXT"]["~SHOW"] != "Y")
@@ -82,14 +100,19 @@ $arParams["DESTINATION_USE_CLIENT_DATABASE"] = (
 );
 $arParams["DESTINATION"] = (array_key_exists("VALUE", $arParams["DESTINATION"]) ? $arParams["DESTINATION"]["VALUE"] : $arParams["DESTINATION"]);
 
+$arResult["bExtranetUser"] = (
+	\Bitrix\Main\Loader::includeModule("extranet")
+	&& !CExtranet::IsIntranetUser()
+);
+
 if (!empty($arParams["DEST_SORT"]))
 {
 	$arResult["DEST_SORT"] = $arParams["DEST_SORT"];
 }
 elseif (
-	IsModuleInstalled("socialnetwork")
-	&& $GLOBALS["USER"]->IsAuthorized()
-	&& method_exists('CSocNetLogDestination','GetDestinationSort')
+	$arResult["SELECTOR_VERSION"] < 2
+	&& \Bitrix\Main\Loader::includeModule("socialnetwork")
+	&& $USER->IsAuthorized()
 )
 {
 	$arResult["DEST_SORT"] = CSocNetLogDestination::GetDestinationSort(array(
@@ -102,7 +125,8 @@ else
 }
 
 if (
-	empty($arParams["DESTINATION"])
+	$arResult["SELECTOR_VERSION"] < 2
+	&& empty($arParams["DESTINATION"])
 	&& in_array("MentionUser", $arParams["BUTTONS"])
 	&& CModule::IncludeModule("socialnetwork")
 )
@@ -124,10 +148,7 @@ if (
 		}
 	}
 
-	if (
-		CModule::IncludeModule('extranet')
-		&& !CExtranet::IsIntranetUser()
-	)
+	if ($arResult["bExtranetUser"])
 	{
 		$arParams["DESTINATION"]['EXTRANET_USER'] = 'Y';
 		$arParams["DESTINATION"]['USERS'] = CSocNetLogDestination::GetExtranetUser();
@@ -145,12 +166,12 @@ if (
 	}
 }
 
-if (in_array("MentionUser", $arParams["BUTTONS"]))
+if (
+	in_array("MentionUser", $arParams["BUTTONS"])
+	&& $arResult["SELECTOR_VERSION"] < 2
+)
 {
-	if (
-		CModule::IncludeModule("socialnetwork")
-		&& method_exists('CSocNetLogDestination','GetDestinationSort')
-	)
+	if (CModule::IncludeModule("socialnetwork"))
 	{
 		$arResult["MENTION_DEST_SORT"] = CSocNetLogDestination::GetDestinationSort(array(
 			"DEST_CONTEXT" => "MENTION"
@@ -163,19 +184,27 @@ if (in_array("MentionUser", $arParams["BUTTONS"]))
 
 	$arParams["DESTINATION"]['LAST']['MENTION_USERS'] = array();
 
+	$limit = 20;
+	$mentionUserCounter = 0;
+
 	$arDestUser = Array();
 	foreach($arResult["MENTION_DEST_SORT"] as $code => $sortInfo)
 	{
+		if ($mentionUserCounter >=  $limit)
+		{
+			break;
+		}
+
 		if (preg_match('/^U(\d+)$/i', $code, $matches))
 		{
 			$arParams["DESTINATION"]['LAST']['MENTION_USERS'][$code] = $code;
 			$arDestUser[] = str_replace('U', '', $code);
+			$mentionUserCounter++;
 		}
 	}
 
 	$arParams["DESTINATION"]['MENTION_USERS'] = (
-		CModule::IncludeModule('extranet')
-		&& !CExtranet::IsIntranetUser()
+		$arResult["bExtranetUser"]
 			? $arParams["DESTINATION"]['USERS']
 			: (
 				!empty($arDestUser)
@@ -202,13 +231,13 @@ if (array_key_exists("SMILES", $arParams))
 	if (
 		is_array($arParams["SMILES"])
 		&& array_key_exists("VALUE", $arParams["SMILES"])
+		&& !empty($arParams["SMILES"]["VALUE"])
 	) // compatibility
 	{
 		$arResult["SMILES"] = $arParams["SMILES"];
 	}
 	else if (
-		!is_array($arParams["SMILES"])
-		&& ($res = CSmileGallery::getSmilesWithSets($arParams["SMILES"]))
+		$res = CSmileGallery::getSmilesWithSets($arParams["SMILES"])
 	)
 	{
 		$arResult["SMILES"] = array(
@@ -241,7 +270,7 @@ $arParams["IMAGE"] = array("WIDTH" => 90, "HEIGHT" => 90);
 
 if (
 	IsModuleInstalled("extranet")
-	&& strlen(COption::GetOptionString("extranet", "extranet_site")) > 0
+	&& COption::GetOptionString("extranet", "extranet_site") <> ''
 )
 {
 	$arResult["EXTRANET_ROOT"] = array(
@@ -252,5 +281,23 @@ if (
 		'parent' => 'DR0',
 		)
 	);
+}
+
+$arResult["ALLOW_EMAIL_INVITATION"] = (isset($arParams["ALLOW_EMAIL_INVITATION"]) && $arParams["ALLOW_EMAIL_INVITATION"] === "Y");
+$arResult["ALLOW_ADD_CRM_CONTACT"] = ($arResult["ALLOW_EMAIL_INVITATION"] && CModule::IncludeModule('crm') && CCrmContact::CheckCreatePermission());
+$arResult["ALLOW_CRM_EMAILS"] = (isset($arParams["ALLOW_CRM_EMAILS"]) && $arParams["ALLOW_CRM_EMAILS"] === 'Y');
+
+if ($arParams["DESTINATION_SHOW"] === "Y")
+{
+	$arResult['ALLOW_TO_ALL'] = (
+		!is_array($arParams['DESTINATION'])
+		|| !isset($arParams['DESTINATION']['DENY_TOALL'])
+		|| !$arParams['DESTINATION']['DENY_TOALL']
+	);
+
+
+	$arResult['DESTINATION'] = [
+		'ENTITIES_PRESELECTED' => EntitySelector\Converter::sortEntities(EntitySelector\Converter::convertFromFinderCodes(is_array($arParams["DESTINATION"]["SELECTED"]) ? array_keys($arParams["DESTINATION"]["SELECTED"]) : []))
+	];
 }
 ?>

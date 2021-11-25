@@ -14,8 +14,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 /** @var string $parentComponentTemplate */
 $this->setFrameMode(false);
 
-global $HTTP_RAW_POST_DATA;
-
 $arParams["INTERVAL"] = intval($arParams["INTERVAL"]);
 
 if (!is_array($arParams["GROUP_PERMISSIONS"]))
@@ -71,15 +69,15 @@ $FILE_NAME = false;
 $ABS_FILE_NAME = false;
 $WORK_DIR_NAME = false;
 
-if ($arParams["USE_TEMP_DIR"] === "Y" && strlen($_SESSION["BX_HL_IMPORT"]["TEMP_DIR"]) > 0)
+if ($arParams["USE_TEMP_DIR"] === "Y" && $_SESSION["BX_HL_IMPORT"]["TEMP_DIR"] <> '')
 	$DIR_NAME = $_SESSION["BX_HL_IMPORT"]["TEMP_DIR"];
 else
 	$DIR_NAME = $_SERVER["DOCUMENT_ROOT"]."/".COption::GetOptionString("main", "upload_dir", "upload")."/1c_highloadblock/";
 
 if (
 	isset($_GET["filename"])
-	&& (strlen($_GET["filename"]) > 0)
-	&& (strlen($DIR_NAME) > 0)
+	&& ($_GET["filename"] <> '')
+	&& ($DIR_NAME <> '')
 )
 {
 	//This check for 1c server on linux
@@ -95,10 +93,10 @@ if (
 	if (!$bBadFile)
 	{
 		$FILE_NAME = rel2abs($DIR_NAME, "/".$filename);
-		if ((strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
+		if ((mb_strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
 		{
 			$ABS_FILE_NAME = $DIR_NAME.$FILE_NAME;
-			$WORK_DIR_NAME = substr($ABS_FILE_NAME, 0, strrpos($ABS_FILE_NAME, "/")+1);
+			$WORK_DIR_NAME = mb_substr($ABS_FILE_NAME, 0, mb_strrpos($ABS_FILE_NAME, "/") + 1);
 		}
 	}
 }
@@ -179,14 +177,9 @@ elseif ($_GET["mode"]=="init")
 elseif (($_GET["mode"] == "file") && $ABS_FILE_NAME)
 {
 	//Read http data
-	if (function_exists("file_get_contents"))
-		$DATA = file_get_contents("php://input");
-	elseif (isset($HTTP_RAW_POST_DATA))
-		$DATA = &$HTTP_RAW_POST_DATA;
-	else
-		$DATA = false;
+	$DATA = file_get_contents("php://input");
+	$DATA_LEN = defined("BX_UTF")? mb_strlen($DATA, 'latin1') : mb_strlen($DATA);
 
-	$DATA_LEN = defined("BX_UTF")? mb_strlen($DATA, 'latin1'): strlen($DATA);
 	//And save it the file
 	if (isset($DATA) && $DATA !== false)
 	{

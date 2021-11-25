@@ -1,5 +1,5 @@
-<?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
-<?
+<?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+
 $arFieldsSorted = array(
 	"LOGIN",
 	"NAME",	
@@ -47,7 +47,7 @@ $arFieldsSorted = array(
 $arUserOutFields = array();
 
 // USER FIELDS
-				
+
 if (count($arParams["SHOW_FIELDS"]) > 0)
 {
 	foreach ($arFieldsSorted as $userFieldName)
@@ -57,9 +57,9 @@ if (count($arParams["SHOW_FIELDS"]) > 0)
 			$val = $arResult["User"][$userFieldName];
 			switch ($userFieldName)
 			{
-				case 'LOGIN':			
+				case 'LOGIN':
 				case 'NAME':
-				case 'LAST_NAME':				
+				case 'LAST_NAME':
 				case 'SECOND_NAME':
 				case 'PERSONAL_PROFESSION':
 				case 'PERSONAL_NOTES':
@@ -80,33 +80,35 @@ if (count($arParams["SHOW_FIELDS"]) > 0)
 				case 'WORK_CITY':
 				case 'WORK_STREET':
 				case 'WORK_MAILBOX':
-					if (StrLen($val) > 0)
+					if ($val <> '')
+					{
 						$val = htmlspecialcharsbx($val);
+					}
 					break;
 
 				case 'LAST_LOGIN':
 				case 'DATE_REGISTER':
-					if (StrLen($val) > 0)				
+					if ($val <> '')
 						$val = date($arParams["DATE_TIME_FORMAT"], MakeTimeStamp($val, CSite::GetDateFormat("FULL")));
 					break;
-					
+
 				case 'EMAIL':
-					if ($bIntranet && StrLen($val) > 0):
+					if ($bIntranet && $val <> ''):
 						$val = '<a href="mailto:'.htmlspecialcharsbx($val).'">'.htmlspecialcharsbx($val).'</a>';
 					else:
 						$val = '';
-					endif;	
+					endif;
 					break;
 
 				case 'PERSONAL_WWW':
 				case 'WORK_WWW':
 					if ($val == "http://")
 						$val = "";
-					elseif (StrLen($val) > 0)
+					elseif ($val <> '')
 					{
 						$val = htmlspecialcharsbx($val);
 						$valLink = $val;
-						if (StrToLower(SubStr($val, 0, StrLen("http://"))) != "http://")
+						if (mb_strtolower(mb_substr($val, 0, mb_strlen("http://"))) != "http://")
 							$valLink = "http://".$val;
 						$val = '<a href="'.$valLink.'" target="_blank">'.$val.'</a>';
 					}
@@ -114,12 +116,12 @@ if (count($arParams["SHOW_FIELDS"]) > 0)
 
 				case 'PERSONAL_COUNTRY':
 				case 'WORK_COUNTRY':
-					if (StrLen($val) > 0)
+					if ($val <> '')
 						$val = GetCountryByID($val);
 					break;
 
 				case 'PERSONAL_ICQ':
-					if (StrLen($val) > 0)
+					if ($val <> '')
 						$val = htmlspecialcharsbx($val).'<!-- <img src="http://web.icq.com/whitepages/online?icq='.htmlspecialcharsbx($val).'&img=5" alt="" />-->';
 					break;
 
@@ -128,35 +130,35 @@ if (count($arParams["SHOW_FIELDS"]) > 0)
 				case 'PERSONAL_MOBILE':
 				case 'WORK_PHONE':
 				case 'WORK_FAX':
-					if (StrLen($val) > 0)
+					if ($val <> '')
 					{
 						$valEncoded = preg_replace('/[^\d\+]+/', '', htmlspecialcharsbx($val));
 						$val = '<a href="callto:'.$valEncoded.'">'.htmlspecialcharsbx($val).'</a>';
 					}
 					break;
-					
+
 				case 'PERSONAL_GENDER':
 					$val = (($val == 'F') ? GetMessage("MAIN_UL_SEX_F") : (($val == 'M') ? GetMessage("MAIN_UL_SEX_M") : ""));
 					break;
-					
+
 				case 'PERSONAL_BIRTHDAY':
-					if (StrLen($val) > 0)
+					if ($val <> '')
 					{
 						$arDateTmp = ParseDateTime($val, CSite::GetDateFormat('SHORT'));
-						$day = IntVal($arDateTmp["DD"]);
-						$month = IntVal($arDateTmp["MM"]);
-						$year = IntVal($arDateTmp["YYYY"]);
+						$day = intval($arDateTmp["DD"]);
+						$month = intval($arDateTmp["MM"]);
+						$year = intval($arDateTmp["YYYY"]);
 
 						$val = $day.' '.ToLower(GetMessage('MONTH_'.$month.'_S'));
 						if (($arParams['SHOW_YEAR'] == 'Y') || ($arParams['SHOW_YEAR'] == 'M' && $arResult["User"]['PERSONAL_GENDER'] == 'M'))
 							$val .= ' '.$year;
-									
+
 						$arResult['IS_BIRTHDAY'] = (intval($arDateTmp['MM']) == date('n') && intval($arDateTmp['DD']) == date('j'));
 					}
 					break;
 
 				case 'WORK_LOGO':
-					if (IntVal($val) > 0)
+					if (intval($val) > 0)
 					{
 						$iSize = 150;
 						$imageFile = CFile::GetFileArray($val);
@@ -176,20 +178,36 @@ if (count($arParams["SHOW_FIELDS"]) > 0)
 				case 'MANAGERS':
 					$sManagers = '';
 					if(is_array($val))
+					{
 						foreach($val as $manager)
-							$sManagers .= ($sManagers <> ''? ', ':'').'<a href="'.$manager["URL"].'">'.$manager["NAME_FORMATTED"].'</a>';
+						{
+							$sManagers .= ($sManagers <> ''? ', ':'').(
+								$arResult["CurrentUser"]
+								&& !in_array($arResult["CurrentUser"]["EXTERNAL_AUTH_ID"], array('email'))
+									? '<a href="'.$manager["URL"].'">'.$manager["NAME_FORMATTED"].'</a>'
+									: $manager["NAME_FORMATTED"]
+							);
+						}
+					}
 					$val = $sManagers;
 					break;
 				default:
 					$val = "";
 					break;
 			}
+
 			if($val <> '')
-				$arUserOutFields[$userFieldName] = array("name"=>GetMessage("MAIN_UL_".$userFieldName), "value"=>$val);
+			{
+				$arUserOutFields[$userFieldName] = array(
+					"code" => $userFieldName,
+					"name" => getMessage("MAIN_UL_".$userFieldName),
+					"value" => $val
+				);
+			}
 		}
 	}
 }
-				
+
 // USER PROPERIES
 if (count($arParams["USER_PROPERTY"]) > 0)
 {
@@ -202,7 +220,7 @@ if (count($arParams["USER_PROPERTY"]) > 0)
 			if (
 				$bIntranet
 				&& $arUserField["FIELD_NAME"] == "UF_DEPARTMENT"
-				&& strlen(trim($arParams["PATH_TO_CONPANY_DEPARTMENT"])) > 0
+				&& trim($arParams["PATH_TO_CONPANY_DEPARTMENT"]) <> ''
 			)
 			{
 				$arUserField['SETTINGS']['SECTION_URL']	= trim($arParams["PATH_TO_CONPANY_DEPARTMENT"]);
@@ -222,7 +240,7 @@ if (count($arParams["USER_PROPERTY"]) > 0)
 				$arUserField['SETTINGS']['SECTION_URL'] = false;
 			}
 
-			$arUserField["EDIT_FORM_LABEL"] = StrLen($arUserField["EDIT_FORM_LABEL"]) > 0 ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
+			$arUserField["EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"] <> '' ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
 			$arUserField["EDIT_FORM_LABEL"] = htmlspecialcharsEx($arUserField["EDIT_FORM_LABEL"]);
 			$arUserField["~EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"];
 
@@ -251,7 +269,17 @@ if (count($arParams["USER_PROPERTY"]) > 0)
 			ob_end_clean();
 			
 			if($tmpVal <> '')
-				$arUserOutFields[$fieldName] = array("name"=>htmlspecialcharsEx(StrLen($arUserField["EDIT_FORM_LABEL"]) > 0 ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"]), "value"=>$tmpVal);
+			{
+				$arUserOutFields[$fieldName] = array(
+					"code" => $fieldName,
+					"name" => htmlspecialcharsEx(
+						$arUserField["EDIT_FORM_LABEL"] <> ''
+							? $arUserField["EDIT_FORM_LABEL"]
+							: $arUserField["FIELD_NAME"]
+					),
+					"value" => $tmpVal
+				);
+			}
 		}
 	}
 }	
@@ -272,17 +300,34 @@ if(!function_exists('__card_sort'))
 
 //sorting fields
 foreach($arFieldsSorted as $index=>$field)
+{
 	if(isset($arUserOutFields[$field]))
+	{
 		$arUserOutFields[$field]["sort"] = $index;
+	}
+}
 uasort($arUserOutFields, '__card_sort');
 
-$strUserFields = '';
+$strPosition = $strUserFields = '';
 foreach($arUserOutFields as $field)
-	$strUserFields .= "<span class='field-name'>".$field["name"]."</span>: ".$field["value"]."<br>\n";
+{
+	if (
+		$bIntranet
+		&& $arResult["VERSION"] >= 2
+		&& $field['code'] == 'WORK_POSITION'
+	)
+	{
+		$strPosition = $field["value"];
+	}
+	else
+	{
+		$strUserFields .= "<span class='field-row field-row-".htmlspecialcharsbx(mb_strtolower($field["code"]))."'><span class='field-name'>".$field["name"]."</span>: <span class='field-value'>".$field["value"]."</span></span>".($arResult["VERSION"] < 2 ? "<br>" : "")."\n";
+	}
+}
 
 // RATING
 $strTmpUserRatings = "";
-				
+
 if (array_key_exists("USER_RATING", $arParams) && is_array($arParams["USER_RATING"]) && count($arParams["USER_RATING"]) > 0)
 {
 	$tmpVal = "";
@@ -304,9 +349,7 @@ if (array_key_exists("USER_RATING", $arParams) && is_array($arParams["USER_RATIN
 		
 		if (is_array($arRating))
 			$strTmpUserRatings .= '<span class="field-name">'.htmlspecialcharsEx($arRating["RATING_NAME"]).'</span>: <span title="'.$arRating["RATING_NAME"].': '.$arRating["CURRENT_VALUE"].' ('.GetMessage("MAIN_UL_RATING_PROGRESS").' '.$arRating["PROGRESS_VALUE"].')">'.$arRating["ROUND_CURRENT_VALUE"].'</span><br>';
-
 	}
-	
 }
 
 if (in_array("PERSONAL_PHOTO", $arParams["SHOW_FIELDS"]))
@@ -323,7 +366,7 @@ if (in_array("PERSONAL_PHOTO", $arParams["SHOW_FIELDS"]))
 			$arFileTmp = CFile::ResizeImageGet(
 				$imageFile,
 				array("width" => $iSize, "height" => $iSize),
-				BX_RESIZE_IMAGE_PROPORTIONAL,
+				($arResult["VERSION"] >= 2 ? BX_RESIZE_IMAGE_EXACT : BX_RESIZE_IMAGE_PROPORTIONAL),
 				false
 			);
 			$arTmpUser["PERSONAL_PHOTO"] = CFile::ShowImage($arFileTmp["src"], $iSize, $iSize, "border=0", "");
@@ -357,21 +400,21 @@ if (in_array("PERSONAL_PHOTO", $arParams["SHOW_FIELDS"]))
 	}
 }
 
-if (array_key_exists("PERSONAL_PHOTO", $arTmpUser) && strlen($arTmpUser["PERSONAL_PHOTO"]) > 0)
+if (array_key_exists("PERSONAL_PHOTO", $arTmpUser) && $arTmpUser["PERSONAL_PHOTO"] <> '')
 {
-	$photoClass = "bx-user-info-data-photo";
+	$photoClass = $arResult["stylePrefix"]."-info-data-photo";
 	$strPhoto = $arTmpUser["PERSONAL_PHOTO"];
 }
 else
 {
-	$photoClass = "bx-user-info-data-photo no-photo";
+	$photoClass = $arResult["stylePrefix"]."-info-data-photo no-photo";
 	$strPhoto = "";
 }
-		
-if (IsModuleInstalled('extranet'))
+
+if (IsModuleInstalled('extranet') || IsModuleInstalled('mail'))
 {
 	if (
-		!is_array($arUserFields) 
+		!is_array($arUserFields)
 		|| count($arUserFields) <= 0
 	)
 	{
@@ -382,20 +425,62 @@ if (IsModuleInstalled('extranet'))
 		(is_array($arUserFields["UF_DEPARTMENT"]["VALUE"]) && count($arUserFields["UF_DEPARTMENT"]["VALUE"]) <= 0)
 		|| (!is_array($arUserFields["UF_DEPARTMENT"]["VALUE"]) && intval($arUserFields["UF_DEPARTMENT"]["VALUE"]) <= 0)
 	);
-	$strUserNameClass = ($bExtranetUser ? " bx-user-info-extranet" : "");
+	$bEmailUser = ($arResult["User"]["EXTERNAL_AUTH_ID"] == 'email');
+	$bCrmEmailUser = !empty($arUserFields["UF_USER_CRM_ENTITY"]["VALUE"]);
+
+	if ($bCrmEmailUser)
+	{
+		$strUserNameClass = " ".$arResult["stylePrefix"]."-info-emailcrm";
+	}
+	elseif ($bEmailUser)
+	{
+		$strUserNameClass = " ".$arResult["stylePrefix"]."-info-email";
+	}
+	elseif ($bExtranetUser)
+	{
+		$strUserNameClass = " ".$arResult["stylePrefix"]."-info-extranet";
+	}
+	else
+	{
+		$strUserNameClass = "";
+	}
 }
-		
+
 $strNameFormatted = CUser::FormatName($arParams['NAME_TEMPLATE'], $arTmpUser, $bUseLogin);
-		
+
 $strPhoto = '<a href="'.$arTmpUser["DETAIL_URL"].'" class="'.$photoClass.'">'.$strPhoto.'</a>';
 
-$data_cont_class = ($GLOBALS["USER"]->IsAuthorized() && $arResult["CurrentUserPerms"]["Operations"]["videocall"] ? "bx-user-info-data-cont-video" : "bx-user-info-data-cont");
+$data_cont_class = ($GLOBALS["USER"]->IsAuthorized() && $arResult["CurrentUserPerms"]["Operations"]["videocall"] ? $arResult["stylePrefix"]."-info-data-cont-video" : $arResult["stylePrefix"]."-info-data-cont");
 
 $strCard = '<div class="'.$data_cont_class.'" id="bx_user_info_data_cont_'.$arTmpUser["ID"].'">';
 
-$strCard .= '<div class="bx-user-info-data-name '.$strUserNameClass.'"><a href="'.($arResult["CurrentUser"] && !in_array($arResult["CurrentUser"]["EXTERNAL_AUTH_ID"], array('email')) ? $arTmpUser["DETAIL_URL"] : 'javascript:void(0);').'">'.$strNameFormatted.'</a></div>';
+if ($arResult["VERSION"] < 2)
+{
+	$strCard .= '<div class="'.$arResult["stylePrefix"].'-info-data-name '.$strUserNameClass.'"><a href="'.($arResult["CurrentUser"] && !in_array($arResult["CurrentUser"]["EXTERNAL_AUTH_ID"], array('email')) ? $arTmpUser["DETAIL_URL"] : 'javascript:void(0);').'">'.$strNameFormatted.'</a></div>';
+	$strCard .= ($bExtranetUser ? '<div class="'.$arResult["stylePrefix"].'-info-extranet-description">'.GetMessage("MAIN_UL_EXTRANET_USER").'</div>' : '');
+}
+else
+{
+	if ($arResult["CurrentUser"] && !in_array($arResult["CurrentUser"]["EXTERNAL_AUTH_ID"], array('email')))
+	{
+		$strNameFormatted = '<a href="'.$arTmpUser["DETAIL_URL"].'">'.$strNameFormatted.'</a>';
+	}
 
-$strCard .= ($bExtranetUser ? '<div class="bx-user-info-extranet-description">'.GetMessage("MAIN_UL_EXTRANET_USER").'</div>' : '');
-$strCard .= '<div class="bx-user-info-data-info">'.$strUserFields.$strTmpUserRatings.'</div>';
+	if ($bExtranetUser)
+	{
+		$strPosition = GetMessage("MAIN_UL_EXTRANET_USER");
+	}
+}
+
+
+$strCard .= '<div class="'.$arResult["stylePrefix"].'-info-data-info">'.$strUserFields.$strTmpUserRatings.'</div>';
 $strCard .= '</div>';
+
+static $includedOnce = false;
+if (!$includedOnce)
+{
+	$arScripts = array("BX.message({ MULSonetMessageChatTemplate: '".CUtil::JSEscape($arParams["~PATH_TO_SONET_MESSAGES_CHAT"])."', MULVideoCallTemplate: '".CUtil::JSEscape($arParams["~PATH_TO_VIDEO_CALL"])."' });");
+}
+
+$includedOnce = true;
 ?>

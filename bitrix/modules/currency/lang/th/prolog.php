@@ -1,3 +1,0 @@
-<?
-$MESS ['SALE_ICON_TITLE'] = "Ê¡ØÅà§Ô¹";
-?>

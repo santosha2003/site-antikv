@@ -10,7 +10,9 @@ if(!is_array($arParams)) $arParams = array();
 if(strlen($arParams["site_id"]) <= 0)
 	$arParams["site_id"] = "s1";
 
-$_SESSION["DEMO_IBLOCK_BOOKS"] = CIBlockCMLImport::GetIBlockByXML_ID("books-books");
+$import = new CIBlockCMLImport();
+
+$_SESSION["DEMO_IBLOCK_BOOKS"] = $import->GetIBlockByXML_ID("books-books");
 //Import XML
 if($_SESSION["DEMO_IBLOCK_BOOKS"] === false)
 {
@@ -21,8 +23,7 @@ if($_SESSION["DEMO_IBLOCK_BOOKS"] === false)
 		$rsLanguages = CLanguage::GetList(($b="sort"), ($o="asc"));
 		while($arLang = $rsLanguages->Fetch())
 		{
-			$file = dirname(__FILE__)."/lang/".$arLang["LANGUAGE_ID"]."/books-books.php";
-			include($file);
+			__IncludeLang(GetLangFileName(dirname(__FILE__)."/lang/", "/books-books.php", $arLang["LANGUAGE_ID"]));
 			$arLabels[$arLang["LANGUAGE_ID"]] = GetMessage("DEMO_IBLOCK_ESTORE_BOOKS_BROWSER_TITLE");
 		}
 

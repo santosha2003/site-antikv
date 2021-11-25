@@ -1,0 +1,305 @@
+<?php
+class CWatermark {
+ // chmod 1777 ./tmp ./bitrix/tmp ./upload  ./upload/tmp
+ // св-ва инфоблока-настроить вн вид списка - вывести все поля -не обязательно но проще отладка
+ // ./.upload/tmp сохраняется оригинал картинки и включены 2 файла лога - пишется $arFields
+   //Срабатываем при создании элемента
+   function ImageAdd(&$arFields) {
+     CWatermark::log_array($arFields); // убрать после отладки 
+      //Указываем нужные ИБ, допустим ваш каталог имеет ID 1 + секция ордена медали  (529)
+      if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529) {
+//       CWatermark::log_array($arFields); // убрать после отладки 
+         if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])) {
+            //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
+         }
+         //Если заполнено детальное изображение
+         if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
+//            //foreach($arFields[PROPERTY_VALUES][28] as &$file):
+//             foreach($arFields["DETAIL_PICTURE"] as &$file):
+//       CAllFile::ResizeImage(
+//         $file, 
+//         array("width" => "200", "height" => "200"), 
+//         BX_RESIZE_IMAGE_PROPORTIONAL);
+//	     endforeach;
+            CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
+              }
+ //        $tok="bbb";
+            //$arFields[NAME] = $tok;  //имя присваиваем из свойства
+            //if ($arFields[PROPERTY_VALUES][69][0] == "") {$arFields[ACTIVE] = "N";} //aктивность также в зависимости от свойства
+//
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["name"]=$arFields[DETAIL_PICTURE]["name"];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["type"]=$arFields[DETAIL_PICTURE]["type"];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["tmp_name"]=$arFields[DETAIL_PICTURE]["tmp_name"];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE][error]=$arFields[DETAIL_PICTURE][error];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE][size]=$arFields[DETAIL_PICTURE][size];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["COPY_FILE"] = "Y";
+//            $arFields[TAGS] = trim($tok, " ;:\/*.,");
+            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc1.txt","w");
+            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
+            fclose($f);
+
+     CWatermark::log_array($arFields); // убрать после отладки.
+//Тут наносим на дополнительное фото, 2 это ID свойства ИБ       //for jcarusel  72 73, 56 61 (Awards)
+  if(isset($arFields["PROPERTY_VALUES"]["72"])) {
+
+    foreach ($arFields["PROPERTY_VALUES"]["72"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["72"][$key]['VALUE']['tmp_name']);
+         }
+     }
+  if(isset($arFields["PROPERTY_VALUES"]["73"])) {
+    foreach ($arFields["PROPERTY_VALUES"]["73"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["73"][$key]['VALUE']['tmp_name']);
+         }
+     }
+  if(isset($arFields["PROPERTY_VALUES"]["56"])) {
+
+    foreach ($arFields["PROPERTY_VALUES"]["56"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["56"][$key]['VALUE']['tmp_name']);
+         }
+     }
+  if(isset($arFields["PROPERTY_VALUES"]["61"])) {
+    foreach ($arFields["PROPERTY_VALUES"]["61"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["61"][$key]['VALUE']['tmp_name']);
+         }
+     }
+
+
+             //REAL_PICTURE  //Оригинал
+        //CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["54"]["n0"]["VALUE"]["tmp_name"]);
+         //CWatermark::PostWaterMark($arFields[PROPERTY_VALUES][2]["xkey0"][VALUE][tmp_name]); //bx16 no extension for temp picture!!!
+
+/* [n0] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] =>
+                                    [type] =>
+                                    [tmp_name] =>
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+*/
+
+//    foreach($arFields["PROPERTY_VALUES"]["2"] as &$file):
+//       CAllFile::ResizeImage(
+//         $file, 
+//         array("width" => "200", "height" => "200"), 
+//         BX_RESIZE_IMAGE_PROPORTIONAL);
+//    endforeach;
+
+      }
+   }
+
+   //Срабатываем при изменение элемента
+ //тлько Ордена catalog infoblock id=1
+/*     [IBLOCK_SECTION] => Array
+        (
+            [0] => 529
+        )
+*/
+
+   function ImageUpdate(&$arFields) {
+      //То же самое, указываем ID ИБ
+	   if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529) {
+         //Если заполнено изображение анонса
+        // if(!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])){
+            //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
+        // }
+         //Если заполнено детальное изображение
+        // if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
+        //    CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
+         //}
+//Тут наносим на дополнительное фото, 2 это ID свойства ИБ       //for jcarusel
+            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc2.txt","w");
+            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
+            fclose($f);
+     CWatermark::log_array($arFields); // убрать после отладки.
+  if(isset($arFields["PROPERTY_VALUES"]["72"])) {
+
+    foreach ($arFields["PROPERTY_VALUES"]["72"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["72"][$key]['VALUE']['tmp_name']);
+         }
+     }
+  if(isset($arFields["PROPERTY_VALUES"]["73"])) {
+    foreach ($arFields["PROPERTY_VALUES"]["73"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["73"][$key]['VALUE']['tmp_name']);
+         }
+     }
+  if(isset($arFields["PROPERTY_VALUES"]["56"])) {
+
+    foreach ($arFields["PROPERTY_VALUES"]["56"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["56"][$key]['VALUE']['tmp_name']);
+         }
+     }
+  if(isset($arFields["PROPERTY_VALUES"]["61"])) {
+    foreach ($arFields["PROPERTY_VALUES"]["61"] as $key=>$moreimg)
+         {
+    CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["61"][$key]['VALUE']['tmp_name']);
+         }
+     }
+             //REAL_PICTURE  //Оригинал
+   }
+ }
+//functions *********************************
+   // записывает все что передадут в /bitrix/log.txt
+
+   function log_array() {
+   $arArgs = func_get_args(); 
+   $sResult = ''; 
+   foreach($arArgs as $arArg) { 
+      $sResult .= "\n\n".print_r($arArg, true); 
+   }
+
+   if(!defined('LOG_FILENAME')) {
+      define('LOG_FILENAME', $_SERVER['DOCUMENT_ROOT'].'/bitrix/log.txt');
+   }
+   AddMessage2Log($sResult, 'log_array -> ');
+   }
+
+   function PostWaterMark(&$image) {
+//echo ("<pre>");
+//print_r ($key);
+//print_r ($arFields);
+//echo ("</pre>");
+ if ($image == NULL) return true;
+      //Получаем папку для загрузок
+      $_upload_dir = COption::GetOptionString("main", "upload_dir");
+
+      $size = getimagesize($image);
+  $ratio = $size[0]/$size[1]; // width/height
+ if( $ratio > 1) {
+    $width = $size[0];  // w > h   landscape
+    $height = $size[1];
+ }
+ else {
+    $width = ceil($size[1]*$ratio);  // w < h portrait //for resize watermark before add
+    $height = ceil($size[0]*$ratio); //picture w - h change & smaller size - more proportional
+ }
+ if ($size[mime] == 'image/jpeg')    {  $resultImage = imagecreatefromjpeg($image); }
+ if ($size[mime] == 'image/png')    {  $resultImage = imagecreatefrompng($image); }
+ if ($resultImage == NULL) return true;    // source picture jpeg or png
+#$src = imagecreatefromstring(file_get_contents($fn));
+#$dst = imagecreatetruecolor($width,$height);
+#imagecopyresampled($dst,$src,0,0,0,0,$width,$height,$size[0],$size[1]);
+#imagedestroy($src);
+#imagepng($dst,$target_filename_here); // adjust format as needed
+#imagedestroy($dst);
+      imagealphablending($resultImage, true);    //adobe photoshop flatten image
+     //отладка 2 файл журнала отключить если работает
+    $imgprop = array("width" => $width, "height" => $height, "lay"=>$size[2],"dim"=>$size[3],"bits"=>$size[bits],"channels"=>$size[channels],"mime"=>$size[mime] );
+    $f3=fopen($_SERVER["DOCUMENT_ROOT"]."/logc3.txt","w");
+    fwrite($f3, print_r($imgprop,true));//печатаем в файл результирующий массив для проверки
+    fwrite($f3, print_r($size[3],true));//печатаем в файл результирующий массив для проверки
+    fclose($f3);
+      //Создаем временную картинку  //пригодилось для копии только
+      $_image = $_SERVER['DOCUMENT_ROOT'] . "/" . $_upload_dir . "/tmp/" . md5(microtime()) . ".jpg";
+    imagejpeg($resultImage, $_image, 100);   //save original
+      //Узнаем размеры загружаемой картинки
+ //ошибка - imagesx imagesy выдают 0 если картинка jpeg truecolor?
+ // change - getimagesize(filename) get correct width & height in [0] [1] !
+      $imagesizeW =  $width ; //imagesx($resultImage);
+      $imagesizeH =  $height ; //imagesy($resultImage);
+
+      //Открываем картинку для наложения
+      //Но сначала масштабируем водяной знак, т.к. размеры картинок у нас разные
+    //Узнаем размер будущего водяного знака (27%//8% //35%//46% от ширины картинки)  //18%  //28%
+// if ($imagesizeW = 0) { $imagesizeW=$wight; $imagesizeH=$height; } imagesx imagesy do not work!
+      $watermarkSize = ceil(28 * $imagesizeW / 100);
+      $watermarkSizeH = ceil(28 * $imagesizeH / 100);
+#imagecopyresampled($dst,$src,0,0,0,0,$width,$height,$watermarkSize,$watermarkSizeH);
+ // ну опять хрень - прозрачный png эта ф-ция не масштабирует!!!
+ //fuck.. png with transparent (at white 255,255,255 color) do not resize with ResizeImageGet
+ //see manual Bitrix! to prevent black pictures w/o transparency
+      $wmTargetArray = CFile::ResizeImageGet(
+         13689,
+         array("width" => $watermarkSize, "height" => $watermarkSize),
+         BX_RESIZE_IMAGE_PROPORTIONAL,
+         true,
+         array()
+      );
+    //13689 //2181 //63 - это ID watermark.png, который лежит в файловой системе Битрикса b_file ID SUBDIR FILE_NAME (закинуть в медиабиблиотеку)
+     //select * from b_file where module_id!="iblock"  легче найти в админке если в medialibrary не 40000 картинок
+
+      //$wmTarget = $_SERVER['DOCUMENT_ROOT'] . "/bitrix/php_interface/watermark.png";
+      $wmTarget = $_SERVER['DOCUMENT_ROOT'] . $wmTargetArray["src"];
+
+      //Загружаем PNG ватермарка
+     // $finalWaterMarkImage
+     // resize transparent png (color 255,255,255 is transparent)
+      $src = imagecreatefrompng($wmTarget);
+      $srcWidth = imagesx($src); //if png work correctly
+      $srcHeight = imagesy($src);
+       $finalWaterMarkImage = imagecreatetruecolor($watermarkSize,$watermarkSizeH);
+    imagecolortransparent($finalWaterMarkImage, imagecolorallocatealpha($finalWaterMarkImage, 0, 0, 0, 119));  //127 full transparency color black
+    imagealphablending($finalWaterMarkImage, false);
+    imagesavealpha($finalWaterMarkImage, true);
+ //setTransparency($new_image,$image_source);  function get from src image - gif
+ 
+        //    $transparencyIndex = imagecolortransparent($src);
+        //    $transparencyColor = array('red' => 255, 'green' => 255, 'blue' => 255);
+        //    if ($transparencyIndex >= 0) {
+        //        $transparencyColor    = imagecolorsforindex($src, $transparencyIndex);
+        //    }
+        //    $transparencyIndex    = imagecolorallocate($finalWaterMarkImage, $transparencyColor['red'], $transparencyColor['green'], $transparencyColor['blue']);
+        //    imagefill($finalWaterMarkImage, 0, 0, $transparencyIndex);
+        //    imagecolortransparent($finalWaterMarkImage, $transparencyIndex);
+ // $black = imagecolorallocate($finalWaterMarkImage, 0, 0, 0);
+ // $white = imagecolorallocate($finalWaterMarkImage, 255, 255, 255);   // original png w- transparent white level 120 of 127
+ // imagecolortransparent($finalWaterMarkImage, $black);  black after resize, in original white...
+ // resize with transparent color http://php.net/manual/ru/function.imagecolortransparent.php see comment 3
+ //imagecopyresampled($new_image, $image_source, 0, 0, 0, 0, $new_width, $new_height, $old_width, $old_height); 
+      imagecopyresampled($finalWaterMarkImage,$src,0,0,0,0,$watermarkSize,$watermarkSizeH,$srcWidth,$srcHeight);
+        //    imagecolortransparent($finalWaterMarkImage, $transparencyIndex);
+             
+              // comment if correcte
+      $_image1 = $_SERVER['DOCUMENT_ROOT'] . "/" . $_upload_dir . "/tmp/" . md5(microtime()) . ".png";
+    imagepng($finalWaterMarkImage, $_image1, 0);   //debug save watermark img w resize see correct resize & transparent color
+
+      //Узнаем размеры картинки водяного знака
+      $finalWaterMarkWidth = imagesx($finalWaterMarkImage);
+      $finalWaterMarkHeight = imagesy($finalWaterMarkImage);
+
+
+      //Пихаем водяной знак в нижний правый угол картинки
+      //Узнаем какой ставить отступ с краев (4% от ширины картинки)
+
+      $watermarkMargin = ceil(9 * $imagesizeW / 100); //15%  //9%
+$im_prop1= array("fw" => $finalWaterMarkWidth, "fh" => $finalWaterMarkHeight, "w" => $imagesizeW, "h" => $imagesizeH, "m" => $watermarkMargin, "width" => $width, "height" => $height, "ww" => $watermarkSize , "wh" => $watermarkSizeH );
+
+   AddMessage2Log($image, 'nameofimage -> ');
+ CWatermark::log_array($im_prop1); // убрать после отладки.
+ CWatermark::log_array($size); // убрать после отладки.
+      imagecopy($resultImage,$finalWaterMarkImage,$imagesizeW - $finalWaterMarkWidth - $watermarkMargin, $imagesizeH - $finalWaterMarkHeight - $watermarkMargin, 0, 0, $finalWaterMarkWidth, $finalWaterMarkHeight);
+
+      imagealphablending($resultImage, false);
+      imagesavealpha($resultImage, true);
+      imagejpeg($resultImage, $image, 100);      //result $image overwrite original with watermark 8% size right bottom
+     //imagejpeg($resultImage, $_image, 100);  //save copy with watermark in upload/tmp 
+      imagedestroy($resultImage);
+      imagedestroy($finalWaterMarkImage);
+       //rename($_SERVER["DOCUMENT_ROOT"].$newimg["src"],$_image["tmp_name"]);
+        //       $_image["size"]=$newimg["size"];
+
+      //$GLOBALS['APPLICATION']->ThrowException('file $_image');
+    //return ($_image);   //return as input $image
+    
+   }
+   //Очищаем временную папку
+  // function Clear() {
+      //$_upload_dir = COption::GetOptionString("main", "upload_dir");
+      //$_WFILE = glob($_SERVER['DOCUMENT_ROOT'] . "/" . $_upload_dir . "/tmp/*.jpg");
+      //foreach($_WFILE as $_file) unlink($_file);
+     // return true;
+  // }
+}
+
+?>

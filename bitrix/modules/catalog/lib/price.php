@@ -24,7 +24,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Price_Query query()
+ * @method static EO_Price_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Price_Result getById($id)
+ * @method static EO_Price_Result getList(array $parameters = array())
+ * @method static EO_Price_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_Price createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_Price_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_Price wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_Price_Collection wakeUpCollection($rows)
+ */
 
 class PriceTable extends Main\Entity\DataManager
 {
@@ -72,7 +85,7 @@ class PriceTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('PRICE_ENTITY_CURRENCY_FIELD')
 			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('PRICE_ENTITY_TIMESTAMP_X_FIELD')
 			)),
 			'QUANTITY_FROM' => new Main\Entity\IntegerField('QUANTITY_FROM', array(
@@ -91,9 +104,21 @@ class PriceTable extends Main\Entity\DataManager
 			)),
 			'CATALOG_GROUP' => new Main\Entity\ReferenceField(
 				'CATALOG_GROUP',
-				'Bitrix\Catalog\Group',
+				'\Bitrix\Catalog\Group',
 				array('=this.CATALOG_GROUP_ID' => 'ref.ID')
-			)
+			),
+			'ELEMENT' => new Main\Entity\ReferenceField(
+				'ELEMENT',
+				'\Bitrix\Iblock\Element',
+				array('=this.PRODUCT_ID' => 'ref.ID'),
+				array('join_type' => 'LEFT')
+			),
+			'PRODUCT' => new Main\Entity\ReferenceField(
+				'PRODUCT',
+				'\Bitrix\Catalog\Product',
+				array('=this.PRODUCT_ID' => 'ref.ID'),
+				array('join_type' => 'LEFT')
+			),
 		);
 	}
 	/**
@@ -117,5 +142,26 @@ class PriceTable extends Main\Entity\DataManager
 		return array(
 			new Main\Entity\Validator\Length(null, 40),
 		);
+	}
+
+	/**
+	 * Delete all rows for product.
+	 * @internal
+	 *
+	 * @param int $id       Product id.
+	 * @return void
+	 */
+	public static function deleteByProduct($id)
+	{
+		$id = (int)$id;
+		if ($id <= 0)
+			return;
+
+		$conn = Main\Application::getConnection();
+		$helper = $conn->getSqlHelper();
+		$conn->queryExecute(
+			'delete from '.$helper->quote(self::getTableName()).' where '.$helper->quote('PRODUCT_ID').' = '.$id
+		);
+		unset($helper, $conn);
 	}
 }

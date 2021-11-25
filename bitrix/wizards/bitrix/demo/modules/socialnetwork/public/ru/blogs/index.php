@@ -41,6 +41,7 @@ $APPLICATION->SetTitle("Блог-лента");
 		"PATH_TO_GROUP_BLOG_POST" => "/club/group/#group_id#/blog/#post_id#/", 
 		"PATH_TO_USER" => "/club/user/#user_id#/", 
 		"bxpiwidth" => "691", 
+		"SHOW_RATING" => "Y",
 		"VARIABLE_ALIASES" => Array(
 			"blog" => "blog",
 			"post_id" => "post_id",

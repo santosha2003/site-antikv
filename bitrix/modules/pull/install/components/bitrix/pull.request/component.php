@@ -14,11 +14,11 @@ if (defined('PULL_USER_ID'))
 {
 	$userId = PULL_USER_ID;
 }
-else if ($GLOBALS['USER'] && intval($GLOBALS['USER']->GetID()) > 0)
+else if (is_object($GLOBALS['USER']) && intval($GLOBALS['USER']->GetID()) > 0)
 {
 	$userId = intval($GLOBALS['USER']->GetID());
 }
-else if (IsModuleInstalled('statistic') && intval($_SESSION["SESS_SEARCHER_ID"]) <= 0 && intval($_SESSION["SESS_GUEST_ID"]) > 0 && COption::GetOptionString("pull", "guest") == 'Y')
+else if (intval($_SESSION["SESS_SEARCHER_ID"]) <= 0 && intval($_SESSION["SESS_GUEST_ID"]) > 0 && \CPullOptions::GetGuestStatus())
 {
 	$userId = intval($_SESSION["SESS_GUEST_ID"])*-1;
 }
@@ -30,7 +30,7 @@ if (CPullOptions::CheckNeedRun())
 {
 	CJSCore::Init(array('pull'));
 
-	$arResult = CPullChannel::GetConfig($userId);
+	$arResult = \Bitrix\Pull\Config::get(['USER_ID' => $userId, 'JSON' => true]);
 
 	if (!(isset($arParams['TEMPLATE_HIDE']) && $arParams['TEMPLATE_HIDE'] == 'Y'))
 	{

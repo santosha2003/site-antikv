@@ -25,4 +25,5 @@ $MESS["SALE_DH_UP_OVERLOAD"] = "Неприпустимо велику вагу �
 $MESS["SALE_DH_UP_STNRD_BOX"] = "Розмір коробки мм.";
 $MESS["SALE_DH_UP_SHIPPING_HANDLING"] = "Спосіб роботи з відправленням";
 $MESS["SALE_DH_UP_FEATURE_VALUE"] = "Посилка з оголошеною цінністю";
+$MESS["SALE_DH_UP_FEATURE_ENABLED"] = "включена";
 ?>

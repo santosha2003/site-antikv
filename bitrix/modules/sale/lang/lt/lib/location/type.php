@@ -1,4 +1,0 @@
-<?
-$MESS["SALE_LOCATION_TYPE_ENTITY_CODE_FIELD"] = "Simbolinis kodas";
-$MESS["SALE_LOCATION_TYPE_ENTITY_SORT_FIELD"] = "Rûðiavimas";
-?>

@@ -1,6 +1,6 @@
 <?if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED!==true)die();
 
-if (!$USER->IsAdmin())
+if (!$USER->CanDoOperation("bitrixcloud_monitoring"))
 {
 	ShowError(GetMessage("BCLMME_ACCESS_DENIED"));
 	return;
@@ -94,7 +94,7 @@ if(isset($arResult["ACTION"]))
 		case 'delete':
 			$strError = $monitoring->stopMonitoring($arResult["DOMAIN"]);
 
-			if(strlen($strError) > 0)
+			if($strError <> '')
 			{
 				ShowError($strError);
 				return;
@@ -106,9 +106,15 @@ if(isset($arResult["ACTION"]))
 
 		case 'edit':
 		default:
-
-
-			$arList = $monitoring->getList();
+			try
+			{
+				$arList = $monitoring->getList();
+			}
+			catch (Exception $e)
+			{
+				ShowError($e->getMessage());
+				return;
+			}
 
 			if (is_string($arList))
 			{

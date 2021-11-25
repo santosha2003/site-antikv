@@ -1,4 +1,4 @@
-<?if(!Defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
+<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
 $arItems = array();
 $arTmp = array();
@@ -31,7 +31,7 @@ elseif($arResult["DATA"]["TYPE"] == "SECTIONS_SECTION")
 	{
 		$path = $sectId;
 
-		if(strlen($arResult["PATH"]) > 0)
+		if($arResult["PATH"] <> '')
 			$path = $arResult["PATH"].'/'.$path;
 
 		$path = urlencode($path);
@@ -85,7 +85,7 @@ $path = explode("/", $arResult["PATH"]);
 	});
 
 	var jsParams = {
-		path: "<?=$arResult["PATH"]?>",
+		path: "<?=CUtil::JSEscape($arResult["PATH"])?>",
 		ajaxUrl: "<?=$arResult['AJAX_URL']?>"
 	};
 

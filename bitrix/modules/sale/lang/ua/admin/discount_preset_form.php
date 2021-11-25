@@ -5,4 +5,7 @@ $MESS["BX_SALE_DISCOUNT_PRESET_CONTEXT_DISCOUNT_LIST"] = "Список прав�
 $MESS["BX_SALE_DISCOUNT_PRESET_CONTEXT_NEW"] = "Створити нове правило";
 $MESS["BX_SALE_DISCOUNT_PRESET_CONTEXT_DELETE"] = "Видалити правило";
 $MESS["BX_SALE_DISCOUNT_PRESET_CONTEXT_DELETE_CONFIRM"] = "Ви впевнені, що хочете видалити це правило?";
+$MESS["BX_SALE_DISCOUNT_PRESET_FORM_EDIT_TAB_NAME_COMMON"] = "Параметри";
+$MESS["BX_SALE_DISCOUNT_PRESET_FORM_EDIT_TAB_TITLE_COMMON"] = "Параметри правила";
+$MESS["BX_SALE_DISCOUNT_PRESET_ABSENT"] = "Не знайдено пресет";
 ?>

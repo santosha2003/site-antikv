@@ -297,6 +297,8 @@ while($catalog = $catalogIterator->fetch())
 	if($isOffersCatalog)
 	{
 		$skuCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
+		if (!isset($productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']]))
+			$productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
 	}
 	else
 	{
@@ -461,9 +463,7 @@ $arComponentParameters["PARAMETERS"]['CONVERT_CURRENCY'] = array(
 if (isset($arCurrentValues['CONVERT_CURRENCY']) && 'Y' == $arCurrentValues['CONVERT_CURRENCY'])
 {
 	$arCurrencyList = array();
-	$by = 'SORT';
-	$order = 'ASC';
-	$rsCurrencies = CCurrency::GetList($by, $order);
+	$rsCurrencies = CCurrency::GetList('sort', 'asc');
 	while ($arCurrency = $rsCurrencies->Fetch())
 	{
 		$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];

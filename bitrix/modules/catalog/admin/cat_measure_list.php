@@ -1,9 +1,17 @@
-<?php
+<?
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 global $APPLICATION;
 global $DB;
 global $USER;
+
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
+
+$publicMode = $adminPage->publicMode;
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
 
 if(!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_store')))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
@@ -31,10 +39,9 @@ if($ex = $APPLICATION->GetException())
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 
 $sTableID = "b_catalog_measure";
-$oSort = new CAdminSorting($sTableID, "ID", "asc");
-$lAdmin = new CAdminList($sTableID, $oSort);
-$arFilterFields = array();
-$lAdmin->InitFilter($arFilterFields);
+$oSort = new CAdminUiSorting($sTableID, "ID", "asc");
+$lAdmin = new CAdminUiList($sTableID, $oSort);
+
 $arFilter = array();
 
 if($lAdmin->EditAction() && !$bReadOnly)
@@ -75,7 +82,7 @@ if(($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 
 	foreach ($arID as $ID)
 	{
-		if(strlen($ID) <= 0)
+		if($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -83,11 +90,7 @@ if(($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 			case "delete":
 				@set_time_limit(0);
 				$DB->StartTransaction();
-<<<<<<< HEAD
-				if(!CCatalogMeasure::Delete($ID))
-=======
 				if(!CCatalogMeasure::delete($ID))
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 				{
 					$DB->Rollback();
 
@@ -103,6 +106,14 @@ if(($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 				break;
 		}
 	}
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
+	}
 }
 $arSelect = array(
 	"ID",
@@ -117,21 +128,20 @@ $arSelect = array(
 if(array_key_exists("mode", $_REQUEST) && $_REQUEST["mode"] == "excel")
 	$arNavParams = false;
 else
-	$arNavParams = array("nPageSize"=>CAdminResult::GetNavSize($sTableID));
+	$arNavParams = array("nPageSize"=>CAdminUiResult::GetNavSize($sTableID));
+
+global $by, $order;
 
 $dbResultList = CCatalogMeasure::getList(
-	array($_REQUEST["by"] => $_REQUEST["order"]),
+	array($by => $order),
 	array(),
 	false,
 	$arNavParams,
 	$arSelect
 );
-
-print_r ($dbResultList);
-
-$dbResultList = new CCatalogMeasureAdminResult($dbResultList, $sTableID);
+$dbResultList = new CCatalogMeasureAdminUiResult($dbResultList, $sTableID);
 $dbResultList->NavStart();
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("CAT_MEASURE_TITLE")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => $selfFolderUrl."cat_measure_list.php"));
 
 $lAdmin->AddHeaders(array(
 	array(
@@ -200,10 +210,6 @@ $strNameFormat = CSite::GetNameFormat(true);
 
 $arRows = array();
 
-<<<<<<< HEAD
-=======
-//php7.2 Fatal error: Uncaught Error: Using $this when not in object context in /var/www/html/bitrix/modules/main/classes/mysql/database.php:806 Stack trace: #0 /var/www/html/bitrix/modules/catalog/general/measure.php(202): CDBResultMysql::Fetch() #1 /var/www/html/bitrix/modules/catalog/general/measure_result.php(12): CCatalogMeasureResult::Fetch() #2 /var/www/html/bitrix/modules/catalog/admin/cat_measure_list.php(196): CCatalogMeasureAdminResult->Fetch() #3 /var/www/html/bitrix/admin/cat_measure_list.php(1): require('/var/www/html/b...') #4 {main} thrown in /var/www/html/bitrix/modules/main/classes/mysql/database.php on line 806
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 while($arRes = $dbResultList->Fetch())
 {
 	$arRes['ID'] = (int)$arRes['ID'];
@@ -220,7 +226,9 @@ while($arRes = $dbResultList->Fetch())
 			$arUserID[$arRes['MODIFIED_BY']] = true;
 	}
 
-	$arRows[$arRes['ID']] = $row =& $lAdmin->AddRow($arRes['ID'], $arRes);
+	$editUrl = $selfFolderUrl."cat_measure_edit.php?ID=".$arRes["ID"]."&lang=".LANGUAGE_ID;
+	$editUrl = $adminSidePanelHelper->editUrlToPublicPage($editUrl);
+	$arRows[$arRes['ID']] = $row =& $lAdmin->AddRow($arRes['ID'], $arRes, $editUrl);
 	$row->AddField("ID", $arRes['ID']);
 	if($bReadOnly)
 	{
@@ -259,12 +267,20 @@ while($arRes = $dbResultList->Fetch())
 		$row->AddCalendarField("DATE_MODIFY", false);
 
 	$arActions = array();
-	$arActions[] = array("ICON"=>"edit", "TEXT"=>GetMessage("CAT_MEASURE_EDIT_ALT"), "ACTION"=>$lAdmin->ActionRedirect("cat_measure_edit.php?ID=".$arRes['ID']."&lang=".LANGUAGE_ID."&".GetFilterParams("filter_").""), "DEFAULT"=>true);
+	$arActions[] = array(
+		"ICON" => "edit",
+		"TEXT" => GetMessage("CAT_MEASURE_EDIT_ALT"),
+		"LINK" => $editUrl,
+		"DEFAULT" => true
+	);
 
 	if(!$bReadOnly)
 	{
-		$arActions[] = array("SEPARATOR" => true);
-		$arActions[] = array("ICON"=>"delete", "TEXT"=>GetMessage("CAT_MEASURE_DELETE_ALT"), "ACTION"=>"if(confirm('".GetMessageJS('CAT_MEASURE_DELETE_CONFIRM')."')) ".$lAdmin->ActionDoGroup($arRes['ID'], "delete"));
+		$arActions[] = array(
+			"ICON" => "delete",
+			"TEXT" => GetMessage("CAT_MEASURE_DELETE_ALT"),
+			"ACTION" => "if(confirm('".GetMessageJS('CAT_MEASURE_DELETE_CONFIRM')."')) ".$lAdmin->ActionDoGroup($arRes['ID'], "delete")
+		);
 	}
 
 	$row->AddActions($arActions);
@@ -276,18 +292,20 @@ if($arSelectFieldsMap['USER_ID'] || $arSelectFieldsMap['MODIFIED_BY'])
 {
 	if(!empty($arUserID))
 	{
-		$byUser = 'ID';
-		$byOrder = 'ASC';
 		$rsUsers = CUser::GetList(
-			$byUser,
-			$byOrder,
+			'ID',
+			'ASC',
 			array('ID' => implode(' | ', array_keys($arUserID))),
 			array('FIELDS' => array('ID', 'LOGIN', 'NAME', 'LAST_NAME', 'SECOND_NAME', 'EMAIL'))
 		);
 		while($arOneUser = $rsUsers->Fetch())
 		{
 			$arOneUser['ID'] = (int)$arOneUser['ID'];
-			$arUserList[$arOneUser['ID']] = '<a href="/bitrix/admin/user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arOneUser['ID'].'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
+			$userEdit = $selfFolderUrl."user_edit.php?lang=".LANGUAGE_ID."&ID=".$arOneUser["ID"];
+			if ($publicMode)
+				$arUserList[$arOneUser['ID']] = CUser::FormatName($strNameFormat, $arOneUser);
+			else
+				$arUserList[$arOneUser['ID']] = '<a href="'.$userEdit.'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
 		}
 	}
 
@@ -316,45 +334,33 @@ if($arSelectFieldsMap['USER_ID'] || $arSelectFieldsMap['MODIFIED_BY'])
 		unset($row);
 }
 
-$lAdmin->AddFooter(
-	array(
-		array(
-			"title" => GetMessage("MAIN_ADMIN_LIST_SELECTED"),
-			"value" => $dbResultList->SelectedRowsCount()
-		),
-		array(
-			"counter" => true,
-			"title" => GetMessage("MAIN_ADMIN_LIST_CHECKED"),
-			"value" => "0"
-		),
-	)
-);
-
-if(!$bReadOnly)
+if (!$bReadOnly)
 {
-	$lAdmin->AddGroupActionTable(
-		array(
-			"delete" => GetMessage("MAIN_ADMIN_LIST_DELETE"),
-		)
-	);
+	$lAdmin->AddGroupActionTable([
+		'edit' => true,
+		'delete' => true
+	]);
 }
 
 if(!$bReadOnly && $bCanAdd)
 {
+	$addUrl = $selfFolderUrl."cat_measure_edit.php?lang=".LANGUAGE_ID;
+	$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
 	$aContext = array(
-		array(
-			"TEXT" => GetMessage("CAT_MEASURE_ADD_NEW_OKEI"),
-			"ICON" => "btn_new",
-			"LINK" => "cat_measure_edit.php?lang=".LANGUAGE_ID."&OKEI=Y",
-			"TITLE" => GetMessage("CAT_MEASURE_ADD_NEW_OKEI_ALT")
-		),
 		array(
 			"TEXT" => GetMessage("CAT_MEASURE_ADD_NEW"),
 			"ICON" => "btn_new",
-			"LINK" => "cat_measure_edit.php?lang=".LANGUAGE_ID,
+			"LINK" => $addUrl,
 			"TITLE" => GetMessage("CAT_MEASURE_ADD_NEW_ALT")
 		),
+		array(
+			"TEXT" => GetMessage("CAT_MEASURE_ADD_NEW_OKEI"),
+			"ICON" => "btn_new",
+			"LINK" => $addUrl."&OKEI=Y",
+			"TITLE" => GetMessage("CAT_MEASURE_ADD_NEW_OKEI_ALT")
+		),
 	);
+	$lAdmin->setContextSettings(array("pagePath" => $selfFolderUrl."cat_measure_list.php"));
 	$lAdmin->AddAdminContextMenu($aContext);
 }
 

@@ -6,7 +6,7 @@ define("FORUM_SystemFolder", 4);
 //************************************!****************************************************************************
 class CAllForumPrivateMessage
 {
-	function Send($arFields = array())
+	public static function Send($arFields = array())
 	{
 		global $DB;
 		$version = COption::GetOptionString("forum", "UsePMVersion", "2");
@@ -48,7 +48,7 @@ class CAllForumPrivateMessage
 		return $result;
 	}
 
-	function Copy($ID, $arFields = array())
+	public static function Copy($ID, $arFields = array())
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -91,16 +91,16 @@ class CAllForumPrivateMessage
 		return false;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB, $USER;
 		$ID = intval($ID);
 
-		if (is_set($arFields, "AUTHOR_ID")&&(intVal($arFields["AUTHOR_ID"])))
+		if (is_set($arFields, "AUTHOR_ID")&&(intval($arFields["AUTHOR_ID"])))
 			$arFields["AUTHOR_ID"] = $arFields["USER_ID"];
-		if (is_set($arFields, "RECIPIENT_ID")&&(intVal($arFields["RECIPIENT_ID"])))
+		if (is_set($arFields, "RECIPIENT_ID")&&(intval($arFields["RECIPIENT_ID"])))
 			$arFields["RECIPIENT_ID"] = $arFields["USER_ID"];
-		if (is_set($arFields, "POST_DATE")&&(strLen(trim($arFields["POST_DATE"])) <= 0))
+		if (is_set($arFields, "POST_DATE")&&(trim($arFields["POST_DATE"]) == ''))
 			$arFields["~POST_DATE"] =  $DB->GetNowFunction();
 		if(is_set($arFields, "USE_SMILES") && $arFields["USE_SMILES"]!="Y")
 			$arFields["USE_SMILES"]="N";
@@ -125,10 +125,10 @@ class CAllForumPrivateMessage
 		return false;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB, $USER;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$list = array();
 		$list = CForumPrivateMessage::GetList(array(), array("ID"=>$ID));
@@ -163,11 +163,11 @@ class CAllForumPrivateMessage
 		return $result;
 	}
 
-	function MakeRead($ID)
+	public static function MakeRead($ID)
 	{
 		global $DB;
-		$ID = IntVal($ID);
-		$version = intVal(COption::GetOptionString("forum", "UsePMVersion", "2"));
+		$ID = intval($ID);
+		$version = intval(COption::GetOptionString("forum", "UsePMVersion", "2"));
 		if($ID>0)
 		{
 			$db_res = CForumPrivateMessage::GetListEx(array(), array("ID" => $ID));
@@ -196,7 +196,7 @@ class CAllForumPrivateMessage
 		return false;
 	}
 
-	function CheckPermissions($ID)
+	public static function CheckPermissions($ID)
 	{
 		global $USER, $APPLICATION;
 
@@ -206,24 +206,24 @@ class CAllForumPrivateMessage
 		$dbr = CForumPrivateMessage::GetByID($ID);
 		if($arRes = $dbr->Fetch())
 		{
-			if((intVal($arRes["USER_ID"]) == $USER->GetID()) ||
-				((intVal($arRes["AUTHOR_ID"]) == intVal($USER->GetID())) && ($arRes["IS_READ"]=="N")))
+			if((intval($arRes["USER_ID"]) == $USER->GetID()) ||
+				((intval($arRes["AUTHOR_ID"]) == intval($USER->GetID())) && ($arRes["IS_READ"]=="N")))
 			return true;
 		}
 		return false;
 	}
 
-	function CheckFields(&$arFields, $update = false)
+	public static function CheckFields(&$arFields, $update = false)
 	{
 		global $APPLICATION, $USER;
 		$strError = "";
 		if ((CForumPrivateMessage::PMSize($USER->GetId()) < COption::GetOptionInt("forum", "MaxPrivateMessages", 100)))
 		{
-			if((is_set($arFields, "USER_ID")&&(strlen($arFields["USER_ID"])<=0)))
+			if((is_set($arFields, "USER_ID")&&($arFields["USER_ID"] == '')))
 			$strError .= GetMessage("PM_ERR_USER_EMPTY");
-			if((is_set($arFields, "POST_SUBJ"))&&(strlen(trim($arFields["POST_SUBJ"]))<=0))
+			if((is_set($arFields, "POST_SUBJ"))&&(trim($arFields["POST_SUBJ"]) == ''))
 			$strError .= GetMessage("PM_ERR_SUBJ_EMPTY");
-			if((is_set($arFields, "POST_MESSAGE"))&&(strlen(trim($arFields["POST_MESSAGE"]))<=0))
+			if((is_set($arFields, "POST_MESSAGE"))&&(trim($arFields["POST_MESSAGE"]) == ''))
 			$strError .= GetMessage("PM_ERR_TEXT_EMPTY");
 		}
 		else
@@ -243,12 +243,12 @@ class CAllForumPrivateMessage
 		return true;
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 		static $arMessage = array();
 		$result = false;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if ($ID <= 0)
 			return false;
 		if (!is_set($arMessage, $ID))
@@ -269,7 +269,7 @@ class CAllForumPrivateMessage
 		return $result;
 	}
 
-	function GetList($arOrder = Array("ID" => "DESC"), $arFilter, $bCnt=false)
+	public static function GetList($arOrder = Array("ID" => "DESC"), $arFilter, $bCnt=false)
 	{
 		global $DB;
 
@@ -282,14 +282,14 @@ class CAllForumPrivateMessage
 			switch($key)
 			{
 				case "OWNER_ID":
-				$orSql = array("M.AUTHOR_ID=".intVal($val), "M.FOLDER_ID=1", "M.IS_READ='N'");
+				$orSql = array("M.AUTHOR_ID=".intval($val), "M.FOLDER_ID=1", "M.IS_READ='N'");
 				break;
 				case "ID":
 				case "FOLDER_ID":
 				case "AUTHOR_ID":
 				case "RECIPIENT_ID":
 				case "USER_ID":
-				$arSql[] = "M.".$key."=".intVal($val);
+				$arSql[] = "M.".$key."=".intval($val);
 				break;
 				case "POST_SUBJ":
 				case "POST_MESSAGE":
@@ -297,9 +297,9 @@ class CAllForumPrivateMessage
 				break;
 				case "USE_SMILES":
 				case "IS_READ":
-				$t_val = strtoupper($val);
+				$t_val = mb_strtoupper($val);
 				if($t_val=="Y" || $t_val=="N")
-				$arSql[] = "M.".strtoupper($key)."='".$t_val."'";
+				$arSql[] = "M.".mb_strtoupper($key)."='".$t_val."'";
 				break;
 			}
 		}
@@ -318,8 +318,8 @@ class CAllForumPrivateMessage
 		$arSqlOrder = array();
 		foreach($arOrder as $by => $order)
 		{
-			$by = strtoupper($by);
-			$order = strtoupper($order);
+			$by = mb_strtoupper($by);
+			$order = mb_strtoupper($order);
 			if(array_key_exists($by, $arOFields))
 			{
 				if ($order != "ASC")
@@ -361,8 +361,8 @@ class CAllForumPrivateMessage
 			$arResult = array();
 			if ($dbRes && ($res = $dbRes->GetNext()))
 			{
-				$arResult["CNT"] = intVal($res["CNT"]);
-				$arResult["CNT_NEW"] = intVal($res["CNT_NEW"]);
+				$arResult["CNT"] = intval($res["CNT"]);
+				$arResult["CNT_NEW"] = intval($res["CNT_NEW"]);
 			}
 
 			if (!empty($orSql))
@@ -374,8 +374,8 @@ class CAllForumPrivateMessage
 				$arResult = array();
 				if ($dbRes && ($res = $dbRes->GetNext()))
 				{
-					$arResult["CNT"] += intVal($res["CNT"]);
-					$arResult["CNT_NEW"] += intVal($res["CNT"]);
+					$arResult["CNT"] += intval($res["CNT"]);
+					$arResult["CNT_NEW"] += intval($res["CNT"]);
 				}
 			}
 			$dbRes = new CDBResult;
@@ -385,9 +385,9 @@ class CAllForumPrivateMessage
 		return $dbRes;
 	}
 
-	function PMSize($USER_ID, $CountMess = false)
+	public static function PMSize($USER_ID, $CountMess = false)
 	{
-		$USER_ID = intVal($USER_ID);
+		$USER_ID = intval($USER_ID);
 		if (COption::GetOptionString("forum", "UsePMVersion", "2") == 2)
 			$count = CForumPrivateMessage::GetList(array(), array("USER_ID"=>$USER_ID), true);
 		else
@@ -402,10 +402,10 @@ class CAllForumPrivateMessage
 		return $count["CNT"];
 	}
 
-	function GetNewPM($FOLDER_ID = false)
+	public static function GetNewPM($FOLDER_ID = false)
 	{
 		global $DB, $USER;
-		$FOLDER_ID = ($FOLDER_ID === false ? 1 : intVal($FOLDER_ID));
+		$FOLDER_ID = ($FOLDER_ID === false ? 1 : intval($FOLDER_ID));
 		static $PMessageCache = array();
 		if (!is_set($PMessageCache, $FOLDER_ID))
 		{
@@ -431,7 +431,7 @@ class CAllForumPrivateMessage
 //************************************!****************************************************************************
 class CALLForumPMFolder
 {
-	function Add($title)
+	public static function Add($title)
 	{
 		global $DB, $USER, $APPLICATION;
 		$res = CForumPMFolder::GetList(array(), array("TITLE"=>$title, "USER_ID"=>$USER->GetId()));
@@ -443,7 +443,7 @@ class CALLForumPMFolder
 		return $DB->Add("b_forum_pm_folder", array("TITLE"=>$title, "USER_ID"=>$USER->GetId(), "SORT"=>"0"));
 	}
 
-	function Update($ID, $arFields = array())
+	public static function Update($ID, $arFields = array())
 	{
 		global $DB, $USER, $APPLICATION;
 		$ID = intval($ID);
@@ -464,7 +464,7 @@ class CALLForumPMFolder
 
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
@@ -473,7 +473,7 @@ class CALLForumPMFolder
 		return $dbRes;
 	}
 
-	function GetList($arOrder = array("SORT" => "DESC", "TITLE"=>"DESC"), $arFilter, $bCnt=false)
+	public static function GetList($arOrder = array("SORT" => "DESC", "TITLE"=>"DESC"), $arFilter, $bCnt=false)
 	{
 		global $DB;
 
@@ -484,16 +484,16 @@ class CALLForumPMFolder
 		for($i = 0; $i < count($filter_keys); $i++)
 		{
 			$val = $arFilter[$filter_keys[$i]];
-			$key = strtoupper($filter_keys[$i]);
+			$key = mb_strtoupper($filter_keys[$i]);
 			switch($key)
 			{
 				case "USER_ID":
 					$sAddJoin = "F.USER_ID=FPM.USER_ID AND ";
-					$arSqlSearch[] = "F.USER_ID=".intVal($val);
+					$arSqlSearch[] = "F.USER_ID=".intval($val);
 					break;
 				case "ID":
 				case "SORT":
-					$arSqlSearch[] = "F.".$key."=".intVal($val);
+					$arSqlSearch[] = "F.".$key."=".intval($val);
 					break;
 				case "TITLE":
 					$arSqlSearch[] = "F.".$key."='".$DB->ForSQL($val)."'";
@@ -509,7 +509,8 @@ class CALLForumPMFolder
 		$arSqlOrder = array();
 		foreach($arOrder as $by => $order)
 		{
-			$by = strtoupper($by); $order = strtoupper($order);
+			$by = mb_strtoupper($by);
+			$order = mb_strtoupper($order);
 			if(array_key_exists($by, $arOFields))
 			{
 				if ($order != "ASC")
@@ -539,10 +540,10 @@ class CALLForumPMFolder
 		return $dbRes;
 	}
 
-	function CheckPermissions($ID)
+	public static function CheckPermissions($ID)
 	{
 		global $USER, $APPLICATION;
-		$ID = intVal($ID);
+		$ID = intval($ID);
 		if(CForumUser::IsAdmin())
 			return true;
 		$dbr = CForumPMFolder::GetByID($ID);
@@ -554,10 +555,10 @@ class CALLForumPMFolder
 		return false;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if($ID < FORUM_SystemFolder)
 		return false;
 
@@ -565,4 +566,3 @@ class CALLForumPMFolder
 		return $DB->Query("DELETE FROM b_forum_pm_folder WHERE ID=".$ID);
 	}
 }
-?>

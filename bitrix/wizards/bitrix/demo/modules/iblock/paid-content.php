@@ -14,7 +14,9 @@ if(strlen($arParams["site_id"]) <= 0)
 //Import XML
 if($IBLOCK_ID = DEMO_IBlock_ImportXML("110_paid_paid-articles_".LANGUAGE_ID.".xml", $arParams["site_id"], false, true))
 {
-	$_SESSION["DEMO_IBLOCK_PAID"] = CIBlockCMLImport::GetIBlockByXML_ID("paid-subscribe");
+	$import = new CIBlockCMLImport();
+
+	$_SESSION["DEMO_IBLOCK_PAID"] = $import->GetIBlockByXML_ID("paid-subscribe");
 	if($SUBSCR_ID = DEMO_IBlock_ImportXML("120_paid_paid-subscribe_".LANGUAGE_ID.".xml", $arParams["site_id"], false, true))
 	{
 
@@ -45,7 +47,11 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("110_paid_paid-articles_".LANGUAGE_ID.".xm
 		));
 
 		if($_SESSION["DEMO_IBLOCK_PAID"] === false)
+		{
 			DEMO_IBlock_ImportXML("120_paid_paid-subscribe-offers_".LANGUAGE_ID.".xml", $arParams["site_id"], true, false);
+			if(CModule::IncludeModule('catalog'))
+				CCatalog::Update($SUBSCR_ID, array("SUBSCRIPTION"=>"Y"));
+		}
 	}
 }
 ?>

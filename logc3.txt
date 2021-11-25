@@ -1,0 +1,11 @@
+Array
+(
+    [width] => 1000
+    [height] => 1000
+    [lay] => 2
+    [dim] => width="1000" height="1000"
+    [bits] => 8
+    [channels] => 3
+    [mime] => image/jpeg
+)
+width="1000" height="1000"

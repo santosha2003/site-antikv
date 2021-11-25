@@ -1,2 +1,53 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE21"><presentation><material><mattext>������ Excel, ������������� �� ����������� ������, ���������:</mattext></material><response_lid ident="LID21" rcardinality="Single"><render_choice><response_label ident="ANS919"><material><mattext>�������������� �������������� �� �������� ������ � ���� ������� MS Excel</mattext></material></response_label><response_label ident="ANS920"><material><mattext>������� ����� ���� ������� MS Excel</mattext></material></response_label><response_label ident="ANS921"><material><mattext>������������� ���� ������� MS Excel � �������</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID21">ANS919</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description><![CDATA[<img src="cid:resources/res21/xbk8R.admin_context_panel.png" height="28" width="338"/>]]></description><description_type>html</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="CHA"><lesson_id>891</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>3</childs_cnt>
+<is_childs>1</is_childs>
+<sort>200</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Форма отчета (Списки элементов)</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<h4>Форма отчета (Списки элементов)</h4>
+<p><b>Список элементов</b> выводится при выборе какого-либо пункта в меню функций. В списках отображена подробная (обычно - наиболее важная) информация об элементах. Например, выбрав пункт <b>Баннеры</b> в разделе <b>Сервисы</b>, пользователь получает информацию об имеющихся в системе баннерах:</p>
+
+<p><img height="554" width="700" src="cid:resources/res21/gDAh0.5qyRG.banners__11.png" /></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Список баннеров в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p><a href="javascript:ShowImg('/images/content_manager/controls/administrative_section/banners.png',853,582,'Типы баннеров')"><img height="409" border="0" width="600" src="cid:resources/res21/9yaPX.CxsMh.banners_sm.png" style="cursor: pointer;" alt="Нажмите на рисунок, чтобы увеличить" /></a></p></td></tr>
+</tbody>
+</table></div>
+
+<p>На странице со списком элементов обычно выводится фильтр, контекстная панель, сам список элементов и панель действий под списком.</p>
+
+ 
+
+
+]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>200</edge_sort>
+<id>891</id>
+</content>

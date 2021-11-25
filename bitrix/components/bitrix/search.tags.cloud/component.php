@@ -15,32 +15,13 @@
 /** @var CCacheManager $CACHE_MANAGER */
 global $CACHE_MANAGER;
 
-if (!function_exists("__sortName"))
-{
-	function __sortName($this, $next)
-	{
-		if ($this["NAME_HTML"] != $next["NAME_HTML"])
-		{
-			$arSort = array($this["NAME_HTML"], $next["NAME_HTML"]);
-			sort($arSort);
-			if ($arSort[0] != $this["NAME_HTML"])
-				return 1;
-		}
-		elseif (intVal($this["CNT"]) < intVal($next["CNT"]))
-		{
-			return 1;
-		}
-		return -1;
-	}
-}
-
 if(!isset($arParams["CACHE_TIME"]))
 	$arParams["CACHE_TIME"] = 3600;
 
 $arParams["SORT"] = ($arParams["SORT"] == "CNT" ? "CNT" : "NAME");
 $arParams["SORT_BY"] = ($arParams["SORT_BY"] == "ASC" ? "ASC" : "DESC");
-$arParams["PAGE_ELEMENTS"] = ((intVal($arParams["PAGE_ELEMENTS"]) > 0) ? intVal($arParams["PAGE_ELEMENTS"]) : 1000);
-$arParams["PERIOD"] = intVal($arParams["PERIOD"]);
+$arParams["PAGE_ELEMENTS"] = ((intval($arParams["PAGE_ELEMENTS"]) > 0) ? intval($arParams["PAGE_ELEMENTS"]) : 1000);
+$arParams["PERIOD"] = intval($arParams["PERIOD"]);
 $arParams["CHECK_DATES"] = ($arParams["CHECK_DATES"]=="Y" ? true : false);
 $arParams["~TAGS"] = (empty($arParams["~TAGS"]) ? $_REQUEST["tags"] : $arParams["~TAGS"]);
 $arParams["~TAGS"] = trim($arParams["~TAGS"]);
@@ -52,9 +33,9 @@ $arParams["SEARCH"] = htmlspecialcharsbx($arParams["~SEARCH"]);
 if (!empty($arParams["URL_SEARCH"]))
 {
 	$arResult["~URL"] = CComponentEngine::MakePathFromTemplate($arParams["URL_SEARCH"], array("TAGS" => "tags=#TAGS#"));
-	if (strpos($arResult["~URL"], "#TAGS#") === false)
+	if (mb_strpos($arResult["~URL"], "#TAGS#") === false)
 	{
-		if (strpos($arResult["~URL"], "?") === false)
+		if (mb_strpos($arResult["~URL"], "?") === false)
 			$arResult["~URL"] .= "?";
 		else
 			$arResult["~URL"] .= "&";
@@ -85,7 +66,7 @@ if ($this->StartResultCache(false, array($USER->GetGroups())))
 	if(defined("BX_COMP_MANAGED_CACHE"))
 		$CACHE_MANAGER->registerTag("bitrix:search.tags.cloud");
 
-	if(strlen($arParams["FILTER_NAME"])<=0 || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
+	if($arParams["FILTER_NAME"] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
 		$arFILTERCustom = array();
 	else
 	{
@@ -144,13 +125,13 @@ if ($this->StartResultCache(false, array($USER->GetGroups())))
 			$arResult["TIME_MAX"] = $res["TIME"];
 
 			$arTags = array();
-			if (($arParams["TAGS_INHERIT"] != "N") && (strlen($arParams["TAGS"]) > 0))
+			if (($arParams["TAGS_INHERIT"] != "N") && ($arParams["TAGS"] <> ''))
 			{
 				$tmp = explode(",", $arParams["~TAGS"]);
 				foreach($tmp as $tag)
 				{
 					$tag = trim($tag);
-					if(strlen($tag) > 0)
+					if($tag <> '')
 						$arTags[$tag] = $tag;
 				}
 			}
@@ -189,8 +170,14 @@ if ($this->StartResultCache(false, array($USER->GetGroups())))
 			} while ($res = $obSearch->getNext());
 		}
 	}
+
 	if ($arParams["SORT"] != "CNT")
-		uasort($arResult["SEARCH"], "__sortName");
+	{
+		\Bitrix\Main\Type\Collection::sortByColumn($arResult["SEARCH"], array(
+			"NAME_HTML" => SORT_ASC,
+			"CNT" => SORT_DESC,
+		));
+	}
 
 	$arResult["TAGS_CHAIN"] = array();
 	if ($arParams["~TAGS"])

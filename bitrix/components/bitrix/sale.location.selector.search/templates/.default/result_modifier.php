@@ -62,12 +62,17 @@ if(is_array($arResult['LOCATION']) && !empty($arResult['LOCATION']))
 }
 
 $arResult['RANDOM_TAG'] = rand(999, 99999);
-$this->arResult['ADMIN_MODE'] = ADMIN_SECTION == 1;
+$this->arResult['ADMIN_MODE'] = defined("ADMIN_SECTION") && ADMIN_SECTION == true;
 
 // modes
 $modes = array();
-if(ADMIN_SECTION == 1 || $arParams['ADMIN_MODE'] == 'Y')
+if((defined("ADMIN_SECTION") && ADMIN_SECTION == true) || $arParams['ADMIN_MODE'] == 'Y')
 	$modes[] = 'admin';
+
+if (defined("PUBLIC_MODE") && PUBLIC_MODE == 1)
+{
+	$modes[] = 'admin';
+}
 
 foreach($modes as &$mode)
 	$mode = 'bx-'.$mode.'-mode';

@@ -24,4 +24,35 @@ $MESS["SKGS_STATUS_MAIL_BODY4"] = "Для отримання детальної 
 
 Спасибі за ваш вибір!";
 $MESS["SKGS_SALE_STATUS_ALREADY_EXISTS"] = "Такий код статусу вже існує";
+$MESS["SKGS_SHIPMENT_ID"] = "код відвантаження";
+$MESS["SKGS_SHIPMENT_DATE"] = "дата створення відвантаження";
+$MESS["SKGS_SHIPMENT_STATUS"] = "статус відвантаження";
+$MESS["SKGS_CHANGING_SHIPMENT_STATUS_TO"] = "Зміна статусу відвантаження на ";
+$MESS["SKGS_SHIPMENT_STATUS_MAIL_SUBJ"] = "#SERVER_NAME#: Зміна статусу відвантаження N#SHIPMENT_ID#";
+$MESS["SKGS_SHIPMENT_STATUS_MAIL_BODY1"] = "Інформаційне повідомлення сайту #SITE_NAME#
+";
+$MESS["SKGS_SHIPMENT_STATUS_MAIL_BODY2"] = "Статус відвантаження номер #SHIPMENT_ID# змінений.
+
+";
+$MESS["SKGS_SHIPMENT_STATUS_MAIL_BODY3"] = "Новий статус відвантаження:
+";
+$MESS["SKGS_SHIPMENT_STATUS_MAIL_BODY4"] = "Для отримання детальної інформації по замовленню пройдіть на сайт #SERVER_NAME#/personal/order/#ORDER_ID#
+
+Дякуємо за ваш вибір!
+";
+$MESS["SKGS_ERROR_ARCHIVED_DELETE"] = "Помилка видалення статусу. Причина: є архівні замовлення в цьому статусі.";
+$MESS["SKGS_ORDER_ALLOW_PAY_STATUS"] = "Дозвіл оплати замовлення";
+$MESS["SKGS_ORDER_ALLOW_PAY_STATUS_MAIL_SUBJ"] = "#SERVER_NAME#: Дозволена оплата замовлення N#ORDER_ID#";
+$MESS["SKGS_ORDER_ALLOW_PAY_STATUS_MAIL_BODY1"] = "Інформаційне повідомлення сайту #SITE_NAME#
+";
+$MESS["SKGS_ORDER_ALLOW_PAY_STATUS_MAIL_BODY2"] = "Дозволена оплата замовлення N#ORDER_ID#.
+
+";
+$MESS["SKGS_ORDER_ALLOW_PAY_STATUS_MAIL_BODY3"] = "Ви можете оплатити перейшовши за посиланням #SERVER_NAME#/personal/orders/#ORDER_ID#
+";
+$MESS["SKGS_ORDER_ALLOW_PAY_STATUS_MAIL_BODY4"] = "Для отримання детальної інформації по замовленню пройдіть на сайт #SERVER_NAME#/personal/orders/#ORDER_ID#
+
+Дякуємо за ваш вибір!
+";
+$MESS["SKGS_ORDER_PUBLIC_LINK"] = "посилання для перегляду замовлення без авторизації (потрібно налаштування в модулі інтернет-магазину)";
 ?>

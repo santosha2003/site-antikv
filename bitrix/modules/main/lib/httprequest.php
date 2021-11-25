@@ -9,6 +9,7 @@ namespace Bitrix\Main;
 
 use Bitrix\Main\Config;
 use Bitrix\Main\Type;
+use Bitrix\Main\Web\HttpHeaders;
 
 /**
  * Class HttpRequest extends Request. Contains http specific request data.
@@ -43,6 +44,13 @@ class HttpRequest extends Request
 	protected $cookiesRaw;
 
 	/**
+	 * @var HttpHeaders
+	 */
+	protected $headers;
+
+	protected $httpHost;
+
+	/**
 	 * Creates new HttpRequest object
 	 *
 	 * @param Server $server
@@ -61,6 +69,18 @@ class HttpRequest extends Request
 		$this->files = new Type\ParameterDictionary($files);
 		$this->cookiesRaw = new Type\ParameterDictionary($cookies);
 		$this->cookies = new Type\ParameterDictionary($this->prepareCookie($cookies));
+		$this->headers = $this->buildHttpHeaders($server);
+	}
+
+	private function buildHttpHeaders(Server $server)
+	{
+		$headers = new HttpHeaders();
+		foreach ($this->fetchHeaders($server) as $headerName => $value)
+		{
+			$headers->add($headerName, $value);
+		}
+
+		return $headers;
 	}
 
 	/**
@@ -74,8 +94,9 @@ class HttpRequest extends Request
 			"get" => $this->queryString->values,
 			"post" => $this->postData->values,
 			"files" => $this->files->values,
+			"headers" => $this->headers,
 			"cookie" => $this->cookiesRaw->values
-			));
+		));
 
 		if (isset($filteredValues['get']))
 			$this->queryString->setValuesNoDemand($filteredValues['get']);
@@ -83,6 +104,8 @@ class HttpRequest extends Request
 			$this->postData->setValuesNoDemand($filteredValues['post']);
 		if (isset($filteredValues['files']))
 			$this->files->setValuesNoDemand($filteredValues['files']);
+		if (isset($filteredValues['headers']) && ($this->headers instanceof HttpHeaders))
+			$this->headers = $filteredValues['headers'];
 		if (isset($filteredValues['cookie']))
 		{
 			$this->cookiesRaw->setValuesNoDemand($filteredValues['cookie']);
@@ -97,7 +120,7 @@ class HttpRequest extends Request
 	 * Returns the GET parameter of the current request.
 	 *
 	 * @param string $name Parameter name
-	 * @return null|string
+	 * @return null|mixed
 	 */
 	public function getQuery($name)
 	{
@@ -118,7 +141,7 @@ class HttpRequest extends Request
 	 * Returns the POST parameter of the current request.
 	 *
 	 * @param $name
-	 * @return null|string
+	 * @return null|mixed
 	 */
 	public function getPost($name)
 	{
@@ -139,7 +162,7 @@ class HttpRequest extends Request
 	 * Returns the FILES parameter of the current request.
 	 *
 	 * @param $name
-	 * @return null|string
+	 * @return null|mixed
 	 */
 	public function getFile($name)
 	{
@@ -154,6 +177,28 @@ class HttpRequest extends Request
 	public function getFileList()
 	{
 		return $this->files;
+	}
+
+	/**
+	 * Returns the header of the current request.
+	 *
+	 * @param string $name Name of header.
+	 *
+	 * @return null|string
+	 */
+	public function getHeader($name)
+	{
+		return $this->headers->get($name);
+	}
+
+	/**
+	 * Returns the list of headers of the current request.
+	 *
+	 * @return HttpHeaders
+	 */
+	public function getHeaders()
+	{
+		return $this->headers;
 	}
 
 	/**
@@ -200,6 +245,16 @@ class HttpRequest extends Request
 	public function getRequestMethod()
 	{
 		return $this->server->getRequestMethod();
+	}
+
+	/**
+	 * Returns server port.
+	 *
+	 * @return string | null
+	 */
+	public function getServerPort()
+	{
+		return $this->server->getServerPort();
 	}
 
 	public function isPost()
@@ -277,7 +332,7 @@ class HttpRequest extends Request
 
 	protected static function decode($url)
 	{
-		return Text\Encoding::convertEncodingToCurrent(urldecode($url));
+		return Text\Encoding::convertEncodingToCurrent(rawurldecode($url));
 	}
 
 	/**
@@ -286,17 +341,17 @@ class HttpRequest extends Request
 	 */
 	public function getHttpHost()
 	{
-		static $host = null;
-
-		if ($host === null)
+		if ($this->httpHost === null)
 		{
 			//scheme can be anything, it's used only for parsing
 			$url = new Web\Uri("http://".$this->server->getHttpHost());
 			$host = $url->getHost();
 			$host = trim($host, "\t\r\n\0 .");
+
+			$this->httpHost = $host;
 		}
 
-		return $host;
+		return $this->httpHost;
 	}
 
 	public function isHttps()
@@ -307,8 +362,10 @@ class HttpRequest extends Request
 		}
 
 		$https = $this->server->get("HTTPS");
-		if($https !== null && strtolower($https) == "on")
+		if($https <> '' && mb_strtolower($https) <> "off")
 		{
+			//From the PHP manual: Set to a non-empty value if the script was queried through the HTTPS protocol.
+			//Note that when using ISAPI with IIS, the value will be off if the request was not made through the HTTPS protocol.
 			return true;
 		}
 
@@ -336,22 +393,68 @@ class HttpRequest extends Request
 		if ($cookiePrefix === null)
 			$cookiePrefix = Config\Option::get("main", "cookie_name", "BITRIX_SM")."_";
 
-		$cookiePrefixLength = strlen($cookiePrefix);
+		$cookiePrefixLength = mb_strlen($cookiePrefix);
 
-		$cookiesNew = array();
+		$cookiesCrypter = new Web\CookiesCrypter();
+		$cookiesNew = $cookiesToDecrypt = [];
 		foreach ($cookies as $name => $value)
 		{
-			if (strpos($name, $cookiePrefix) !== 0)
+			if (mb_strpos($name, $cookiePrefix) !== 0)
 				continue;
 
-			$cookiesNew[substr($name, $cookiePrefixLength)] = $value;
+			$name = mb_substr($name, $cookiePrefixLength);
+			if (is_string($value) && $cookiesCrypter->shouldDecrypt($name, $value))
+			{
+				$cookiesToDecrypt[$name] = $value;
+			}
+			else
+			{
+				$cookiesNew[$name] = $value;
+			}
 		}
+
+		foreach ($cookiesToDecrypt as $name => $value)
+		{
+			$cookiesNew[$name] = $cookiesCrypter->decrypt($name, $value, $cookiesNew);
+		}
+
 		return $cookiesNew;
+	}
+
+	private function fetchHeaders(Server $server)
+	{
+		$headers = [];
+		foreach ($server as $name => $value)
+		{
+			if (mb_strpos($name, 'HTTP_') === 0)
+			{
+				$headerName = mb_substr($name, 5);
+				$headers[$headerName] = $value;
+			}
+			elseif (in_array($name, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true))
+			{
+				$headers[$name] = $value;
+			}
+		}
+
+		return $this->normalizeHeaders($headers);
+	}
+
+	private function normalizeHeaders(array $headers)
+	{
+		$normalizedHeaders = [];
+		foreach ($headers as $name => $value)
+		{
+			$headerName = mb_strtolower(str_replace('_', '-', $name));
+			$normalizedHeaders[$headerName] = $value;
+		}
+
+		return $normalizedHeaders;
 	}
 
 	protected static function normalize($path)
 	{
-		if (substr($path, -1, 1) === "/")
+		if (mb_substr($path, -1, 1) === "/")
 		{
 			$path .= "index.php";
 		}
@@ -369,7 +472,7 @@ class HttpRequest extends Request
 	public function getScriptFile()
 	{
 		$scriptName = $this->getScriptName();
-		if($scriptName == "/bitrix/urlrewrite.php" || $scriptName == "/404.php" || $scriptName == "/bitrix/virtual_file_system.php")
+		if($scriptName == "/bitrix/routing_index.php" || $scriptName == "/bitrix/urlrewrite.php" || $scriptName == "/404.php" || $scriptName == "/bitrix/virtual_file_system.php")
 		{
 			if(($v = $this->server->get("REAL_FILE_PATH")) != null)
 			{
@@ -387,6 +490,7 @@ class HttpRequest extends Request
 	{
 		static $params = array(
 			"login",
+			"login_form",
 			"logout",
 			"register",
 			"forgot_password",
@@ -401,7 +505,26 @@ class HttpRequest extends Request
 			"show_sql_stat",
 			"show_cache_stat",
 			"show_link_stat",
+			"sessid",
 		);
 		return $params;
+	}
+
+	/**
+	 * Returns raw request data from php://input.
+	 * @return bool|string
+	 */
+	public static function getInput()
+	{
+		return file_get_contents("php://input");
+	}
+
+	/**
+	 * Returns Y if persistant cookies are enabled, N if disabled, or empty if unknown.
+	 * @return null|string
+	 */
+	public function getCookiesMode()
+	{
+		return $this->getCookie(HttpResponse::STORE_COOKIE_NAME);
 	}
 }

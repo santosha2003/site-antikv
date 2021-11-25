@@ -59,15 +59,18 @@ function BXBlockEditor(params)
 	this.iframe = params.iframe;
 	this.charset = params.charset;
 	this.previewUrl = params.previewUrl;
+	this.saveFileUrl = params.saveFileUrl;
 	this.site = params.site;
 	this.resultNode = params.resultNode;
 	this.blockTypeList = params.blockTypeList;
+	this.disableScroll = params.disableScroll || false;
 	this.panelList = {};
 	this.blockList = [];
 	this.placeList = [];
 	this.dragdrop = null;
 	this.preview = null;
 	this.stylistContainerNode = null;
+	this.stylistInitedValues = {};
 	this.isInited = false;
 	this.isTemplateMode = !!params.isTemplateMode;
 
@@ -78,7 +81,7 @@ function BXBlockEditor(params)
 	this.CONST_ATTR_TMP_RESOURSE = 'data-bx-resource-temp';
 	this.CONST_ATTR_ID_STYLIST = 'bxStylist';
 
-	this.sliceContent = new BXBlockEditorSliceContent({'caller': this, 'textarea': this.resultNode});
+	this.content = new BX.BlockEditor.Content({'caller': this, 'textarea': this.resultNode});
 	this.statusManager = new BXBlockEditorStatusManager({'caller': this});
 	this.cssParser = new BXBlockEditorCssParser();
 
@@ -97,7 +100,43 @@ function BXBlockEditor(params)
 			this.load(params.url);
 		}
 	}, this));
+
+	if (this.disableScroll)
+	{
+		BX.bind(this.iframe, 'load', setTimeout(this.initResize.bind(this), 1000));
+	}
 }
+BXBlockEditor.prototype.initResize = function()
+{
+	this.resize();
+
+	BX.bind(
+		this.iframe.contentWindow,
+		'resize',
+		BX.throttle(this.resize.bind(this), 200)
+	);
+};
+BXBlockEditor.prototype.resize = function()
+{
+	if (!this.disableScroll)
+	{
+		return;
+	}
+
+	var doc = this.iframe.contentDocument;
+	var h = Math.max(
+		doc.body.scrollHeight, doc.documentElement.scrollHeight,
+		doc.body.offsetHeight, doc.documentElement.offsetHeight,
+		doc.body.clientHeight, doc.documentElement.clientHeight
+	);
+	if (h <= 0)
+	{
+		return;
+	}
+
+	this.iframe.style.height = h + 'px';
+	//this.iframe.contentDocument.body.style['overflow-y'] = 'hidden';
+};
 BXBlockEditor.prototype.init = function()
 {
 	// call only one time when load window
@@ -138,7 +177,7 @@ BXBlockEditor.prototype.initPhpSlices = function()
 		var phpSlice = node.getAttribute(this.phpParser.getAttrName());
 		var phpDesc = this.phpParser.getPhpSliceDescription(phpSlice);
 		node.innerHTML = phpDesc.name;
-		node.setAttribute('title', phpDesc.title);
+		node.setAttribute('title', BX.util.htmlspecialchars(phpDesc.title));
 
 		this.phpParser.addItem(node.id, phpSlice, node.outerHTML);
 	}
@@ -166,10 +205,15 @@ BXBlockEditor.prototype.initControls = function()
 	this.panelList['preview'].panel = BX.findChildByClassName(this.context, 'preview' + '-panel', true);
 	BX.bind(this.panelList['preview'].button, 'click', function(){_this.showPreview('preview');});
 
+	var getHtmlBtn = this.context.querySelector('[data-role="block-editor-tab-btn-get-html"]');
+	BX.clipboard.bindCopyClick(getHtmlBtn, {'text': this.getContent.bind(this)});
+
+	/*
 	this.panelList['get-html'] = {};
 	this.panelList['get-html'].button = BX.findChildByClassName(this.context, 'bx-editor-block-btn-' + 'get-html', true);
 	this.panelList['get-html'].panel = BX.findChildByClassName(this.context, 'get-html' + '-panel', true);
 	BX.bind(this.panelList['get-html'].button, 'click', function(){_this.showHtml('get-html');});
+	*/
 
 };
 
@@ -203,21 +247,31 @@ BXBlockEditor.prototype.initStylist = function()
 	if(!this.stylistContainerNode)
 	{
 		this.stylistContainerNode = BX.create('STYLE');
-		this.stylistContainerNode.setAttribute('data-bx-stylist-container', 'item');
+		this.stylistContainerNode.setAttribute(this.CONST_ATTR_STYLIST_TAG, 'item');
 		this.stylistContainerNode.setAttribute('type', 'text/css');
 		headNode.appendChild(this.stylistContainerNode);
 	}
 
+	this.stylistInitedValues = this.cssParser.parse(this.stylistContainerNode.innerHTML);
+
 	// init saved styles, do not if changing template
 	if(!this.isInited)
 	{
-		var sliceList = this.sliceContent.getSlices();
-		if(sliceList && sliceList['STYLES'])
-		{
-			this.helper.each(sliceList['STYLES'], function(slice){
-				this.stylistContainerNode.innerHTML = this.cssParser.parseTag(slice.value);
-			}, this);
-		}
+		this.content.getStyles().forEach(function(item) {
+			var styles;
+			if (item.block)
+			{
+				styles = item.block.parameters;
+			}
+			else if (item.value)
+			{
+				styles = this.cssParser.parse(item.value);
+			}
+
+			var currentStyles = this.cssParser.parse(this.stylistContainerNode.innerHTML);
+			styles = this.cssParser.mergeStyles(currentStyles, styles);
+			this.stylistContainerNode.innerHTML = this.cssParser.getCssString(styles);
+		}, this);
 	}
 
 
@@ -353,34 +407,45 @@ BXBlockEditor.prototype.initBlockPlaces = function()
 			}
 		}
 
-		var sliceList = this.sliceContent.getSlices();
-		if(sliceList && sliceList['BLOCKS'])
-		{
-			sliceList = sliceList['BLOCKS'];
-			this.helper.each(sliceList, function(slice){
-				var placeInfoCode = null;
-				if(placeInfoList[slice.item])
-				{
-					placeInfoCode = slice.item;
-				}
-				else if(placeInfoList['body'])
-				{
-					placeInfoCode = 'body';
-				}
-				else if(placeInfoList[firstPlaceInfoCode])
-				{
-					placeInfoCode = firstPlaceInfoCode;
-				}
-				else
-				{
-					return;
-				}
+		this.content.getBlocks().forEach(function (item) {
+			var placeInfoCode = null;
+			if(placeInfoList[item.place])
+			{
+				placeInfoCode = item.place;
+			}
+			else if(placeInfoList['body'])
+			{
+				placeInfoCode = 'body';
+			}
+			else if(placeInfoList[firstPlaceInfoCode])
+			{
+				placeInfoCode = firstPlaceInfoCode;
+			}
+			else
+			{
+				return;
+			}
 
-				var placeInfo = placeInfoList[placeInfoCode];
-				placeInfo.html += this.phpParser.replacePhpByLayout(slice.value);
+			var placeInfo = placeInfoList[placeInfoCode];
 
-			}, this);
-		}
+			var html = '';
+			if (item.block)
+			{
+				html = this.getBlockHtml(item.block.type, item.block.parameters);
+			}
+			else
+			{
+				html = this.phpParser.replacePhpByLayout(item.value);
+			}
+			
+			var emptyTextLayout = '<div ' + this.CONST_ATTR_BLOCK + '="text">';
+			if (html.indexOf(emptyTextLayout) === 0 && html.length < emptyTextLayout.length + 10)
+			{
+				html = ' ';
+			}
+			placeInfo.html += html;
+
+		}, this);
 
 
 		// clean places from template blocks, that have blocks from content
@@ -497,6 +562,7 @@ BXBlockEditor.prototype.initTabsBlockAndStyles = function()
 	var contentBlocks = BX.findChildByClassName(this.context, 'edit-panel-tabs-block', true);
 	var contentStyles = BX.findChildByClassName(this.context, 'edit-panel-tabs-style', true);
 
+
 	var clickHandler = function(){
 		if(BX.hasClass(this, 'blocks'))
 		{
@@ -516,6 +582,62 @@ BXBlockEditor.prototype.initTabsBlockAndStyles = function()
 
 	BX.bind(tabBlocks, 'click', clickHandler);
 	BX.bind(tabStyles, 'click', clickHandler);
+
+	var contentPagerPrev = BX.findChildByClassName(this.context, 'adm-nav-page-prev', true);
+	var contentPagerNext = BX.findChildByClassName(this.context, 'adm-nav-page-next', true);
+	var pagerClickHandler = function(context, next){
+
+		var currentPageNode = context.querySelector('ul.bx-block-editor-i-block-list');;
+		while(currentPageNode)
+		{
+			if(BX.style(currentPageNode, 'display') == 'block')
+			{
+				break;
+			}
+			currentPageNode = currentPageNode.nextElementSibling;
+		}
+
+		if(currentPageNode)
+		{
+			var nextPageNode;
+			if(next)
+			{
+				nextPageNode = currentPageNode.nextElementSibling;
+			}
+			else
+			{
+				nextPageNode = currentPageNode.previousElementSibling;
+			}
+
+			if(nextPageNode)
+			{
+				var easing = new BX.easing({
+					duration : 200,
+					start : {opacity: 1}, finish : {opacity: 0},
+					transition : BX.easing.transitions.quart,
+					step: function(state){
+						currentPageNode.style.opacity = state.opacity;
+					},
+					complete : function() {
+						currentPageNode.style.display = 'none';
+						currentPageNode.style.opacity = 1;
+						nextPageNode.style.display = 'block';
+					}
+				});
+				easing.animate();
+			}
+		}
+
+	};
+
+	var _context = this.context;
+	BX.bind(contentPagerPrev, 'click', function(){
+		pagerClickHandler(_context, false);
+	});
+	BX.bind(contentPagerNext, 'click', function(){
+		pagerClickHandler(_context, true);
+	});
+
 };
 
 BXBlockEditor.prototype.showPanel = function(code)
@@ -536,11 +658,11 @@ BXBlockEditor.prototype.showPanel = function(code)
 
 BXBlockEditor.prototype.showPreview = function(panelCode, executePhp)
 {
-	if(executePhp == undefined)
+	if(typeof executePhp === 'undefined')
 	{
 		executePhp = false;
 	}
-	this.preview.show({'content': this.getContent(executePhp)});
+	this.preview.show({'content': this.getContent(executePhp, true)});
 	this.showPanel(panelCode);
 };
 
@@ -553,7 +675,11 @@ BXBlockEditor.prototype.showHtml = function(panelCode)
 
 BXBlockEditor.prototype.initEditDialog = function()
 {
-	this.editDialog = new BXBlockEditorEditDialog({context: this.context, 'caller': this});
+	this.editDialog = new BXBlockEditorEditDialog({
+		'context': this.context,
+		'caller': this,
+		'saveFileUrl': this.saveFileUrl
+	});
 	this.editDialog.caller = this;
 	this.phpParser = new BXBlockEditorPHPParser({'htmlEditor': this.editDialog.htmlEditor});
 	this.editDialog.phpParser = this.phpParser;
@@ -579,12 +705,28 @@ BXBlockEditor.prototype.initEditDialog = function()
 		BX.delegate(this.editDialog.save, this.editDialog)
 	);
 
+	var formNode = BX.findParent(this.resultNode, {'tag': 'form'});
+	var self = this;
 	BX.bind(
-		BX.findParent(this.resultNode, {'tag': 'form'}),
+		formNode,
 		'submit',
-		BX.delegate(function(){
-			this.editDialog.save(BX.delegate(function(){this.save()}, this));
-		}, this)
+		function(e)
+		{
+			if (self.isFinalSave)
+			{
+				self.isFinalSave = false;
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			self.editDialog.save(function(){
+				self.isFinalSave = true;
+				self.save();
+				BX.submit(formNode);
+			});
+		}
 	);
 };
 
@@ -683,19 +825,48 @@ BXBlockEditor.prototype.load = function(url, callback)
 };
 
 
+BXBlockEditor.prototype.createBlockListWithReplacedEmptyPlaces = function()
+{
+	var tempBlocks = [];
+	this.helper.each(this.findBlockPlaces(), function (placeNode, placeCode) {
+		var blockNodes = placeNode.querySelectorAll('[' + this.CONST_ATTR_BLOCK + ']');
+		if (blockNodes.length > 0 )
+		{
+			return;
+		}
+		if (placeNode.children.length !== 1)
+		{
+			return;
+		}
+
+		var blockNode = this.getBlockNodeByType('text');
+		if (blockNode)
+		{
+			var block = this.addBlockByNode(blockNode, placeNode.children[0], true);
+			block.setContentHtml('');
+			tempBlocks.push(block);
+		}
+
+	}, this);
+
+	return tempBlocks;
+};
+BXBlockEditor.prototype.removeBlockListWithReplacedEmptyPlaces = function(tempBlocks)
+{
+	tempBlocks.forEach(function (block) {
+		this.removeBlock(block, true);
+	}, this);
+};
+
 BXBlockEditor.prototype.getSortedBlockList = function()
 {
 	var sortedBlockList = [];
 	var nodeList = this.iframe.contentDocument.body.querySelectorAll('[' + this.CONST_ATTR_BLOCK + ']');
-	if(!nodeList)
-	{
-		nodeList = [];
-	}
+	nodeList = BX.convert.nodeListToArray(nodeList);
 
 	// get as changed that places what have changed blocks
 	var changedPlaceList = this.statusManager.getPlaceNameList(nodeList);
-
-	this.helper.each(nodeList, function(node, sort)
+	nodeList.forEach(function(node, sort)
 	{
 		// add blocks only from changed places
 		if(!node.parentNode || !BX.util.in_array(node.parentNode.getAttribute(this.CONST_ATTR_PLACE), changedPlaceList))
@@ -725,7 +896,7 @@ BXBlockEditor.prototype.getContentForSave = function()
 	}
 	else
 	{
-		var params = {'BLOCKS': [], 'STYLES': []};
+		var list = [];
 
 		// save styles
 		if(this.stylistContainerNode && this.stylistContainerNode.innerHTML)
@@ -733,30 +904,56 @@ BXBlockEditor.prototype.getContentForSave = function()
 			var styleContent = this.stylistContainerNode.innerHTML.trim();
 			if(styleContent)
 			{
-				styleContent = '<style type="text/css">' + "\n" + styleContent + "\n" + '</style>';
-				params['STYLES'].push({
-					section: 'STYLES',
-					item: 'page',
-					value: styleContent
-				});
+				// save only changed styles
+				var diffStyles = this.cssParser.diffStylesAll(
+					this.stylistInitedValues,
+					this.cssParser.parse(styleContent)
+				);
+
+				if(diffStyles)
+				{
+					styleContent = '<style type="text/css">' + "\n" + this.cssParser.getCssString(diffStyles) + "\n" + '</style>';
+					list.push({
+						'type': 'STYLES',
+						'place': 'page',
+						'value': styleContent,
+						'block': {
+							'type': 'stylist',
+							'parameters': diffStyles
+						}
+					});
+				}
 			}
 		}
 
 		// save blocks
-		this.helper.each(this.getSortedBlockList(), function(block)
-		{
-			params['BLOCKS'].push({
-				section: 'BLOCKS',
-				item: block.getPlaceHolderCode(),
-				value: block.getContentHtmlOuter()
-			});
-		}, this);
+		var tempBlocks = this.createBlockListWithReplacedEmptyPlaces();
+		var blockList = this.getSortedBlockList();
+			/*
+			this.isFinalSave
+			? this.getSortedBlockListWithReplacedEmptyPlaces()
+			: this.getSortedBlockList();
+			*/
 
-		return this.sliceContent.getHtml(params);
+		list = list.concat(blockList.map(function(block) {
+			return {
+				'type': 'BLOCKS',
+				'place': block.getPlaceHolderCode(),
+				'value': block.getContentHtmlOuter(), // '',
+				'block': {
+					'type': block.type,
+					'parameters': block.getEditValues()
+				}
+			};
+		}, this));
+
+		this.removeBlockListWithReplacedEmptyPlaces(tempBlocks);
+
+		return this.content.getString(list);
 	}
 };
 
-BXBlockEditor.prototype.getContent = function(withoutPHP)
+BXBlockEditor.prototype.getContent = function(withoutPHP, fillBlockPlacesByEmptyBlocks)
 {
 	withoutPHP = !!(withoutPHP || null);
 
@@ -764,7 +961,7 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 
 	// clean resources from editor resources
 	if(doc.head)
-	for(var i = 0;  i < doc.head.childNodes.length; i++)
+	for(var i = doc.head.childNodes.length - 1;  i >= 0; i--)
 	{
 		var node = doc.head.childNodes.item(i);
 		var nodeName = node.nodeName;
@@ -783,6 +980,11 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 					//node.removeAttribute(this.CONST_ATTR_STYLIST_TAG);
 				}
 			}
+			
+			if (node.href && node.href.indexOf('/bitrix/js/fileman/block_editor/editor.css') > -1)
+			{
+				BX.remove(node);
+			}
 		}
 	}
 
@@ -792,9 +994,22 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 	{
 		var blockPlace = blockPlaceList[j];
 		var blockPlaceBlocks = BX.findChildren(blockPlace, {'attribute': this.CONST_ATTR_BLOCK}, true);
-		if(blockPlaceBlocks.length == 0)
+		if(blockPlaceBlocks.length === 0)
 		{
 			BX.cleanNode(blockPlace);
+			if (fillBlockPlacesByEmptyBlocks)
+			{
+				var blockNode = this.getBlockNodeByType('text');
+				if (blockNode)
+				{
+
+					var blockAnchorNode = doc.createTextNode('');
+					blockPlace.appendChild(blockAnchorNode);
+					var block = this.addBlockByNode(blockNode, blockAnchorNode, true);
+					block.setContentHtml('');
+
+				}
+			}
 		}
 	}
 
@@ -810,7 +1025,7 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 
 		// get block content
 		var blockContent = BX.findChild(block, {'className': 'bx-content'}, true);
-		var blockContentChildren = blockContent.childNodes;
+		var blockContentChildren = BX.convert.nodeListToArray(blockContent.childNodes);
 
 		if(withoutPHP && block && block.getAttribute && block.getAttribute(this.CONST_ATTR_BLOCK) == 'component')
 		{
@@ -839,7 +1054,7 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 
 
 	// get html
-	result = doc.documentElement.outerHTML;
+	var result = doc.documentElement.outerHTML;
 
 	// replace placeholder #bx_....# by PHP-chunk
 	if (!withoutPHP)
@@ -932,9 +1147,27 @@ BXBlockEditor.prototype.getCurrentEditingBlock = function()
 	return this.currentEditingBlock;
 };
 
-BXBlockEditor.prototype.getBlockNodeByType = function(code)
+BXBlockEditor.prototype.getBlockHtml = function(type, values)
 {
-	var bxParams = {};
+	var blockNode = this.getBlockNodeByType(type);
+	var block;
+	if(type === 'component')
+	{
+		block = new BXBlockEditorBlockComponent();
+	}
+	else
+	{
+		block = new BXBlockEditorBlock();
+	}
+
+	block.init(blockNode, {'caller': this, 'type': type});
+	block.setEditValues(values);
+
+	return block.getContentHtmlOuter();
+};
+
+BXBlockEditor.prototype.getBlockHtmlByCode = function(code)
+{
 	var type = this.blockTypeList[code].TYPE;
 	var html = this.blockTypeList[code].HTML;
 
@@ -942,7 +1175,15 @@ BXBlockEditor.prototype.getBlockNodeByType = function(code)
 	{
 		html = this.phpParser.getComponentInclude(code);
 	}
-	html = this.phpParser.replacePhpByLayout(html);
+
+	return this.phpParser.replacePhpByLayout(html);
+};
+
+BXBlockEditor.prototype.getBlockNodeByType = function(code)
+{
+	var bxParams = {};
+	var type = this.blockTypeList[code].TYPE;
+	var html = this.getBlockHtmlByCode(code);
 
 	bxParams[this.CONST_ATTR_BLOCK] = type;
 	return BX.create({'tag': 'DIV', 'attrs': bxParams, 'html': html});
@@ -1001,8 +1242,9 @@ BXBlockEditor.prototype.addBlock = function(blockNode)
 	return block;
 };
 
-BXBlockEditor.prototype.removeBlock = function(block)
+BXBlockEditor.prototype.removeBlock = function(block, disableSaving)
 {
+
 	BX.onCustomEvent(this, 'onBlockRemove', [block]);
 
 	for(var i in this.blockList)
@@ -1018,7 +1260,12 @@ BXBlockEditor.prototype.removeBlock = function(block)
 	BX.remove(block.node);
 	this.actualizeBlockPlace(parentRemovedNode);
 
-	this.save();
+	BX.onCustomEvent(this, 'onBlockRemoveAfter', [parentRemovedNode]);
+
+	if (!disableSaving)
+	{
+		this.save();
+	}
 	this.editDialog.hide();
 };
 
@@ -1089,7 +1336,10 @@ BXBlockEditorBlock.prototype.init = function (node, params)
 	this.node = node;
 	this.helper = new BXBlockEditorHelper();
 	this.initStructure();
-	this.initControls(params.controls);
+	if (params.controls)
+	{
+		this.initControls(params.controls);
+	}
 	this.initEditHandlers();
 	this.initDependencies();
 };
@@ -1148,7 +1398,6 @@ BXBlockEditorBlock.prototype.getContentHtmlOuter = function(withoutPHP)
 
 	return blockHtml;
 };
-
 BXBlockEditorBlock.prototype.findEditHandler = function(code)
 {
 	if(this.editHandlerList && this.editHandlerList[code])
@@ -1235,7 +1484,49 @@ BXBlockEditorBlock.prototype.findEditNodeList = function(className, columnNum)
 
 	return result;
 };
+BXBlockEditorBlock.prototype.columnToolName = 'column-count';
+BXBlockEditorBlock.prototype.getEditValues = function()
+{
+	var result = [];
+	var column = this.getEditValue(this.columnToolName);
+	column = column > 0 ? column : 1;
 
+	for (var code in this.editHandlerList)
+	{
+		if (!this.editHandlerList.hasOwnProperty(code))
+		{
+			continue;
+		}
+
+		for (var i = 1; i <= column; i++)
+		{
+			var value = this.getEditValue(code, i);
+			if (value === null || value === '')
+			{
+				continue;
+			}
+
+			result.push({'code': code, 'value': value, 'column': i});
+		}
+	}
+
+	return result;
+};
+BXBlockEditorBlock.prototype.setEditValues = function(values)
+{
+	var filtered = values.filter(function (item) {
+		return item.code == this.columnToolName;
+	}, this);
+	if (filtered && filtered[0])
+	{
+		var column = filtered[0].value;
+		column = column > 0 ? column : 1;
+		this.setEditValue(this.columnToolName, column);
+	}
+	values.forEach(function (item) {
+		this.setEditValue(item.code, item.value, item.column > 0 ? item.column : 1);
+	}, this);
+};
 BXBlockEditorBlock.prototype.setEditValue = function(param, value, columnNum)
 {
 	var handler = this.findEditHandler(param);
@@ -1436,6 +1727,7 @@ function BXBlockEditorBlockComponent()
 
 		var _this = this;
 		this.caller.editDialog.save();
+		this.caller.currentEditingBlock = this;
 		this.caller.phpParser.showComponentPropertiesDialog(
 			this.getContentClearPhp(),
 			function(html){
@@ -1457,7 +1749,14 @@ function BXBlockEditorStylist()
 
 	this.selectorTextList = [
 		'.bxBlockContentText', '.bxBlockContentText p',
+		'.bxBlockContentSocial', '.bxBlockContentSocial p',
 		'.bxBlockContentBoxedText', '.bxBlockContentBoxedText p'
+	];
+
+	this.selectorAList = [
+		'.bxBlockSocial a',
+		'.bxBlockContentText a',
+		'.bxBlockContentBoxedText a'
 	];
 
 	this.getPlaceHolderCode = function()
@@ -1756,7 +2055,7 @@ function BXBlockEditorStylist()
 
 	this.cssATag = function(node, param, value)
 	{
-		return this.css('', ['a'], node, param, value);
+		return this.css('', this.selectorAList, node, param, value);
 	};
 }
 BX.extend(BXBlockEditorStylist, BXBlockEditorBlock);
@@ -1878,10 +2177,9 @@ BXBlockEditorPHPParser.prototype.getAttrName = function()
 
 BXBlockEditorPHPParser.prototype.getPhpSliceDescription = function(phpSlice)
 {
-	result = {'name': 'PHP', 'title': 'PHP'};
-
+	var result = {'name': 'PHP', 'title': 'PHP'};
 	var component = this.htmlEditor.components.IsComponent(phpSlice);
-	if(component)
+	if(component && this.htmlEditor.components.components)
 	{
 		var cData = this.htmlEditor.components.GetComponentData(component.name);
 		var name = cData.title || component.name;

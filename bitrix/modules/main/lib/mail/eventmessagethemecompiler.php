@@ -31,10 +31,19 @@ class EventMessageThemeCompiler
 	protected $body;
 	protected $contentTypeHtml = false;
 
+	protected $params = array();
 	protected $arStyle = array();
 	protected $replaceCallback = array();
 	protected $currentResourceOrder = 100;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string|null $siteTemplateId
+	 * @param string $body
+	 * @param bool $isHtml
+	 * @return EventMessageThemeCompiler
+	 */
 	public function __construct($siteTemplateId = null, $body, $isHtml = true)
 	{
 		$this->contentTypeHtml = $isHtml;
@@ -44,6 +53,11 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Create instance.
+	 *
+	 * @param string|null $siteTemplateId
+	 * @param string $body
+	 * @param bool $isHtml
 	 * @return EventMessageThemeCompiler
 	 */
 	public static function createInstance($siteTemplateId = null, $body, $isHtml = true)
@@ -57,6 +71,7 @@ class EventMessageThemeCompiler
 	 * Returns current instance of the EventMessageThemeCompiler.
 	 *
 	 * @return EventMessageThemeCompiler
+	 * @throws \Bitrix\Main\ObjectNotFoundException
 	 */
 	public static function getInstance()
 	{
@@ -66,6 +81,11 @@ class EventMessageThemeCompiler
 		return static::$instance;
 	}
 
+	/**
+	 * Unset current instance of the EventMessageThemeCompiler.
+	 *
+	 * @return void
+	 */
 	public static function unsetInstance()
 	{
 		if (isset(static::$instance))
@@ -73,6 +93,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Set site template id.
+	 *
 	 * @param mixed $siteTemplateId
 	 */
 	public function setSiteTemplateId($siteTemplateId)
@@ -81,6 +103,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Get site template id.
+	 *
 	 * @return mixed
 	 */
 	public function getSiteTemplateId()
@@ -89,6 +113,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Set language id.
+	 *
 	 * @param mixed $languageId
 	 */
 	public function setLanguageId($languageId)
@@ -97,6 +123,7 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Get language id.
 	 * @return mixed
 	 */
 	public function getLanguageId()
@@ -105,7 +132,10 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Set site id.
+	 *
 	 * @param mixed $siteId
+	 * @return void
 	 */
 	public function setSiteId($siteId)
 	{
@@ -113,23 +143,38 @@ class EventMessageThemeCompiler
 	}
 
 	/**
-	 * @return mixed
+	 * Return site id.
+	 *
+	 * @return string
 	 */
 	public function getSiteId()
 	{
 		return $this->siteId;
 	}
 
+	/**
+	 * Return result.
+	 *
+	 * @return string
+	 */
 	public function getResult()
 	{
 		return $this->resultString;
 	}
 
-	public function setParams(array $arParams)
-	{
-		$this->params = $arParams;
-	}
 	/**
+	 * Set params that will be used for replacing placeholders.
+	 *
+	 * @param array $params
+	 */
+	public function setParams(array $params)
+	{
+		$this->params = $params;
+	}
+
+	/**
+	 * Set theme prolog.
+	 *
 	 * @param mixed $themeProlog
 	 */
 	public function setThemeProlog($themeProlog)
@@ -138,6 +183,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Return theme prolog.
+	 *
 	 * @return mixed
 	 */
 	public function getThemeProlog()
@@ -146,6 +193,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Set theme epilog.
+	 *
 	 * @param mixed $themeEpilog
 	 */
 	public function setThemeEpilog($themeEpilog)
@@ -154,6 +203,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Return theme epilog.
+	 *
 	 * @return mixed
 	 */
 	public function getThemeEpilog()
@@ -161,24 +212,47 @@ class EventMessageThemeCompiler
 		return $this->themeEpilog;
 	}
 
-
+	/**
+	 * Set style.
+	 *
+	 * @param array $arPaths
+	 * @param bool $sort
+	 * @return void
+	 */
 	public function setStyle($path, $sort = false)
 	{
 		$sort = ($sort === false ? $this->currentResourceOrder : $sort);
 		$this->arStyle[$path] = $sort;
 	}
 
+	/**
+	 * Set style list.
+	 *
+	 * @param array $arPaths
+	 * @param bool $sort
+	 * @return void
+	 */
 	public function setStyleArray(array $arPaths, $sort = false)
 	{
 		foreach($arPaths as $path)
 			$this->setStyle($path, $sort);
 	}
 
+	/**
+	 * Return style list that will be added by template.
+	 *
+	 * @return array
+	 */
 	public function getStyles()
 	{
 		return $this->arStyle;
 	}
 
+	/**
+	 * Return styles as string that will be added by template.
+	 *
+	 * @return string
+	 */
 	public function getStylesString()
 	{
 		$returnStylesString = $this->themeStylesString;
@@ -194,7 +268,7 @@ class EventMessageThemeCompiler
 			}
 		}
 
-		if(strlen($returnStylesString)>0)
+		if($returnStylesString <> '')
 		{
 			$returnStylesString = '<style type="text/css">'."\r\n".$returnStylesString."\r\n".'</style>';
 		}
@@ -202,6 +276,11 @@ class EventMessageThemeCompiler
 		return $returnStylesString;
 	}
 
+	/**
+	 * Show styles that will be added by template.
+	 *
+	 * @return string
+	 */
 	public function showStyles()
 	{
 		if($this->contentTypeHtml)
@@ -219,7 +298,7 @@ class EventMessageThemeCompiler
 
 	protected function setTheme($site_template_id)
 	{
-		if(strlen($site_template_id)>0)
+		if($site_template_id <> '')
 		{
 			$result = \CSiteTemplate::GetByID($site_template_id);
 			if($templateFields = $result->Fetch())
@@ -265,6 +344,8 @@ class EventMessageThemeCompiler
 	}
 
 	/**
+	 * Execute prolog, body and epilog.
+	 *
 	 * @param
 	 */
 	public function execute()
@@ -297,8 +378,16 @@ class EventMessageThemeCompiler
 	{
 		$this->currentResourceOrder = $resourceOrder;
 
-		$arParams = $this->params;
-		$result = eval('use \Bitrix\Main\Mail\EventMessageThemeCompiler; ob_start();?>' . $template . '<? return ob_get_clean();');
+		try
+		{
+			$arParams = $this->params;
+			$result = eval('use \Bitrix\Main\Mail\EventMessageThemeCompiler; ob_start();?>' . $template . '<? return ob_get_clean();');
+		}
+		catch(StopException $e)
+		{
+			ob_clean();
+			throw $e;
+		}
 
 		return $result;
 	}
@@ -325,10 +414,15 @@ class EventMessageThemeCompiler
 		$this->resultString = str_replace($arReplaceIdentificators, $arReplaceStrings, $this->resultString);
 	}
 
+	/**
+	 * Include mail component.
+	 *
+	 * @return mixed
+	 */
 	public static function includeComponent($componentName, $componentTemplate, $arParams = array(), $parentComponent = null, $arFunctionParams = array())
 	{
 		$componentRelativePath = \CComponentEngine::MakeComponentPath($componentName);
-		if (StrLen($componentRelativePath) <= 0)
+		if ($componentRelativePath == '')
 			return False;
 
 		if (is_object($parentComponent))
@@ -350,7 +444,15 @@ class EventMessageThemeCompiler
 				$component->setLanguageId(static::getInstance()->getLanguageId());
 				$component->setSiteTemplateId(static::getInstance()->getSiteTemplateId());
 
-				$result = $component->IncludeComponent($componentTemplate, $arParams, $parentComponent);
+				try
+				{
+					$result = $component->IncludeComponent($componentTemplate, $arParams, $parentComponent);
+				}
+				catch(StopException $e)
+				{
+					$component->AbortResultCache();
+					throw $e;
+				}
 
 				$arThemeCss = array(); // TODO: use styles array from $component
 				foreach($arThemeCss as $cssPath)
@@ -361,4 +463,17 @@ class EventMessageThemeCompiler
 		return $result;
 	}
 
+	/**
+	 * Stop execution of template. Throws an exception if instance is exists.
+	 *
+	 * @return void
+	 * @throws \Bitrix\Main\Mail\StopException
+	 */
+	public static function stop()
+	{
+		if (static::$instance)
+		{
+			throw new StopException;
+		}
+	}
 }

@@ -1,4 +1,0 @@
-<?
-$MESS ['LEARNING_COURSE_TOC'] = "Ýçerik";
-$MESS ['LEARNING_COURSE_DESCRIPTION'] = "Kurs tanýmý";
-?>

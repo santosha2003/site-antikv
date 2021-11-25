@@ -43,7 +43,10 @@ div.Section1
 
 <p class=Normal style='line-height:133%'>Унифицированная форма<span lang=EN-US>
 N</span> ТОРГ-12 Утверждена постановлением Госкомстата России от 25 12.98 N 132</p>
-
+<?
+	$arCurFormat = CCurrencyLang::GetCurrencyFormat($arOrder["CURRENCY"]);
+	$currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
+?>
 <table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
 style='width:832pt;margin-left:2.0pt;border-collapse:collapse'>
 <tr style='page-break-inside:avoid;height:10.0pt'>
@@ -159,18 +162,18 @@ border-top:none;padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 	$arUser = $db_user->Fetch();
 	echo htmlspecialcharsbx($arUser["NAME"])." ".htmlspecialcharsbx($arUser["LAST_NAME"]).", ";
 
-	if (strlen($arOrderProps["F_INDEX"])>0) echo $arOrderProps["F_INDEX"].",";
+	if ($arOrderProps["F_INDEX"] <> '') echo $arOrderProps["F_INDEX"].",";
 
 	$arVal = CSaleLocation::GetByID($arOrderProps["F_LOCATION"], "ru");
-	if(strlen($arVal["COUNTRY_NAME"])>0 && strlen($arVal["CITY_NAME"])>0)
+	if($arVal["COUNTRY_NAME"] <> '' && $arVal["CITY_NAME"] <> '')
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"]." - ".$arVal["CITY_NAME"]);
-	elseif(strlen($arVal["COUNTRY_NAME"])>0 || strlen($arVal["CITY_NAME"])>0)
+	elseif($arVal["COUNTRY_NAME"] <> '' || $arVal["CITY_NAME"] <> '')
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"].$arVal["CITY_NAME"]);
 
-	if (strlen($arOrderProps["F_CITY"])>0) echo ", г. ".$arOrderProps["F_CITY"];
-	if (strlen($arOrderProps["F_ADDRESS"])>0 && strlen($arOrderProps["F_CITY"])>0)
+	if ($arOrderProps["F_CITY"] <> '') echo ", г. ".$arOrderProps["F_CITY"];
+	if ($arOrderProps["F_ADDRESS"] <> '' && $arOrderProps["F_CITY"] <> '')
 		echo ", ".$arOrderProps["F_ADDRESS"];
-	elseif(strlen($arOrderProps["F_ADDRESS"])>0)
+	elseif($arOrderProps["F_ADDRESS"] <> '')
 		echo $arOrderProps["F_ADDRESS"];
 
 	if (strval($arOrderProps["PHONE"]) != "")
@@ -181,12 +184,12 @@ border-top:none;padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 }
 else
 {
-	if(strlen($arParams["BUYER_COMPANY_NAME"]) > 0)
+	if($arParams["BUYER_COMPANY_NAME"] <> '')
 		echo $arParams["BUYER_COMPANY_NAME"];
 	else
 		echo $arParams["BUYER_LAST_NAME"]." ".$arParams["BUYER_FIRST_NAME"]." ".$arParams["BUYER_SECOND_NAME"];
 
-	if (strlen($arParams["BUYER_INN"])>0) echo " ИНН/КПП: ".$arParams["BUYER_INN"]." / ".$arParams["BUYER_KPP"];
+	if ($arParams["BUYER_INN"] <> '') echo " ИНН/КПП: ".$arParams["BUYER_INN"]." / ".$arParams["BUYER_KPP"];
 
 	echo ", ".$arParams["BUYER_COUNTRY"].", ".$arParams["BUYER_INDEX"].", г. ".$arParams["BUYER_CITY"].", ".$arParams["BUYER_ADDRESS"].", р/с ".$arParams["BUYER_RSCH"]." в ".$arParams["BUYER_RSCH_BANK"]." г. ".$arParams["BUYER_RSCH_CITY"].", к/с ".$arParams["BUYER_KSCH"].", БИК ".$arParams["BUYER_BIK"];
 
@@ -252,20 +255,20 @@ if(empty($arParams))
 	$arUser = $db_user->Fetch();
 	echo htmlspecialcharsbx($arUser["NAME"])." ".htmlspecialcharsbx($arUser["LAST_NAME"]).", ";
 
-	if (strlen($arOrderProps["F_INN"])>0) echo "ИНН: ".$arOrderProps["F_INN"];
+	if ($arOrderProps["F_INN"] <> '') echo "ИНН: ".$arOrderProps["F_INN"];
 
-	if (strlen($arOrderProps["F_INDEX"])>0) echo $arOrderProps["F_INDEX"].",";
+	if ($arOrderProps["F_INDEX"] <> '') echo $arOrderProps["F_INDEX"].",";
 
 	$arVal = CSaleLocation::GetByID($arOrderProps["F_LOCATION"], "ru");
-	if(strlen($arVal["COUNTRY_NAME"])>0 && strlen($arVal["CITY_NAME"])>0)
+	if($arVal["COUNTRY_NAME"] <> '' && $arVal["CITY_NAME"] <> '')
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"]." - ".$arVal["CITY_NAME"]);
-	elseif(strlen($arVal["COUNTRY_NAME"])>0 || strlen($arVal["CITY_NAME"])>0)
+	elseif($arVal["COUNTRY_NAME"] <> '' || $arVal["CITY_NAME"] <> '')
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"].$arVal["CITY_NAME"]);
 
-	if (strlen($arOrderProps["F_CITY"])>0) echo ", г. ".$arOrderProps["F_CITY"];
-	if (strlen($arOrderProps["F_ADDRESS"])>0 && strlen($arOrderProps["F_CITY"])>0)
+	if ($arOrderProps["F_CITY"] <> '') echo ", г. ".$arOrderProps["F_CITY"];
+	if ($arOrderProps["F_ADDRESS"] <> '' && $arOrderProps["F_CITY"] <> '')
 		echo ", ".$arOrderProps["F_ADDRESS"];
-	elseif(strlen($arOrderProps["F_ADDRESS"])>0)
+	elseif($arOrderProps["F_ADDRESS"] <> '')
 		echo $arOrderProps["F_ADDRESS"];
 
 	if (strval($arOrderProps["PHONE"]) != "")
@@ -275,12 +278,12 @@ if(empty($arParams))
 }
 else
 {
-	if(strlen($arParams["BUYER_COMPANY_NAME"]) > 0)
+	if($arParams["BUYER_COMPANY_NAME"] <> '')
 		echo $arParams["BUYER_COMPANY_NAME"];
 	else
 		echo $arParams["BUYER_LAST_NAME"]." ".$arParams["BUYER_FIRST_NAME"]." ".$arParams["BUYER_SECOND_NAME"];
 
-	if (strlen($arParams["BUYER_INN"])>0) echo " ИНН/КПП: ".$arParams["BUYER_INN"]." / ".$arParams["BUYER_KPP"];
+	if ($arParams["BUYER_INN"] <> '') echo " ИНН/КПП: ".$arParams["BUYER_INN"]." / ".$arParams["BUYER_KPP"];
 
 	echo ", ".$arParams["BUYER_COUNTRY"].", ".$arParams["BUYER_INDEX"].", г. ".$arParams["BUYER_CITY"].", ".$arParams["BUYER_ADDRESS"].", р/с ".$arParams["BUYER_RSCH"]." в ".$arParams["BUYER_RSCH_BANK"]." г. ".$arParams["BUYER_RSCH_CITY"].", к/с ".$arParams["BUYER_KSCH"].", БИК ".$arParams["BUYER_BIK"];
 
@@ -353,7 +356,7 @@ border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowt
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'><span style='font-size:7.0pt'>Валюта:
-рубль</span></p>
+<?=ToLower($arCurFormat['FULL_NAME']);?></span></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'><span style='font-size:7.0pt'>Дата
 курса: </span><span style='font-size:7.0pt'><a name=ТекстовоеПоле35></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
@@ -539,7 +542,7 @@ border-left:none;border-bottom:none;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:10.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:normal'>Цена, руб., коп.</p>
+line-height:normal'>Цена,<?=$currency;?></p>
 
 </td>
 <td rowspan=2 valign=top style='width:60.0pt;border-top:solid windowtext 1.0pt;
@@ -547,7 +550,7 @@ border-left:none;border-bottom:none;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:10.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:normal'>Сумма без учета НДС,  руб. коп.</p>
+line-height:normal'>Сумма без учета НДС,<?=$currency;?></p>
 
 </td>
 <td colspan=2 valign=top style='width:81.0pt;border:solid windowtext 1.0pt;
@@ -567,7 +570,7 @@ margin-bottom:0cm;margin-left:6.0pt;margin-bottom:.0001pt;text-align:center;
 line-height:normal'>Сумма с</p>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:normal'>учетом НДС и  руб. коп.</p>
+line-height:normal'>учетом НДС<?=$currency;?></p>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
 line-height:normal'>&nbsp;</p>
@@ -627,7 +630,7 @@ margin-left:0cm;margin-bottom:.0001pt;line-height:normal'>&nbsp;</p>
 border-left:none;border-bottom:none;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:26.0pt'>
 <p class=Normal style='margin-top:2.0pt;margin-right:0cm;margin-bottom:0cm;
-margin-left:0cm;margin-bottom:.0001pt;line-height:normal'>сумма, руб, коп</p>
+margin-left:0cm;margin-bottom:.0001pt;line-height:normal'>сумма,<?=$currency;?></p>
 <p class=Normal style='margin-top:2.0pt;margin-right:0cm;margin-bottom:0cm;
 margin-left:0cm;margin-bottom:.0001pt;line-height:normal'>&nbsp;</p>
 </td>
@@ -742,6 +745,11 @@ for ($i = 0, $max = count($arBasketIDs); $i < $max; $i++)
 	$arBasketOrder[] = $arBasketTmp;
 }
 
+if ($arOrder['DELIVERY_VAT_RATE'] > 0)
+{
+	$bUseVat = true;
+}
+
 if (is_array($arBasketOrder) && !empty($arBasketOrder))
 {
 	$arBasketOrder = getMeasures($arBasketOrder);
@@ -829,7 +837,7 @@ padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt;width:200px;'>
 	{
 		foreach($arBasket["PROPS"] as $vv)
 		{
-			if(strlen($vv["VALUE"]) > 0 && $vv["CODE"] != "CATALOG.XML_ID" && $vv["CODE"] != "PRODUCT.XML_ID")
+			if($vv["VALUE"] <> '' && $vv["CODE"] != "CATALOG.XML_ID" && $vv["CODE"] != "PRODUCT.XML_ID")
 				echo "<div style=\"font-size:8pt\">".$vv["NAME"].": ".$vv["VALUE"]."</div>";
 		}
 	}
@@ -849,7 +857,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле43></a><?=$arBasket['MEASURE_TEXT']?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле43></a><?=htmlspecialcharsbx($arBasket['MEASURE_TEXT'])?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -893,7 +901,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле46></a><?echo $arQuantities[$mi]; $total_n += $arQuantities[$mi]; ?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле46></a><?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]); $total_n += $arQuantities[$mi]; ?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -901,7 +909,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле49></a><?echo number_format($item_price, 2, ',', ' ');?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле49></a><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false);?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -909,7 +917,15 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><?echo number_format($item_price*$arQuantities[$mi], 2, ',', ' ');  $total_price += ($item_price)*$arQuantities[$mi];?></p>
+text-align:center;line-height:normal'>
+	<?
+		echo CCurrencyLang::CurrencyFormat($item_price*$arQuantities[$mi], $arOrder["CURRENCY"], false);
+		if (empty($arBasket['SET_PARENT_ID']))
+		{
+			$total_price += ($item_price*$arQuantities[$mi]);
+		}
+	?>
+</p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -917,7 +933,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле54></a><?echo $taxRate."%"?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле54></a><?=($taxRate > 0 || count($arTaxList) > 0) ? $taxRate."%" : "Без НДС";?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -925,7 +941,15 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><?echo number_format($nds_val*$arQuantities[$mi], 2, ',', ' '); $total_nds += $nds_val*$arQuantities[$mi];?></p>
+text-align:center;line-height:normal'>
+	<?
+		echo CCurrencyLang::CurrencyFormat($nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false);
+		if (empty($arBasket['SET_PARENT_ID']))
+		{
+			$total_nds += $nds_val*$arQuantities[$mi];
+		}
+	?>
+</p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -935,7 +959,15 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><?echo number_format($arQuantities[$mi]*($item_price)+$nds_val*$arQuantities[$mi], 2, ',', ' '); $total_sum += ($item_price)*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]?></p>
+text-align:center;line-height:normal'>
+	<?
+		echo CCurrencyLang::CurrencyFormat($arQuantities[$mi]*($item_price)+$nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false);
+		if (empty($arBasket['SET_PARENT_ID']))
+		{
+			$total_sum += \Bitrix\Sale\PriceMaths::roundPrecision($item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]);
+		}
+	?>
+</p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -946,7 +978,7 @@ $n++;
 endforeach;
 ?>
 <?
-if (DoubleVal($arOrder["PRICE_DELIVERY"])>0)
+if ($arOrder["DELIVERY_ID"])
 {
 	$nds_val = 0.00;
 	$nds_pr = 0;
@@ -959,26 +991,10 @@ if (DoubleVal($arOrder["PRICE_DELIVERY"])>0)
 	}
 	else
 	{
-		$basket_tax = CSaleOrderTax::CountTaxes(DoubleVal($arOrder["PRICE_DELIVERY"]), $arTaxList, $arOrder["CURRENCY"]);
 		//определяем начальную цену
-		$item_price = DoubleVal($arOrder["PRICE_DELIVERY"]);
-		for ($i = 0, $max = count($arTaxList); $i < $max; $i++)
-		{
-			if ($arTaxList[$i]["IS_IN_PRICE"] == "Y")
-				$item_price -= $arTaxList[$i]["TAX_VAL"];
-
-			$nds_val += $arTaxList[$i]["TAX_VAL"];
-			$nds_pr += $arTaxList[$i]["VALUE"];
-		//
-		//$nds_val = 0.00;
-		//$nds_pr = 0;
-
-		//if($iNds > -1)
-		//{
-		//	$nds_val = $arTaxList[$iNds]["TAX_VAL"];
-		//	$nds_pr = $arTaxList[$iNds]["VALUE"];
-		//}
-		}
+		$nds_val = $arOrder['DELIVERY_VAT_SUM'];
+		$nds_pr = $arOrder['DELIVERY_VAT_RATE'] * 100;
+		$item_price = DoubleVal($arOrder["PRICE_DELIVERY"]) - $arOrder['DELIVERY_VAT_SUM'];
 	}
 	?>
 <tr style='height:9.0pt'>
@@ -1045,7 +1061,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле50></a><?echo number_format($item_price, 2, ',', ' ');?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле50></a><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false);?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1053,7 +1069,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле52></a><?echo number_format($item_price, 2, ',', ' ');  $total_price += $item_price;?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле52></a><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false); $total_price += $item_price;?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1061,7 +1077,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле55></a><?echo $nds_pr."%"?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле55></a><?=($nds_pr > 0 || count($arTaxList) > 0) ? $nds_pr."%" : "Без НДС";?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1069,7 +1085,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле57></a><?echo number_format($nds_val, 2, ',', ' '); $total_nds += $nds_val;?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле57></a><?=CCurrencyLang::CurrencyFormat($nds_val, $arOrder["CURRENCY"], false); $total_nds += $nds_val;?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1078,7 +1094,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле62></a><?echo number_format($nds_val+$item_price, 2, ',', ' '); $total_sum += $nds_val+$item_price?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле62></a><?=CCurrencyLang::CurrencyFormat($nds_val+$item_price, $arOrder["CURRENCY"], false); $total_sum += $nds_val+$item_price;?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1209,7 +1225,7 @@ line-height:133%'>&nbsp;</p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo $total_n?></p>
+line-height:133%'><?echo Bitrix\Sale\BasketItem::formatQuantity($total_n)?></p>
 </td>
 <td valign=top style='width:60.0pt;border:solid windowtext 1.0pt;
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
@@ -1221,7 +1237,7 @@ line-height:133%'>X</p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo number_format($total_price, 2, ',', ' ')?></p>
+line-height:133%'><?=CCurrencyLang::CurrencyFormat($total_price, $arOrder["CURRENCY"], false);?></p>
 </td>
 <td valign=top style='width:38.0pt;border:solid windowtext 1.0pt;
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
@@ -1233,7 +1249,7 @@ line-height:133%'></p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo number_format($total_nds, 2, ',', ' ')?></p>
+line-height:133%'><?=CCurrencyLang::CurrencyFormat($total_nds, $arOrder["CURRENCY"], false);?></p>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
 line-height:133%'>&nbsp;</p>
@@ -1242,16 +1258,16 @@ line-height:133%'>&nbsp;</p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo number_format($total_sum, 2, ',', ' ')?></p>
+line-height:133%'><?=CCurrencyLang::CurrencyFormat($total_sum, $arOrder["CURRENCY"], false);?></p>
 </td>
 </tr>
 <?
 function PrintRussian($num, $ext)
 {
-	if(strlen($num)>1 && substr($num,strlen($num)-2,1)=="1")
+	if(mb_strlen($num) > 1 && mb_substr($num, mb_strlen($num) - 2, 1) == "1")
 		return $ext[2];
 
-	$c=IntVal(substr($num,strlen($num)-1,1));
+	$c=intval(mb_substr($num, mb_strlen($num) - 1, 1));
 	if($c==0 || ($c>=5 && $c<=9))
 		return $ext[2];
 

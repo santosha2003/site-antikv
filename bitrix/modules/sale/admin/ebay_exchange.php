@@ -28,7 +28,7 @@ $bSaved = false;
 
 $siteList = array();
 $defaultSite = "";
-$rsSites = CSite::GetList($by = "sort", $order = "asc", Array("ACTIVE"=> "Y"));
+$rsSites = CSite::GetList("sort", "asc", Array("ACTIVE"=> "Y"));
 
 
 while($arRes = $rsSites->Fetch())
@@ -48,9 +48,26 @@ $settings = $ebay->getSettings();
 
 if(isset($_POST["EBAY_SETTINGS"]) && is_array($_POST["EBAY_SETTINGS"]))
 {
-	$_POST["EBAY_SETTINGS"]["FEEDS"] = \Bitrix\Sale\TradingPlatform\Ebay\Agent::update($SITE_ID, $_POST["EBAY_SETTINGS"]["FEEDS"]);
-	$settings[$SITE_ID] = array_merge($settings[$SITE_ID], $_POST["EBAY_SETTINGS"]);
-	$bSaved = $ebay->saveSettings($settings);
+	$site = !empty($_POST["SITE_ID_INITIAL"]) && $SITE_ID == $_POST["SITE_ID_INITIAL"] ? $SITE_ID : $_POST["SITE_ID_INITIAL"];
+
+	$_POST["EBAY_SETTINGS"]["FEEDS"] = \Bitrix\Sale\TradingPlatform\Ebay\Agent::update($site, $_POST["EBAY_SETTINGS"]["FEEDS"]);
+
+	if(is_array($settings[$site]))
+	{
+		$settings[$site] = array_merge($settings[$site], $_POST["EBAY_SETTINGS"]);
+		$bSaved = $ebay->saveSettings($settings);
+	}
+	else
+	{
+		$errorMsg .= Loc::getMessage(
+			'SALE_EBAY_SETTINGS_SAVING_SITE_ERROR',
+			array(
+				'#A1#' => '<a href="/bitrix/admin/sale_ebay_wizard.php?lang='.LANGUAGE_ID.'&STEP=1&SITE_ID='.$site.'">',
+				'#A2#' => '</a>',
+				'#S#' => $siteList[$site]
+			)
+		);
+	}
 }
 
 $siteSettings = $settings[$SITE_ID];
@@ -143,8 +160,8 @@ $APPLICATION->SetTitle(Loc::getMessage("SALE_EBAY_TITLE"));
 
 require_once ($DOCUMENT_ROOT.BX_ROOT."/modules/main/include/prolog_admin_after.php");
 
-if(strlen($errorMsg) > 0)
-	CAdminMessage::ShowMessage(array("MESSAGE"=>$errorMsg, "TYPE"=>"ERROR"));
+if($errorMsg <> '')
+	CAdminMessage::ShowMessage(array("MESSAGE"=>$errorMsg, "TYPE"=>"ERROR", "HTML" => true));
 
 if($bSaved)
 	CAdminMessage::ShowMessage(array("MESSAGE"=>GetMessage("SALE_EBAY_SETTINGS_SAVED"), "TYPE"=>"OK"));
@@ -152,13 +169,14 @@ if($bSaved)
 ?>
 <form method="post" action="<?=$APPLICATION->GetCurPage()?>?lang=<?=LANGUAGE_ID?>" name="ebay_exhangesettings_form">
 <?=bitrix_sessid_post();?>
+<input type="hidden" name="SITE_ID_INITIAL" value="<?=$SITE_ID?>">
 <table width="100%">
 	<tr>
 		<td align="left">
 			<?=Loc::getMessage("SALE_EBAY_SITE")?>: <?=CLang::SelectBox("SITE_ID", $SITE_ID, "", "this.form.submit();")?>
 		</td>
 		<td align="right">
-			<img alt="eBay logo" src="/bitrix/images/sale/ebay-logo.png" style="width: 100px; height: 67px;">
+			<img alt="eBay logo" src="/bitrix/images/sale/ebay/logo.png" style="width: 100px; height: 67px;">
 		</td>
 	</tr>
 </table>
@@ -169,7 +187,7 @@ $tabControl->BeginNextTab();
 
 ?>
 	<?foreach(array("PRODUCT", "INVENTORY", "ORDER") as $feedType): //"IMAGE",?>
-		<?$smallFeedType = strtolower($feedType);?>
+		<? $smallFeedType = mb_strtolower($feedType);?>
 		<tr class="heading"><td colspan="2"><?=Loc::getMessage("SALE_EBAY_FEED_".$feedType)?></td></tr>
 		<tr>
 			<td width="40%"><span><?=Loc::getMessage("SALE_EBAY_FEED_INTERVAL")?>:</span></td>
@@ -197,9 +215,9 @@ $tabControl->BeginNextTab();
 					}
 					else
 					{
-						$tmp = Xml2Array::convert($results[$smallFeedType]["RESULTS"]);
+						$tmp = Xml2Array::convert($results[$smallFeedType]["RESULTS"], false);
 
-						if(strpos($results[$smallFeedType]["RESULTS"], "<Errors>") !== false)
+						if(mb_strpos($results[$smallFeedType]["RESULTS"], "<Errors>") !== false)
 						{
 							$feedResMess = '<span style="color: red; font-weight: bold;">'.Loc::getMessage("SALE_EBAY_RES_ERROR").'</span>';
 
@@ -220,9 +238,9 @@ $tabControl->BeginNextTab();
 							}
 						}
 
-						if(strpos($results[$smallFeedType]["RESULTS"], "<Warnings>") !== false)
+						if(mb_strpos($results[$smallFeedType]["RESULTS"], "<Warnings>") !== false)
 						{
-							if(strlen($feedResMess) > 0)
+							if($feedResMess <> '')
 								$feedResMess .= ", ";
 
 							$feedResMess .= '<span style="color: orange; font-weight: bold;">'.Loc::getMessage("SALE_EBAY_RES_WARNING").'</span>';
@@ -255,7 +273,7 @@ $tabControl->BeginNextTab();
 
 			</td>
 		</tr>
-		<?if(strlen($feedResErrDescr) > 0):?>
+		<?if($feedResErrDescr <> ''):?>
 			<tr>
 				<td><span><?=Loc::getMessage("SALE_EBAY_RES_MESSAGES")?>:</span></td>
 				<td>

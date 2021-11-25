@@ -12,7 +12,9 @@ if(strlen($arParams["site_id"]) <= 0)
 	$arParams["site_id"] = "s1";
 
 //Import XML
-if($IBLOCK_ID = CIBlockCMLImport::GetIBlockByXML_ID("content-news"))
+$import = new CIBlockCMLImport();
+
+if($IBLOCK_ID = $import->GetIBlockByXML_ID("content-news"))
 {
 	//Create directory and copy files
 	$rsElements = CIBlockElement::GetList(array(), array("IBLOCK_ID" => $IBLOCK_ID), false, array("nTopSize" => 1), array("ID"));

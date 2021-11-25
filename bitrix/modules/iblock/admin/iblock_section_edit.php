@@ -1,11 +1,14 @@
 <?
+use Bitrix\Main\Loader;
+use Bitrix\Iblock;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-CModule::IncludeModule("iblock");
+Loader::includeModule("iblock");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/prolog.php");
 IncludeModuleLangFile(__FILE__);
 
 /** @global CDatabase $DB */
-global $USER;
+global $DB;
 /** @global CUser $USER */
 global $USER;
 /** @global CMain $APPLICATION */
@@ -13,13 +16,21 @@ global $APPLICATION;
 /** @global CUserTypeManager $USER_FIELD_MANAGER */
 global $USER_FIELD_MANAGER;
 
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+
+if (defined("BX_PUBLIC_MODE") && BX_PUBLIC_MODE == 1)
+{
+	$adminSidePanelHelper->setSkipResponse(true);
+}
+
 $io = CBXVirtualIo::GetInstance();
 $strWarning = "";
 $bVarsFromForm = false;
 $message = false;
-$ID = intval($_REQUEST["ID"]);
-$IBLOCK_SECTION_ID = intval($IBLOCK_SECTION_ID);
-$IBLOCK_ID = intval($_REQUEST["IBLOCK_ID"]);
+$ID = (isset($_REQUEST['ID']) ? (int)$_REQUEST['ID'] : 0);
+$IBLOCK_SECTION_ID = (isset($_REQUEST['IBLOCK_SECTION_ID']) ? (int)$_REQUEST['IBLOCK_SECTION_ID'] : 0);
+$IBLOCK_ID = (isset($_REQUEST['IBLOCK_ID']) ? (int)$_REQUEST['IBLOCK_ID'] : 0);
+$find_section_section = (isset($_REQUEST['find_section_section']) ? (int)$_REQUEST['find_section_section'] : 0);
 /* autocomplete */
 $strLookup = '';
 if (isset($_REQUEST['lookup']))
@@ -65,6 +76,45 @@ if($bBadBlock)
 	?><a href="iblock_admin.php?lang=<?=LANGUAGE_ID?>&amp;type=<?=urlencode($type)?>"><?echo GetMessage("IBSEC_E_BACK_TO_ADMIN")?></a><?
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
 	die();
+}
+
+$urlBuilder = Iblock\Url\AdminPage\BuilderManager::getInstance()->getBuilder();
+if ($urlBuilder === null)
+{
+	$APPLICATION->SetTitle($arIBTYPE["NAME"]);
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
+	ShowError(GetMessage("IBSEC_E_ERR_BUILDER_ADSENT"));
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
+	die();
+}
+$urlBuilder->setIblockId($IBLOCK_ID);
+$urlBuilder->setUrlParams(array());
+
+$pageConfig = array(
+	'IBLOCK_EDIT' => false,
+
+	'SHOW_NAVCHAIN' => true,
+	'NAVCHAIN_ROOT' => false,
+	'SHOW_CONTEXT_MENU' => true
+);
+switch ($urlBuilder->getId())
+{
+	case 'CRM':
+	case 'SHOP':
+		$pageConfig['SHOW_NAVCHAIN'] = false;
+		$pageConfig['SHOW_CONTEXT_MENU'] = false;
+		break;
+	case 'CATALOG':
+		break;
+	case 'IBLOCK':
+		$pageConfig['IBLOCK_EDIT'] = true;
+		$pageConfig['NAVCHAIN_ROOT'] = true;
+		break;
+}
+if ($bAutocomplete)
+{
+	$pageConfig['SHOW_NAVCHAIN'] = false;
+	$pageConfig['SHOW_CONTEXT_MENU'] = false;
 }
 
 $APPLICATION->AddHeadScript('/bitrix/js/main/admin_tools.js');
@@ -135,29 +185,36 @@ if(
 	&& check_bitrix_sessid()
 )
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
 	$DB->StartTransaction();
 	$bs = new CIBlockSection;
 
+	$useFileUpload = array_key_exists("PICTURE", $_FILES);
 	$arPICTURE = CIBlock::makeFileArray(
-		array_key_exists("PICTURE", $_FILES)? $_FILES["PICTURE"]: $_REQUEST["PICTURE"],
-		${"PICTURE_del"} === "Y"
+		$useFileUpload? $_FILES["PICTURE"]: $_REQUEST["PICTURE"],
+		${"PICTURE_del"} === "Y",
+		$useFileUpload ? null : $_REQUEST['PICTURE_descr']
 	);
 	if ($arPICTURE["error"] == 0)
 		$arPICTURE["COPY_FILE"] = "Y";
 
+	$useFileUpload = array_key_exists('DETAIL_PICTURE', $_FILES);
 	$arDETAIL_PICTURE = CIBlock::makeFileArray(
-		array_key_exists("DETAIL_PICTURE", $_FILES)? $_FILES["DETAIL_PICTURE"]: $_REQUEST["DETAIL_PICTURE"],
-		${"DETAIL_PICTURE_del"} === "Y"
+		$useFileUpload? $_FILES["DETAIL_PICTURE"]: $_REQUEST["DETAIL_PICTURE"],
+		${"DETAIL_PICTURE_del"} === "Y",
+		$useFileUpload ? null : $_REQUEST['DETAIL_PICTURE_descr']
 	);
 	if ($arDETAIL_PICTURE["error"] == 0)
 		$arDETAIL_PICTURE["COPY_FILE"] = "Y";
+	unset($useFileUpload);
 
 	$arFields = array(
 		"ACTIVE" => $_POST["ACTIVE"],
 		"IBLOCK_SECTION_ID" => $IBLOCK_SECTION_ID,
 		"IBLOCK_ID" => $IBLOCK_ID,
 		"NAME" => $_POST["NAME"],
-		"SORT" => $SORT,
+		"SORT" => $_POST["SORT"],
 		"CODE" => $_POST["CODE"],
 		"PICTURE" => $arPICTURE,
 		"DETAIL_PICTURE" => $arDETAIL_PICTURE,
@@ -167,25 +224,16 @@ if(
 
 	if(isset($_POST["SECTION_PROPERTY"]) && is_array($_POST["SECTION_PROPERTY"]))
 	{
-		$TextParser = new CBXSanitizer();
-		$TextParser->SetLevel(CBXSanitizer::SECURE_LEVEL_LOW);
-		$TextParser->ApplyHtmlSpecChars(false);
 		$arFields["SECTION_PROPERTY"] = array();
 		foreach($_POST["SECTION_PROPERTY"] as $PID => $arLink)
 		{
 			if($arLink["SHOW"] === "Y")
 			{
-				$filterHint = trim($arLink["FILTER_HINT"]);
-				if ($filterHint)
-				{
-					$filterHint = $TextParser->SanitizeHtml($filterHint);
-				}
-
 				$arFields["SECTION_PROPERTY"][$PID] = array(
 					"SMART_FILTER" => $arLink["SMART_FILTER"],
 					"DISPLAY_TYPE" => $arLink["DISPLAY_TYPE"],
 					"DISPLAY_EXPANDED" => $arLink["DISPLAY_EXPANDED"],
-					"FILTER_HINT" => $filterHint,
+					"FILTER_HINT" => $arLink["FILTER_HINT"],
 				);
 			}
 		}
@@ -357,8 +405,28 @@ if(
 		$strWarning .= $bs->LAST_ERROR;
 		$bVarsFromForm = true;
 		$DB->Rollback();
+		$message = null;
 		if($e = $APPLICATION->GetException())
 			$message = new CAdminMessage(GetMessage("admin_lib_error"), $e);
+
+		if ($strWarning !== '')
+		{
+			$errorMessage = $strWarning;
+		}
+		elseif ($message instanceof \CAdminMessage)
+		{
+			$messageList = array();
+			foreach ($message->GetMessages() as $item)
+			{
+				if (is_array($item))
+					$messageList[] = $item["text"];
+				else
+					$messageList[] = $item;
+			}
+			$errorMessage = implode("; ", $messageList);
+			unset($messageList);
+		}
+		$adminSidePanelHelper->sendJsonErrorResponse($errorMessage);
 	}
 	else
 	{
@@ -369,7 +437,13 @@ if(
 		}
 
 		$DB->Commit();
-		if(strlen($apply) <= 0 && strlen($save_and_add) <= 0)
+
+		if ($adminSidePanelHelper->isAjaxRequest())
+		{
+			$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $ID));
+		}
+
+		if($apply == '' && $save_and_add == '')
 		{
 			if ($bAutocomplete)
 			{
@@ -377,40 +451,45 @@ if(
 				window.opener.<? echo $strLookup; ?>.AddValue(<? echo $ID;?>);
 				window.close();
 				</script><?
-				die();
+				CMain::FinalActions();
 			}
-			elseif(strlen($return_url)>0)
+			elseif($return_url <> '')
 			{
-				if(strpos($return_url, "#")!==false)
+				if(mb_strpos($return_url, "#") !== false)
 				{
 					$rsSection = CIBlockSection::GetList(array(), array("ID" => $ID), false, array("SECTION_PAGE_URL"));
 					$arSection = $rsSection->Fetch();
 					if($arSection)
 						$return_url = CIBlock::ReplaceDetailUrl($return_url, $arSection, true, "S");
 				}
+				$adminSidePanelHelper->localRedirect($return_url);
 				LocalRedirect($return_url);
 			}
 			else
 			{
-				LocalRedirect("/bitrix/admin/".CIBlock::GetAdminSectionListLink($IBLOCK_ID, array('find_section_section'=>intval($find_section_section))));
+				$saveUrl = $urlBuilder->getSectionListUrl($find_section_section);
+				$adminSidePanelHelper->localRedirect($saveUrl);
+				LocalRedirect($saveUrl);
 			}
 		}
-		elseif(strlen($save_and_add) > 0)
+		elseif($save_and_add <> '')
 		{
 			if (defined('BX_PUBLIC_MODE') && BX_PUBLIC_MODE == 1)
 			{
 				while(ob_end_clean());
-				?>
-					<script type="text/javascript">
-						top.BX.ajax.post(
-							'/bitrix/admin/<?echo $l = CUtil::JSEscape(CIBlock::GetAdminSectionEditLink($IBLOCK_ID, 0, array(
-								"find_section_section" => intval($find_section_section),
-								"return_url" => (strlen($return_url) > 0? $return_url: null),
-								"IBLOCK_SECTION_ID" => $IBLOCK_SECTION_ID,
-								"from_module" => "iblock",
-								"bxpublic" => "Y",
-								"nobuttons" => "Y",
-							), "&".$tabControl->ActiveTabParam()))?>',
+				$url = $urlBuilder->getSectionDetailUrl(
+					0,
+					array(
+						"find_section_section" => $find_section_section,
+						"return_url" => ($return_url <> ''? $return_url: null),
+						"IBLOCK_SECTION_ID" => $IBLOCK_SECTION_ID,
+						"from_module" => "iblock",
+						"bxpublic" => "Y",
+						"nobuttons" => "Y",
+					)
+				);
+				?><script type="text/javascript">
+						top.BX.ajax.post('<?=CUtil::JSEscape($url); ?>',
 							{},
 							function (result) {
 								top.BX.closeWait();
@@ -420,23 +499,35 @@ if(
 						);
 					</script>';
 				<?
-				die();
+				CMain::FinalActions();
 			}
 			else
 			{
-				LocalRedirect("/bitrix/admin/".CIBlock::GetAdminSectionEditLink($IBLOCK_ID, 0, array(
-					"find_section_section" => intval($find_section_section),
-					"IBLOCK_SECTION_ID" => $IBLOCK_SECTION_ID,
-					"return_url" => (strlen($return_url) > 0? $return_url: null),
-				), "&".$tabControl->ActiveTabParam()));
+				$saveAndAddUrl = $urlBuilder->getSectionDetailUrl(
+					0,
+					array(
+						"find_section_section" => $find_section_section,
+						"IBLOCK_SECTION_ID" => $IBLOCK_SECTION_ID,
+						"return_url" => ($return_url <> ''? $return_url: null),
+					),
+					"&".$tabControl->ActiveTabParam()
+				);
+				$adminSidePanelHelper->localRedirect($saveAndAddUrl);
+				LocalRedirect($saveAndAddUrl);
 			}
 		}
 		else
 		{
-			LocalRedirect("/bitrix/admin/".CIBlock::GetAdminSectionEditLink($IBLOCK_ID, $ID, array(
-				'find_section_section' => intval($find_section_section),
-				'return_url' => strlen($return_url) > 0? $return_url: null,
-			), "&".$tabControl->ActiveTabParam()));
+			$applyUrl = $urlBuilder->getSectionDetailUrl(
+				$ID,
+				array(
+					"find_section_section" => $find_section_section,
+					"return_url" => $return_url <> '' ? $return_url: null
+				),
+				"&".$tabControl->ActiveTabParam()
+			);
+			$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+			LocalRedirect($applyUrl);
 		}
 	}
 }
@@ -480,47 +571,29 @@ if($ID>0)
 else
 	$APPLICATION->SetTitle(GetMessage("IBSEC_E_NEW_TITLE", array("#IBLOCK_NAME#"=>$arIBlock["NAME"], "#SECTION_TITLE#"=>$arIBlock["SECTION_NAME"])));
 
-if (!bAutocomplete)
+if ($pageConfig['SHOW_NAVCHAIN'])
 {
-	if(!defined("CATALOG_PRODUCT"))
+	if ($pageConfig['NAVCHAIN_ROOT'])
 	{
 		$adminChain->AddItem(array(
 			"TEXT" => htmlspecialcharsex($arIBlock["NAME"]),
-			"LINK" => htmlspecialcharsbx(CIBlock::GetAdminSectionListLink($IBLOCK_ID, array(
-				'find_section_section' => 0,
-			))),
+			"LINK" => htmlspecialcharsbx($urlBuilder->getSectionListUrl(0))
 		));
-		if ($find_section_section > 0)
-		{
-			$nav = CIBlockSection::GetNavChain($IBLOCK_ID, IntVal($find_section_section));
-			while ($ar_nav = $nav->GetNext())
-			{
-				$last_nav = CIBlock::GetAdminSectionListLink($IBLOCK_ID, array(
-					'find_section_section' => $ar_nav["ID"],
-				));
-				$adminChain->AddItem(array(
-					"TEXT" => $ar_nav["NAME"],
-					"LINK" => htmlspecialcharsbx($last_nav),
-				));
-			}
-		}
 	}
-	else
+	if ($find_section_section > 0)
 	{
-		if ($find_section_section > 0)
+		$nav = CIBlockSection::GetNavChain($IBLOCK_ID, $find_section_section, array('ID', 'NAME'), true);
+		foreach ($nav as $ar_nav)
 		{
-			$nav = CIBlockSection::GetNavChain($IBLOCK_ID, IntVal($find_section_section));
-			while ($ar_nav = $nav->GetNext())
-			{
-				$last_nav = CIBlock::GetAdminSectionListLink($IBLOCK_ID, array(
-					'find_section_section' => $ar_nav["ID"], 'catalog' => null
-				));
-				$adminChain->AddItem(array(
-					"TEXT" => $ar_nav["NAME"],
-					"LINK" => htmlspecialcharsbx($last_nav),
-				));
-			}
+			$last_nav = $urlBuilder->getSectionListUrl(
+				(int)$ar_nav['ID']
+			);
+			$adminChain->AddItem(array(
+				"TEXT" => htmlspecialcharsEx($ar_nav["NAME"]),
+				"LINK" => htmlspecialcharsbx($last_nav),
+			));
 		}
+		unset($last_nav, $ar_nav, $nav);
 	}
 }
 if ($bAutocomplete)
@@ -528,37 +601,42 @@ if ($bAutocomplete)
 else
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
-if (!$bAutocomplete)
+if ($pageConfig['SHOW_CONTEXT_MENU'])
 {
 	$aMenu = array(
 		array(
 			"TEXT" => htmlspecialcharsbx($arIBlock["SECTIONS_NAME"]),
-			"LINK" => CIBlock::GetAdminSectionListLink($IBLOCK_ID, array(
-				'find_section_section' => intval($find_section_section),
-			)),
+			"LINK" => $urlBuilder->getSectionListUrl($find_section_section),
 			"ICON" => "btn_list",
 		),
 	);
 
 	if ($ID > 0)
 	{
-		$aMenu[] = array(
-			"SEPARATOR" => "Y",
+		$newUrl = $urlBuilder->getSectionDetailUrl(
+			null,
+			array(
+				"find_section_section" => $find_section_section,
+				"IBLOCK_SECTION_ID" => ($IBLOCK_SECTION_ID > 0 ? $IBLOCK_SECTION_ID : $find_section_section)
+			)
 		);
+		if (!$adminSidePanelHelper->isPublicFrame())
+			$newUrl = $adminSidePanelHelper->setDefaultQueryParams($newUrl);
 		$aMenu[] = array(
 			"TEXT" => htmlspecialcharsbx($arIBlock["SECTION_ADD"]),
-			"LINK" => CIBlock::GetAdminSectionEditLink($IBLOCK_ID, null, array("find_section_section" => intval($find_section_section), "IBLOCK_SECTION_ID" => ($IBLOCK_SECTION_ID > 0 ? $IBLOCK_SECTION_ID : $find_section_section))),
+			"LINK" => $newUrl,
 			"ICON" => "btn_new",
 		);
-		$urlDelete = CIBlock::GetAdminSectionListLink($IBLOCK_ID, array(
-			'find_section_section' => intval($find_section_section),
-			'action' => 'delete',
-		));
+		$deleteUrlParams = array('find_section_section'=> $find_section_section, 'action'=>'delete');
+		if (!$adminSidePanelHelper->isPublicFrame())
+			$deleteUrlParams['skip_public'] = true;
+		$urlDelete = $selfFolderUrl.CIBlock::GetAdminSectionListLink($IBLOCK_ID, $deleteUrlParams);
 		$urlDelete.= '&'.bitrix_sessid_get();
-		$urlDelete.= '&ID[]='.(preg_match('/^iblock_list_admin\.php/', $urlDelete) ? "S" : "").$ID;
+		$urlDelete.= '&ID[]='.(preg_match('/iblock_list_admin\.php/', $urlDelete) ? "S" : "").$ID;
+		$buttonAction = $adminSidePanelHelper->isPublicFrame() ? "ONCLICK" : "LINK";
 		$aMenu[] = array(
 			"TEXT" => htmlspecialcharsbx($arIBlock["SECTION_DELETE"]),
-			"LINK" => "javascript:if(confirm('".GetMessageJS("IBSEC_E_CONFIRM_DEL_MESSAGE")."'))window.location='".CUtil::JSEscape($urlDelete)."'",
+			$buttonAction => "javascript:if(confirm('".GetMessageJS("IBSEC_E_CONFIRM_DEL_MESSAGE")."'))top.window.location.href='".CUtil::JSEscape($urlDelete)."'",
 			"ICON" => "btn_delete",
 		);
 	}
@@ -572,9 +650,11 @@ if($strWarning)
 elseif($message)
 	echo $message->Show();
 
+$nameFormat = CSite::GetNameFormat();
+
 //We have to explicitly call calendar and editor functions because
 //first output may be discarded by form settings
-$bFileman = CModule::IncludeModule("fileman");
+$bFileman = Loader::includeModule("fileman");
 
 $arTranslit = $arIBlock["FIELDS"]["SECTION_CODE"]["DEFAULT_VALUE"];
 $bLinked = !$ID && $_POST["linked_state"]!=='N';
@@ -598,7 +678,7 @@ $tabControl->BeginPrologContent();
 <?
 if(method_exists($USER_FIELD_MANAGER, 'showscript'))
 	echo $USER_FIELD_MANAGER->ShowScript();
-echo CAdminCalendar::ShowScript();
+CAdminCalendar::ShowScript();
 if(COption::GetOptionString("iblock", "use_htmledit", "Y")=="Y" && $bFileman)
 {
 	//TODO:This dirty hack will be replaced by special method like calendar do
@@ -694,7 +774,7 @@ if($arTranslit["TRANSLITERATION"] == "Y")
 <script type="text/javascript">
 	var InheritedPropertiesTemplates = new JCInheritedPropertiesTemplates(
 		'<?echo $tabControl->GetName()?>_form',
-		'/bitrix/admin/iblock_templates.ajax.php?ENTITY_TYPE=S&IBLOCK_ID=<?echo intval($IBLOCK_ID)?>&ENTITY_ID=<?echo intval($ID)?>'
+		'<?=$selfFolderUrl?>iblock_templates.ajax.php?ENTITY_TYPE=S&IBLOCK_ID=<?echo intval($IBLOCK_ID)?>&ENTITY_ID=<?echo intval($ID)?>&bxpublic=y'
 	);
 	BX.ready(function(){
 		setTimeout(function(){
@@ -713,10 +793,10 @@ $tabControl->BeginEpilogContent();
 <input type="hidden" name="linked_state" id="linked_state" value="<?if($bLinked) echo 'Y'; else echo 'N';?>">
 <input type="hidden" name="Update" value="Y">
 <input type="hidden" name="ID" value="<?echo $ID?>">
-<?if(strlen($return_url)>0):?>
+<?if($return_url <> ''):?>
 	<input type="hidden" name="return_url" value="<?=htmlspecialcharsbx($return_url)?>">
-<?endif?>
-<?
+<?endif;
+
 $tabControl->EndEpilogContent();
 $customTabber->SetErrorState($bVarsFromForm);
 
@@ -727,9 +807,13 @@ if ($bAutocomplete)
 {
 	$arEditLinkParams['lookup'] = $strLookup;
 }
-
+if ($adminSidePanelHelper->isPublicFrame())
+{
+	$arEditLinkParams["IFRAME"] = "Y";
+	$arEditLinkParams["IFRAME_TYPE"] = "PUBLIC_FRAME";
+}
 $tabControl->Begin(array(
-	"FORM_ACTION" => "/bitrix/admin/".CIBlock::GetAdminSectionEditLink($IBLOCK_ID, null, $arEditLinkParams),
+	"FORM_ACTION" => $urlBuilder->getSectionSaveUrl(null, $arEditLinkParams)
 ));
 $tabControl->BeginNextFormTab();
 ?>
@@ -744,16 +828,16 @@ $tabControl->BeginNextFormTab();
 
 	<?$tabControl->BeginCustomField("DATE_CREATE", GetMessage("IBSEC_E_CREATED"));?>
 <?if($ID>0):?>
-		<?if(strlen($str_DATE_CREATE) > 0):?>
+		<?if($str_DATE_CREATE <> ''):?>
 			<tr>
 				<td width="40%"><?echo $tabControl->GetCustomLabelHTML()?></td>
 				<td width="60%"><?echo $str_DATE_CREATE?><?
 				if(intval($str_CREATED_BY)>0):
 					?>&nbsp;&nbsp;&nbsp;[<a href="user_edit.php?lang=<?=LANGUAGE_ID?>&amp;ID=<?=$str_CREATED_BY?>"><?echo $str_CREATED_BY?></a>]<?
 					$rsUser = CUser::GetByID($str_CREATED_BY);
-					$arUser = $rsUser->GetNext();
+					$arUser = $rsUser->Fetch();
 					if($arUser):
-						echo "&nbsp;(".$arUser["LOGIN"].") ".$arUser["NAME"]." ".$arUser["LAST_NAME"];
+						echo '&nbsp;'.CUser::FormatName($nameFormat, $arUser, false, true);
 					endif;
 				endif;
 				?></td>
@@ -772,10 +856,10 @@ $tabControl->BeginNextFormTab();
 			if(intval($str_CREATED_BY) != intval($str_MODIFIED_BY))
 			{
 				$rsUser = CUser::GetByID($str_MODIFIED_BY);
-				$arUser = $rsUser->GetNext();
+				$arUser = $rsUser->Fetch();
 			}
 			if($arUser):
-				echo "&nbsp;(".$arUser["LOGIN"].") ".$arUser["NAME"]." ".$arUser["LAST_NAME"];
+				echo '&nbsp;'.CUser::FormatName($nameFormat, $arUser, false, true);
 			endif;
 		endif?></td>
 	</tr>
@@ -810,7 +894,7 @@ if($arTranslit["TRANSLITERATION"] == "Y")
 		<tr id="tr_NAME">
 			<td><?echo $tabControl->GetCustomLabelHTML()?></td>
 			<td nowrap>
-				<input type="text" size="50" name="NAME" id="NAME" maxlength="255" value="<?echo $str_NAME?>"><image id="name_link" title="<?echo GetMessage("IBSEC_E_LINK_TIP")?>" class="linked" src="/bitrix/themes/.default/icons/iblock/<?if($bLinked) echo 'link.gif'; else echo 'unlink.gif';?>" onclick="set_linked()" />
+				<input type="text" size="70" name="NAME" id="NAME" maxlength="255" value="<?echo $str_NAME?>"><img id="name_link" title="<?echo GetMessage("IBSEC_E_LINK_TIP")?>" class="linked" src="/bitrix/themes/.default/icons/iblock/<?if($bLinked) echo 'link.gif'; else echo 'unlink.gif';?>" onclick="set_linked()" />
 			</td>
 		</tr>
 	<?
@@ -824,7 +908,7 @@ if($arTranslit["TRANSLITERATION"] == "Y")
 			<td><?echo $tabControl->GetCustomLabelHTML()?></td>
 			<td nowrap>
 
-				<input type="text" size="50" name="CODE" id="CODE" maxlength="255" value="<?echo $str_CODE?>"><image id="code_link" title="<?echo GetMessage("IBSEC_E_LINK_TIP")?>" class="linked" src="/bitrix/themes/.default/icons/iblock/<?if($bLinked) echo 'link.gif'; else echo 'unlink.gif';?>" onclick="set_linked()" />
+				<input type="text" size="70" name="CODE" id="CODE" maxlength="255" value="<?echo $str_CODE?>"><img id="code_link" title="<?echo GetMessage("IBSEC_E_LINK_TIP")?>" class="linked" src="/bitrix/themes/.default/icons/iblock/<?if($bLinked) echo 'link.gif'; else echo 'unlink.gif';?>" onclick="set_linked()" />
 			</td>
 		</tr>
 	<?
@@ -834,7 +918,7 @@ if($arTranslit["TRANSLITERATION"] == "Y")
 }
 else
 {
-	$tabControl->AddEditField("NAME", GetMessage("IBLOCK_FIELD_NAME").":", true, array("size" => 50, "maxlength" => 255), $str_NAME);
+	$tabControl->AddEditField("NAME", GetMessage("IBLOCK_FIELD_NAME").":", true, array("size" => 70, "maxlength" => 255), $str_NAME);
 }
 
 $tabControl->BeginCustomField("PICTURE", GetMessage("IBSEC_E_PICTURE"), $arIBlock["FIELDS"]["SECTION_PICTURE"]["IS_REQUIRED"] === "Y");
@@ -843,27 +927,18 @@ if($bVarsFromForm && !array_key_exists("PICTURE", $_REQUEST) && $arSection)
 ?>
 	<tr class="adm-detail-file-row">
 		<td><?echo $tabControl->GetCustomLabelHTML()?></td>
-		<td>
-			<?echo CFileInput::Show("PICTURE", $str_PICTURE,
-				array(
-					"IMAGE" => "Y",
-					"PATH" => "Y",
-					"FILE_SIZE" => "Y",
-					"DIMENSIONS" => "Y",
-					"IMAGE_POPUP" => "Y",
-					"MAX_SIZE" => array(
-						"W" => COption::GetOptionString("iblock", "detail_image_size"),
-						"H" => COption::GetOptionString("iblock", "detail_image_size"),
-					),
-				), array(
-					'upload' => true,
-					'medialib' => true,
-					'file_dialog' => true,
-					'cloud' => true,
-					'del' => true,
-					'description' => false,
-				)
-			);
+		<td><?
+			echo \Bitrix\Main\UI\FileInput::createInstance(array(
+				"name" => "PICTURE",
+				"description" => true,
+				"upload" => true,
+				"allowUpload" => "I",
+				"medialib" => true,
+				"fileDialog" => true,
+				"cloud" => true,
+				"delete" => true,
+				"maxCount" => 1
+			))->show(($bVarsFromForm ? $_REQUEST["PICTURE"] : $str_PICTURE), $bVarsFromForm);
 			?>
 		</td>
 	</tr>
@@ -921,8 +996,7 @@ $tabControl->EndCustomField("DESCRIPTION",
 );
 
 $tabControl->BeginNextFormTab();
-?>
-<?
+
 $tabControl->AddSection("IPROPERTY_TEMPLATES_SECTION", GetMessage("IBSEC_E_SEO_FOR_SECTIONS"));
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_META_TITLE", GetMessage("IBSEC_E_SEO_META_TITLE"));
 ?>
@@ -934,8 +1008,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_META_TITLE", GetMessa
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_META_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_META_TITLE", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_SECTION_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_META_KEYWORDS", GetMessage("IBSEC_E_SEO_META_KEYWORDS"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -983,8 +1056,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_TITLE", GetMessa
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_META_TITLE", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_KEYWORDS", GetMessage("IBSEC_E_SEO_META_KEYWORDS"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -995,8 +1067,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_KEYWORDS", GetMe
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_KEYWORDS",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_META_KEYWORDS", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_DESCRIPTION", GetMessage("IBSEC_E_SEO_META_DESCRIPTION"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1007,8 +1078,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_DESCRIPTION", Ge
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_META_DESCRIPTION",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_META_DESCRIPTION", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PAGE_TITLE", GetMessage("IBSEC_E_SEO_PAGE_TITLE"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1019,8 +1089,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PAGE_TITLE", GetMessa
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_PAGE_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_PAGE_TITLE", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->AddSection("IPROPERTY_TEMPLATES_SECTIONS_PICTURE", GetMessage("IBSEC_E_SEO_FOR_SECTIONS_PICTURE"));
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_ALT", GetMessage("IBSEC_E_SEO_FILE_ALT"));
 ?>
@@ -1032,8 +1101,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_ALT", Ge
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_ALT",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_PICTURE_FILE_ALT", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_TITLE", GetMessage("IBSEC_E_SEO_FILE_TITLE"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1044,8 +1112,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_TITLE", 
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_PICTURE_FILE_TITLE", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_NAME", GetMessage("IBSEC_E_SEO_FILE_NAME"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1056,8 +1123,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_NAME", G
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_PICTURE_FILE_NAME",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_PICTURE_FILE_NAME", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->AddSection("IPROPERTY_TEMPLATES_SECTIONS_DETAIL_PICTURE", GetMessage("IBSEC_E_SEO_FOR_SECTIONS_DETAIL_PICTURE"));
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_ALT", GetMessage("IBSEC_E_SEO_FILE_ALT"));
 ?>
@@ -1069,8 +1135,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_A
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_ALT",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_DETAIL_PICTURE_FILE_ALT", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_TITLE", GetMessage("IBSEC_E_SEO_FILE_TITLE"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1081,8 +1146,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_T
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_DETAIL_PICTURE_FILE_TITLE", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_NAME", GetMessage("IBSEC_E_SEO_FILE_NAME"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1093,8 +1157,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_N
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_SECTION_DETAIL_PICTURE_FILE_NAME",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "SECTION_DETAIL_PICTURE_FILE_NAME", $str_IPROPERTY_TEMPLATES, "S", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->AddSection("IPROPERTY_TEMPLATES_ELEMENTS_PREVIEW_PICTURE", GetMessage("IBSEC_E_SEO_FOR_ELEMENTS_PREVIEW_PICTURE"));
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_ALT", GetMessage("IBSEC_E_SEO_FILE_ALT"));
 ?>
@@ -1106,8 +1169,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_ALT",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_PREVIEW_PICTURE_FILE_ALT", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_TITLE", GetMessage("IBSEC_E_SEO_FILE_TITLE"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1118,8 +1180,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_PREVIEW_PICTURE_FILE_TITLE", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_NAME", GetMessage("IBSEC_E_SEO_FILE_NAME"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1130,8 +1191,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_PREVIEW_PICTURE_FILE_NAME",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_PREVIEW_PICTURE_FILE_NAME", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->AddSection("IPROPERTY_TEMPLATES_ELEMENTS_DETAIL_PICTURE", GetMessage("IBSEC_E_SEO_FOR_ELEMENTS_DETAIL_PICTURE"));
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_ALT", GetMessage("IBSEC_E_SEO_FILE_ALT"));
 ?>
@@ -1143,8 +1203,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_A
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_ALT",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_DETAIL_PICTURE_FILE_ALT", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_TITLE", GetMessage("IBSEC_E_SEO_FILE_TITLE"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1155,8 +1214,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_T
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_TITLE",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_DETAIL_PICTURE_FILE_TITLE", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_NAME", GetMessage("IBSEC_E_SEO_FILE_NAME"));
 ?>
 <tr class="adm-detail-valign-top">
@@ -1167,8 +1225,7 @@ $tabControl->BeginCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_N
 $tabControl->EndCustomField("IPROPERTY_TEMPLATES_ELEMENT_DETAIL_PICTURE_FILE_NAME",
 	IBlockInheritedPropertyHidden($IBLOCK_ID, "ELEMENT_DETAIL_PICTURE_FILE_NAME", $str_IPROPERTY_TEMPLATES, "E", GetMessage("IBSEC_E_SEO_ELEMENT_OVERWRITE"))
 );
-?>
-<?
+
 $tabControl->AddSection("IPROPERTY_TEMPLATES_MANAGEMENT", GetMessage("IBSEC_E_SEO_MANAGEMENT"));
 $tabControl->BeginCustomField("IPROPERTY_CLEAR_VALUES", GetMessage("IBSEC_E_SEO_CLEAR_VALUES"));
 ?>
@@ -1182,12 +1239,10 @@ $tabControl->BeginCustomField("IPROPERTY_CLEAR_VALUES", GetMessage("IBSEC_E_SEO_
 $tabControl->EndCustomField("IPROPERTY_CLEAR_VALUES",
 	'<input type="hidden" name="IPROPERTY_CLEAR_VALUES" value="N">'
 );
-?>
-<?
+
 $tabControl->BeginNextFormTab();
 
 $tabControl->AddEditField("SORT", GetMessage("IBLOCK_FIELD_SORT").":", false, array("size" => 7, "maxlength" => 10), $str_SORT);
-
 
 if(COption::GetOptionString("iblock", "show_xml_id", "N")=="Y")
 {
@@ -1195,14 +1250,14 @@ if(COption::GetOptionString("iblock", "show_xml_id", "N")=="Y")
 		"XML_ID",
 		GetMessage("IBLOCK_FIELD_XML_ID").":",
 		$arIBlock["FIELDS"]["SECTION_XML_ID"]["IS_REQUIRED"] === "Y",
-		array("size" => 20, "maxlength" => 255),
+		array("size" => 70, "maxlength" => 255),
 		$str_XML_ID
 	);
 }
 
 if($arTranslit["TRANSLITERATION"] != "Y")
 {
-	$tabControl->AddEditField("CODE", GetMessage("IBLOCK_FIELD_CODE").":", $arIBlock["FIELDS"]["SECTION_CODE"]["IS_REQUIRED"] === "Y", array("size" => 20, "maxlength" => 255), $str_CODE);
+	$tabControl->AddEditField("CODE", GetMessage("IBLOCK_FIELD_CODE").":", $arIBlock["FIELDS"]["SECTION_CODE"]["IS_REQUIRED"] === "Y", array("size" => 70, "maxlength" => 255), $str_CODE);
 }
 
 $tabControl->BeginCustomField("DETAIL_PICTURE", GetMessage("IBLOCK_FIELD_DETAIL_PICTURE").":", $arIBlock["FIELDS"]["SECTION_DETAIL_PICTURE"]["IS_REQUIRED"] === "Y");
@@ -1211,27 +1266,18 @@ if($bVarsFromForm && !array_key_exists("DETAIL_PICTURE", $_REQUEST) && $arSectio
 ?>
 	<tr class="adm-detail-file-row">
 		<td><?echo $tabControl->GetCustomLabelHTML()?></td>
-		<td>
-			<?echo CFileInput::Show("DETAIL_PICTURE", $str_DETAIL_PICTURE,
-				array(
-					"IMAGE" => "Y",
-					"PATH" => "Y",
-					"FILE_SIZE" => "Y",
-					"DIMENSIONS" => "Y",
-					"IMAGE_POPUP" => "Y",
-					"MAX_SIZE" => array(
-						"W" => COption::GetOptionString("iblock", "detail_image_size"),
-						"H" => COption::GetOptionString("iblock", "detail_image_size"),
-					),
-				), array(
-					'upload' => true,
-					'medialib' => true,
-					'file_dialog' => true,
-					'cloud' => true,
-					'del' => true,
-					'description' => false,
-				)
-			);
+		<td><?
+			echo \Bitrix\Main\UI\FileInput::createInstance(array(
+				"name" => "DETAIL_PICTURE",
+				"description" => true,
+				"upload" => true,
+				"allowUpload" => "I",
+				"medialib" => true,
+				"fileDialog" => true,
+				"cloud" => true,
+				"delete" => true,
+				"maxCount" => 1
+			))->show(($bVarsFromForm ? $_REQUEST["DETAIL_PICTURE"] : $str_DETAIL_PICTURE), $bVarsFromForm);
 			?>
 		</td>
 	</tr>
@@ -1250,10 +1296,14 @@ if(
 	if($USER_FIELD_MANAGER->GetRights($entity_id) >= "W")
 	{
 		$tabControl->BeginCustomField("USER_FIELDS_ADD", GetMessage("IBSEC_E_USER_FIELDS_ADD_HREF"));
+		$userFieldUrl = $selfFolderUrl."userfield_edit.php?lang=".LANGUAGE_ID."&ENTITY_ID=".urlencode($entity_id);
+		$userFieldUrl = $adminSidePanelHelper->editUrlToPublicPage($userFieldUrl);
+		$userFieldUrl .= "&back_url=".urlencode($APPLICATION->GetCurPageParam('', array('bxpublic'))."&tabControl_active_tab=user_fields_tab");
+
 		?>
-			<tr colspan="2">
-				<td align="left">
-					<a href="/bitrix/admin/userfield_edit.php?lang=<?echo LANGUAGE_ID?>&amp;ENTITY_ID=<?echo urlencode($entity_id)?>&amp;back_url=<?echo urlencode($APPLICATION->GetCurPageParam('', array('bxpublic'))."&tabControl_active_tab=user_fields_tab")?>"><?echo $tabControl->GetCustomLabelHTML()?></a>
+			<tr>
+				<td align="left" colspan="2">
+					<a target="_top" href="<?=$userFieldUrl?>"><?= $tabControl->GetCustomLabelHTML()?></a>
 				</td>
 			</tr>
 		<?
@@ -1329,6 +1379,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 				<a id="modeChangeToFlat" style="display: none;" href="javascript:setMode(BX('table_SECTION_PROPERTY'), 'flat')"><?echo GetMessage("IBSEC_E_PROP_FLAT_MODE");?></a>
 		</td></tr>
 		<tr><td align="center" colspan="2">
+			<? echo $editor->getEditorHtml(); ?>
 			<table class="internal" id="table_SECTION_PROPERTY" style="border-left: none !important; border-right: none !important;">
 			<tr
 				id="tr_HEADING"
@@ -1373,6 +1424,14 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 				}
 			}
 
+			\Bitrix\Main\Type\Collection::sortByColumn(
+				$arParents,
+				'LEFT_MARGIN',
+				'',
+				null,
+				true
+			);
+
 			$maxMargin = 0;
 			foreach ($arParents as $parent)
 			{
@@ -1387,11 +1446,38 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 					style="display:none; border:none;"
 					>
 					<td align="left" colspan="4" style="background-color:#f5f9f9; border: none;">
-						<?if ($parent["ID"] > 0):?>
-							<br><br><a href="<?echo CIBlock::GetAdminSectionEditLink($IBLOCK_ID, $parent["ID"], array("form_section_".$IBLOCK_ID."_active_tab" => "edit4"));?>"><?echo htmlspecialcharsex($parent["TITLE"])?></a>
-						<?else:?>
-							<br><br><a href="<?echo CIBlock::GetAdminIBlockEditLink($IBLOCK_ID, array("form_catalog_edit_".$IBLOCK_ID."_active_tab" => "edit3"));?>"><?echo htmlspecialcharsex($parent["TITLE"])?></a>
-						<?endif;?>
+						<?if ($parent["ID"] > 0)
+						{
+							$localUrl = CIBlock::GetAdminSectionEditLink(
+								$IBLOCK_ID,
+								$parent["ID"],
+								array(
+									"form_section_".$IBLOCK_ID."_active_tab" => "edit4",
+									"replace_script_name" => true
+								)
+							);
+							if (!$adminSidePanelHelper->isPublicFrame())
+								$localUrl = $adminSidePanelHelper->setDefaultQueryParams($localUrl);
+							?>
+							<br><br><a href="<?=$localUrl; ?>"><? echo htmlspecialcharsex($parent["TITLE"]) ?></a>
+							<?
+						}
+						else
+						{
+							$localUrl = CIBlock::GetAdminIBlockEditLink(
+								$IBLOCK_ID,
+								array(
+									"form_catalog_edit_".$IBLOCK_ID."_active_tab" => "edit3",
+									"replace_script_name" => true
+								)
+							);
+							if (!$adminSidePanelHelper->isPublicFrame())
+								$localUrl = $adminSidePanelHelper->setDefaultQueryParams($localUrl);
+							?>
+							<br><br><a href="<?=$localUrl; ?>"><?echo htmlspecialcharsex($parent["TITLE"])?></a>
+						<?
+						}
+						?>
 					</td>
 				</tr>
 				<tr
@@ -1496,7 +1582,8 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 				<?
 					if (!is_array($arLink) || $arLink["INHERITED"] == "N")
 					{
-						echo $editor->getControlHtml('SECTION_PROPERTY['.$arProp['ID'].'][FILTER_HINT]', $arLink['FILTER_HINT'], 255);
+						$filterHint = (is_array($arLink) ? (string)$arLink['FILTER_HINT'] : '');
+						echo $editor->getControlHtml('SECTION_PROPERTY['.$arProp['ID'].'][FILTER_HINT]', $filterHint, 255);
 					}
 					elseif ($arLink['FILTER_HINT'] <> '')
 					{
@@ -1523,7 +1610,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 				left_margin="<?echo $maxMargin + 1?>"
 				<?echo ($rows == 0)? '': 'style="display:none"';?>
 				>
-				<td align="center" colspan="4">
+				<td align="center" colspan="8">
 					<?echo GetMessage("IBSEC_E_PROP_TABLE_EMPTY")?>
 				</td>
 			</tr>
@@ -1569,7 +1656,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 					target_select_id = select_id;
 					target_shadow_id = shadow_id;
 					(new BX.CAdminDialog({
-						'content_url' : '/bitrix/admin/iblock_edit_property.php?lang=<?echo LANGUAGE_ID?>&IBLOCK_ID='+iblock_id+'&ID=n0&bxpublic=Y&from_module=iblock&return_url=section_edit',
+						'content_url' : '<?=$selfFolderUrl?>iblock_edit_property.php?lang=<?echo LANGUAGE_ID?>&IBLOCK_ID='+iblock_id+'&ID=n0&bxpublic=Y&from_module=iblock&return_url=section_edit',
 						'width' : 700,
 						'height' : 400,
 						'buttons': [BX.CAdminDialog.btnSave, BX.CAdminDialog.btnCancel]
@@ -1608,7 +1695,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 					adjustEmptyTR(table_id);
 				}
 			}
-			function createSectionProperty(id, name, type, sortnum, property_type, user_type)
+			function createSectionProperty(id, name, type, sortnum, property_type, user_type, code)
 			{
 				var tbl = BX(target_id);
 				if(tbl)
@@ -1621,25 +1708,37 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 					row.setAttribute('prop_sort', sortnum);
 					row.setAttribute('prop_id', id);
 					row.setAttribute('left_margin', <?echo intval($str_LEFT_MARGIN)?>);
+
+					var cell, c = 0;
+
 					row.insertCell(-1);
+					cell = row.cells[c];
+					cell.align = 'left';
+					cell.innerHTML = '<input type="hidden" name="SECTION_PROPERTY['+id+'][SHOW]" id="hidden_SECTION_PROPERTY_'+id+'" value="Y">'+BX.util.htmlspecialchars(name);
+					cell.className = 'internal-left';
+
 					row.insertCell(-1);
+					cell = row.cells[++c];
+					cell.align = 'left';
+					cell.innerHTML = code;
+
 					row.insertCell(-1);
+					cell = row.cells[++c];
+					cell.align = 'left';
+					cell.innerHTML = type;
+
 					row.insertCell(-1);
+					cell = row.cells[++c];
+					cell.align = 'center';
+					cell.style.textAlign = 'center';
+					cell.innerHTML = '<input type="checkbox" value="Y" name="SECTION_PROPERTY['+id+'][SMART_FILTER]">';
+
 					row.insertCell(-1);
-					row.insertCell(-1);
-					row.insertCell(-1);
-					row.cells[0].align = 'left';
-					row.cells[0].innerHTML = '<input type="hidden" name="SECTION_PROPERTY['+id+'][SHOW]" id="hidden_SECTION_PROPERTY_'+id+'" value="Y">'+name;
-					row.cells[0].className = 'internal-left';
-					row.cells[1].align = 'left';
-					row.cells[1].innerHTML = type;
-					row.cells[2].align = 'center';
-					row.cells[2].style.textAlign = 'center';
-					row.cells[2].innerHTML = '<input type="checkbox" value="Y" name="SECTION_PROPERTY['+id+'][SMART_FILTER]">';
+					cell = row.cells[++c];
 					var displayTypes = getDisplayTypes(property_type, user_type);
 					if (!displayTypes)
 					{
-						row.cells[3].innerHTML = '&nbsp;';
+						cell.innerHTML = '&nbsp;';
 					}
 					else
 					{
@@ -1655,15 +1754,25 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 								jsSelectUtils.addNewOption(select, x, displayTypes[x], false, false);
 							}
 						}
-						row.cells[3].appendChild(select);
+						cell.appendChild(select);
 					}
-					row.cells[4].align = 'center';
-					row.cells[4].style.textAlign = 'center';
-					row.cells[4].innerHTML = '<input type="checkbox" value="Y" name="SECTION_PROPERTY['+id+'][DISPLAY_EXPANDED]">';
-					row.cells[5].innerHTML = '<?echo CUtil::JSEscape($editor->getControlHtml('SECTION_PROPERTY[#ID#][FILTER_HINT]', '', 255))?>'.replace('#ID#', id);
-					row.cells[6].align = 'left';
-					row.cells[6].className = 'internal-right';
-					row.cells[6].innerHTML = '<a class="bx-action-href" href="javascript:deleteSectionProperty('+id+', \''+target_select_id+'\', \''+target_shadow_id+'\', \''+target_id+'\')"><?echo GetMessageJS("IBSEC_E_PROP_TABLE_ACTION_HIDE")?></a>';
+
+					row.insertCell(-1);
+					cell = row.cells[++c];
+					cell.align = 'center';
+					cell.style.textAlign = 'center';
+					cell.innerHTML = '<input type="checkbox" value="Y" name="SECTION_PROPERTY['+id+'][DISPLAY_EXPANDED]">';
+
+					row.insertCell(-1);
+					cell = row.cells[++c];
+					cell.innerHTML = '<?echo CUtil::JSEscape($editor->getControlHtml('SECTION_PROPERTY[#ID#][FILTER_HINT]', '', 255))?>'.replace('#ID#', id) || '&nbsp;';
+
+					row.insertCell(-1);
+					cell = row.cells[++c];
+					cell.align = 'left';
+					cell.className = 'internal-right';
+					cell.innerHTML = '<a class="bx-action-href" href="javascript:deleteSectionProperty('+id+', \''+target_select_id+'\', \''+target_shadow_id+'\', \''+target_id+'\')"><?echo GetMessageJS("IBSEC_E_PROP_TABLE_ACTION_HIDE")?></a>';
+
 					setMode(tbl, last_mode);
 					animateTR(row);
 					var shadow = BX(target_shadow_id);
@@ -1781,8 +1890,8 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 
 		<?
 		$arCatalog = false;
-		if (CModule::IncludeModule("catalog"))
-			$arCatalog = CCatalog::GetSkuInfoByProductID($IBLOCK_ID);
+		if (Loader::includeModule("catalog"))
+			$arCatalog = CCatalogSku::GetInfoByProductIBlock($IBLOCK_ID);
 
 		if (is_array($arCatalog))
 		{
@@ -1794,6 +1903,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 			<table class="internal" id="table_SKU_SECTION_PROPERTY">
 			<tr class="heading">
 				<td><?echo GetMessage("IBSEC_E_PROP_TABLE_NAME");?></td>
+				<td><?echo GetMessage("IBSEC_E_PROP_TABLE_CODE");?></td>
 				<td><?echo GetMessage("IBSEC_E_PROP_TABLE_TYPE");?></td>
 				<td><?echo GetMessage("IBSEC_E_PROP_TABLE_SMART_FILTER");?></td>
 				<td><?echo GetMessage("IBSEC_E_PROP_TABLE_DISPLAY_TYPE");?></td>
@@ -1893,7 +2003,8 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 				<td><?
 					if (!is_array($arLink) || $arLink["INHERITED"] == "N")
 					{
-						echo $editor->getControlHtml('SECTION_PROPERTY['.$arProp['ID'].'][FILTER_HINT]', $arLink['FILTER_HINT'], 255);
+						$filterHint = (is_array($arLink) ? (string)$arLink['FILTER_HINT'] : '');
+						echo $editor->getControlHtml('SECTION_PROPERTY['.$arProp['ID'].'][FILTER_HINT]', $filterHint, 255);
 					}
 					elseif ($arLink['FILTER_HINT'] <> '')
 					{
@@ -1913,7 +2024,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 			</tr>
 			<?endwhile?>
 			<tr <?echo ($rows == 0)? '': 'style="display:none"';?>>
-				<td align="center" colspan="4">
+				<td align="center" colspan="8">
 					<?echo GetMessage("IBSEC_E_PROP_TABLE_EMPTY")?>
 				</td>
 			</tr>
@@ -1937,17 +2048,20 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 	$tabControl->EndCustomField("SECTION_PROPERTY", '');
 }
 
-if(strlen($return_url)>0)
+if($return_url <> '')
 	$bu = $return_url;
 else
-	$bu = "/bitrix/admin/".CIBlock::GetAdminSectionListLink($IBLOCK_ID, array('find_section_section'=>intval($find_section_section)));
+	$bu = $selfFolderUrl.CIBlock::GetAdminSectionListLink($IBLOCK_ID, array('find_section_section'=>intval($find_section_section)));
 
-if (!defined('BX_PUBLIC_MODE') || BX_PUBLIC_MODE != 1):
+if ($adminSidePanelHelper->isSidePanelFrame()):
+	$tabControl->Buttons(array("disabled" => true));
+elseif (!defined('BX_PUBLIC_MODE') || BX_PUBLIC_MODE != 1):
 	$tabControl->Buttons(array(
 		"disabled" => false,
-		"btnSaveAndAdd" => (!$bAutocomplete),
-		"btnApply" => (!$bAutocomplete),
-		"return_url" => $bu,
+		"btnSaveAndAdd" => !$bAutocomplete,
+		"btnApply" => !$bAutocomplete,
+		"btnCancel" => !$bAutocomplete,
+		"back_url" => $bu,
 	));
 elseif($nobuttons !== "Y"):
 	$save_and_add = "{
@@ -1991,12 +2105,12 @@ $tabControl->Show();
 
 $tabControl->ShowWarnings($tabControl->GetName(), $message);
 
-if(CIBlockRights::UserHasRightTo($IBLOCK_ID, $IBLOCK_ID, "iblock_edit") && (!defined('BX_PUBLIC_MODE') || BX_PUBLIC_MODE != 1))
+if(CIBlockRights::UserHasRightTo($IBLOCK_ID, $IBLOCK_ID, "iblock_edit") && (!defined('BX_PUBLIC_MODE') || BX_PUBLIC_MODE != 1) && !$adminSidePanelHelper->isSidePanel())
 {
 	echo
 		BeginNote(),
 		GetMessage("IBSEC_E_IBLOCK_MANAGE_HINT"),
-		' <a href="iblock_edit.php?type='.htmlspecialcharsbx($type).'&amp;lang='.LANGUAGE_ID.'&amp;ID='.$IBLOCK_ID.'&amp;admin=Y&amp;return_url='.urlencode(CIBlock::GetAdminSectionEditLink($IBLOCK_ID, $ID, array("find_section_section" => intval($find_section_section), "return_url" => strlen($return_url) > 0? $return_url: null))).'">',
+		' <a href="iblock_edit.php?type='.htmlspecialcharsbx($type).'&amp;lang='.LANGUAGE_ID.'&amp;ID='.$IBLOCK_ID.'&amp;admin=Y&amp;return_url='.urlencode(CIBlock::GetAdminSectionEditLink($IBLOCK_ID, $ID, array("find_section_section" => intval($find_section_section), "IBLOCK_SECTION_ID" => intval($find_section_section), "return_url" => $return_url <> ''? $return_url: null))).'">',
 		GetMessage("IBSEC_E_IBLOCK_MANAGE_HINT_HREF"),
 		'</a>',
 		EndNote()

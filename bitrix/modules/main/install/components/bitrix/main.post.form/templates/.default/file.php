@@ -57,7 +57,9 @@ if (is_array($arParams["PROPERTIES"]))
 if (empty($arParams["UPLOADS"]))
 	return;
 
-__main_post_form_image_resize(($bNull = null), $arParams["UPLOAD_FILE_PARAMS"]);
+$bNull = null;
+__main_post_form_image_resize($bNull, $arParams["UPLOAD_FILE_PARAMS"]);
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_REQUEST['mfi_mode']) && ($_REQUEST['mfi_mode'] == "upload"))
 {
 	$handlers["main.file.input.upload"] = AddEventHandler('main',  "main.file.input.upload", '__main_post_form_image_resize');
@@ -67,12 +69,20 @@ foreach ($arParams["UPLOADS"] as $v)
 {
 	if (in_array($v["USER_TYPE_ID"], array("file", "webdav_element", "disk_file")))
 	{
-		$APPLICATION->IncludeComponent("bitrix:system.field.edit", $v["USER_TYPE_ID"],
-			array(
-				"arUserField" => $v,
-				"DISABLE_CREATING_FILE_BY_CLOUD" => (isset($arParams["DISABLE_CREATING_FILE_BY_CLOUD"]) ? $arParams["DISABLE_CREATING_FILE_BY_CLOUD"] : false),
-				"DISABLE_LOCAL_EDIT" => (isset($arParams["DISABLE_LOCAL_EDIT"]) ? $arParams["DISABLE_LOCAL_EDIT"] : false)
-			),
+		$additionalParameters = [
+			"arUserField" => $v,
+			"DISABLE_CREATING_FILE_BY_CLOUD" => (isset($arParams["DISABLE_CREATING_FILE_BY_CLOUD"]) ? $arParams["DISABLE_CREATING_FILE_BY_CLOUD"] : $v["DISABLE_CREATING_FILE_BY_CLOUD"]),
+			"DISABLE_LOCAL_EDIT" => (isset($arParams["DISABLE_LOCAL_EDIT"]) ? $arParams["DISABLE_LOCAL_EDIT"] : $v["DISABLE_LOCAL_EDIT"]),
+			"HIDE_CHECKBOX_ALLOW_EDIT" => (isset($arParams["HIDE_CHECKBOX_ALLOW_EDIT"]) ? $arParams["HIDE_CHECKBOX_ALLOW_EDIT"] : $v["HIDE_CHECKBOX_ALLOW_EDIT"]),
+		];
+		if ($v['USER_TYPE_ID'] === 'file')
+		{
+			$additionalParameters['mode'] = 'main.drag_n_drop';
+		}
+		$APPLICATION->IncludeComponent(
+			'bitrix:system.field.edit',
+			$v['USER_TYPE_ID'],
+			$additionalParameters,
 			null,
 			array("HIDE_ICONS" => "Y")
 		);

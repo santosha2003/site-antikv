@@ -142,7 +142,7 @@ if($strWarning == "")
 			{
 				if(is_array($value) && count($value) == 1 && isset($value[0]) && $value[0] == "")
 					$aPostValues[$name] = array();
-				elseif($bLimitPhpAccess && substr($value, 0, 2) == '={' && substr($value, -1) == '}')
+				elseif($bLimitPhpAccess && mb_substr($value, 0, 2) == '={' && mb_substr($value, -1) == '}')
 					$aPostValues[$name] = $arValues[$name];
 			}
 
@@ -178,7 +178,7 @@ if($strWarning == "")
 				$functionParams.
 				"\n);";
 
-			$filesrc_for_save = substr($filesrc, 0, $arComponent["START"]).$code.substr($filesrc, $arComponent["END"]);
+			$filesrc_for_save = mb_substr($filesrc, 0, $arComponent["START"]).$code.mb_substr($filesrc, $arComponent["END"]);
 
 			$f = $io->GetFile($abs_path);
 			$arUndoParams = array(
@@ -273,6 +273,18 @@ $obJSPopup->StartContent();?>
 			});
 
 			oBXComponentParamsManager.BuildComponentParams(params.data, oBXComponentParamsManager.params);
+
+			BX.addCustomEvent(oBXComponentParamsManager, 'onComponentParamsBeforeRefresh', BX.proxy(this.DisableSaveButton, this));
+			BX.addCustomEvent(oBXComponentParamsManager, 'onComponentParamsBuilt', BX.proxy(this.EnableSaveButton, this));
+		},
+
+		EnableSaveButton: function()
+		{
+			BX('bx-comp-params-save-button').disabled = null;
+		},
+		DisableSaveButton: function()
+		{
+			BX('bx-comp-params-save-button').disabled = 'disabled';
 		}
 	};
 
@@ -283,6 +295,7 @@ $obJSPopup->StartContent();?>
 		'currentValues' => $arValues,
 		'data' => $data
 	))?>);
+
 })();
 </script>
 <div id="bx-comp-params-wrap" class="bxcompprop-wrap-public"></div>
@@ -290,7 +303,7 @@ $obJSPopup->StartContent();?>
 <?endif; /*($strWarning === "") */?>
 
 <?$obJSPopup->StartButtons();?>
-	<input type="button" value="<?= GetMessage("comp_prop_save")?>" onclick="<?=$obJSPopup->jsPopup?>.PostParameters('<?= PageParams().'&amp;action=save'?>');" title="<?= GetMessage("comp_prop_save_title")?>" name="save" class="adm-btn-save" />
+	<input type="button" id="bx-comp-params-save-button" value="<?= GetMessage("comp_prop_save")?>" onclick="<?=$obJSPopup->jsPopup?>.PostParameters('<?= PageParams().'&amp;action=save'?>');" title="<?= GetMessage("comp_prop_save_title")?>" name="save" class="adm-btn-save" />
 	<input type="button" value="<?= GetMessage("comp_prop_cancel")?>" onclick="<?=$obJSPopup->jsPopup?>.CloseDialog()" title="<?= GetMessage("comp_prop_cancel_title")?>" />
 <?$obJSPopup->EndButtons();?>
 

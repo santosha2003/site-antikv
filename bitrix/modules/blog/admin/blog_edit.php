@@ -18,8 +18,8 @@ $aTabs[] = $USER_FIELD_MANAGER->EditFormTab("BLOG_BLOG");
 
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 
-$ID = IntVal($ID);
-if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $blogModulePermissions>="W" && check_bitrix_sessid())
+$ID = intval($ID);
+if ($REQUEST_METHOD=="POST" && $Update <> '' && $blogModulePermissions>="W" && check_bitrix_sessid())
 {
 	$arFields = array(
 		"NAME" => $NAME,
@@ -37,14 +37,19 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $blogModulePermissions>="W" 
 		"SEARCH_INDEX" => (($SEARCH_INDEX == "Y") ? "Y" : "N"),
 		"USE_SOCNET" => (($USE_SOCNET == "Y") ? "Y" : "N"),
 		"PERMS_POST" => $PERMS_P,
-		"PERMS_COMMENT" => $PERMS_C
+		"PERMS_COMMENT" => $PERMS_C,
+		"EDITOR_USE_FONT" => (($EDITOR_USE_FONT == "Y") ? "Y" : "N"),
+		"EDITOR_USE_LINK" => (($EDITOR_USE_LINK == "Y") ? "Y" : "N"),
+		"EDITOR_USE_IMAGE" => (($EDITOR_USE_IMAGE == "Y") ? "Y" : "N"),
+		"EDITOR_USE_VIDEO" => (($EDITOR_USE_VIDEO == "Y") ? "Y" : "N"),
+		"EDITOR_USE_FORMAT" => (($EDITOR_USE_FORMAT == "Y") ? "Y" : "N"),
 	);
 
 	if(!IsModuleInstalled("socialnetwork"))
 		unset($arFields["USE_SOCNET"]);
 
-	if(IntVal($OWNER_ID) > 0)
-		$arFields["OWNER_ID"] = IntVal($OWNER_ID);
+	if(intval($OWNER_ID) > 0)
+		$arFields["OWNER_ID"] = intval($OWNER_ID);
 	else
 		$arFields["OWNER_ID"] = false;	
 	
@@ -66,7 +71,7 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $blogModulePermissions>="W" 
 		$arFields["=DATE_CREATE"] = $DB->CurrentTimeFunction();
 
 		$ID = CBlog::Add($arFields);
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$result = ($ID > 0);
 		$dbBlog = CBlog::GetList(
 				array(),
@@ -111,7 +116,7 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $blogModulePermissions>="W" 
 			$errorMessage .= GetMessage("BLBE_SAVE_ERROR")."<br />";
 	}
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (!empty($arBlogOld))
 		{
@@ -133,7 +138,7 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $blogModulePermissions>="W" 
 		}
 
 
-		if (strlen($apply) <= 0)
+		if ($apply == '')
 			LocalRedirect("/bitrix/admin/blog_blog.php?lang=".LANG.GetFilterParams("filter_", false));
 		else
 			LocalRedirect("/bitrix/admin/blog_blog_edit.php?lang=".LANG."&ID=".$ID."&".$tabControl->ActiveTabParam());
@@ -160,7 +165,7 @@ $dbBlog = CBlog::GetList(
 		array("ID" => $ID),
 		false,
 		false,
-		array("ID", "NAME", "DESCRIPTION", "DATE_CREATE", "DATE_UPDATE", "ACTIVE", "OWNER_ID", "URL", "REAL_URL", "GROUP_ID", "ENABLE_COMMENTS", "ENABLE_IMG_VERIF", "ENABLE_RSS", "LAST_POST_ID", "LAST_POST_DATE", "EMAIL_NOTIFY", "SEARCH_INDEX", "USE_SOCNET")
+		array("ID", "NAME", "DESCRIPTION", "DATE_CREATE", "DATE_UPDATE", "ACTIVE", "OWNER_ID", "URL", "REAL_URL", "GROUP_ID", "ENABLE_COMMENTS", "ENABLE_IMG_VERIF", "ENABLE_RSS", "LAST_POST_ID", "LAST_POST_DATE", "EMAIL_NOTIFY", "SEARCH_INDEX", "USE_SOCNET", "EDITOR_USE_FONT", "EDITOR_USE_LINK", "EDITOR_USE_IMAGE", "EDITOR_USE_FORMAT", "EDITOR_USE_VIDEO")
 	);
 if (!$dbBlog->ExtractFields("str_"))
 	$ID = 0;
@@ -246,7 +251,7 @@ $tabControl->BeginNextTab();
 	<tr class="adm-detail-required-field">
 		<td><?echo GetMessage("BLBE_OWNER_ID")?>:</td>
 		<td>
-			<?echo FindUserID("OWNER_ID", IntVal($str_OWNER_ID));?>
+			<?echo FindUserID("OWNER_ID", intval($str_OWNER_ID));?>
 		</td>
 	</tr>
 
@@ -261,7 +266,7 @@ $tabControl->BeginNextTab();
 				);
 				while ($arBlogGroup = $dbBlogGroup->Fetch())
 				{
-					?><option value="<?= $arBlogGroup["ID"] ?>"<?if (IntVal($str_GROUP_ID) == IntVal($arBlogGroup["ID"])) echo " selected";?>>[<?= htmlspecialcharsbx($arBlogGroup["SITE_ID"]) ?>] <?= htmlspecialcharsbx($arBlogGroup["NAME"]) ?></option><?
+					?><option value="<?= $arBlogGroup["ID"] ?>"<?if (intval($str_GROUP_ID) == intval($arBlogGroup["ID"])) echo " selected";?>>[<?= htmlspecialcharsbx($arBlogGroup["SITE_ID"]) ?>] <?= htmlspecialcharsbx($arBlogGroup["NAME"]) ?></option><?
 				}
 				?>
 			</select>
@@ -304,6 +309,45 @@ $tabControl->BeginNextTab();
 			<input type="checkbox" name="USE_SOCNET" id="USE_SOCNET" value="Y"<?if ($str_USE_SOCNET == "Y") echo " checked";?>>
 		</td>
 	</tr>
+	
+<!--editor options-->
+	<tr class="heading">
+		<td colspan="2"><?echo GetMessage("BLBE_EDITOR_SETTINGS")?>:</td>
+	</tr>
+		<tr>
+			<td><label for="EDITOR_USE_FONT"><?echo GetMessage("BLBE_EDITOR_USE_FONT")?>:</label></td>
+			<td>
+				<input type="checkbox" name="EDITOR_USE_FONT" id="EDITOR_USE_FONT" value="Y"<?if ($str_EDITOR_USE_FONT == "Y") echo " checked";?>>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="EDITOR_USE_LINK"><?echo GetMessage("BLBE_EDITOR_USE_LINK")?>:</label></td>
+			<td>
+				<input type="checkbox" name="EDITOR_USE_LINK" id="EDITOR_USE_LINK" value="Y"<?if ($str_EDITOR_USE_LINK == "Y") echo " checked";?>>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<?= ShowJSHint(GetMessage("BLBE_EDITOR_USE_FORMAT_HINT")) ?>
+				<label for="EDITOR_USE_FORMAT"><?echo GetMessage("BLBE_EDITOR_USE_FORMAT")?>:</label></td>
+			<td>
+				<input type="checkbox" name="EDITOR_USE_FORMAT" id="EDITOR_USE_FORMAT" value="Y"<?if ($str_EDITOR_USE_FORMAT == "Y") echo " checked";?>>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="EDITOR_USE_IMAGE"><?echo GetMessage("BLBE_EDITOR_USE_IMAGE_AND_FILES")?>:</label></td>
+			<td>
+				<input type="checkbox" name="EDITOR_USE_IMAGE" id="EDITOR_USE_IMAGE" value="Y"<?if ($str_EDITOR_USE_IMAGE == "Y") echo " checked";?>>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<?= ShowJSHint(GetMessage("BLBE_EDITOR_USE_VIDEO_HINT")) ?>
+				<label for="EDITOR_USE_VIDEO"><?echo GetMessage("BLBE_EDITOR_USE_VIDEO")?>:</label></td>
+			<td>
+				<input type="checkbox" name="EDITOR_USE_VIDEO" id="EDITOR_USE_VIDEO" value="Y"<?if ($str_EDITOR_USE_VIDEO == "Y") echo " checked";?>>
+			</td>
+		</tr>
 	<?endif;?>
 <?
 $tabControl->BeginNextTab();
@@ -320,7 +364,7 @@ $tabControl->BeginNextTab();
 		$dbGroupPerms = CBlogUserGroupPerms::GetList(array(), array("BLOG_ID" => $ID, "PERMS_TYPE" => BLOG_PERMS_POST, "POST_ID" => 0));
 		while ($arGroupPerm = $dbGroupPerms->Fetch())
 		{
-			$arGroupPerms[IntVal($arGroupPerm["USER_GROUP_ID"])] = $arGroupPerm["PERMS"];
+			$arGroupPerms[intval($arGroupPerm["USER_GROUP_ID"])] = $arGroupPerm["PERMS"];
 		}
 	}
 	?>
@@ -329,8 +373,7 @@ $tabControl->BeginNextTab();
 		<td width="60%">
 			<select name="PERMS_P[1]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS_EVERYONE"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS_EVERYONE"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_POST_PERMS"]))
 				{
@@ -346,8 +389,7 @@ $tabControl->BeginNextTab();
 		<td>
 			<select name="PERMS_P[2]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_POST_PERMS"]))
 				{
@@ -359,7 +401,7 @@ $tabControl->BeginNextTab();
 		</td>
 	</tr>
 	<?
-	if(IntVal($ID) > 0)
+	if(intval($ID) > 0)
 	{
 		$dbGroups = CBlogUserGroup::GetList(array("NAME" => "ASC"), array("BLOG_ID" => $ID));
 		while ($arGroup = $dbGroups->Fetch())
@@ -368,10 +410,9 @@ $tabControl->BeginNextTab();
 			<tr>
 				<td><?= htmlspecialcharsbx($arGroup["NAME"]) ?>:</td>
 				<td>
-					<select name="PERMS_P[<?= IntVal($arGroup["ID"]) ?>]">
+					<select name="PERMS_P[<?= intval($arGroup["ID"]) ?>]">
 					<?
-					reset($GLOBALS["AR_BLOG_PERMS"]);
-					while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+					foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 					{
 						if (in_array($key, $GLOBALS["AR_BLOG_POST_PERMS"]))
 						{
@@ -398,7 +439,7 @@ $tabControl->BeginNextTab();
 		$dbGroupPerms = CBlogUserGroupPerms::GetList(array(), array("BLOG_ID" => $ID, "PERMS_TYPE" => BLOG_PERMS_COMMENT, "POST_ID" => 0));
 		while ($arGroupPerm = $dbGroupPerms->Fetch())
 		{
-			$arGroupPerms[IntVal($arGroupPerm["USER_GROUP_ID"])] = $arGroupPerm["PERMS"];
+			$arGroupPerms[intval($arGroupPerm["USER_GROUP_ID"])] = $arGroupPerm["PERMS"];
 		}
 	}
 	?>
@@ -407,8 +448,7 @@ $tabControl->BeginNextTab();
 		<td>
 			<select name="PERMS_C[1]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_COMMENT_PERMS"]))
 				{
@@ -424,8 +464,7 @@ $tabControl->BeginNextTab();
 		<td>
 			<select name="PERMS_C[2]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_COMMENT_PERMS"]))
 				{
@@ -437,7 +476,7 @@ $tabControl->BeginNextTab();
 		</td>
 	</tr>
 	<?
-	if(IntVal($ID) > 0)
+	if(intval($ID) > 0)
 	{
 		$dbGroups = CBlogUserGroup::GetList(array("NAME" => "ASC"), array("BLOG_ID" => $ID));
 		while ($arGroup = $dbGroups->Fetch())
@@ -446,10 +485,9 @@ $tabControl->BeginNextTab();
 			<tr>
 				<td><?= htmlspecialcharsbx($arGroup["NAME"]) ?>:</td>
 				<td>
-					<select name="PERMS_C[<?= IntVal($arGroup["ID"]) ?>]">
+					<select name="PERMS_C[<?= intval($arGroup["ID"]) ?>]">
 					<?
-					reset($GLOBALS["AR_BLOG_PERMS"]);
-					while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+					foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 					{
 						if (in_array($key, $GLOBALS["AR_BLOG_COMMENT_PERMS"]))
 						{

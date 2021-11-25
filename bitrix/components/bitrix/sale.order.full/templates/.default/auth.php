@@ -23,11 +23,11 @@
 					</tr>
 					<tr>
 						<td nowrap><?echo GetMessage("STOF_LOGIN")?> <span class="sof-req">*</span><br />
-							<input type="text" name="USER_LOGIN" maxlength="30" size="30" value="<?=$arResult["USER_LOGIN"]?>">&nbsp;&nbsp;&nbsp;</td>
+							<input type="text" name="USER_LOGIN" maxlength="50" size="30" value="<?=$arResult["USER_LOGIN"]?>">&nbsp;&nbsp;&nbsp;</td>
 					</tr>
 					<tr>
 						<td nowrap><?echo GetMessage("STOF_PASSWORD")?> <span class="sof-req">*</span><br />
-							<input type="password" name="USER_PASSWORD" maxlength="30" size="30">&nbsp;&nbsp;&nbsp;</td>
+							<input type="password" name="USER_PASSWORD" maxlength="255" size="30">&nbsp;&nbsp;&nbsp;</td>
 					</tr>
 					<tr>
 						<td nowrap><a href="<?=$arParams["PATH_TO_AUTH"]?>?forgot_password=yes&back_url=<?= urlencode($arParams["PATH_TO_ORDER"]); ?>"><?echo GetMessage("STOF_FORGET_PASSWORD")?></a></td>

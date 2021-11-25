@@ -48,7 +48,7 @@ if($lAdmin->EditAction())
 {
 	foreach($FIELDS as $ID=>$arFields)
 	{
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if($ID <= 0)
 			continue;
 
@@ -73,7 +73,7 @@ if(($arID = $lAdmin->GroupAction()))
 
 	foreach($arID as $ID)
 	{
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if($ID <= 0)
 			continue;
 		switch($_REQUEST['action'])
@@ -153,7 +153,7 @@ $lAdmin->AddAdminContextMenu($aContext);
 $lAdmin->CheckListMode();
 
 $APPLICATION->SetTitle(GetMessage("MAIN_RATING_RULE_LIST"));
-require_once ($DOCUMENT_ROOT.BX_ROOT."/modules/main/include/prolog_admin_after.php");
+require_once ($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_after.php");
 
 $oFilter = new CAdminFilter(
 	$sTableID."_filter",

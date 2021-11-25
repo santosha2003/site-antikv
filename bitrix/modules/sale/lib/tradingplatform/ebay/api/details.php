@@ -3,7 +3,6 @@
 namespace Bitrix\Sale\TradingPlatform\Ebay\Api;
 
 use Bitrix\Main\Text\Encoding;
-use Bitrix\Sale\TradingPlatform\Helper;
 use Bitrix\Sale\TradingPlatform\Xml2Array;
 
 class Details extends Entity
@@ -19,7 +18,7 @@ class Details extends Entity
 
 		$dataXml = $this->apiCaller->sendRequest("GeteBayDetails", $data);
 
-		if(strtolower(SITE_CHARSET) != 'utf-8')
+		if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 			$dataXml = Encoding::convertEncoding($dataXml, 'UTF-8', SITE_CHARSET);
 
 		$result = Xml2Array::convert($dataXml);

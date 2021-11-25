@@ -1,4 +1,0 @@
-<?
-$MESS['LEARNING_TEMPLATE_DESCRIPTION_NAME'] = 'E-apmokymø ðablonas';
-$MESS['LEARNING_TEMPLATE_DESCRIPTION_DESC'] = 'E-apmokymø ðablonas';
-?>

@@ -1,4 +1,0 @@
-<?
-$MESS["IBLOCK_PROP_TOPICID_DESC"] = "Nuoroda á forumo temà";
-$MESS["IBLOCK_PROP_FORUM_VIEW_TOPIC"] = "Nuoroda á forumo temà";
-?>

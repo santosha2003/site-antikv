@@ -115,7 +115,7 @@ class YandexBase extends BitrixEngine
 		{
 			$queryResult = self::query(self::QUERY_USER);
 
-			if($queryResult->getStatus() == self::HTTP_STATUS_OK && strlen($queryResult->getResult()) > 0)
+			if($queryResult->getStatus() == self::HTTP_STATUS_OK && $queryResult->getResult() <> '')
 			{
 				$res = Web\Json::decode($queryResult->getResult());
 
@@ -173,7 +173,7 @@ class YandexBase extends BitrixEngine
 
 			if($http->getStatus() == 401 && !$skipRefreshAuth)
 			{
-				if($this->checkAuthExpired(false))
+				if($this->checkAuthExpired())
 				{
 					$this->query($scope, $method, $data, true);
 				}

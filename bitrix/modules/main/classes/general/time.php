@@ -13,19 +13,22 @@ class CTimeZone
 
 	public static function Possible()
 	{
-		return class_exists('DateTime');
+		//since PHP 5.2
+		return true;
 	}
 
 	public static function Enabled()
 	{
-		if(self::$enabled > 0 && self::Possible())
+		return (self::$enabled > 0 && self::OptionEnabled());
+	}
+
+	public static function OptionEnabled()
+	{
+		if(self::$useTimeZones === false)
 		{
-			if(self::$useTimeZones === false)
-				self::$useTimeZones = COption::GetOptionString("main", "use_time_zones", "N");
-			if(self::$useTimeZones == "Y")
-				return true;
+			self::$useTimeZones = COption::GetOptionString("main", "use_time_zones", "N");
 		}
-		return false;
+		return (self::$useTimeZones == "Y");
 	}
 
 	public static function Disable()
@@ -54,7 +57,7 @@ class CTimeZone
 		foreach(DateTimeZone::listIdentifiers() as $tz)
 		{
 			foreach($aExcept as $ex)
-				if(strpos($tz, $ex) === 0)
+				if(mb_strpos($tz, $ex) === 0)
 					continue 2;
 			try
 			{
@@ -81,8 +84,12 @@ class CTimeZone
 		$cookie_prefix = COption::GetOptionString('main', 'cookie_name', 'BITRIX_SM');
 		if(self::IsAutoTimeZone(trim($USER->GetParam("AUTO_TIME_ZONE"))))
 		{
+			$cookieDate = (new \Bitrix\Main\Type\DateTime())->add("12M");
+			$cookieDate->setDate((int)$cookieDate->format('Y'), (int)$cookieDate->format('m'), 1);
+			$cookieDate->setTime(0,	0);
+
 			$APPLICATION->AddHeadString(
-				'<script type="text/javascript">var bxDate = new Date(); document.cookie="'.$cookie_prefix.'_TIME_ZONE="+bxDate.getTimezoneOffset()+"; path=/; expires=Fri, 01-Jan-2038 00:00:00 GMT"</script>', true
+				'<script type="text/javascript">var bxDate = new Date(); document.cookie="'.$cookie_prefix.'_TIME_ZONE="+bxDate.getTimezoneOffset()+"; path=/; expires='.$cookieDate->format("r").'"</script>', true
 			);
 		}
 		elseif(isset($_COOKIE[$cookie_prefix."_TIME_ZONE"]))
@@ -142,12 +149,29 @@ class CTimeZone
 		$_COOKIE[$cookie_prefix."_TIME_ZONE"] = $timezoneOffset;
 	}
 
-	public static function GetOffset($USER_ID = null)
+	/**
+	 * @param int|null $USER_ID If USER_ID is set offset is taken from DB
+	 * @param bool $forced If set, offset is calculated regardless enabling/disabling by functions Enable()/Disable().
+	 * @return int
+	 */
+	public static function GetOffset($USER_ID = null, $forced = false)
 	{
 		global $USER;
 
-		if(!self::Enabled())
-			return 0;
+		if($forced)
+		{
+			if(!self::OptionEnabled())
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			if(!self::Enabled())
+			{
+				return 0;
+			}
+		}
 
 		try //possible DateTimeZone incorrect timezone
 		{
@@ -164,7 +188,7 @@ class CTimeZone
 				{
 					$autoTimeZone = trim($arUser["AUTO_TIME_ZONE"]);
 					$userZone = $arUser["TIME_ZONE"];
-					$factOffset = $arUser["TIME_ZONE_OFFSET"];
+					$factOffset = intval($arUser["TIME_ZONE_OFFSET"]);
 				}
 			}
 			elseif(is_object($USER))
@@ -192,6 +216,11 @@ class CTimeZone
 					{
 						//auto time zone from cookie
 						$userOffset = -($cookie)*60;
+					}
+					elseif(is_object($USER))
+					{
+						//auto time zone from the session, set on Authorize
+						return intval($USER->GetParam("TIME_ZONE_OFFSET"));
 					}
 				}
 				else

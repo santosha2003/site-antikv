@@ -16,4 +16,9 @@ $MESS["SALE_ORDER_STATUS_USER_CAN_VIEW"] = "Für Kunden zur Ansicht verfügbar";
 $MESS["SALE_ORDER_STATUS_TOGGLE"] = "ausblenden";
 $MESS["SALE_ORDER_STATUS_SITE"] = "Website";
 $MESS["SALE_ORDER_STATUS_SOURCE"] = "Bestellquelle";
+$MESS["SALE_ORDER_STATUS_AFFILIATE"] = "Affiliate";
+$MESS["SALE_ORDER_STATUS_ARCHIVED"] = "Ins Archiv verschoben";
+$MESS["SALE_ORDER_WRONG_GUEST_PATH"] = "Ungültige Vorlage des Pfads zur Bestellseite. Überprüfen Sie den Pfad <a target=\"_blank\" href=\"/bitrix/admin/settings.php?lang=#LANGUAGE_ID#&mid=sale#guest_order_view_block\">auf der Seite der Moduleinstellungen";
+$MESS["SALE_ORDER_GUEST_PATH"] = "ID der Bestellung (#ID#) | ##ACCOUNT_NUMBER#";
+$MESS["SALE_ORDER_GUEST_VIEW"] = "Öffentlicher Link";
 ?>

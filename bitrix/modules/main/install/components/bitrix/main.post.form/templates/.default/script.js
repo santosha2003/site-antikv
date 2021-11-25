@@ -1,7 +1,12 @@
 ;(function(){
 	if (window["LHEPostForm"])
 		return;
-var repo = { controller : {}, handler : {}};
+var repo = {
+	controller : {},
+	handler : {},
+	form : {},
+	selector : {}
+};
 BX.addCustomEvent(window, "BFileDLoadFormControllerWasBound", function(obj) { repo.controller[obj.id] = true;});
 BX.addCustomEvent(window, "WDLoadFormControllerInit", function(obj) { repo.controller[obj.CID] = obj; });
 BX.addCustomEvent(window, "WDLoadFormControllerWasBound", function(obj) { repo.controller[obj.CID] = true; });
@@ -44,7 +49,7 @@ BX.util.object_search = function(needle, haystack)
 		{
 			if (haystack[i] == needle)
 				return true;
-			else if (typeof haystack[i] == "object")
+			else if (typeof haystack[i] == "object" && haystack[i] !== null)
 			{
 				var result = BX.util.object_search_key(needle, haystack[i]);
 				if (result !== false)
@@ -190,7 +195,7 @@ diskController.prototype = {
 						{
 							diskController.dndCatcher[id].dropZone = new BX.DD.dropFiles(manager.eventNode);
 
-							BX.addCustomEvent(manager.eventNode, "OnImageDataUriHandle", BX.delegate(function(editor, imageBase64)
+							BX.addCustomEvent(manager.eventNode, "OnImageDataUriHandle", function(editor, imageBase64)
 							{
 								if (BX["UploaderUtils"])
 								{
@@ -201,13 +206,13 @@ diskController.prototype = {
 										blob.referrerToEditor = imageBase64;
 										if (diskController.dndCatcher[id]["catch"] === true)
 											diskController.dndCatcher[id]["drop"]([blob]);
-										else if (this.handler && this.handler.addFile["addFile"])
+										else if (this.handler && this.handler["addFile"])
 											this.handler.addFile(blob);
 
 										BX.onCustomEvent(editor, "OnImageDataUriCaught", [imageBase64]);
 									}
 								}
-							}, this));
+							}.bind(this));
 
 							BX.addCustomEvent(diskController.dndCatcher[id].dropZone, "dropFiles", diskController.dndCatcher[id]["drop"]);
 							BX.addCustomEvent(diskController.dndCatcher[id].dropZone, "dragEnter", diskController.dndCatcher[id]["dragover"]);
@@ -465,10 +470,11 @@ diskController.prototype = {
 					isImage : false,
 					place : BX(result.place, true),
 					xmlID : BX(result.place, true).getAttribute("bx-attach-xml-id"),
-					fileID : BX(result.place, true).getAttribute("bx-attach-file-id")
+					fileID : BX(result.place, true).getAttribute("bx-attach-file-id"),
+					fileType: BX(result.place, true).getAttribute("bx-attach-file-type")
 				},
 				preview;
-			if (/(\.png|\.jpg|\.jpeg|\.gif|\.bmp)$/i.test(result.element_name) &&
+			if (/(\.png|\.jpg|\.jpeg|\.gif|\.bmp|\.webp)$/i.test(result.element_name) &&
 				(preview = BX.findChild(data.place, {'className': 'files-preview', 'tagName' : 'IMG'}, true, false)) && preview)
 			{
 				data.type = 'image/xyz';
@@ -581,17 +587,19 @@ diskController.prototype = {
 				data['E' + id] = {
 					type: 'file',
 					id: id,
-					name: node.getAttribute("data-bx-title"),
-					size: node.getAttribute("data-bx-size"),
-					sizeInt: node.getAttribute("data-bx-size"),
+					name: node.getAttribute("data-bx-title") || node.getAttribute("data-title"),
+					size: node.getAttribute("data-bx-size") || '',
+					sizeInt: node.getAttribute("data-bx-size") || '',
 					width: node.getAttribute("data-bx-width"),
 					height: node.getAttribute("data-bx-height"),
 					storage: 'disk',
-					previewUrl: (node.tagName == "A" ? '' : node.getAttribute("data-bx-src")),
+					previewUrl: (node.tagName == "A" ? '' : node.getAttribute("data-bx-src") || node.getAttribute("data-src")),
 					fileId: node.getAttribute("bx-attach-file-id")
 				};
 				if (node.hasAttribute("bx-attach-xml-id"))
 					data['E' + id]["xmlId"] = node.getAttribute("bx-attach-xml-id");
+				if (node.hasAttribute("bx-attach-file-type"))
+					data['E' + id]["fileType"] = node.getAttribute("bx-attach-file-type");
 			}
 		}
 		this.handler.selectFile({}, {}, data);
@@ -664,28 +672,25 @@ diskController.prototype = {
 	{
 		if (this.handler && this.handler.values)
 		{
-			var res, files, ii, form = BX(this.manager.formID);
+			var res;
 			while ((res = this.handler.values.pop()) && res)
 			{
 				BX.remove(res);
 			}
 			if (this.handler.params && this.handler.params.controlName)
 			{
-				files = BX.findChildren(form, {
-					tagName : "INPUT",
-					attribute : {
-						name : this.handler.params.controlName
-					}
-				}, true);
-			}
-			if (files)
-			{
-				for (ii = 0; ii < files.length; ii++)
+				var node = (BX(this.manager.formID) || this.handler.controller);
+				if (node)
 				{
-					BX.remove(files[ii]);
+					node.querySelectorAll('input[name="' + this.handler.params.controlName + '"]')
+						.forEach(function(inputFile) {
+							inputFile.parentNode.removeChild(inputFile);
+						}
+					);
 				}
 			}
 		}
+		this.values = {};
 	},
 	reinit : function(text, data)
 	{
@@ -854,7 +859,7 @@ fileController.prototype.checkFile = function(id, result, param)
 				place : BX(this.prefixNode + result.element_id, true)
 			},
 			preview;
-		if ((result['element_type'] && result['element_type'].indexOf('image/') === 0 || /(\.png|\.jpg|\.jpeg|\.gif|\.bmp)$/i.test(result.element_name)) &&
+		if ((result['element_type'] && result['element_type'].indexOf('image/') === 0 || /(\.png|\.jpg|\.jpeg|\.gif|\.bmp|\.webp)$/i.test(result.element_name)) &&
 			((preview = BX.findChild(data.place, {'tagName' : 'IMG'}, true, false)) && preview || (param && param["hasPreview"] === false)))
 		{
 			data.type = 'image/xyz';
@@ -875,6 +880,10 @@ fileController.prototype.checkFile = function(id, result, param)
 		else if (this.parser.bxTag == 'postimage')
 		{
 			return false;
+		}
+		if(BX(data.place, true).getAttribute("bx-attach-file-type"))
+		{
+			data.fileType = BX(data.place, true).getAttribute("bx-attach-file-type");
 		}
 
 		this.values[id] = data;
@@ -934,9 +943,15 @@ var LHEPostForm = function(formID, params)
 {
 	this.params = params;
 	this.formID = formID;
+	this.showPinButton = !!BX('lhe_button_editor_' + this.formID);
+	if(this.showPinButton)
+	{
+		this.params.showPanelEditor = !!this.params.pinEditorPanel;
+	}
 	this.oEditorId = params['LHEJsObjId'];
 	this.__divId = (params['LHEJsObjName'] || params['LHEJsObjId']);
 	repo.handler[this.oEditorId] = this;
+	repo.form[this.formID] = this;
 	this.oEditor = LHEPostForm.getEditor(this.oEditorId);
 	this.urlPreview = this.initUrlPreview(params);
 
@@ -963,8 +978,6 @@ var LHEPostForm = function(formID, params)
 			{
 				if (BX('lhe_button_submit_' + formID, true))
 				{
-					BX.bind(BX('lhe_button_submit_' + formID, true), 'mousedown', function(){ BX.addClass(this, 'feed-add-button-press'); });
-					BX.bind(BX('lhe_button_submit_' + formID, true), 'mouseup', function(){ BX.removeClass(this, 'feed-add-button-press'); });
 					BX.bind(BX('lhe_button_submit_' + formID, true), 'click', BX.proxy(function(e){
 						BX.onCustomEvent(this.eventNode, 'OnButtonClick', ['submit']);
 						return BX.PreventDefault(e);
@@ -972,8 +985,6 @@ var LHEPostForm = function(formID, params)
 				}
 				if (BX('lhe_button_cancel_' + formID, true))
 				{
-					BX.bind(BX('lhe_button_cancel_' + formID, true), 'mousedown', function(){ BX.addClass(this, 'feed-add-button-press'); });
-					BX.bind(BX('lhe_button_cancel_' + formID, true), 'mouseup', function(){ BX.removeClass(this, 'feed-add-button-press'); });
 					BX.bind(BX('lhe_button_cancel_' + formID, true), 'click', BX.proxy(function(e){
 						BX.onCustomEvent(this.eventNode, 'OnButtonClick', ['cancel']);
 						return BX.PreventDefault(e);
@@ -985,7 +996,11 @@ var LHEPostForm = function(formID, params)
 	);
 
 	this.inited = true;
-	BX.addCustomEvent(BX(this.formID), 'onAutoSavePrepare', function(ob) { ob.FORM.setAttribute("bx-lhe-autosave-prepared", "Y"); });
+
+	if (BX(this.formID))
+	{
+		BX.addCustomEvent(BX(this.formID), 'onAutoSavePrepare', function(ob) { ob.FORM.setAttribute("bx-lhe-autosave-prepared", "Y"); });
+	}
 
 	BX.onCustomEvent(this, "onInitialized", [this, formID, params, this.parsers]);
 	BX.onCustomEvent(this.eventNode, "onInitialized", [this, formID, params, this.parsers]);
@@ -1023,6 +1038,15 @@ LHEPostForm.prototype = {
 				regexp : /\[(IMG ID)=((?:\s|\S)*?)(?:\s*?WIDTH=(\d+)\s*?HEIGHT=(\d+))?\]/ig,
 				code : '[IMG ID=#ID##ADDITIONAL#]',
 				wysiwyg : '<img id="#ID#" src="' + '#SRC#" lowsrc="' + '#LOWSRC#" title=""#ADDITIONAL# />'
+			},
+			player : {
+				exist : false,
+				bxTag : 'player',
+				tag : "FILE ID",
+				tags : ["FILE ID"],
+				regexp : /\[(FILE ID)=((?:\s|\S)*?)?\]/ig,
+				code : '[FILE ID=#ID##ADDITIONAL#]',
+				wysiwyg : '<img class="bxhtmled-player-surrogate" id="#ID#" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" contenteditable="false" title=""#ADDITIONAL# />'
 			}
 		};
 		var parsers = (params["parsers"] ? params["parsers"] : {});
@@ -1045,7 +1069,7 @@ LHEPostForm.prototype = {
 			if (params['arSize']['height'])
 				style += 'max-height:' + params['arSize']['height'] + 'px;';
 			if (style !== '')
-				this.parser['postimage']['wysiwyg'] = this.parser['postimage']['wysiwyg'].replace('#ADDITIONAL#', 'style="' + style + '" #ADDITIONAL#');
+				this.parser['postimage']['wysiwyg'] = this.parser['postimage']['wysiwyg'].replace('#ADDITIONAL#', ' style="' + style + '" #ADDITIONAL#');
 		}
 	},
 	initFiles : function(formID, params)
@@ -1060,6 +1084,13 @@ LHEPostForm.prototype = {
 				obj : null,
 				init : false
 			}
+		};
+		this.monitoring = {
+			interval : null,
+			text : '',
+			savedText : '',
+			files : [],
+			savedFiles : []
 		};
 		if (!params["CID"] || typeof params["CID"] !== "object")
 			return;
@@ -1134,7 +1165,7 @@ LHEPostForm.prototype = {
 			{
 				var regs = this.getFileToInsert(file, controller);
 				BX.onCustomEvent(blob["referrerToEditor"], "OnImageDataUriCaughtUploaded", [regs]);
-				BX.onCustomEvent(this.editor, "OnImageDataUriCaughtUploaded", [blob["referrerToEditor"]]);
+				BX.onCustomEvent(this.oEditor, "OnImageDataUriCaughtUploaded", [blob["referrerToEditor"], file, regs]);
 			}
 			else if (uploaded === true && file.isImage && this.insertImageAfterUpload)
 			{
@@ -1149,7 +1180,7 @@ LHEPostForm.prototype = {
 		if (blob && blob["referrerToEditor"])
 		{
 			BX.onCustomEvent(blob["referrerToEditor"], "OnImageDataUriCaughtFailed", []);
-			BX.onCustomEvent(this.editor, "OnImageDataUriCaughtFailed", []);
+			BX.onCustomEvent(this.editor, "OnImageDataUriCaughtFailed", [blob["referrerToEditor"]]);
 		}
 	},
 	OnFileUploadRemove : function(file, controller)
@@ -1212,13 +1243,7 @@ LHEPostForm.prototype = {
 		if (save !== false)
 			BX.userOptions.save('main.post.form', 'postEdit', 'showBBCode', show ? "Y" : "N");
 	},
-	monitoring : {
-		interval : null,
-		text : '',
-		savedText : '',
-		files : [],
-		savedFiles : []
-	},
+	monitoring : {},
 	monitoringStart : function()
 	{
 		if (this.monitoring.interval === null)
@@ -1248,7 +1273,7 @@ LHEPostForm.prototype = {
 			var cid;
 			for (var ii = 0; ii < this.arFiles[parser + file].length; ii++)
 			{
-				this.monitoring.files.push(parser + file);
+				//this.monitoring.files.push([parser, file].join('/'));
 				cid = this.arFiles[parser + file][ii];
 				BX.onCustomEvent(this.controllers[cid], "onFileIsInText", [file, inText]);
 			}
@@ -1276,26 +1301,25 @@ LHEPostForm.prototype = {
 					);
 				}
 			}
-			if (this.monitoring.savedFiles.join(',') != this.monitoring.files.join(','))
+			if (this.monitoring.savedFiles.join(',') !== this.monitoring.files.join(','))
 			{
-
-				var files = this.monitoring.files.join('|') + '|', id;
-				for (ii = 0; ii < this.monitoring.savedFiles.length; ii++)
+				var files = {}, id;
+				while (id = this.monitoring.savedFiles.pop())
 				{
-					id = this.monitoring.savedFiles[ii];
-					if (files.indexOf(id + '|') >= 0)
-						files = files.replace(id + '|', '');
-					else
-					{
-						id = id.split('/');
-						this.monitoringSetStatus(id[0], id[1], false);
-					}
+					files[id] = null;
 				}
-				files = files.substring(0, files.length - 1).split('|');
-				for (ii = 0; ii < files.length; ii++)
+				for (ii = 0; ii < this.monitoring.files.length; ii++)
 				{
-					id = id = files[ii].split('/');
-					this.monitoringSetStatus(id[0], id[1], true);
+					id = this.monitoring.files[ii];
+					files[id] = (files[id] >= 0 ? (files[id] + 1) : 1);
+				}
+				for (ii in files)
+				{
+					if (files.hasOwnProperty(ii))
+					{
+						id = ii.split('/');
+						this.monitoringSetStatus(id[0], id[1], (files[ii] > 0));
+					}
 				}
 			}
 			this.monitoring.savedFiles = this.monitoring.files;
@@ -1337,16 +1361,34 @@ LHEPostForm.prototype = {
 			var editorMode = editor.GetViewMode(),
 				res = this.getFileToInsert(file, controller);
 
-			if(editorMode == 'wysiwyg') // WYSIWYG
+			if (editorMode == 'wysiwyg') // WYSIWYG
 			{
 				editor.InsertHtml(res.replacement);
 				setTimeout(BX.delegate(editor.AutoResizeSceleton, editor), 500);
 				setTimeout(BX.delegate(editor.AutoResizeSceleton, editor), 1000);
 			}
-			else if (editorMode == 'code' && editor.bbCode) // BB Codes
+			else if (editorMode == 'code')
 			{
 				editor.textareaView.Focus();
-				editor.textareaView.WrapWith(false, false, res.replacement);
+
+				if (!editor.bbCode)
+				{
+					var editorDoc = editor.GetIframeDoc();
+					var dummy = editorDoc.createElement('DIV');
+					dummy.style.display = 'none';
+					dummy.innerHTML = res.replacement;
+					editorDoc.body.appendChild(dummy);
+
+					res.replacement = editor.Parse(res.replacement, true, false);
+
+					dummy.parentNode.removeChild(dummy);
+				}
+
+				editor.textareaView.WrapWith('', '', res.replacement);
+			}
+			else
+			{
+				return;
 			}
 			res["callback"]();
 		}
@@ -1360,19 +1402,22 @@ LHEPostForm.prototype = {
 				fileID = file['id'],
 				params = '',
 				parser = controller.parser,
-				editorMode = editor.GetViewMode(),
+				editorMode = editor.bbCode ? editor.GetViewMode() : 'wysiwyg',
 				pattern = this.parser[parser.bxTag][editorMode];
 
+			if (file['fileType'] && this.parser[file['fileType']] && editorMode == "wysiwyg")
+			{
+				pattern = this.parser[file['fileType']][editorMode];
+			}
 			if (file['isImage'])
 			{
 				pattern = (editorMode == "wysiwyg" ? this.parser["postimage"][editorMode] : pattern);
 				if (file.width > 0 && file.height > 0 && editor.sEditorMode == "html" )
 				{
-					params = ' style="width:' + file.width + 'px;height:' + file.height + 'px;" onload="this.style=\' \'"';
+					params = ' style="width:' + file.width + 'px;height:' + file.height + 'px;" onload="this.style.width=\'auto\';this.style.height=\'auto\';"';
 				}
 			}
-
-			if(editorMode == 'wysiwyg') // WYSIWYG
+			if (editorMode == 'wysiwyg') // WYSIWYG
 			{
 				pattern = pattern.
 					replace("#ID#", editor.SetBxTag(false, {'tag': parser.bxTag, params: {'value' : fileID}})).
@@ -1499,6 +1544,11 @@ LHEPostForm.prototype = {
 							template = (file.isImage ? obj.parser.postimage.wysiwyg : arParser.wysiwyg);
 						obj.monitoringStart();
 
+						if (file.fileType && obj.parser[file.fileType] && obj.parser[file.fileType].wysiwyg)
+						{
+							template = obj.parser[file.fileType].wysiwyg;
+						}
+
 						if (file.isImage)
 						{
 							width = parseInt(width);
@@ -1509,7 +1559,7 @@ LHEPostForm.prototype = {
 
 							if (strAdditional === "" && file["width"] > 0 && file["height"] > 0)
 							{
-								strAdditional = ' style="width:' + file["width"] + 'px;height:' + file["height"] + 'px;" onload="this.style=\' \'"';
+								strAdditional = ' style="width:' + file["width"] + 'px;height:' + file["height"] + 'px;" onload="this.style.width=\'auto\';this.style.height=\'auto\';"';
 							}
 						}
 
@@ -1652,12 +1702,16 @@ LHEPostForm.prototype = {
 
 	OnButtonClick : function(type)
 	{
-		if(type != 'cancel')
+		if(type !== 'cancel')
 		{
-			BX.onCustomEvent(this.eventNode, 'OnClickSubmit', [this]);
+			var res = {result : true};
+			BX.onCustomEvent(this.eventNode, 'OnClickBeforeSubmit', [this, res]);
+			if (res["result"] !== false)
+				BX.onCustomEvent(this.eventNode, 'OnClickSubmit', [this]);
 		}
 		else
 		{
+			MPFMention.node = null;
 			BX.onCustomEvent(this.eventNode, 'OnClickCancel', [this]);
 			BX.onCustomEvent(this.eventNode, 'OnShowLHE', ['hide']);
 		}
@@ -1669,16 +1723,17 @@ LHEPostForm.prototype = {
 		editor.formID = this.formID;
 		if (this.params)
 			this.params["~height"] = editor.config["height"];
-		if (this.params && this.params['ctrlEnterHandler'])
-		{
-			BX.addCustomEvent(editor, 'OnCtrlEnter', function() {
-				editor.SaveContent();
-				if (typeof window[_this.params['ctrlEnterHandler']] == 'function')
-					window[_this.params['ctrlEnterHandler']]();
-				else
-					BX.submit(BX(_this.formID));
-			});
-		}
+
+		BX.addCustomEvent(editor, 'OnCtrlEnter', function() {
+			editor.SaveContent();
+			if (BX.type.isNotEmptyString(_this.params['ctrlEnterHandler']) && typeof window[_this.params['ctrlEnterHandler']] == 'function')
+				window[_this.params['ctrlEnterHandler']]();
+			else if (BX.type.isFunction(_this.params['ctrlEnterHandler']))
+				_this.params['ctrlEnterHandler']();
+			else
+				BX.submit(BX(_this.formID));
+		});
+
 		var parsers = (this.params.parsers ? this.params.parsers : []);
 
 		if (BX.util.object_search('Spoiler', parsers))
@@ -1825,17 +1880,60 @@ LHEPostForm.prototype = {
 				});
 			}
 		}
+
+		if (this.showPinButton)
+		{
+			this.pinEditorPanel = this.params && this.params.pinEditorPanel === true;
+			var pinId = 'toolbar_pin';
+			var but = function (editor, wrap)
+			{
+				// Call parrent constructor
+				but.superclass.constructor.apply(this, arguments);
+				this.id = pinId;
+				this.title = BX.message('MPF_PIN_EDITOR_PANNEL');
+				this.className += ' ' + (_this.pinEditorPanel ? 'bxhtmled-button-toolbar-pined' : 'bxhtmled-button-toolbar-pin');
+				this.Create();
+				if (wrap)
+					wrap.appendChild(this.GetCont());
+			};
+
+			BX.extend(but, window.BXHtmlEditor.Button);
+			but.prototype.OnClick = function ()
+			{
+				BX.removeClass(this.pCont, 'bxhtmled-button-toolbar-pined');
+				BX.removeClass(this.pCont, 'bxhtmled-button-toolbar-pin');
+				if (_this.pinEditorPanel)
+				{
+					_this.pinEditorPanel = false;
+					BX.addClass(this.pCont, 'bxhtmled-button-toolbar-pin');
+				}
+				else
+				{
+					_this.pinEditorPanel = true;
+					BX.addClass(this.pCont, 'bxhtmled-button-toolbar-pined');
+				}
+				BX.userOptions.save('main.post.form', 'postEdit', 'pinEditorPanel', _this.pinEditorPanel ? "Y" : "N");
+			};
+
+			window.BXHtmlEditor.Controls[pinId] = but;
+			BX.addCustomEvent(editor, "GetControlsMap", function (controlsMap)
+			{
+				controlsMap.push({
+					id: pinId, compact: true, hidden: false, sort: 500, checkWidth: true, offsetWidth: 32, wrap: 'right'
+				});
+			});
+		}
 	},
 	OnEditorInitedAfter : function(editor)
 	{
 		BX.addCustomEvent(editor, "OnIframeDrop", BX.proxy(function(){BX.onCustomEvent(this.eventNode, "OnIframeDrop", arguments);}, this));
 		BX.addCustomEvent(editor, "OnIframeDragOver", BX.proxy(function(){BX.onCustomEvent(this.eventNode, "OnIframeDragOver", arguments);}, this));
 		BX.addCustomEvent(editor, "OnIframeDragLeave", BX.proxy(function(){BX.onCustomEvent(this.eventNode, "OnIframeDragLeave", arguments);}, this));
-		BX.addCustomEvent(editor, "OnImageDataUriHandle", BX.proxy(function(){BX.onCustomEvent(this.eventNode, "OnImageDataUriHandle", arguments);}, this));
+		BX.addCustomEvent(editor, "OnImageDataUriHandle", function() { BX.onCustomEvent(this.eventNode, "OnImageDataUriHandle", Array.prototype.slice.call(arguments)); }.bind(this));
+
 		BX.addCustomEvent(editor, "OnAfterUrlConvert", this.OnAfterUrlConvert.bind(this));
+		BX.addCustomEvent(editor, "OnAfterLinkInserted", this.OnAfterUrlConvert.bind(this));
 		BX.addCustomEvent(editor, "OnBeforeCommandExec", this.OnBeforeCommandExec.bind(this));
-
-
 		// Contextmenu changing for images/files
 		editor.contextMenu.items['postimage'] =
 			editor.contextMenu.items['postdocument'] =
@@ -1870,32 +1968,49 @@ LHEPostForm.prototype = {
 			editor.toolbar.controls.FontSelector.SetWidth(45);
 		}
 
-		BX.addCustomEvent(BX(this.formID), 'onAutoSavePrepare', function (ob) {
-			var _ob=ob;
-			setTimeout(function() {
-				BX.addCustomEvent(editor, 'OnContentChanged', BX.proxy(function(text) {
-					this["mpfTextContent"] = text;
-					this.Init();
-				}, _ob));
-			},1500);
-		});
-		BX.addCustomEvent(BX(this.formID), 'onAutoSave', BX.proxy(function(ob, form_data)
+		if (BX(this.formID))
 		{
-			if (BX.type.isNotEmptyString(ob['mpfTextContent']))
-				form_data['text' + this.formID] = ob['mpfTextContent'];
-		}, this));
-		BX.addCustomEvent(BX(this.formID), 'onAutoSaveRestore', BX.proxy(function(ob, form_data)
-		{
-			if (form_data['text' + this.formID] && /[^\s]+/gi.test(form_data['text' + this.formID]))
+			BX.addCustomEvent(BX(this.formID), 'onAutoSavePrepare', function (ob) {
+				var _ob=ob;
+				setTimeout(function() {
+					BX.addCustomEvent(editor, 'OnContentChanged', BX.proxy(function(text) {
+						this["mpfTextContent"] = text;
+						this.Init();
+					}, _ob));
+				},1500);
+			});
+			BX.addCustomEvent(BX(this.formID), 'onAutoSave', BX.proxy(function(ob, form_data)
 			{
-				editor.CheckAndReInit(form_data['text' + this.formID]);
-			}
-		}, this));
+				if (BX.type.isNotEmptyString(ob['mpfTextContent']))
+					form_data['text' + this.formID] = ob['mpfTextContent'];
+			}, this));
+			BX.addCustomEvent(BX(this.formID), 'onAutoSaveRestore', BX.proxy(function(ob, form_data)
+			{
+				if (repo.handler[editor.id])
+				{
+					for (var ii in repo.handler[editor.id].controllers)
+					{
+						if (repo.handler[editor.id].controllers.hasOwnProperty(ii) &&
+							repo.handler[editor.id].controllers[ii].handler &&
+							repo.handler[editor.id].controllers[ii].handler.params &&
+							repo.handler[editor.id].controllers[ii].handler.params.controlName &&
+							repo.handler[editor.id].controllers[ii].handler.params.controlName)
+						{
+							delete form_data[repo.handler[editor.id].controllers[ii].handler.params.controlName];
+						}
+					}
+				}
+				if (form_data['text' + this.formID] && /[^\s]+/gi.test(form_data['text' + this.formID]))
+				{
+					editor.CheckAndReInit(form_data['text' + this.formID]);
+				}
+			}, this));
 
-		if (BX(this.formID) && BX(this.formID).hasAttribute("bx-lhe-autosave-prepared") && BX(this.formID).BXAUTOSAVE)
-		{
-			BX(this.formID).removeAttribute("bx-lhe-autosave-prepared");
-			setTimeout(BX.proxy(function(){ BX(this.formID).BXAUTOSAVE.Prepare(); }, this), 100);
+			if (BX(this.formID).hasAttribute("bx-lhe-autosave-prepared") && BX(this.formID).BXAUTOSAVE)
+			{
+				BX(this.formID).removeAttribute("bx-lhe-autosave-prepared");
+				setTimeout(BX.proxy(function(){ BX(this.formID).BXAUTOSAVE.Prepare(); }, this), 100);
+			}
 		}
 		var
 			formID = this.formID,
@@ -1981,7 +2096,7 @@ LHEPostForm.prototype = {
 	},
 	OnBeforeCommandExec: function(isContentAction, action, oAction, value)
 	{
-		if(this.urlPreview && action == 'createLink' && value.hasOwnProperty('href'))
+		if(this.urlPreview && action == 'createLink' && BX.type.isPlainObject(value) && value.hasOwnProperty('href'))
 		{
 			this.urlPreview.attachUrlPreview({url: value.href});
 		}
@@ -1994,6 +2109,10 @@ LHEPostForm.getEditor = function(editor)
 LHEPostForm.getHandler = function(editor)
 {
 	return repo.handler[(typeof editor == "object" ? editor.id : editor)];
+};
+LHEPostForm.getHandlerByFormId = function(formId)
+{
+	return repo.form[formId];
 };
 LHEPostForm.unsetHandler = function(editor)
 {
@@ -2079,7 +2198,7 @@ window.BXPostFormTags.prototype.show = function()
 			autoHide: true,
 			angle : true,
 			closeByEsc: true,
-			zIndex: -910,
+			zIndex: -840,
 			buttons: [
 				new BX.PopupWindowButton({
 					text : BX.message("TAG_ADD"),
@@ -2169,6 +2288,78 @@ window.BXPostFormTags.prototype.onKeyPress = function(event)
 	}
 };
 
+window.BXPostFormImportant = function(formID, buttonID, inputName)
+{
+	if (inputName)
+	{
+		this.formID = formID;
+		this.buttonID = buttonID;
+		this.inputName = inputName;
+
+		this.fireButton = null;
+		this.activeBlock = null;
+		this.hiddenField = null;
+
+		BX.ready(BX.proxy(this.init, this));
+	}
+
+	return false;
+};
+window.BXPostFormImportant.prototype.init = function()
+{
+	this.fireButton = BX(this.buttonID);
+	this.activeBlock = BX(this.buttonID + '-active');
+
+	var form = BX(this.formID);
+	if (form)
+	{
+		this.hiddenField = form[this.inputName];
+		if (
+			this.hiddenField
+			&& this.hiddenField.value == 1
+		)
+		{
+			this.showActive();
+		}
+	}
+
+	BX.bind(this.fireButton, "click", BX.proxy(function(event) {
+		event = event || window.event;
+		this.showActive();
+		BX.PreventDefault(event);
+	}, this));
+
+	BX.bind(this.activeBlock, "click", BX.proxy(function(event) {
+		event = event || window.event;
+		this.hideActive();
+		BX.PreventDefault(event);
+	}, this));
+};
+window.BXPostFormImportant.prototype.showActive = function(event)
+{
+	BX.hide(this.fireButton);
+	BX.show(this.activeBlock, 'inline-block');
+
+	if (this.hiddenField)
+	{
+		this.hiddenField.value = 1;
+	}
+
+	return false;
+};
+window.BXPostFormImportant.prototype.hideActive = function(event)
+{
+	BX.hide(this.activeBlock);
+	BX.show(this.fireButton, 'inline-block');
+
+	if (this.hiddenField)
+	{
+		this.hiddenField.value = 0;
+	}
+
+	return false;
+};
+
 var lastWaitElement = null;
 window.MPFbuttonShowWait = function(el)
 {
@@ -2178,7 +2369,7 @@ window.MPFbuttonShowWait = function(el)
 	el = (el ? (el.tagName == "A" ? el : el.parentNode) : el);
 	if (el)
 	{
-		BX.addClass(el, "feed-add-button-load");
+		BX.addClass(el, "ui-btn-clock");
 		lastWaitElement = el;
 		BX.defer(function(){el.disabled = true})();
 	}
@@ -2192,7 +2383,7 @@ window.MPFbuttonCloseWait = function(el)
 	if (el)
 	{
 		el.disabled = false ;
-		BX.removeClass(el, 'feed-add-button-load');
+		BX.removeClass(el, 'ui-btn-clock');
 		lastWaitElement = null;
 	}
 };
@@ -2221,22 +2412,9 @@ var MPFMention = {
 	listen: false,
 	plus : false,
 	text : '',
-	bSearch: false
-};
-
-window.BXfpdSelectCallback = function(item, type, search, bUndeleted)
-{
-	BX.SocNetLogDestination.BXfpSelectCallback({
-		item: item,
-		type: type,
-		bUndeleted: bUndeleted,
-		containerInput: BX('feed-add-post-destination-item'),
-		valueInput: BX('feed-add-post-destination-input'),
-		formName: window.BXSocNetLogDestinationFormName,
-		tagInputName: 'bx-destination-tag',
-		tagLink1: BX.message('BX_FPD_LINK_1'),
-		tagLink2: BX.message('BX_FPD_LINK_2')
-	});
+	bSearch: false,
+	node: null,
+	mode: null
 };
 
 window.onKeyDownHandler = function(e, editor, formID)
@@ -2244,11 +2422,72 @@ window.onKeyDownHandler = function(e, editor, formID)
 	var keyCode = e.keyCode;
 
 	if (!window['BXfpdStopMent' + formID])
+	{
 		return true;
+	}
 
-	if (keyCode == 107 ||
-		((e.shiftKey || e.modifiers > 3) && BX.util.in_array(keyCode, [187, 50, 107, 43, 61])) ||
-		(e.altKey && BX.util.in_array(keyCode, [76])) /* German @ == Alt + L*/)
+	var selectorId = window.MPFgetSelectorId('bx-mention-' + formID + '-id');
+
+	if (
+		keyCode === editor.KEY_CODES['backspace']
+		&& MPFMention.node
+	)
+	{
+		var mentText = BX.util.trim(editor.util.GetTextContent(MPFMention.node));
+		if (
+			mentText === '+'
+			|| mentText === '@'
+			|| (
+				MPFMention.mode == 'button'
+				&& mentText.length == 1
+			)
+		)
+		{
+			window['BXfpdStopMent' + formID]();
+		}
+		else if (
+			MPFMention.mode == 'button'
+			&& mentText.length == 1
+		)
+		{
+			window['BXfpdStopMent' + formID]();
+		}
+	}
+
+	if (
+		BX.util.in_array(keyCode, [ 107, 187 ])
+		|| (
+			(e.shiftKey || e.modifiers > 3)
+			&& BX.util.in_array(keyCode, [ 50, 43, 61 ])
+		)
+		|| (
+			e.altKey
+			&& BX.util.in_array(keyCode, [ 76 ])
+		) /* German @ == Alt + L*/
+		|| (
+			e.altKey
+			&& e.ctrlKey
+			&& BX.util.in_array(keyCode, [ 81 ])
+			&& e.key === '@'
+		) /* Win LA Spanish @ == Ctrl + Alt + Q */
+		|| (
+			e.altKey
+			&& BX.util.in_array(keyCode, [ 71, 81 ])
+			&& e.key === '@'
+		) /* MacOS ES Spanish @ == Alt + G, MacOS LA Spanish @ = Alt + Q */
+		|| (
+			e.altKey
+			&& BX.util.in_array(keyCode, [ 50 ])
+			&& e.key === '@'
+		) /* MacOS PT Portugal @ == Alt + 2 */
+		|| (
+			typeof e.getModifierState === 'function'
+			&& !!e.getModifierState('AltGraph')
+			&& BX.util.in_array(keyCode, [ 81, 50 ])
+			&& typeof e.key !== 'undefined'
+			&& e.key === '@'
+		) /* Win German @ == AltGr + Q, Win Spanish @ == AltGr + 2 */
+	)
 	{
 		setTimeout(function()
 		{
@@ -2259,31 +2498,39 @@ window.onKeyDownHandler = function(e, editor, formID)
 				determiner = (txt ? txt.slice(range.endOffset - 1, range.endOffset) : ''),
 				prevS = (txt ? txt.slice(range.endOffset - 2, range.endOffset-1) : '');
 
-			if ((determiner == "@" || determiner == "+")
-				&&
-				(!prevS || BX.util.in_array(prevS, ["+", "@", ",", "("]) || (prevS.length == 1 && BX.util.trim(prevS) === "")))
+			if (
+				(determiner == "@" || determiner == "+")
+				&& (
+					!prevS
+					|| BX.util.in_array(prevS, ["+", "@", ",", "("])
+					|| (
+						prevS.length == 1
+						&& BX.util.trim(prevS) === ""
+					)
+				)
+			)
 			{
 				MPFMention.listen = true;
 				MPFMention.listenFlag = true;
 				MPFMention.text = '';
 				MPFMention.leaveContent = true;
+				MPFMention.mode = 'plus';
 
 				range.setStart(range.endContainer, range.endOffset - 1);
 				range.setEnd(range.endContainer, range.endOffset);
 				editor.selection.SetSelection(range);
-				var mentNode = BX.create("SPAN", {props: {id: "bx-mention-node"}}, doc);
-				editor.selection.Surround(mentNode, range);
-				range.setStart(mentNode, 1);
-				range.setEnd(mentNode, 1);
+				MPFMention.node = BX.create("SPAN", {props: {id: "bx-mention-node"}}, doc);
+				editor.selection.Surround(MPFMention.node, range);
+				range.setStart(MPFMention.node, 1);
+				range.setEnd(MPFMention.node, 1);
 				editor.selection.SetSelection(range);
 
-				if(!BX.SocNetLogDestination.isOpenDialog())
+				if (BX.type.isNotEmptyString(selectorId))
 				{
-					BX.SocNetLogDestination.openDialog(window['BXSocNetLogDestinationFormNameMent' + formID],
-						{
-							bindNode: getMentionNodePosition(mentNode, editor)
-						}
-					);
+					BX.onCustomEvent(window, 'BX.MPF.MentionSelector:open', [{
+						id: selectorId,
+						bindPosition: getMentionNodePosition(MPFMention.node, editor)
+					}]);
 				}
 			}
 		}, 10);
@@ -2291,45 +2538,39 @@ window.onKeyDownHandler = function(e, editor, formID)
 
 	if(MPFMention.listen)
 	{
-		var type = (
-			MPFMention.bSearch
-				? 'search'
-				: BX.SocNetLogDestination.obTabSelected[window['BXSocNetLogDestinationFormNameMent' + formID]]
-		);
+		var selectorInstance = null;
 
-		if (keyCode == editor.KEY_CODES["enter"])
+		if (BX.type.isNotEmptyString(selectorId))
 		{
-			BX.SocNetLogDestination.selectCurrentItem(type, window['BXSocNetLogDestinationFormNameMent' + formID]);
-			editor.iframeKeyDownPreventDefault = true;
-			BX.PreventDefault(e);
+			selectorInstance = BX.UI.SelectorManager.instances[selectorId];
 		}
-		else if (keyCode == editor.KEY_CODES["left"])
+
+		var navigationResult = false;
+		if (selectorInstance)
 		{
-			BX.SocNetLogDestination.moveCurrentItem(type, window['BXSocNetLogDestinationFormNameMent' + formID], 'left');
-			editor.iframeKeyDownPreventDefault = true;
-			BX.PreventDefault(e);
+			navigationResult = selectorInstance.getNavigationInstance().checkKeyboardNavigation({
+				keyCode: keyCode,
+				tab: (
+					MPFMention.bSearch
+						? 'search'
+						: (selectorInstance ? selectorInstance.tabs.selected : false)
+				)
+			});
 		}
-		else if (keyCode == editor.KEY_CODES["right"])
+
+		if (navigationResult)
 		{
-			BX.SocNetLogDestination.moveCurrentItem(type, window['BXSocNetLogDestinationFormNameMent' + formID], 'right');
 			editor.iframeKeyDownPreventDefault = true;
-			BX.PreventDefault(e);
-		}
-		else if (keyCode == editor.KEY_CODES["up"])
-		{
-			BX.SocNetLogDestination.moveCurrentItem(type, window['BXSocNetLogDestinationFormNameMent' + formID], 'up');
-			editor.iframeKeyDownPreventDefault = true;
-			BX.PreventDefault(e);
-		}
-		else if (keyCode == editor.KEY_CODES["down"])
-		{
-			BX.SocNetLogDestination.moveCurrentItem(type, window['BXSocNetLogDestinationFormNameMent' + formID], 'down');
-			editor.iframeKeyDownPreventDefault = true;
-			BX.PreventDefault(e);
+			e.stopPropagation();
+			e.preventDefault();
 		}
 	}
 
-	if (!MPFMention.listen && MPFMention.listenFlag && keyCode === editor.KEY_CODES["enter"])
+	if (
+		!MPFMention.listen
+		&& MPFMention.listenFlag
+		&& keyCode === editor.KEY_CODES["enter"]
+	)
 	{
 		var range = editor.selection.GetRange();
 		if (range.collapsed)
@@ -2361,7 +2602,7 @@ window.onKeyUpHandler = function(e, editor, formID)
 {
 	var
 		keyCode = e.keyCode,
-		doc, range, mentText;
+		range, mentText;
 
 	if (!window['BXfpdStopMent' + formID])
 		return true;
@@ -2380,17 +2621,25 @@ window.onKeyUpHandler = function(e, editor, formID)
 			&& keyCode !== editor.KEY_CODES["down"]
 		)
 		{
-			doc = editor.GetIframeDoc();
-			var mentNode = doc.getElementById('bx-mention-node');
-
-			if (mentNode)
+			if (BX(MPFMention.node))
 			{
-				mentText = BX.util.trim(editor.util.GetTextContent(mentNode))
+				mentText = BX.util.trim(editor.util.GetTextContent(MPFMention.node));
 				var mentTextOrig = mentText;
 
 				mentText = mentText.replace(/^[\+@]*/, '');
 				MPFMention.bSearch = (mentText.length > 0);
-				BX.SocNetLogDestination.search(mentText, true, window['BXSocNetLogDestinationFormNameMent' + formID], BX.message("MPF_NAME_TEMPLATE"), {bindNode: getMentionNodePosition(mentNode, editor)});
+
+				var selectorId = window.MPFgetSelectorId('bx-mention-' + formID + '-id');
+				if (BX.type.isNotEmptyString(selectorId))
+				{
+					var selectorInstance = BX.UI.SelectorManager.instances[selectorId];
+					if (BX.type.isNotEmptyObject(selectorInstance))
+					{
+						selectorInstance.getSearchInstance().runSearch({
+							text: mentText
+						});
+					}
+				}
 
 				if (MPFMention.leaveContent && MPFMention._lastText && mentTextOrig === '')
 				{
@@ -2400,11 +2649,14 @@ window.onKeyUpHandler = function(e, editor, formID)
 				{
 					MPFMention.bSearch = false;
 					window['BXfpdStopMent' + formID]();
-					BX.SocNetLogDestination.openDialog(window['BXSocNetLogDestinationFormNameMent' + formID],
-						{
-							bindNode: getMentionNodePosition(mentNode, editor)
-						}
-					);
+
+					if (BX.type.isNotEmptyString(selectorId))
+					{
+						BX.onCustomEvent(window, 'BX.MPF.MentionSelector:open', [{
+							id: selectorId,
+							bindPosition: getMentionNodePosition(MPFMention.node, editor)
+						}]);
+					}
 				}
 
 				MPFMention.lastText = mentText;
@@ -2429,8 +2681,9 @@ window.onKeyUpHandler = function(e, editor, formID)
 			range = editor.selection.GetRange();
 			if (range.collapsed)
 			{
-				var node = range.endContainer;
-				doc = editor.GetIframeDoc();
+				var
+					node = range.endContainer,
+					doc = editor.GetIframeDoc();
 
 				if (node)
 				{
@@ -2466,9 +2719,21 @@ window.onTextareaKeyDownHandler = function(e, editor, formID)
 
 	if(MPFMention.listen && keyCode == editor.KEY_CODES["enter"])
 	{
-		BX.SocNetLogDestination.selectFirstSearchItem(window['BXSocNetLogDestinationFormNameMent' + formID]);
+		var selectorId = window.MPFgetSelectorId('bx-mention-' + formID + '-id');
+		if (BX.type.isNotEmptyString(selectorId))
+		{
+			var selectorInstance = BX.UI.SelectorManager.instances[selectorId];
+			if (BX.type.isNotEmptyObject(selectorInstance))
+			{
+				selectorInstance.getNavigationInstance().selectFirstItem({
+					tab: (MPFMention.bSearch ? 'search' : selectorInstance.tabs.selected)
+				});
+			}
+		}
+
 		editor.textareaKeyDownPreventDefault = true;
-		BX.PreventDefault(e);
+		e.stopPropagation();
+		e.preventDefault();
 	}
 };
 
@@ -2477,6 +2742,8 @@ window.onTextareaKeyUpHandler = function(e, editor, formID)
 	var
 		cursor, value,
 		keyCode = e.keyCode;
+
+	var selectorId = window.MPFgetSelectorId('bx-mention-' + formID + '-id');
 
 	if(MPFMention.listen === true)
 	{
@@ -2502,23 +2769,31 @@ window.onTextareaKeyUpHandler = function(e, editor, formID)
 						mentTextOrig = mentText;
 
 					mentText = mentText.replace(/^[\+@]*/, '');
-
-					if(!BX.SocNetLogDestination.isOpenDialog())
-					{
-						BX.SocNetLogDestination.openDialog(window['BXSocNetLogDestinationFormNameMent' + formID]);
-					}
-
 					MPFMention.bSearch = (mentText.length > 0);
-					BX.SocNetLogDestination.search(mentText, true, window['BXSocNetLogDestinationFormNameMent' + formID], BX.message("MPF_NAME_TEMPLATE"));
 
-					if (MPFMention.leaveContent && MPFMention._lastText && mentTextOrig === '')
+					var selectorInstance = null;
+					if (BX.type.isNotEmptyString(selectorId))
 					{
-						window['BXfpdStopMent' + formID]();
+						selectorInstance = BX.UI.SelectorManager.instances[selectorId];
 					}
-					else if (MPFMention.leaveContent && MPFMention.lastText && mentTextOrig !== '' && mentText === '')
+
+					if (BX.type.isNotEmptyObject(selectorInstance))
+					{
+						selectorInstance.getSearchInstance().runSearch({
+							text: mentText
+						});
+					}
+
+					if (
+						MPFMention.leaveContent
+						&& MPFMention._lastText
+						&& (
+							mentTextOrig === ''
+							|| mentText === ''
+						)
+					)
 					{
 						window['BXfpdStopMent' + formID]();
-						BX.SocNetLogDestination.openDialog(window['BXSocNetLogDestinationFormNameMent' + formID]);
 					}
 
 					MPFMention.lastText = mentText;
@@ -2558,17 +2833,20 @@ window.onTextareaKeyUpHandler = function(e, editor, formID)
 					MPFMention.listenFlag = true;
 					MPFMention.text = '';
 					MPFMention.textarea = true;
+					MPFMention.bSearch = false;
+					MPFMention.mode = 'plus';
 
-					if(!BX.SocNetLogDestination.isOpenDialog())
+					if (BX.type.isNotEmptyString(selectorId))
 					{
-						BX.SocNetLogDestination.openDialog(window['BXSocNetLogDestinationFormNameMent' + formID]);
+						BX.onCustomEvent(window, 'BX.MPF.MentionSelector:open', [{
+							id: selectorId
+						}]);
 					}
 				}
 			}
 		}
 	}
 };
-
 
 var getMentionNodePosition = function(mention, editor)
 {
@@ -2600,7 +2878,6 @@ window.BxInsertMention = function (params)
 			var
 				doc = editor.GetIframeDoc(),
 				range = editor.selection.GetRange(),
-				mentNode = doc.getElementById('bx-mention-node'),
 				mention = BX.create('SPAN',
 					{
 						props: {className: 'bxhtmled-metion'},
@@ -2611,9 +2888,12 @@ window.BxInsertMention = function (params)
 
 			editor.SetBxTag(mention, {tag: "postuser", params: {value : item.entityId}});
 
-			if (mentNode)
+			if (
+				BX(MPFMention.node)
+				&& MPFMention.node.parentNode
+			)
 			{
-				editor.util.ReplaceNode(mentNode, mention);
+				editor.util.ReplaceNode(MPFMention.node, mention);
 			}
 			else
 			{
@@ -2654,8 +2934,29 @@ window.BxInsertMention = function (params)
 			editor.textareaView.WrapWith(false, false, "[USER=" + item.entityId + "]" + item.name + "[/USER]" + (bNeedComa ? ', ' : ' '));
 		}
 
-		delete BX.SocNetLogDestination.obItemsSelected[window['BXSocNetLogDestinationFormNameMent' + formID]][item.id];
-		window['BXfpdStopMent' + formID]();
+		if (params.fireAddEvent === true)
+		{
+			BX.onCustomEvent(window, 'onMentionAdd', [ item ]);
+		}
+
+		var selectorId = window.MPFgetSelectorId('bx-mention-' + formID + '-id');
+		if (BX.type.isNotEmptyString(selectorId))
+		{
+			var selectorInstance = BX.UI.SelectorManager.instances[selectorId];
+			if (BX.type.isNotEmptyObject(selectorInstance))
+			{
+				if (typeof selectorInstance.itemsSelected[item.id] != 'undefined')
+				{
+					delete selectorInstance.itemsSelected[item.id];
+				}
+			}
+		}
+
+		if (window['BXfpdStopMent' + formID])
+		{
+			window['BXfpdStopMent' + formID]();
+		}
+
 		MPFMention["text"] = '';
 
 		if(editor.GetViewMode() == 'wysiwyg') // WYSIWYG
@@ -2666,277 +2967,166 @@ window.BxInsertMention = function (params)
 	}
 };
 
-window.buildDepartmentRelation = function(department)
+window.MPFgetSelectorId = function(formId)
 {
-	var relation = {}, p, iid;
-	for(iid in department)
+	var result = false;
+	var formNode = BX(formId);
+	if (!formNode)
 	{
-		if (department.hasOwnProperty(iid))
-		{
-			p = department[iid]['parent'];
-			if (!relation[p])
-				relation[p] = [];
-			relation[p][relation[p].length] = iid;
-		}
+		return result;
 	}
-	function makeDepartmentTree(id, relation)
-	{
-		var arRelations = {}, relId, arItems;
-		if (relation[id])
-		{
-			for (var x in relation[id])
-			{
-				if (relation[id].hasOwnProperty(x))
-				{
-					relId = relation[id][x];
-					arItems = [];
-					if (relation[relId] && relation[relId].length > 0)
-						arItems = makeDepartmentTree(relId, relation);
 
-					arRelations[relId] = {
-						id: relId,
-						type: 'category',
-						items: arItems
-					};
-				}
-			}
-		}
-
-		return arRelations;
-	}
-	return makeDepartmentTree('DR0', relation);
+	result = formNode.getAttribute('data-bx-selector-id');
+	return result;
 };
 
 window.MPFMentionInit = function(formId, params)
 {
-	if (!params["items"]["departmentRelation"])
+	if (params.initDestination === true)
 	{
-		params["items"]["departmentRelation"] = window.buildDepartmentRelation(params["items"]["department"]);
-	}
+		BX.addCustomEvent('onAutoSaveRestoreDestination', function(params) {
 
-	window["departmentRelation"] = params["items"]["departmentRelation"]; // for calendar - do not remove
-
-	if (params["initDestination"] === true)
-	{
-		window.BXSocNetLogDestinationFormName = 'destination' + ('' + new Date().getTime()).substr(6);
-		window.BXSocNetLogDestinationDisableBackspace = null;
-		BX.SocNetLogDestination.init({
-			name : window.BXSocNetLogDestinationFormName,
-			searchInput : BX('feed-add-post-destination-input'),
-			extranetUser :  params["extranetUser"],
-			bindMainPopup : {
-				node: BX('feed-add-post-destination-container'),
-				offsetTop: '5px',
-				offsetLeft: '15px'
-			},
-			bindSearchPopup : {
-				node : BX('feed-add-post-destination-container'),
-				offsetTop : '5px',
-				offsetLeft: '15px'
-			},
-			callback : {
-				select : window["BXfpdSelectCallback"],
-				unSelect : BX.delegate(BX.SocNetLogDestination.BXfpUnSelectCallback, {
-					formName: window.BXSocNetLogDestinationFormName,
-					inputContainerName: 'feed-add-post-destination-item',
-					inputName: 'feed-add-post-destination-input',
-					tagInputName: 'bx-destination-tag',
-					tagLink1: BX.message('BX_FPD_LINK_1'),
-					tagLink2: BX.message('BX_FPD_LINK_2')
-				}),
-				openDialog : BX.delegate(BX.SocNetLogDestination.BXfpOpenDialogCallback, {
-					inputBoxName: 'feed-add-post-destination-input-box',
-					inputName: 'feed-add-post-destination-input',
-					tagInputName: 'bx-destination-tag'
-				}),
-				closeDialog : BX.delegate(BX.SocNetLogDestination.BXfpCloseDialogCallback, {
-					inputBoxName: 'feed-add-post-destination-input-box',
-					inputName: 'feed-add-post-destination-input',
-					tagInputName: 'bx-destination-tag'
-				}),
-				openSearch : BX.delegate(BX.SocNetLogDestination.BXfpOpenDialogCallback, {
-					inputBoxName: 'feed-add-post-destination-input-box',
-					inputName: 'feed-add-post-destination-input',
-					tagInputName: 'bx-destination-tag'
-				}),
-				closeSearch : BX.delegate(BX.SocNetLogDestination.BXfpCloseSearchCallback, {
-					inputBoxName: 'feed-add-post-destination-input-box',
-					inputName: 'feed-add-post-destination-input',
-					tagInputName: 'bx-destination-tag'
-				})
-			},
-			items : params["items"],
-			itemsLast : params["itemsLast"],
-			itemsSelected : params["itemsSelected"],
-			isCrmFeed : params["isCrmFeed"],
-			useClientDatabase: (!!params["useClientDatabase"]),
-			destSort: params["destSort"],
-			allowAddUser: params["allowAddUser"],
-			userNameTemplate: (typeof params["userNameTemplate"] != 'undefined' ? params["userNameTemplate"] : '')
-		});
-		BX.bind(BX('feed-add-post-destination-input'), 'keyup', BX.delegate(BX.SocNetLogDestination.BXfpSearch, {
-			formName: window.BXSocNetLogDestinationFormName,
-			inputName: 'feed-add-post-destination-input',
-			tagInputName: 'bx-destination-tag'
-		}));
-		BX.bind(BX('feed-add-post-destination-input'), 'keydown', BX.delegate(BX.SocNetLogDestination.BXfpSearchBefore, {
-			formName: window.BXSocNetLogDestinationFormName,
-			inputName: 'feed-add-post-destination-input'
-		}));
-		BX.bind(BX('bx-destination-tag'), 'focus', function(e) {
-			BX.SocNetLogDestination.openDialog(
-				window.BXSocNetLogDestinationFormName,
-				{
-					bByFocusEvent: true
-				}
-			);
-			return BX.PreventDefault(e);
-		});
-		BX.bind(BX('feed-add-post-destination-container'), 'click', function(e) {
-			BX.SocNetLogDestination.openDialog(window.BXSocNetLogDestinationFormName);
-			return BX.PreventDefault(e);
-		});
-		if (params["itemsHidden"])
-		{
-			for (var ii in params["itemsHidden"])
+			if (
+				BX.type.isNotEmptyObject(params)
+				&& BX.type.isNotEmptyObject(params.data)
+				&& BX.type.isNotEmptyString(params.data.DEST_DATA)
+				&& BX.type.isNotEmptyString(params.formId)
+				&& params.formId == formId
+				&& BX.UI.EntitySelector
+			)
 			{
-				if (params["itemsHidden"].hasOwnProperty(ii))
+				var destData = JSON.parse(params.data.DEST_DATA);
+				if (!Array.isArray(destData))
 				{
-					window.BXfpdSelectCallback({id:('SG'+params["itemsHidden"][ii]["ID"]), name:params["itemsHidden"][ii]["NAME"]}, 'sonetgroups', '', true);
+					return;
 				}
-			}
-		}
 
-		BX.SocNetLogDestination.BXfpSetLinkName({
-			formName: window.BXSocNetLogDestinationFormName,
-			tagInputName: 'bx-destination-tag',
-			tagLink1: BX.message('BX_FPD_LINK_1'),
-			tagLink2: BX.message('BX_FPD_LINK_2')
+				var selectorInstance = BX.UI.EntitySelector.Dialog.getById('oPostFormLHE_blogPostForm');
+				if (!BX.type.isNotEmptyObject(selectorInstance))
+				{
+					return;
+				}
+
+				selectorInstance.preselectedItems = destData;
+				selectorInstance.setPreselectedItems(destData);
+			}
+		});
+
+		BX.addCustomEvent(window, "onMentionAdd", function(item) {
+
+			var selectorInstance = BX.UI.EntitySelector.Dialog.getById('oPostFormLHE_blogPostForm');
+			if (!BX.type.isNotEmptyObject(selectorInstance))
+			{
+				return;
+			}
+
+			var entityType = 'employee';
+			if (item.isExtranet === 'Y')
+			{
+				entityType = 'extranet';
+			}
+			else if (item.isEmail === 'Y')
+			{
+				entityType = 'email';
+			}
+
+			selectorInstance.addItem({
+				avatar: item.avatar,
+				customData: {
+					email: item.email
+				},
+				entityId: 'user',
+				entityType: entityType,
+				id: item.entityId,
+				title: item.name
+			}).select();
 		});
 	}
-	window["BXfpdSelectCallbackMent" + formId] = function(item, type, search)
+
+	window["BXfpdSelectCallbackMent" + formId] = function(callbackParams) // item, type, search
 	{
-		window.BxInsertMention({item: item, type: type, formID: formId, editorId: params["editorId"]});
+		window.BxInsertMention({
+			item: callbackParams.item,
+			type: callbackParams.entityType.toLowerCase(),
+			formID: formId,
+			editorId: params.editorId,
+			fireAddEvent: params.initDestination
+		});
 	};
 
 	window["BXfpdStopMent" + formId] = function ()
 	{
-		BX.SocNetLogDestination.closeDialog();
-		BX.SocNetLogDestination.closeSearch();
-		clearTimeout(BX.SocNetLogDestination.searchTimeout);
-		BX.SocNetLogDestination.searchOnSuccessHandle = false;
-	};
-
-	window["BXfpdOnDialogOpen" + formId] = function ()
-	{
-		MPFMention.listen = true;
-		MPFMention.listenFlag = true;
-	};
-
-	window["BXfpdOnDialogClose" + formId] = function ()
-	{
-		MPFMention.listen = false;
-		setTimeout(function()
+		var selectorId = window.MPFgetSelectorId('bx-mention-' + formId + '-id');
+		if (BX.type.isNotEmptyString(selectorId))
 		{
-			MPFMention.listenFlag = false;
-			if (!MPFMention.listen)
+			var selectorInstance = BX.UI.SelectorManager.instances[selectorId];
+			if (BX.type.isNotEmptyObject(selectorInstance))
 			{
-				var editor = LHEPostForm.getEditor(params.editorId);
-				if(editor)
-				{
-					var
-						doc = editor.GetIframeDoc(),
-						mentNode = doc.getElementById('bx-mention-node');
-
-					if (mentNode)
-					{
-						editor.selection.SetAfter(mentNode);
-						if (MPFMention.leaveContent)
-						{
-							editor.util.ReplaceWithOwnChildren(mentNode);
-						}
-						else
-						{
-							BX.remove(mentNode);
-						}
-					}
-					editor.Focus();
-				}
-			}
-		}, 100);
-	};
-
-	window["BXSocNetLogDestinationFormNameMent" + formId] = 'mention' + ('' + new Date().getTime()).substr(5);
-	window["BXSocNetLogDestinationDisableBackspace"] = null;
-	var bxBMent = BX('bx-b-mention-' + formId);
-
-	if (typeof params["items"]["extranetRoot"] != 'undefined')
-	{
-		params["items"]["departmentExtranet"] = BX.clone(params["items"]["department"]);
-		for(var key in params["items"]["extranetRoot"])
-		{
-			if (params["items"]["extranetRoot"].hasOwnProperty(key))
-			{
-				params["items"]["departmentExtranet"][key] = params["items"]["extranetRoot"][key];
+				selectorInstance.closeAllPopups();
+				selectorInstance.getSearchInstance().abortSearchRequest();
 			}
 		}
-		params["items"]["departmentRelationExtranet"] = window.buildDepartmentRelation(params["items"]["departmentExtranet"]);
+	};
+
+	if (BX(formId))
+	{
+		BX.addCustomEvent(BX(formId), 'OnUCFormAfterShow', function(ucFormManager) {
+			if (
+				!BX.type.isNotEmptyObject(ucFormManager)
+				|| !BX.type.isArray(ucFormManager.id)
+				|| !BX.type.isNotEmptyString(ucFormManager.id[0])
+			)
+			{
+				return;
+			}
+
+			var reg = new RegExp('EVENT\_(\\d+)','i'); // calendar test
+			if (!reg.test(ucFormManager.id[0]))
+			{
+				return;
+			}
+
+			var selectorId = window.MPFgetSelectorId('bx-mention-' + formId + '-id');
+			if (!BX.type.isNotEmptyString(selectorId))
+			{
+				return;
+			}
+
+			var selectorInstance = BX.UI.SelectorManager.instances[selectorId];
+			if (!BX.type.isNotEmptyObject(selectorInstance))
+			{
+				return;
+			}
+
+			selectorInstance.bindOptions.zIndex = 2200;
+		});
 	}
 
-	BX.SocNetLogDestination.init({
-		name : window["BXSocNetLogDestinationFormNameMent" + formId],
-		searchInput : bxBMent,
-		extranetUser : params["extranetUser"],
-		bindMainPopup :  {
-			node : bxBMent,
-			offsetTop : '1px',
-			offsetLeft: '12px'
-		},
-		bindSearchPopup : {
-			node : bxBMent,
-			offsetTop : '1px',
-			offsetLeft: '12px'
-		},
-		callback : {
-			select : window["BXfpdSelectCallbackMent" + formId],
-			openDialog : window["BXfpdOnDialogOpen" + formId],
-			closeDialog : window["BXfpdOnDialogClose" + formId],
-			openSearch : window["BXfpdOnDialogOpen" + formId],
-			closeSearch : window["BXfpdOnDialogClose" + formId]
-		},
-		items : {
-			users : params["items"]["mentionUsers"],
-			groups : {},
-			sonetgroups : {},
-			department : (typeof params["items"]["departmentExtranet"] != 'undefined' ? params["items"]["departmentExtranet"] : params["items"]["department"]),
-			departmentRelation : (typeof params["items"]["departmentRelationExtranet"] != 'undefined' ? params["items"]["departmentRelationExtranet"] : params["items"]["departmentRelation"])
-		},
-		itemsLast : {
-			users : params["itemsLast"]["mentionUsers"],
-			sonetgroups : {},
-			department : {},
-			groups : {}
-		},
-		itemsSelected : params["itemsSelected"],
-		destSort: (typeof params["mentionDestSort"] != 'undefined' && params["mentionDestSort"] ? params["mentionDestSort"] : {}),
-		departmentSelectDisable : true,
-		obWindowClass : 'bx-lm-mention',
-		obWindowCloseIcon : false,
-		useClientDatabase: (!!params["useClientDatabase"]),
-		userNameTemplate: (typeof params["userNameTemplate"] != 'undefined' ? params["userNameTemplate"] : '')
-	});
+	if (
+		repo.form[formId]
+		&& BX('div' + repo.form[formId].__divId)
+	)
+	{
+		BX.addCustomEvent(repo.handler[repo.form[formId].oEditorId], 'OnEditorIsLoaded', function() {
+			var selectorId = window.MPFgetSelectorId('bx-mention-' + formId + '-id');
+
+			if (selectorId)
+			{
+				BX.onCustomEvent(window, 'BX.MPF.MentionSelector:init', [{
+					id: selectorId,
+					openDialogWhenInit: false
+				}]);
+			}
+		});
+	}
 
 	BX.ready(function() {
 			var ment = BX('bx-b-mention-' + formId);
-			if(BX.browser.IsIE() && !BX.browser.IsIE9())
-			{
-				ment.style.width = '1px';
-				ment.style.marginRight = '0';
-			}
+			var selectorId = window.MPFgetSelectorId('bx-mention-' + formId + '-id');
 
 			BX.bind(
 				ment,
-				"mousedown",
+				"click",
 				function(e)
 				{
 					if(MPFMention.listen !== true)
@@ -2951,38 +3141,46 @@ window.MPFMentionInit = function(formId, params)
 							MPFMention.listenFlag = true;
 							MPFMention.text = '';
 							MPFMention.leaveContent = false;
+							MPFMention.mode = 'button';
 
 							var
-								range = editor.selection.GetRange(),
-								mentNode = doc.getElementById('bx-mention-node');
+								range = editor.selection.GetRange();
 
-							if (mentNode)
+							if (BX(MPFMention.node))
 							{
-								BX.remove(mentNode);
+								BX.remove(BX(MPFMention.node));
 							}
 							editor.InsertHtml('<span id="bx-mention-node">' + editor.INVISIBLE_SPACE + '</span>', range);
 
 							setTimeout(function()
 							{
-								if(!BX.SocNetLogDestination.isOpenDialog())
+								if (selectorId)
 								{
-									BX.SocNetLogDestination.openDialog(window["BXSocNetLogDestinationFormNameMent" + formId], {bindNode: ment});
+									BX.onCustomEvent(window, 'BX.MPF.MentionSelector:open', [{
+										id: selectorId,
+										bindNode: ment
+									}]);
 								}
 
-								var mentionNode = doc.getElementById('bx-mention-node');
-								if (mentionNode)
+								MPFMention.node = doc.getElementById('bx-mention-node');
+								if (MPFMention.node)
 								{
-									range.setStart(mentionNode, 0);
-									if (mentionNode.firstChild && mentionNode.firstChild.nodeType == 3 && mentionNode.firstChild.nodeValue.length > 0)
+									range.setStart(MPFMention.node, 0);
+									if (
+										MPFMention.node.firstChild
+										&& MPFMention.node.firstChild.nodeType == 3
+										&& MPFMention.node.firstChild.nodeValue.length > 0
+									)
 									{
-										range.setEnd(mentionNode, 1);
+										range.setEnd(MPFMention.node, 1);
 									}
 									else
 									{
-										range.setEnd(mentionNode, 0);
+										range.setEnd(MPFMention.node, 0);
 									}
 									editor.selection.SetSelection(range);
 								}
+
 								editor.Focus();
 							}, 100);
 						}
@@ -2992,14 +3190,18 @@ window.MPFMentionInit = function(formId, params)
 							MPFMention.listenFlag = true;
 							MPFMention.text = '';
 							MPFMention.leaveContent = false;
+							MPFMention.mode = 'button';
 
 							// TODO: get current cusrsor position
 
 							setTimeout(function()
 							{
-								if(!BX.SocNetLogDestination.isOpenDialog())
+								if (selectorId)
 								{
-									BX.SocNetLogDestination.openDialog(window["BXSocNetLogDestinationFormNameMent" + formId], {bindNode: ment});
+									BX.onCustomEvent(window, 'BX.MPF.MentionSelector:open', [{
+										id: selectorId,
+										bindNode: ment
+									}]);
 								}
 							}, 100);
 						}
@@ -3010,5 +3212,179 @@ window.MPFMentionInit = function(formId, params)
 			);
 		}
 	);
-}
+};
+
+window.BXfpdOnDialogOpen = function ()
+{
+	MPFMention.listen = true;
+	MPFMention.listenFlag = true;
+};
+
+window.BXfpdOnDialogClose = function (params)
+{
+	MPFMention.listen = false;
+
+	setTimeout(function()
+	{
+		MPFMention.listenFlag = false;
+		if (!MPFMention.listen)
+		{
+			var editor = LHEPostForm.getEditor(params.editorId);
+			if(editor)
+			{
+				var
+					doc = editor.GetIframeDoc();
+
+				if (BX(MPFMention.node))
+				{
+					editor.selection.SetAfter(MPFMention.node);
+					if (MPFMention.leaveContent)
+					{
+						editor.util.ReplaceWithOwnChildren(MPFMention.node);
+					}
+					else
+					{
+						BX.remove(BX(MPFMention.node));
+					}
+				}
+				editor.Focus();
+			}
+		}
+	}, 100);
+};
+
+
+	MPFEntitySelector = function(params)
+	{
+		this.selector = null;
+		this.inputNode = null;
+		this.messages = {};
+
+		if (!BX.type.isNotEmptyString(params.id))
+		{
+			return null;
+		}
+
+		if (repo.selector[params.id])
+		{
+			return repo.selector[params.id];
+		}
+
+		repo.selector[params.id] = this.init(params);
+	};
+
+	MPFEntitySelector.prototype.init = function(params)
+	{
+		if (!BX.type.isPlainObject(params))
+		{
+			params = {};
+		}
+
+		if (
+			!BX.type.isNotEmptyString(params.id)
+			|| !BX.type.isNotEmptyString(params.tagNodeId)
+			|| !BX(params.tagNodeId)
+		)
+		{
+			return null;
+		}
+
+		if (
+			BX.type.isNotEmptyString(params.inputNodeId)
+			&& BX(params.inputNodeId)
+		)
+		{
+			this.inputNode = BX(params.inputNodeId);
+		}
+
+		if (BX.type.isNotEmptyObject(params.messages))
+		{
+			this.messages = params.messages;
+		}
+
+		this.selector = new BX.UI.EntitySelector.TagSelector({
+
+			id: params.id,
+			dialogOptions: {
+				id: params.id,
+				context: (BX.type.isNotEmptyString(params.context) ? params.context : null),
+
+				preselectedItems: (BX.type.isArray(params.preselectedItems) ? params.preselectedItems : []),
+
+				events: {
+					'Item:onSelect': function() {
+						this.recalcValue(this.selector.getDialog().getSelectedItems());
+					}.bind(this),
+					'Item:onDeselect': function() {
+						this.recalcValue(this.selector.getDialog().getSelectedItems());
+					}.bind(this)
+				},
+				entities: [
+					{
+						id: 'meta-user',
+						options: {
+							'all-users': {
+								title: this.messages.allUsersTitle,
+								allowView: (
+									BX.type.isBoolean(params.allowToAll)
+									&& params.allowToAll
+								)
+							}
+						}
+					},
+					{
+						id: 'user',
+						options: {
+							emailUsers: (BX.type.isBoolean(params.allowSearchEmailUsers) ? params.allowSearchEmailUsers : false),
+							inviteGuestLink: (BX.type.isBoolean(params.allowSearchEmailUsers) ? params.allowSearchEmailUsers : false),
+							myEmailUsers: true
+						}
+					},
+					{
+						id: 'project',
+						options: {
+							features: {
+								blog:  [ 'premoderate_post', 'moderate_post', 'write_post', 'full_post' ]
+							}
+						}
+					},
+					{
+						id: 'department',
+						options: {
+							selectMode: 'usersAndDepartments',
+							allowFlatDepartments: false,
+						}
+					}
+				]
+			},
+			addButtonCaption: BX.message('BX_FPD_LINK_1'),
+			addButtonCaptionMore: BX.message('BX_FPD_LINK_2')
+		});
+
+		this.selector.renderTo(document.getElementById(params.tagNodeId));
+
+		return this.selector;
+	};
+
+	MPFEntitySelector.prototype.recalcValue = function(selectedItems)
+	{
+		if (
+			!BX.type.isArray(selectedItems)
+			|| !this.inputNode
+		)
+		{
+			return;
+		}
+
+		var result = [];
+
+		selectedItems.forEach(function(item) {
+			result.push([ item.entityId, item.id ]);
+		});
+
+		this.inputNode.value = JSON.stringify(result);
+	};
+
+	window.MPFEntitySelector = MPFEntitySelector;
+
 })();

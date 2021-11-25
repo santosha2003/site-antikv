@@ -1,4 +1,5 @@
 <?
 $MESS["SALE_ORDER_CANCEL_SHIPMENT_EXIST_SHIPPED"] = "Die Bestellung hat ausgelieferte Produkte";
-$MESS["SALE_ORDER_SYSTEM_SHIPMENT_LESS_QUANTITY"] = "Sie können die Menge des Produktes \"#PRODUCT_NAME#\" im Warenkorb nicht reduzieren, solange dieses Produkt nach Auslieferungen verteilt ist. (#QUANTITY#)";
+$MESS["SALE_ORDER_SHIPMENT_WRONG_DELIVERY_PRICE"] = "Lieferpreis ist nicht korrekt.";
+$MESS["SALE_ORDER_SYSTEM_SHIPMENT_LESS_QUANTITY"] = "#BASKET_ITEM_QUANTITY# #BASKET_ITEM_MEASURE# des Produktes \"#PRODUCT_NAME#\" wurden unter einigen Auslieferungen verteilt. Um die Produktmenge in der Bestellung zu reduzieren, müssen Sie die Produktmenge in Auslieferungen mindestens um #QUANTITY# #BASKET_ITEM_MEASURE# reduzieren.";
 ?>

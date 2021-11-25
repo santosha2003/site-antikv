@@ -17,10 +17,10 @@ while($arr=$rsIBlock->Fetch())
 	$arIBlock[$arr["ID"]] = "[".$arr["ID"]."] ".$arr["NAME"];
 
 $arUGroupsEx = Array();
-$dbUGroups = CGroup::GetList($by = "c_sort", $order = "asc");
+$dbUGroups = CGroup::GetList();
 while($arUGroups = $dbUGroups -> Fetch())
 	$arUGroupsEx[$arUGroups["ID"]] = $arUGroups["NAME"];
-$res = unserialize(COption::GetOptionString("photogallery", "pictures"));
+$res = unserialize(COption::GetOptionString("photogallery", "pictures"), ['allowed_classes' => false]);
 $arSights = array();
 if (is_array($res))
 {
@@ -228,6 +228,11 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("P_THUMBS_SIZE"),
 			"DEFAULT" => "100"
 		),
+		"SECTION_LIST_THUMBNAIL_SIZE" => array(
+			"PARENT" => "PHOTO_SETTINGS",
+			"NAME" => GetMessage("P_SECTION_LIST_THUMBS_SIZE"),
+			"DEFAULT" => "70"
+		),
 		"JPEG_QUALITY1" => Array(
 			"PARENT" => "PHOTO_SETTINGS",
 			"NAME" => GetMessage("P_JPEG_QUALITY1"),
@@ -386,9 +391,9 @@ if (!function_exists("_get_size"))
 {
 	function _get_size($v)
 	{
-		$l = substr($v, -1);
-		$ret = substr($v, 0, -1);
-		switch(strtoupper($l))
+		$l = mb_substr($v, -1);
+		$ret = mb_substr($v, 0, -1);
+		switch(mb_strtoupper($l))
 		{
 			case 'P':
 				$ret *= 1024;
@@ -668,8 +673,8 @@ if (IsModuleInstalled("blog") || IsModuleInstalled("forum"))
 				{
 					do
 					{
-						$arForum[intVal($res["ID"])] = $res["NAME"];
-						$fid = intVal($res["ID"]);
+						$arForum[intval($res["ID"])] = $res["NAME"];
+						$fid = intval($res["ID"]);
 					}while ($res = $db_res->GetNext());
 				}
 			}

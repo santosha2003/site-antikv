@@ -15,11 +15,7 @@ if (!CCatalog::IsUserExists())
 	$bTmpUserCreated = true;
 
 	if (isset($USER))
-	{
 		$USER_TMP = $USER;
-		unset($USER);
-	}
-
 	$USER = new CUser();
 }
 
@@ -31,7 +27,7 @@ $IBLOCK_ID = (int)$IBLOCK_ID;
 
 if ($XML_DATA && CheckSerializedData($XML_DATA))
 {
-	$XML_DATA = unserialize(stripslashes($XML_DATA));
+	$XML_DATA = unserialize(stripslashes($XML_DATA), ['allowed_classes' => false]);
 
 	if (!is_array($XML_DATA))
 		$XML_DATA = array();
@@ -52,7 +48,7 @@ if (!empty($XML_DATA['PRICE']))
 	}
 }
 
-if (strlen($SETUP_FILE_NAME) <= 0)
+if ($SETUP_FILE_NAME == '')
 	$arRunErrors[] = GetMessage("CATI_NO_SAVE_FILE");
 elseif (preg_match(BX_CATALOG_FILENAME_REG,$SETUP_FILE_NAME))
 	$arRunErrors[] = GetMessage("CES_ERROR_BAD_EXPORT_FILENAME");
@@ -85,7 +81,7 @@ if (empty($arRunErrors))
 {
 	try
 	{
-		$offers = \Bitrix\Catalog\ExportOfferCreator::getOfferObject(
+		$offers = \Bitrix\Catalog\Ebay\ExportOfferCreator::getOfferObject(
 			array(
 				"IBLOCK_ID" => $IBLOCK_ID,
 				"PRODUCT_GROUPS" => $V,
@@ -110,10 +106,10 @@ if (empty($arRunErrors))
 		$strXmlProduct .= "\t\t\t\t\t<ProductDescription><![CDATA[".$offer["DESCRIPTION"]."!]]</ProductDescription>\n";
 		$strXmlProduct .= "\t\t\t\t</Description>\n";
 		$strXmlProduct .= "\t\t\t\t<PictureUrls>\n";
-		$strXmlProduct .= "\t\t\t\t<PictureUrl>".(strlen($offer["DETAIL_PICTURE"]) > 0 ? $offer["DETAIL_PICTURE"] : $offer["PREVIEW_PICTURE"] )."</PictureUrl>\n";
+		$strXmlProduct .= "\t\t\t\t<PictureUrl>".($offer["DETAIL_PICTURE"] <> '' ? $offer["DETAIL_PICTURE"] : $offer["PREVIEW_PICTURE"] )."</PictureUrl>\n";
 		$strXmlProduct .= "\t\t\t\t\t</PictureUrls>\n";
 		$strXmlProduct .= "\t\t\t\t<Categories>\n";
-		$strXmlProduct .= "\t\t\t\t<Category>".(strlen($offer["DETAIL_PICTURE"]) > 0 ? $offer["DETAIL_PICTURE"] : $offer["PREVIEW_PICTURE"] )."</Category>\n";
+		$strXmlProduct .= "\t\t\t\t<Category>".($offer["DETAIL_PICTURE"] <> '' ? $offer["DETAIL_PICTURE"] : $offer["PREVIEW_PICTURE"] )."</Category>\n";
 		$strXmlProduct .= "\t\t\t\t\t</Categories>\n";
 		$strXmlProduct .= "\t\t\t</ProductInformation>\n";
 		$strXmlProduct .= "\t\t</Product>\n";
@@ -136,7 +132,6 @@ if (!empty($arRunErrors))
 
 if ($bTmpUserCreated)
 {
-	unset($USER);
 	if (isset($USER_TMP))
 	{
 		$USER = $USER_TMP;
@@ -145,4 +140,3 @@ if ($bTmpUserCreated)
 }
 
 die();
-?>

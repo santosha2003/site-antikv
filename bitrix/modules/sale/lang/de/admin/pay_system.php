@@ -35,4 +35,7 @@ $MESS["SALE_H_DESCRIPTION"] = "Beschreibung";
 $MESS["SALE_H_PERSON_TYPES"] = "Kundengruppen";
 $MESS["SALE_H_ACTION_FILES"] = "Handlers";
 $MESS["SALE_ALLOW_EDIT_PAYMENT"] = "Automatische Neuberechnung der Bezahlung aktivieren";
+$MESS["SALE_LOGOTIP"] = "Logo";
+$MESS["SPSAN_MARKETPLACE_ADD_NEW"] = "Aus dem Marketplace installieren";
+$MESS["SPSAN_MARKETPLACE_ADD_NEW_ALT"] = "Klicken Sie, um aus dem Marketplace zu installieren";
 ?>

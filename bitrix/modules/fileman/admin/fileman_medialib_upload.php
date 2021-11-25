@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 <?require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-=======
-<?php require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/fileman/prolog.php");
 
 IncludeModuleLangFile(__FILE__);
@@ -49,8 +45,8 @@ class filemanMedialibUpload
 			? "/[^\p{L}L0-9!\p{Z}\$&\(\)\[\]\{\}\-\.;=@\^_\~]/uis"
 			: "/[^A-Za-zÀ-ß¨à-ÿ¸0-9!\s\$&\(\)\[\]\{\}\-\.;=@\^_\~]/is";
 		$name = trim(preg_replace($pattern, "", $name));
-		if (strlen(trim(substr($name, 0, strpos($name, '.')))) <= 0)
-			$name = substr(md5(uniqid(rand(), true)), 0, 8).trim($name);
+		if (trim(mb_substr($name, 0, mb_strpos($name, '.'))) == '')
+			$name = mb_substr(md5(uniqid(rand(), true)), 0, 8).trim($name);
 		$res = CMedialibItem::Edit(array(
 			'file' => (array_key_exists("files", $file) ? $file["files"]["default"] : $file),
 			'arFields' => array(
@@ -60,7 +56,7 @@ class filemanMedialibUpload
 			),
 			'arCollections' => array($package["collectionId"])
 		));
-		if (!array_key_exists("redirectUrl", $upload) && $res && $res['ID'] > 0)
+		if (!isset($upload["redirectUrl"]) && $res && $res['ID'] > 0)
 		{
 			$upload["redirectUrlPart"] = "action=redirect&".bitrix_sessid_get()."&first_id=".$res["ID"].
 				"&col_id=".$package["collectionId"]."&ml_type=".htmlspecialcharsEx($package["ml_type"]);
@@ -87,8 +83,8 @@ if ($action == 'uploadhtml5' && is_object($uploader))
 }
 else if ($action == 'upload')
 {
-	$collectionId = intVal($_POST['collection_id']);
-	$fileCount = intVal($_POST['FileCount']);
+	$collectionId = intval($_POST['collection_id']);
+	$fileCount = intval($_POST['FileCount']);
 	$firstId = false;
 
 	if (!CMedialib::CanDoOperation("medialib_new_item", $collectionId)) // Check access
@@ -107,8 +103,8 @@ else if ($action == 'upload')
 				continue;
 
 			$name = trim(preg_replace("/[^a-zA-Z0-9!\$&\(\)\[\]\{\}\-\.;=@\^_\~]/is", "", $name));
-			if (strlen(trim(substr($name, 0, strpos($name, '.')))) <= 0)
-				$name = substr(md5(uniqid(rand(), true)), 0, 8).trim($name);
+			if (trim(mb_substr($name, 0, mb_strpos($name, '.'))) == '')
+				$name = mb_substr(md5(uniqid(rand(), true)), 0, 8).trim($name);
 
 			$res = CMedialibItem::Edit(array(
 				'file' => $_FILES['SourceFile_'.$i],
@@ -141,8 +137,8 @@ elseif($action == 'redirect')  //Redirect after files uploading
 	$menu = new CAdminContextMenu($aContext);
 	$menu->Show();
 
-	$firstId = intVal($_GET['first_id']);
-	$colId = intVal($_GET['col_id']);
+	$firstId = intval($_GET['first_id']);
+	$colId = intval($_GET['col_id']);
 
 
 	// Get all items with id > $firstId
@@ -155,7 +151,7 @@ elseif($action == 'redirect')  //Redirect after files uploading
 
 	if ($len > 0)
 	{
-		$res = CMedialib::GetCollectionTree(array('checkByType' => true, 'typeId' => intVal($_GET['ml_type'])));
+		$res = CMedialib::GetCollectionTree(array('checkByType' => true, 'typeId' => intval($_GET['ml_type'])));
 		$strSel = '<option value="0">'.GetMessage('ML_COL_SELECT').'</option>'.CMedialib::_BuildCollectionsSelectOptions($res['Collections'], $res['arColTree']);
 		$module_id="fileman";
 		$thumbWidth = COption::GetOptionInt($module_id, "ml_thumb_width", 140);
@@ -173,7 +169,7 @@ elseif($action == 'redirect')  //Redirect after files uploading
 			?>
 			<tr>
 				<td class="mu-label" style="width: 150px;"><label for="item_name_<?=$i?>" ><b><?= GetMessage('ML_NAME')?>:</b></label></td>
-				<td><input class="mu-text-inp" id="item_name_<?=$i?>" name="item_name_<?=$i?>" type="text" value="<?= $Item['NAME']?>" size="52"></td>
+				<td><input class="mu-text-inp" id="item_name_<?=$i?>" name="item_name_<?=$i?>" type="text" value="<?= htmlspecialcharsbx($Item['NAME'])?>" size="52"></td>
 				<td rowSpan="3" class="mu-thumb-cell" style="width: <?= $tmbWidth?>">
 				<?if ($Item['TYPE'] == 'image'):?>
 					<img src="<?= $Item['THUMB_PATH']?>"/>
@@ -350,7 +346,7 @@ elseif($action == 'redirect')  //Redirect after files uploading
 }
 elseif($action == 'postsave')
 {
-	$itemsCount = intVal($_POST['items_count']);
+	$itemsCount = intval($_POST['items_count']);
 
 	if ($itemsCount > 0)
 	{
@@ -358,7 +354,7 @@ elseif($action == 'postsave')
 		{
 			if (isset($_POST['item_del_'.$i]) && $_POST['item_del_'.$i])
 			{
-				CMedialib::DelItem(intVal($_POST['item_id_'.$i]));
+				CMedialib::DelItem(intval($_POST['item_id_'.$i]));
 				continue;
 			}
 
@@ -366,15 +362,15 @@ elseif($action == 'postsave')
 			$arCols = array();
 			for ($j = 0, $n = count($arCols_); $j < $n; $j++)
 			{
-				if (intVal($arCols_[$j]) > 0 && CMedialib::CanDoOperation("medialib_edit_item", $arCols_[$j])) // Check access
-					$arCols[] = intVal($arCols_[$j]);
+				if (intval($arCols_[$j]) > 0 && CMedialib::CanDoOperation("medialib_edit_item", $arCols_[$j])) // Check access
+					$arCols[] = intval($arCols_[$j]);
 			}
 
 			if (count($arCols) > 0)
 			{
 				$res = CMedialibItem::Edit(array(
 					'arFields' => array(
-						'ID' => intVal($_POST['item_id_'.$i]),
+						'ID' => intval($_POST['item_id_'.$i]),
 						'NAME' => $_POST['item_name_'.$i],
 						'DESCRIPTION' => $_POST['item_desc_'.$i],
 						'KEYWORDS' => $_POST['item_keys_'.$i]
@@ -387,37 +383,25 @@ elseif($action == 'postsave')
 
 	LocalRedirect("/bitrix/admin/fileman_medialib_admin.php?lang=".LANGUAGE_ID."&".bitrix_sessid_get());
 }
-else if ($action == 'changemode')
-{
-	CUserOptions::SetOption("fileman", "uploader_mode", ($_GET["mode"] != "html5" ? "html5": "java"));
-	LocalRedirect("/bitrix/admin/fileman_medialib_upload.php?type=".$_GET['type']);
-}
+
 // ***************************** Show upploader  **************************
 $APPLICATION->SetAdditionalCSS('/bitrix/js/fileman/medialib/medialib_admin.css');
 $APPLICATION->AddHeadScript('/bitrix/js/fileman/medialib/medialib_admin.js');
 $APPLICATION->SetTitle(GetMessage('FM_ML_UPL_TITLE1'));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
-$mode = CUserOptions::GetOption("fileman", "uploader_mode", "html5");
-$trees = CMedialib::GetCollectionTree(array('checkByType' => true, 'typeId' => intVal($_GET['type'])));
-$select = CMedialib::_BuildCollectionsSelectOptions($trees['Collections'], $trees['arColTree'], 0, intVal($_GET['col_id']));
+$trees = CMedialib::GetCollectionTree(array('checkByType' => true, 'typeId' => intval($_GET['type'])));
+$select = CMedialib::_BuildCollectionsSelectOptions($trees['Collections'], $trees['arColTree'], 0, intval($_GET['col_id']));
 
 $menu = new CAdminContextMenu(array(
 	array(
 		"TEXT" => GetMessage("FM_ML"),
 		"LINK" => "/bitrix/admin/fileman_medialib_admin.php?lang=".LANGUAGE_ID,
 		"ICON" => "btn_list",
-	),
-	array(
-		"TEXT" => ($mode == "java" ? GetMessage("MEDIALIB_UPLOADER_TITLE1") : GetMessage("MEDIALIB_UPLOADER_TITLE2")),
-		"LINK" => $APPLICATION->GetCurPageParam("action=changemode&mode=".$mode."&".bitrix_sessid_get(), array("action", "mode", "sessid")),
-		"ICON" => "",
 	)
 ));
 $menu->Show();
 
-if ($mode == "html5")
-{
 CJSCore::Init(array("core", "ajax", "uploader", "canvas"));
 $uploaderID = "medialib";
 $options = CUserOptions::GetOption("fileman", "uploader_html5", array());
@@ -559,122 +543,7 @@ $params = array_merge($uploader->params, array(
 </script>
 </form>
 </div>
-<?
-}
-else
-{
-	$APPLICATION->AddHeadScript('/bitrix/image_uploader/iuembed.js');
-?>
-<?
-	CAdminMessage::ShowMessage(array(
-	"DETAILS" => GetMessage("FM_ML_UPL_NOTICE_CYR"),
-	"TYPE" => "ERROR",
-	));
-?>
-<form name="ml_upload">
-<div  style="margin: 10px; font-size: 13px;">
-<?= GetMessage('FM_ML_UPL_LOACATE')?>: <select title="<?= GetMessage('ML_ADD_COL2ITEM')?>" name="collection_id" onchange="itemColsSelChange2(this, arguments[0] || window.event);"><?= CMedialib::_BuildCollectionsSelectOptions($trees['Collections'], $trees['arColTree'], 0, intVal($_GET['col_id']))?></select>
-</div>
-</form>
 
-<?
-include_once($_SERVER['DOCUMENT_ROOT']."/bitrix/image_uploader/version.php");
-include_once($_SERVER['DOCUMENT_ROOT']."/bitrix/image_uploader/localization.php");
-?>
-
-<div style="border: 1px solid #94918C; float: left; padding: 5px;">
-<script>
-function itemColsSelChange2(pEl, e)
-{
-	if (window.oColAccess[pEl.value] != '1')
-		alert("<?= GetMessage('FM_ML_UPL_ACCESS_DENIED')?>");
-}
-<?
-$strFileMask = '';
-$arExt = CMedialib::GetMediaExtentions(false);
-for ($i = 0, $l = count($arExt); $i < $l; $i++)
-	$strFileMask .= '*.'.CUtil::JSEscape(strtolower($arExt[$i])).';';
-$strFileMask = trim($strFileMask, ' ;');
-
-$str = '';
-foreach ($trees['Collections'] as $id => $col)
-	$str .= $col['ID'].': "'.CMedialib::CanDoOperation('medialib_new_item', $col['ID']).'",';
-
-$arCookie = array();
-foreach ($_COOKIE as $key => $val)
-	$arCookie[] = $key."=".$val."; ";
-$cookie = CUtil::JSEscape(implode("", $arCookie))
-?>
-window.oColAccess = {<?= trim($str, ', ')?>};
-
-//Create JavaScript object that will embed Image Uploader to the page.
-var iu = new ImageUploaderWriter("ImageUploaderML", 700, 600);
-iu.activeXControlCodeBase = "<?=$arAppletVersion["activeXControlCodeBase"]?>";
-iu.activeXClassId = "<?=$arAppletVersion["IuActiveXClassId"]?>";
-iu.activeXControlVersion = "<?=$arAppletVersion["IuActiveXControlVersion"]?>";
-//For Java applet only path to directory with JAR files should be specified (without file name).
-iu.javaAppletCodeBase = "<?=$arAppletVersion["javaAppletCodeBase"]?>";
-iu.javaAppletClassName = "<?=$arAppletVersion["javaAppletClassName"]?>";
-iu.javaAppletJarFileName = "<?=$arAppletVersion["javaAppletJarFileName"]?>";
-iu.javaAppletCached = false;
-iu.javaAppletVersion = "<?=$arAppletVersion["IuJavaAppletVersion"]?>";
-iu.addParam("LicenseKey", "Bitrix");
-iu.addParam("ShowDescriptions", "false");
-iu.addParam("AllowLargePreview", "true");
-
-//iu.showNonemptyResponse = "on"; // debug
-iu.showNonemptyResponse = "off";
-//Configure appearance.
-iu.addParam("PaneLayout", "TwoPanes");
-iu.addParam("ShowDebugWindow", "true");
-iu.addParam("AllowRotate", "true");
-iu.addParam("BackgroundColor", "#ffffff");
-//Configure URL files are uploaded to.
-iu.addParam("AdditionalFormName", "ml_upload");
-iu.addParam("Action", "/bitrix/admin/fileman_medialib_upload.php?action=upload&<?=bitrix_sessid_get()?>&lang=<?=LANGUAGE_ID?>&ml_type=<?= intVal($_GET['type'])?>");
-//iu.addParam("RedirectUrl", "");
-iu.addParam("FileMask", "<?= $strFileMask?>");
-language_resources.addParams(iu);
-
-function ImageUploaderML_AfterUpload(Html)
-{
-	try
-	{
-		var
-			i1 = Html.indexOf('#JS#') + 4,
-			i2 = Html.lastIndexOf('#JS#'),
-			sGet = (i1 != -1 && i2 != i1) ? Html.substring(i1, i2) : '';
-		//return jsUtils.Redirect([], "/bitrix/admin/fileman_medialib_upload.php?action=redirect&<?=bitrix_sessid_get()?>&lang=<?= LANGUAGE_ID?>" + sGet);
-	}
-	catch(e)
-	{
-	//	return jsUtils.Redirect([], "/bitrix/admin/fileman_medialib_upload.php?<?=bitrix_sessid_get()?>&lang=<?=LANGUAGE_ID?>");
-	}
-}
-iu.addEventListener("AfterUpload", "ImageUploaderML_AfterUpload");
-
-function ImageUploaderML_BeforeUpload()
-{
-	if (!(iu.getControlType() == "Java" && getImageUploader("ImageUploaderML")))
-		BX.DoNothing();
-	else if (getImageUploader("ImageUploaderML")["cookie"])
-		getImageUploader("ImageUploaderML").cookie('<?=$cookie?>');
-	else if (getImageUploader("ImageUploaderML")["addCookie"])
-		getImageUploader("ImageUploaderML").addCookie('<?=$cookie?>');
-	else if (getImageUploader("ImageUploaderML")["AddCookie"])
-		getImageUploader("ImageUploaderML").AddCookie('<?=$cookie?>');
-	else
-		BX.debug("Cookie files is not embedded because of absence function AddCookie.")
-}
-iu.addEventListener("BeforeUpload", "ImageUploaderML_BeforeUpload");
-
-//Tell Image Uploader writer object to generate all necessary HTML code to embed Image Uploader to the page.
-iu.writeHtml();
-</script>
-</div>
-	<?
-}
-?>
 <div style="clear:both"></div>
 <?=BeginNote().GetMessage('FM_ML_UPL_NOTICE').EndNote();?>
 <?

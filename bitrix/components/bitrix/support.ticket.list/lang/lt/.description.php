@@ -1,6 +1,0 @@
-<?
-$MESS['SUP_LIST_DEFAULT_TEMPLATE_NAME'] = 'Uþklausimø sàraðas';
-$MESS['SUP_LIST_DEFAULT_TEMPLATE_DESCRIPTION'] = 'Atvaizduoja filtrà bei uþklausø techninei komandai sàraðà';
-$MESS['SUPPORT_SERVICE'] = 'Techninis palaikymas';
-$MESS['MAIN_SERVICES'] = 'Paslaugos';
-?>

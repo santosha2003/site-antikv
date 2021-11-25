@@ -26,7 +26,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Socialservices
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Contact_Query query()
+ * @method static EO_Contact_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Contact_Result getById($id)
+ * @method static EO_Contact_Result getList(array $parameters = array())
+ * @method static EO_Contact_Entity getEntity()
+ * @method static \Bitrix\Socialservices\EO_Contact createObject($setDefaultValues = true)
+ * @method static \Bitrix\Socialservices\EO_Contact_Collection createCollection()
+ * @method static \Bitrix\Socialservices\EO_Contact wakeUpObject($row)
+ * @method static \Bitrix\Socialservices\EO_Contact_Collection wakeUpCollection($rows)
+ */
 
 class ContactTable extends Main\Entity\DataManager
 {
@@ -36,6 +49,7 @@ class ContactTable extends Main\Entity\DataManager
 	const NOTIFY_CONTACT_COUNT = 3;
 	const NOTIFY_POSSIBLE_COUNT = 3;
 
+	const POSSIBLE_LAST_AUTHORIZE_LIMIT = '-1 weeks';
 	const POSSIBLE_RESET_TIME = 2592000; // 86400 * 30
 	const POSSIBLE_RESET_TIME_KEY = "_ts";
 
@@ -86,6 +100,9 @@ class ContactTable extends Main\Entity\DataManager
 			'CONTACT_PHOTO' => array(
 				'data_type' => 'string',
 			),
+			'LAST_AUTHORIZE' => array(
+				'data_type' => 'datetime',
+			),
 			'NOTIFY' => array(
 				'data_type' => 'boolean',
 				'values' => array(static::DONT_NOTIFY, static::NOTIFY),
@@ -113,6 +130,9 @@ class ContactTable extends Main\Entity\DataManager
 		}
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public static function onUserLoginSocserv($params)
 	{
 		global $USER;
@@ -142,8 +162,6 @@ class ContactTable extends Main\Entity\DataManager
 
 	public static function onNetworkBroadcast($data)
 	{
-		global $USER;
-
 		$contactsList = array();
 		$possibleContactsList = array();
 
@@ -208,6 +226,11 @@ class ContactTable extends Main\Entity\DataManager
 
 	protected static function processContacts($owner, array $contactsList)
 	{
+		if(!Main\Loader::includeModule('rest'))
+		{
+			return;
+		}
+
 		$existedContacts = array();
 		$dbRes = ContactTable::getList(array(
 			'filter' => array(
@@ -229,6 +252,7 @@ class ContactTable extends Main\Entity\DataManager
 				"CONTACT_LAST_NAME" => $contact["LAST_NAME"],
 				"CONTACT_PHOTO" => $contact["PHOTO"],
 				"NOTIFY" => $contact["NOTIFY"],
+				"LAST_AUTHORIZE" => DateTime::createFromUserTime(\CRestUtil::unConvertDateTime($contact['LAST_AUTHORIZE'])),
 			);
 
 			$contactId = false;
@@ -247,6 +271,10 @@ class ContactTable extends Main\Entity\DataManager
 				if($result->isSuccess())
 				{
 					$contactId = $result->getId();
+				}
+				else
+				{
+					AddMessage2Log($result->getErrorMessages());
 				}
 			}
 
@@ -268,6 +296,7 @@ class ContactTable extends Main\Entity\DataManager
 						'CONTACT_PROFILE_ID' => $profile['PROFILE_ID'],
 						'CONTACT_PORTAL' => $profile['PORTAL'],
 						'CONNECT_TYPE' => $profile['TYPE'],
+						'LAST_AUTHORIZE' => DateTime::createFromUserTime(\CRestUtil::unConvertDateTime($profile['LAST_AUTHORIZE'])),
 					);
 
 					$r = ContactConnectTable::add($connectFields);
@@ -296,6 +325,11 @@ class ContactTable extends Main\Entity\DataManager
 
 	protected static function processPossibleContacts($owner, array $contactsList)
 	{
+		if(!Main\Loader::includeModule('rest'))
+		{
+			return;
+		}
+
 		$existedContacts = array();
 		$dbRes = UserLinkTable::getList(array(
 			'filter' => array(
@@ -341,18 +375,19 @@ class ContactTable extends Main\Entity\DataManager
 				&& count($contact["profile"]) > 0
 			)
 			{
-				if(isset($existedContacts[$contactFields["CONTACT_XML_ID"]]))
+				if(isset($existedContacts[$contactFields["LINK_UID"]]))
 				{
 					ContactConnectTable::deleteByLink($linkId);
 				}
 
 				foreach($contact["profile"] as $profile)
 				{
-					ContactConnectTable::add(array(
+					$result = ContactConnectTable::add(array(
 						'LINK_ID' => $linkId,
 						'CONTACT_PROFILE_ID' => $profile['PROFILE_ID'],
 						'CONTACT_PORTAL' => $profile['PORTAL'],
 						'CONNECT_TYPE' => $profile['TYPE'],
+						'LAST_AUTHORIZE' => DateTime::createFromUserTime(\CRestUtil::unConvertDateTime($profile['LAST_AUTHORIZE'])),
 					));
 				}
 			}
@@ -366,7 +401,8 @@ class ContactTable extends Main\Entity\DataManager
 
 	protected static function notifyJoin($contactId, array $contactInfo = null)
 	{
-		if(Main\Loader::includeModule('im'))
+		$network = new Network();
+		if($network->isOptionEnabled() && Main\Loader::includeModule('im'))
 		{
 			if($contactInfo === null)
 			{
@@ -383,6 +419,7 @@ class ContactTable extends Main\Entity\DataManager
 			{
 				$contactInfo["CONNECT"] = array();
 				$dbRes = ContactConnectTable::getList(array(
+					"order" => array("LAST_AUTHORIZE" => "ASC"),
 					"filter" => array(
 						"=CONTACT_ID" => $contactInfo["ID"],
 					),
@@ -447,8 +484,10 @@ class ContactTable extends Main\Entity\DataManager
 
 	protected static function notifyJoinFinish($userId)
 	{
+		$network = new Network();
 		if(
-			count(static::$notifyStack) > 0
+			$network->isOptionEnabled()
+			&& count(static::$notifyStack) > 0
 			&& Main\Loader::includeModule('im')
 		)
 		{
@@ -497,9 +536,13 @@ class ContactTable extends Main\Entity\DataManager
 		}
 	}
 
+	/**
+	 * @deprecated
+	 */
 	protected static function notifyPossible($userId)
 	{
-		if(Main\Loader::includeModule('im'))
+		$network = new Network();
+		if($network->isOptionEnabled() && Main\Loader::includeModule('im'))
 		{
 			$ts = time();
 			$alreadyShown = \CUserOptions::GetOption("socialservices", "possible_contacts", null, $userId);
@@ -517,6 +560,27 @@ class ContactTable extends Main\Entity\DataManager
 				unset($alreadyShown[static::POSSIBLE_RESET_TIME_KEY]);
 			}
 
+			$dateLimit = new DateTime();
+			$dateLimit->add(static::POSSIBLE_LAST_AUTHORIZE_LIMIT);
+
+			$contactList = ContactConnectTable::getList(array(
+				'order' => array('LAST_AUTHORIZE' => 'DESC'),
+				'filter' => array(
+					'!=LINK_ID' => '',
+					'=CONNECT_TYPE' => ContactConnectTable::TYPE_PORTAL,
+					'>=LAST_AUTHORIZE' => $dateLimit,
+					'=LINK.USER_ID' => $userId,
+					'!=LINK.ID' => $alreadyShown,
+				),
+				'count_total' => true,
+				'group' => array('LINK_ID'),
+				'limit' => static::NOTIFY_POSSIBLE_COUNT,
+				'select' => array(
+					'LINK_ID', 'LINK_NAME' => 'LINK.LINK_NAME', 'LINK_LAST_NAME' => 'LINK.LINK_LAST_NAME', 'LINK_PICTURE' => 'LINK.LINK_PICTURE',
+				),
+			));
+
+			/*
 			$contactList = UserLinkTable::getList(array(
 				'order' => array("RND" => "ASC"),
 				'filter' => array(
@@ -525,7 +589,7 @@ class ContactTable extends Main\Entity\DataManager
 				),
 				'limit' => static::NOTIFY_POSSIBLE_COUNT,
 				'count_total' => true,
-				'group' => array("CONNECT.CONTACT_ID"),
+				'group' => array("CONNECT.CONTACT_ID"), // Mistake? CONNECT.LINK_ID should be here
 				'runtime' => array(
 					new Entity\ExpressionField('RND', 'RAND()'),
 					new Entity\ReferenceField(
@@ -541,6 +605,7 @@ class ContactTable extends Main\Entity\DataManager
 					),
 				)
 			));
+			*/
 
 			$count = $contactList->getCount();
 			if($count > 0)
@@ -549,12 +614,15 @@ class ContactTable extends Main\Entity\DataManager
 
 				while($contactInfo = $contactList->fetch())
 				{
-					$alreadyShown[] = $contactInfo["ID"];
+					$alreadyShown[] = $contactInfo["LINK_ID"];
 
+					// get all link portals, authorized during last week
 					$contactInfo["CONNECT"] = array();
 					$dbRes = ContactConnectTable::getList(array(
+						"order" => array("LAST_AUTHORIZE" => "DESC"),
 						"filter" => array(
-							"=LINK_ID" => $contactInfo["ID"],
+							"=LINK_ID" => $contactInfo["LINK_ID"],
+							">=LAST_AUTHORIZE" => $dateLimit,
 						),
 						"limit" => 1,
 						"select" => array(

@@ -1,9 +1,0 @@
-<?
-$MESS["CC_BLF_MODULE_NOT_INSTALLED"] = "Bendrø sàraðø modulis nëra ádiegtas.";
-$MESS["CC_BLF_WRONG_IBLOCK_TYPE"] = "Neteisingas informacijos bloko tipas.";
-$MESS["CC_BLF_WRONG_IBLOCK"] = "Nurodytas sàraðas yra neteisingas.";
-$MESS["CC_BLF_LISTS_FOR_SONET_GROUP_DISABLED"] = "Sàraðai yra iðjungti ðiai grupei.";
-$MESS["CC_BLF_UNKNOWN_ERROR"] = "Neþinoma klaida.";
-$MESS["CC_BLF_ACCESS_DENIED"] = "Nepakankamas leidimas perþiûrëti ir redaguoti sàraðà.";
-$MESS["CC_BLF_WRONG_FILE"] = "Failas nerastas.";
-?>

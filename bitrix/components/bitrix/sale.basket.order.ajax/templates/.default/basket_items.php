@@ -48,11 +48,11 @@
 			<tr>
 				<?if (in_array("NAME", $arParams["COLUMNS_LIST"])):?>
 					<td class="cart-item-name"><?
-					if (strlen($arBasketItems["DETAIL_PAGE_URL"])>0):
+					if ($arBasketItems["DETAIL_PAGE_URL"] <> ''):
 						?><a href="<?=$arBasketItems["DETAIL_PAGE_URL"] ?>"><?
 					endif;
 					?><b><?=$arBasketItems["NAME"] ?></b><?
-					if (strlen($arBasketItems["DETAIL_PAGE_URL"])>0):
+					if ($arBasketItems["DETAIL_PAGE_URL"] <> ''):
 						?></a><?
 					endif;?>
 					<?if (in_array("PROPS", $arParams["COLUMNS_LIST"]))
@@ -104,7 +104,7 @@
 						<?if (doubleval($arResult["DISCOUNT_PRICE"]) > 0)
 						{
 							?><p><?echo GetMessage("SALE_CONTENT_DISCOUNT")?><?
-							if (strLen($arResult["DISCOUNT_PERCENT_FORMATED"])>0)
+							if ($arResult["DISCOUNT_PERCENT_FORMATED"] <> '')
 								echo " (".$arResult["DISCOUNT_PERCENT_FORMATED"].")";?>:</p><?
 						}?>
 						<?if ($arParams['PRICE_TAX_SHOW_VALUE'] == 'Y'):?>

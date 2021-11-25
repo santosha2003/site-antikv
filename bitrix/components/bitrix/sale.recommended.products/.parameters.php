@@ -245,13 +245,21 @@ while ($iblock = $iblockIterator->fetch())
 $catalogs = array();
 $productsCatalogs = array();
 $skuCatalogs = array();
-$catalogIterator = CCatalog::getList(array("IBLOCK_ID" => "ASC"), array("@IBLOCK_ID" => array_keys($iblockMap)));
+$catalogIterator = CCatalog::GetList(
+	array("IBLOCK_ID" => "ASC"),
+	array("@IBLOCK_ID" => array_keys($iblockMap)),
+	false,
+	false,
+	array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID', 'SKU_PROPERTY_ID')
+);
 while($catalog = $catalogIterator->fetch())
 {
 	$isOffersCatalog = (int)$catalog['PRODUCT_IBLOCK_ID'] > 0;
 	if($isOffersCatalog)
 	{
 		$skuCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
+		if (!isset($productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']]))
+			$productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
 	}
 	else
 	{
@@ -404,7 +412,7 @@ foreach ($catalogs as $catalog)
 
 $arComponentParameters["PARAMETERS"]['HIDE_NOT_AVAILABLE'] = array(
 	'PARENT' => 'DATA_SOURCE',
-	'NAME' => GetMessage('SRP_HIDE_NOT_AVAILABLE'),
+	'NAME' => GetMessage('SRP_HIDE_NOT_AVAILABLE_EXT'),
 	'TYPE' => 'CHECKBOX',
 	'DEFAULT' => 'N',
 );
@@ -421,9 +429,7 @@ if (Loader::includeModule('currency'))
 	if (isset($arCurrentValues['CONVERT_CURRENCY']) && 'Y' == $arCurrentValues['CONVERT_CURRENCY'])
 	{
 		$arCurrencyList = array();
-		$by = 'SORT';
-		$order = 'ASC';
-		$rsCurrencies = CCurrency::GetList($by, $order);
+		$rsCurrencies = CCurrency::GetList('sort', 'asc');
 		while ($arCurrency = $rsCurrencies->Fetch())
 		{
 			$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];

@@ -3,6 +3,7 @@ $MESS["REPORT_CONSTRUCT"] = "Report Wizard";
 $MESS["REPORT_TITLE"] = "Report name";
 $MESS["REPORT_DEFAULT_TITLE"] = "New report";
 $MESS["REPORT_PERIOD"] = "Reporting period";
+$MESS["REPORT_PERIOD_HIDDEN"] = "Don't show in report";
 $MESS["REPORT_COLUMNS"] = "Columns";
 $MESS["REPORT_CALC_COLUMN"] = "Calculate column";
 $MESS["REPORT_ADD_SELECT_COLUMN"] = "Add";
@@ -78,4 +79,13 @@ $MESS["REPORT_CHART_LABEL_TEXT_ARGS"] = "Arguments";
 $MESS["REPORT_CHART_LABEL_TEXT_VALUES"] = "Values";
 $MESS["REPORT_CHART_ADD_COL_LABEL_TITLE"] = "Add value column";
 $MESS["REPORT_CHART_REMOVE_COL_LABEL_TITLE"] = "Delete value column";
+$MESS["REPORT_SHARING_TITLE"] = "Sharing";
+$MESS["REPORT_BTN_SAVE"] = "Save";
+$MESS["REPORT_BTN_CLOSE"] = "Close";
+$MESS["REPORT_SHARING_NAME_RIGHTS_USER"] = "Users";
+$MESS["REPORT_SHARING_NAME_RIGHTS"] = "Access permissions";
+$MESS["REPORT_SHARING_NAME_ADD_RIGHTS_USER"] = "Add more";
+$MESS["REPORT_TITLE_EXPORT"] = "CSV Export";
+$MESS["REPORT_SHARING_ILLUSTRATION"] = "You have created a report that you can share with your colleagues.
+It will show up in the available reports list for all the persons of your choice. By doing so, you don't share data. You only share the report template.";
 ?>

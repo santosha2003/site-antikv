@@ -76,4 +76,7 @@ $MESS["SALE_EBAY_CAT_EBAY_NAME"] = "Name der eBay Kategorie";
 $MESS["SALE_EBAY_CAT_MAP_ADD"] = "Übereinstimmung hinzufügen";
 $MESS["SALE_EBAY_CAT_SETT_EDIT"] = "Parameter der Kategorie bearbeiten";
 $MESS["SALE_EBAY_NOT_USE"] = "Nicht benutzen";
+$MESS["SALE_EBAY_CAT_MAP_EMPTY"] = "<p>Die Kategorien Ihres Onlineshops stimmen mit denen von eBay noch nicht überein.</p><p>Um die Übereinstimmung einzustellen, öffnen Sie die Seite mit Kategorieneigenschaften, klicken auf den Tab \"Commerce platforms\" und wählen die entsprechende eBay Kategorie.</p>";
+$MESS["SALE_EBAY_MAX_PRODUCT_QUANTITY"] = "Maximale Anzahl der zu exportierenden Produkte";
+$MESS["SALE_EBAY_TP_EMPTY_ERROR"] = "Mindesten eine Kundengruppe muss der Website zugewiesen sein";
 ?>

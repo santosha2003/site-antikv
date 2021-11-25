@@ -1,7 +1,0 @@
-<?
-$MESS["SONET_C34_T_PROMT"] = "Draugui bus atsiøstas praðymas átraukti jus á nariø sàraðà. Po to kai naudotojas sutiks átraukti jus á draugø sàraðà, jis bus matomas sàraðe.";
-$MESS["SONET_C34_T_USER"] = "Naudotojas";
-$MESS["SONET_C34_T_MESSAGE"] = "Jûsø praneðimas";
-$MESS["SONET_C34_T_SAVE"] = "Siøsti praneðimà";
-$MESS["SONET_C34_T_SUCCESS"] = "Jûsø praðymas iðsiøstas. Po to kai naudotojas sutiks priimti jus á draugø sàraðà, ji bus matoma sàraðe.";
-?>

@@ -22,6 +22,7 @@ function __main_post_form_replace_template($arResult = false, $arParams = false)
 			'bitrix:main.file.input',
 			'drag_n_drop',
 			array(
+				'CONTROL_ID' => \Bitrix\Main\UI\FileInputUtility::instance()->getUserFieldCid($arParams['arUserField']),
 				'INPUT_NAME' => $arParams["arUserField"]["FIELD_NAME"],
 				'INPUT_NAME_UNSAVED' => 'FILE_NEW_TMP',
 				'INPUT_VALUE' => $arResult["VALUE"],
@@ -46,9 +47,9 @@ function __main_post_form_image_resize(&$arCustomFile, $arParams = null)
 		{
 			$arResizeParams = $arParams;
 		}
-		elseif(intVal($arParams) > 0)
+		elseif(intval($arParams) > 0)
 		{
-			$arResizeParams = array("width" => intVal($arParams), "height" => intVal($arParams));
+			$arResizeParams = array("width" => intval($arParams), "height" => intval($arParams));
 		}
 	}
 

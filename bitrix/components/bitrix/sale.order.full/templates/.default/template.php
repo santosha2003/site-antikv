@@ -133,7 +133,7 @@ else
 	<?endif?>
 
 	<?if ($arResult["CurrentStep"] > 3 && $arResult["CurrentStep"] < 6):?>
-		<input type="hidden" name="DELIVERY_ID" value="<?= is_array($arResult["DELIVERY_ID"]) ? implode(":", $arResult["DELIVERY_ID"]) : IntVal($arResult["DELIVERY_ID"]) ?>">
+		<input type="hidden" name="DELIVERY_ID" value="<?= is_array($arResult["DELIVERY_ID"]) ? implode(":", $arResult["DELIVERY_ID"]) : intval($arResult["DELIVERY_ID"]) ?>">
 	<?endif?>
 
 	<?if ($arResult["CurrentStep"] > 4 && $arResult["CurrentStep"] < 6):?>

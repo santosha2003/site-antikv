@@ -1,16 +1,22 @@
 <?
 /** @global CMain $APPLICATION */
 use Bitrix\Main;
-use Bitrix\Sale\Internals;
+use Bitrix\Sale;
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/sale/prolog.php');
 Main\Loader::includeModule('sale');
 
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."sale_discount.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
 $saleModulePermissions = $APPLICATION->GetGroupRight('sale');
 $readOnly = ($saleModulePermissions < 'W');
 if ($readOnly)
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+
+$enableDiscountConstructor = Sale\Config\Feature::isDiscountConstructorEnabled();
 
 if ($ex = $APPLICATION->GetException())
 {
@@ -40,7 +46,7 @@ $tabList = array(
 
 $control = new CAdminForm("sale_discount", $tabList);
 
-$couponTypes = Internals\DiscountCouponTable::getCouponTypes(true);
+$couponTypes = Sale\Internals\DiscountCouponTable::getCouponTypes(true);
 
 $errors = array();
 $boolCondParseError = false;
@@ -60,7 +66,47 @@ if ($discountID > 0)
 	$copy = (isset($_REQUEST['action']) && (string)$_REQUEST['action'] == 'copy');
 }
 
+$discountGroupsToShow = [];
+
+if ($adminSidePanelHelper->isPublicSidePanel()
+	&& \Bitrix\Main\Loader::includeModule('crm')
+	&& \Bitrix\Main\Loader::includeModule('bitrix24')
+)
+{
+	$discountGroupsToShow = \Bitrix\Crm\Order\BuyerGroup::getPublicList();
+}
+else
+{
+	$discountGroupsToShow = Main\GroupTable::getList(array(
+		'select' => array('ID', 'NAME'),
+		'order' => array('C_SORT' => 'ASC', 'ID' => 'ASC')
+	))->fetchAll();
+}
+
 $arFields = array();
+
+if (
+	check_bitrix_sessid()
+	&& !$readOnly
+	&& $_SERVER['REQUEST_METHOD'] == 'POST'
+	&& !empty($_POST['AJAX_ACTION'])
+)
+{
+	switch ($_POST['AJAX_ACTION'])
+	{
+		case 'getUserName':
+			$userId = (int)$_POST['USER_ID'];
+			$APPLICATION->RestartBuffer();
+			echo Main\Web\Json::encode(array(
+				'userId' => $userId,
+				'name' => \Bitrix\Sale\Helpers\Admin\OrderEdit::getUserName($userId),
+			));
+			CMain::FinalActions();
+			die;
+
+			break;
+	}
+}
 
 if (
 	check_bitrix_sessid()
@@ -69,6 +115,11 @@ if (
 	&& isset($_POST['Update']) && (string)$_POST['Update'] == 'Y'
 )
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
+	$CONDITIONS = null;
+	$ACTIONS = null;
+
 	$obCond3 = new CSaleCondTree();
 
 	$boolCond = $obCond3->Init(BT_COND_MODE_PARSE, BT_COND_BUILD_SALE, array('INIT_CONTROLS' => array(
@@ -92,7 +143,7 @@ if (
 				$CONDITIONS = base64_decode($_POST['CONDITIONS']);
 				if (CheckSerializedData($CONDITIONS))
 				{
-					$CONDITIONS = unserialize($CONDITIONS);
+					$CONDITIONS = unserialize($CONDITIONS, ['allowed_classes' => false]);
 					$boolCond = true;
 				}
 				else
@@ -137,7 +188,7 @@ if (
 				$ACTIONS = base64_decode($_POST['ACTIONS']);
 				if (CheckSerializedData($ACTIONS))
 				{
-					$ACTIONS = unserialize($ACTIONS);
+					$ACTIONS = unserialize($ACTIONS, ['allowed_classes' => false]);
 					$boolAct = true;
 				}
 				else
@@ -160,19 +211,28 @@ if (
 	}
 
 	$arGroupID = array();
-	if (array_key_exists('USER_GROUPS', $_POST) && is_array($_POST['USER_GROUPS']))
+	if (isset($_POST['USER_GROUPS']) && is_array($_POST['USER_GROUPS']))
 	{
-		foreach ($_POST['USER_GROUPS'] as &$intValue)
-		{
-			$intValue = intval($intValue);
-			if ($intValue > 0)
-			{
-				$arGroupID[] = $intValue;
-			}
-		}
-		if (isset($intValue))
-			unset($intValue);
+		$arGroupID = $_POST['USER_GROUPS'];
 	}
+
+	if ($adminSidePanelHelper->isPublicSidePanel()
+		&& \Bitrix\Main\Loader::includeModule('crm')
+		&& \Bitrix\Main\Loader::includeModule('bitrix24')
+	)
+	{
+		$discountGroupList = [];
+
+		$rsDiscountGroups = CSaleDiscount::GetDiscountGroupList([], ['DISCOUNT_ID' => $discountID], false, false, ['GROUP_ID']);
+		while ($arDiscountGroup = $rsDiscountGroups->Fetch())
+		{
+			$discountGroupList[] = (int)$arDiscountGroup['GROUP_ID'];
+		}
+
+		$arGroupID = \Bitrix\Crm\Order\BuyerGroup::prepareGroupIds($discountGroupList, $arGroupID);
+	}
+
+	Main\Type\Collection::normalizeArrayValuesByInt($arGroupID, true);
 
 	$arFields = array(
 		"LID" => (array_key_exists('LID', $_POST) ? $_POST['LID'] : ''),
@@ -183,12 +243,14 @@ if (
 		"SORT" => (array_key_exists('SORT', $_POST) ? $_POST['SORT'] : 500),
 		"PRIORITY" => (array_key_exists('PRIORITY', $_POST) ? $_POST['PRIORITY'] : ''),
 		"LAST_DISCOUNT" => (array_key_exists('LAST_DISCOUNT', $_POST) && 'N' == $_POST['LAST_DISCOUNT'] ? 'N' : 'Y'),
+		"LAST_LEVEL_DISCOUNT" => (array_key_exists('LAST_LEVEL_DISCOUNT', $_POST) && 'N' == $_POST['LAST_LEVEL_DISCOUNT'] ? 'N' : 'Y'),
 		"XML_ID" => (array_key_exists('XML_ID', $_POST) ? $_POST['XML_ID'] : ''),
 		'CONDITIONS' => $CONDITIONS,
 		'ACTIONS' => $ACTIONS,
 		'USER_GROUPS' => $arGroupID,
 	);
 
+	$additionalFields = array();
 	if ($discountID == 0 || $copy)
 	{
 		$additionalFields = array(
@@ -208,11 +270,19 @@ if (
 			if (isset($_POST['COUPON']))
 			{
 				$couponsFields['TYPE'] = (isset($_POST['COUPON']['TYPE']) ? (int)$_POST['COUPON']['TYPE'] : 0);
-				$couponsFields['ACTIVE_FROM'] = (!empty($_POST['COUPON']['ACTIVE_FROM']) ? new Main\Type\DateTime($_POST['COUPON']['ACTIVE_FROM']) : null);
-				$couponsFields['ACTIVE_TO'] = (!empty($_POST['COUPON']['ACTIVE_TO']) ? new Main\Type\DateTime($_POST['COUPON']['ACTIVE_TO']) : null);
+				$couponsFields['ACTIVE_FROM'] = (
+					!empty($_POST['COUPON']['ACTIVE_FROM'])
+					? Main\Type\DateTime::createFromUserTime($_POST['COUPON']['ACTIVE_FROM'])
+					: null
+				);
+				$couponsFields['ACTIVE_TO'] = (
+					!empty($_POST['COUPON']['ACTIVE_TO'])
+					? Main\Type\DateTime::createFromUserTime($_POST['COUPON']['ACTIVE_TO'])
+					: null
+				);
 				$couponsFields['MAX_USE'] = (isset($_POST['COUPON']['MAX_USE']) ? (int)$_POST['COUPON']['MAX_USE'] : 0);
 			}
-			$couponsResult = Internals\DiscountCouponTable::checkPacket($couponsFields, ($discountID <= 0));
+			$couponsResult = Sale\Internals\DiscountCouponTable::checkPacket($couponsFields, ($discountID <= 0));
 			if (!$couponsResult->isSuccess(true))
 			{
 				$errors = (empty($errors) ? $couponsResult->getErrorMessages() : array_merge($errors, $couponsResult->getErrorMessages()));
@@ -227,6 +297,8 @@ if (
 	{
 		if ($discountID > 0 && !$copy)
 		{
+			$arFields['PRESET_ID'] = null;
+			$arFields['PREDICTIONS'] = null;
 			if (!CSaleDiscount::Update($discountID, $arFields))
 			{
 				if ($ex = $APPLICATION->GetException())
@@ -237,6 +309,7 @@ if (
 		}
 		else
 		{
+			unset($arFields['PRESET_ID'], $arFields['PREDICTIONS'], $arFields['PREDICTIONS_APP']);
 			$discountID = (int)CSaleDiscount::Add($arFields);
 			if ($discountID <= 0)
 			{
@@ -250,7 +323,7 @@ if (
 				if ($couponsAdd)
 				{
 					$couponsFields['DISCOUNT_ID'] = $discountID;
-					$couponsResult = Internals\DiscountCouponTable::addPacket(
+					$couponsResult = Sale\Internals\DiscountCouponTable::addPacket(
 						$couponsFields,
 						$additionalFields['COUPON_COUNT']
 					);
@@ -264,10 +337,25 @@ if (
 	}
 	if (empty($errors))
 	{
+		if ($adminSidePanelHelper->isAjaxRequest())
+		{
+			$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $discountID));
+		}
 		if (empty($_POST['apply']))
-			LocalRedirect("/bitrix/admin/sale_discount.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		{
+			$adminSidePanelHelper->localRedirect($listUrl);
+			LocalRedirect($listUrl);
+		}
 		else
-			LocalRedirect("/bitrix/admin/sale_discount_edit.php?lang=".LANGUAGE_ID."&ID=".$discountID.'&'.$control->ActiveTabParam());
+		{
+			$applyUrl = $selfFolderUrl."sale_discount_edit.php?lang=".LANGUAGE_ID."&ID=".$discountID.'&'.$control->ActiveTabParam();
+			$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+			LocalRedirect($applyUrl);
+		}
+	}
+	else
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse(implode("; ", $errors));
 	}
 }
 
@@ -290,9 +378,11 @@ $defaultValues = array(
 	'ACTIVE_TO' => '',
 	'PRIORITY' => 1,
 	'LAST_DISCOUNT' => 'Y',
+	'LAST_LEVEL_DISCOUNT' => 'N',
 	'CONDITIONS' => '',
 	'XML_ID' => '',
 	'ACTIONS' => '',
+	'PRESET_ID' => null,
 );
 if (isset($_REQUEST['LID']))
 	$defaultValues['LID'] = trim($_REQUEST['LID']);
@@ -305,7 +395,7 @@ $defaultCoupons = array(
 	'COUPON' => array(
 		'ACTIVE_FROM' => null,
 		'ACTIVE_TO' => null,
-		'COUPON_TYPE' => Internals\DiscountCouponTable::TYPE_ONE_ORDER,
+		'TYPE' => Sale\Internals\DiscountCouponTable::TYPE_ONE_ORDER,
 		'MAX_USE' => 0
 	)
 );
@@ -327,9 +417,18 @@ else
 	$rsDiscountGroups = CSaleDiscount::GetDiscountGroupList(array(),array('DISCOUNT_ID' => $discountID),false,false,array('GROUP_ID'));
 	while ($arDiscountGroup = $rsDiscountGroups->Fetch())
 	{
-		$arDiscountGroupList[] = intval($arDiscountGroup['GROUP_ID']);
+		$arDiscountGroupList[] = (int)$arDiscountGroup['GROUP_ID'];
 	}
 }
+
+if (!empty($arDiscount['PRESET_ID']))
+{
+	$redirectUrl = $selfFolderUrl.'sale_discount_preset_detail.php?DISCOUNT_ID='.$arDiscount['ID'].'&from_list=coupon&lang='.LANGUAGE_ID;
+	$redirectUrl = $adminSidePanelHelper->setDefaultQueryParams($redirectUrl);
+	$adminSidePanelHelper->localRedirect($redirectUrl);
+	LocalRedirect($redirectUrl);
+}
+
 if (!empty($errors))
 {
 	if ($boolCondParseError || $boolActParseError)
@@ -356,7 +455,7 @@ if (!empty($errors))
 $contextMenuItems = array(
 	array(
 		"TEXT" => GetMessage("BT_SALE_DISCOUNT_EDIT_MESS_DISCOUNT_LIST"),
-		"LINK" => "/bitrix/admin/sale_discount.php?lang=".LANGUAGE_ID.GetFilterParams("filter_"),
+		"LINK" => $listUrl,
 		"ICON" => "btn_list"
 	)
 );
@@ -365,20 +464,34 @@ if ($discountID > 0 && $saleModulePermissions == 'W')
 {
 	if (!$copy)
 	{
-		$contextMenuItems[] = array("SEPARATOR" => "Y");
+		$addUrl = $selfFolderUrl."sale_discount_edit.php?lang=".LANGUAGE_ID;
+		$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
+		if (!$adminSidePanelHelper->isPublicFrame())
+			$addUrl = $adminSidePanelHelper->setDefaultQueryParams($addUrl);
 		$contextMenuItems[] = array(
 			"TEXT" => GetMessage("BT_SALE_DISCOUNT_EDIT_MESS_NEW_DISCOUNT"),
-			"LINK" => "/bitrix/admin/sale_discount_edit.php?lang=".LANGUAGE_ID.GetFilterParams("filter_"),
+			"LINK" => $addUrl,
 			"ICON" => "btn_new"
 		);
+		$copyUrl = $selfFolderUrl."sale_discount_edit.php?lang=".LANGUAGE_ID."&ID=".$discountID."&action=copy";
+		$copyUrl = $adminSidePanelHelper->editUrlToPublicPage($copyUrl);
+		if (!$adminSidePanelHelper->isPublicFrame())
+			$copyUrl = $adminSidePanelHelper->setDefaultQueryParams($copyUrl);
 		$contextMenuItems[] = array(
-			"TEXT"=>GetMessage("BT_SALE_DISCOUNT_EDIT_MESS_COPY_DISCOUNT"),
-			"LINK"=>'/bitrix/admin/sale_discount_edit.php?lang='.LANGUAGE_ID.'&ID='.$discountID.'&action=copy&'.GetFilterParams('filter_'),
-			"ICON"=>"btn_copy",
+			"TEXT" => GetMessage("BT_SALE_DISCOUNT_EDIT_MESS_COPY_DISCOUNT"),
+			"LINK" => $copyUrl,
+			"ICON" => "btn_copy",
 		);
+		$deleteUrl = $selfFolderUrl."sale_discount.php?action=delete&ID[]=".$discountID."&lang=".LANGUAGE_ID."&".bitrix_sessid_get();
+		$buttonAction = "LINK";
+		if ($adminSidePanelHelper->isPublicFrame())
+		{
+			$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl);
+			$buttonAction = "ONCLICK";
+		}
 		$contextMenuItems[] = array(
 			"TEXT" => GetMessage("BT_SALE_DISCOUNT_EDIT_MESS_DELETE_DISCOUNT"),
-			"LINK" => "javascript:if(confirm('".GetMessageJS("BT_SALE_DISCOUNT_EDIT_MESS_DELETE_DISCOUNT_CONFIRM")."')) window.location='/bitrix/admin/sale_discount.php?lang=".LANGUAGE_ID."&ID=".$discountID."&action=delete&".bitrix_sessid_get()."';",
+			$buttonAction => "javascript:if(confirm('".GetMessageJS("BT_SALE_DISCOUNT_EDIT_MESS_DELETE_DISCOUNT_CONFIRM")."')) top.window.location.href='".$deleteUrl."';",
 			"WARNING" => "Y",
 			"ICON" => "btn_delete"
 		);
@@ -402,14 +515,34 @@ if (!empty($errors))
 	unset($errorMessage);
 }
 
+$io = CBXVirtualIo::GetInstance();
+$hintPath = '/bitrix/images/sale/discount/';
+$hintLastDiscountImageName = $hintPath.'hint_last_discount_'.LANGUAGE_ID.'.png';
+$hintSizes = '';
+if (!$io->FileExists($_SERVER['DOCUMENT_ROOT'].$hintLastDiscountImageName))
+{
+	$hintLastDiscountImageName = $hintPath.'hint_last_discount_'.Main\Localization\Loc::getDefaultLang(LANGUAGE_ID).'.png';
+	if (!$io->FileExists($_SERVER['DOCUMENT_ROOT'].$hintLastDiscountImageName))
+		$hintLastDiscountImageName = '';
+}
+if ($hintLastDiscountImageName !== '')
+{
+	$imgSizes = getimagesize($io->GetPhysicalName($_SERVER['DOCUMENT_ROOT'].$hintLastDiscountImageName));
+	if (!empty($imgSizes))
+		$hintSizes = $imgSizes[3];
+	unset($imgSizes);
+}
+
 $arSiteList = array();
 $siteIterator = Main\SiteTable::getList(array(
-	'select' => array('LID', 'NAME'),
+	'select' => array('LID', 'NAME', 'SORT'),
 	'order' => array('SORT' => 'ASC')
 ));
 while ($site = $siteIterator->fetch())
 {
-	$arSiteList[$site['LID']] = '('.$site['LID'].') '.$site['NAME'];
+	$saleSite = (string)Main\Config\Option::get('sale', 'SHOP_SITE_'.$site['LID']);
+	if ($site['LID'] == $saleSite || $site['LID'] == $arDiscount['LID'])
+		$arSiteList[$site['LID']] = '('.$site['LID'].') '.$site['NAME'];
 }
 unset($site, $siteIterator);
 
@@ -429,9 +562,9 @@ if ($copy)
 }
 echo bitrix_sessid_post();
 $control->EndEpilogContent();
-$control->Begin(array(
-	"FORM_ACTION" => '/bitrix/admin/sale_discount_edit.php?lang='.LANGUAGE_ID,
-));
+$formActionUrl = $selfFolderUrl.'sale_discount_edit.php?lang='.LANGUAGE_ID;
+$formActionUrl = $adminSidePanelHelper->setDefaultQueryParams($formActionUrl);
+$control->Begin(array("FORM_ACTION" => $formActionUrl));
 $control->BeginNextFormTab();
 	if ($discountID > 0 && !$copy)
 		$control->AddViewField('ID','ID:',$discountID,false);
@@ -466,9 +599,10 @@ $control->BeginNextFormTab();
 		'<input type="hidden" name="ACTIVE_FROM" value="'.htmlspecialcharsbx($arDiscount['ACTIVE_FROM']).'">'.
 		'<input type="hidden" name="ACTIVE_TO" value="'.htmlspecialcharsbx($arDiscount['ACTIVE_FROM']).'">'
 	);
+	$control->AddSection('BT_SALE_DISCOUNT_SECT_PRIORITY', GetMessage('BT_SALE_DISCOUNT_SECTION_PRIORITY'));
 	$control->BeginCustomField('PRIORITY', GetMessage("BT_SALE_DISCOUNT_EDIT_FIELDS_PRIORITY").':', false);
 	?><tr id="tr_PRIORITY">
-		<td width="40%"><? echo $control->GetCustomLabelHTML(); ?><br /><? echo GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_PRIORITY_DESCR'); ?></td>
+		<td width="40%"><span id="tr_HELP_notice"></span>&nbsp;<? echo $control->GetCustomLabelHTML(); ?><br /><? echo GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_PRIORITY_DESCR'); ?></td>
 		<td width="60%">
 			<input type="text" name="PRIORITY" size="20" maxlength="20" value="<? echo intval($arDiscount['PRIORITY']); ?>">
 		</td>
@@ -476,9 +610,9 @@ $control->BeginNextFormTab();
 	$control->EndCustomField("PRIORITY",
 		'<input type="hidden" name="PRIORITY" value="'.intval($arDiscount['PRIORITY']).'">'
 	);
-	$control->BeginCustomField('SORT', GetMessage("BT_SALE_DISCOUNT_EDIT_FIELDS_SORT").':', false);
+	$control->BeginCustomField('SORT', GetMessage("BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_2").':', false);
 	?><tr id="tr_SORT">
-		<td width="40%"><? echo $control->GetCustomLabelHTML(); ?><br /><? echo GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_DESCR'); ?></td>
+		<td width="40%"><span id="tr_HELP_notice2"></span>&nbsp;<? echo $control->GetCustomLabelHTML(); ?><br /><? echo GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_DESCR'); ?></td>
 		<td width="60%">
 			<input type="text" name="SORT" size="20" maxlength="20" value="<? echo intval($arDiscount['SORT']); ?>">
 		</td>
@@ -486,9 +620,22 @@ $control->BeginNextFormTab();
 	$control->EndCustomField("SORT",
 		'<input type="hidden" name="SORT" value="'.intval($arDiscount['SORT']).'">'
 	);
+	$control->BeginCustomField("LAST_LEVEL_DISCOUNT", GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_LAST_LEVEL_DISCOUNT').":",false);
+	?><tr id="tr_LAST_LEVEL_DISCOUNT">
+		<td width="40%"><span id="tr_HELP_notice3"></span>&nbsp;<? echo $control->GetCustomLabelHTML(); ?>
+		</td>
+		<td width="60%">
+			<input type="hidden" value="N" name="LAST_LEVEL_DISCOUNT">
+			<input type="checkbox" value="Y" name="LAST_LEVEL_DISCOUNT" <? echo ('Y' == $arDiscount['LAST_LEVEL_DISCOUNT']? 'checked' : '');?>>
+		</td>
+	</tr><?
+	$control->EndCustomField("LAST_LEVEL_DISCOUNT",
+		'<input type="hidden" name="LAST_LEVEL_DISCOUNT" value="'.htmlspecialcharsbx($arDiscount['LAST_LEVEL_DISCOUNT']).'">'
+	);
 	$control->BeginCustomField("LAST_DISCOUNT", GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_LAST_DISCOUNT').":",false);
 	?><tr id="tr_LAST_DISCOUNT">
-		<td width="40%"><? echo $control->GetCustomLabelHTML(); ?></td>
+		<td width="40%"><span id="tr_HELP_notice4"></span>&nbsp;<? echo $control->GetCustomLabelHTML(); ?>
+		</td>
 		<td width="60%">
 			<input type="hidden" value="N" name="LAST_DISCOUNT">
 			<input type="checkbox" value="Y" name="LAST_DISCOUNT" <? echo ('Y' == $arDiscount['LAST_DISCOUNT']? 'checked' : '');?>>
@@ -502,16 +649,12 @@ $control->BeginNextFormTab();
 	$control->BeginCustomField("ACTIONS", GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_APP').":",false);
 	?><tr id="ACTIONS">
 		<td valign="top" colspan="2"><div id="tree_actions" style="position: relative; z-index: 1;"></div><?
-			if (!is_array($arDiscount['APPICATIONS']))
+			if (!is_array($arDiscount['ACTIONS']))
 			{
-				if (CheckSerializedData($arDiscount['APPICATIONS']))
-				{
-					$arDiscount['APPICATIONS'] = unserialize($arDiscount['APPICATIONS']);
-				}
+				if (CheckSerializedData($arDiscount['ACTIONS']))
+					$arDiscount['ACTIONS'] = unserialize($arDiscount['ACTIONS'], ['allowed_classes' => false]);
 				else
-				{
-					$arDiscount['APPICATIONS'] = '';
-				}
+					$arDiscount['ACTIONS'] = '';
 			}
 			$arCondParams = array(
 				'FORM_NAME' => 'sale_discount_form',
@@ -521,12 +664,7 @@ $control->BeginNextFormTab();
 				'INIT_CONTROLS' => array(
 					'SITE_ID' => $arDiscount['LID'],
 					'CURRENCY' => CSaleLang::GetLangCurrency($arDiscount['LID']),
-				),
-				'SYSTEM_MESSAGES' => array(
-					'SELECT_CONTROL' => GetMessage('BT_SALE_DISCOUNT_ACTIONS_SELECT_CONTROL'),
-					'ADD_CONTROL' => GetMessage('BT_SALE_DISCOUNT_ACTIONS_ADD_CONTROL'),
-					'DELETE_CONTROL' => GetMessage('BT_SALE_DISCOUNT_ACTIONS_DELETE_CONTROL'),
-				),
+				)
 			);
 			$obAct = new CSaleActionTree();
 			$boolAct = $obAct->Init(BT_COND_MODE_DEFAULT, BT_COND_BUILD_SALE_ACTIONS, $arCondParams);
@@ -554,13 +692,9 @@ $control->BeginNextFormTab();
 			if (!is_array($arDiscount['CONDITIONS']))
 			{
 				if (CheckSerializedData($arDiscount['CONDITIONS']))
-				{
-					$arDiscount['CONDITIONS'] = unserialize($arDiscount['CONDITIONS']);
-				}
+					$arDiscount['CONDITIONS'] = unserialize($arDiscount['CONDITIONS'], ['allowed_classes' => false]);
 				else
-				{
 					$arDiscount['CONDITIONS'] = '';
-				}
 			}
 			$arCondParams = array(
 				'FORM_NAME' => 'sale_discount_form',
@@ -597,17 +731,17 @@ $control->BeginNextFormTab();
 		<td valign="top" width="60%">
 			<select name="USER_GROUPS[]" multiple size="8">
 			<?
-			$groupIterator = Main\GroupTable::getList(array(
-				'select' => array('ID', 'NAME'),
-				'order' => array('C_SORT' => 'ASC', 'ID' => 'ASC')
-			));
-			while ($group = $groupIterator->fetch())
+			foreach ($discountGroupsToShow as $group)
 			{
 				$group['ID'] = (int)$group['ID'];
 				$selected = (in_array($group['ID'], $arDiscountGroupList) ? ' selected' : '');
-				?><option value="<? echo $group['ID']; ?>"<? echo $selected; ?>>[<? echo $group['ID']; ?>] <? echo htmlspecialcharsex($group['NAME']); ?></option><?
+				?>
+				<option value="<?=$group['ID']?>"<?=$selected?>>
+					[<?=$group['ID']?>] <?=htmlspecialcharsEx($group['NAME'])?>
+				</option>
+				<?
 			}
-			unset($selected, $group, $groupIterator);
+			unset($selected, $group);
 			?>
 			</select>
 		</td>
@@ -678,10 +812,10 @@ $control->BeginNextFormTab();
 		<tr id="tr_COUPON_TYPE" class="adm-detail-required-field" style="display: <? echo ($coupons['COUPON_ADD'] == 'Y' ? 'table-row' : 'none'); ?>;">
 			<td width="40%"><? echo GetMessage('BX_SALE_DISCOUNT_EDIT_FIELDS_COUPON_TYPE'); ?></td>
 			<td width="60%">
-				<select name="COUPON[TYPE]"><?
+				<select name="COUPON[TYPE]" size="3"><?
 					foreach ($couponTypes as $type => $title)
 					{
-						?><option value="<? echo $type; ?>" <? echo ($type == $coupons['COUPON']['TYPE'] ? 'selected' : ''); ?>><? echo htmlspecialcharsex($title); ?></option><?
+						?><option value="<? echo $type; ?>" <? echo ($type == $coupons['COUPON']['TYPE'] ? 'selected' : ''); ?>><? echo htmlspecialcharsEx($title); ?></option><?
 					}
 					?></select>
 			</td>
@@ -695,12 +829,7 @@ $control->BeginNextFormTab();
 $control->BeginNextFormTab();
 	$control->AddEditField("XML_ID", GetMessage("BT_SALE_DISCOUNT_EDIT_FIELDS_XML_ID").":", false, array("size" => 50, "maxlength" => 255), htmlspecialcharsbx($arDiscount['XML_ID']));
 
-$control->Buttons(
-	array(
-		"disabled" => ($saleModulePermissions < "W"),
-		"back_url" => "/bitrix/admin/sale_discount.php?lang=".LANGUAGE_ID.GetFilterParams("filter_")
-	)
-);
+$control->Buttons(array("disabled" => ($saleModulePermissions < "W"), "back_url" => $listUrl));
 $control->Show();
 ?>
 <script type="text/javascript">
@@ -709,7 +838,10 @@ $control->Show();
 			obCouponType = BX('tr_COUPON_TYPE'),
 			obCouponCount = BX('tr_COUPON_COUNT'),
 			obCouponPeriod = BX('tr_COUPON_PERIOD'),
-			obCouponMaxUse = BX('tr_COUPON_MAX_USE');
+			obCouponMaxUse = BX('tr_COUPON_MAX_USE'),
+			priorityHint = ['tr_HELP_notice', 'tr_HELP_notice2', 'tr_HELP_notice3', 'tr_HELP_notice4'],
+			i,
+			hintImage = '<?=$hintLastDiscountImageName; ?>';
 
 		if (!!obCouponAdd && (!!obCouponType || !!obCouponCount || !!obCouponPeriod || !!obCouponMaxUse))
 		{
@@ -731,6 +863,13 @@ $control->Show();
 				BX.style(obCouponPeriod, 'display', (obCouponAdd.checked ? 'table-row' : 'none'));
 			if (!!obCouponMaxUse)
 				BX.style(obCouponMaxUse, 'display', (obCouponAdd.checked ? 'table-row' : 'none'));
+		}
+		if (hintImage != '')
+		{
+			for (i = 0; i < priorityHint.length; i++)
+			{
+				BX.hint_replace(BX(priorityHint[i]), '<img style="padding-left: 16px;" src="' + hintImage + '" <?=$hintSizes; ?> alt="">');
+			}
 		}
 	});
 </script>

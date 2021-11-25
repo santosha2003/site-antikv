@@ -1,0 +1,182 @@
+Array
+(
+    [ACTIVE] => Y
+    [MODIFIED_BY] => 1611
+    [IBLOCK_ID] => 1
+    [ACTIVE_FROM] => 12.11.2021
+    [ACTIVE_TO] => 
+    [SORT] => 500
+    [NAME] => Знак депутата Верховного Совета СССР 7-го созыва (1966 г) № 8
+    [CODE] => znak_deputata_verkhovnogo_soveta_sssr_7_go_sozyva_1966_g_8
+    [TAGS] => 
+    [PREVIEW_PICTURE] => Array
+        (
+            [name] => 004.jpg
+            [type] => image/jpeg
+            [tmp_name] => /var/www/html/upload/tmp/adv/default
+            [size] => 6708
+            [error] => 0
+            [description] => 
+            [COPY_FILE] => Y
+            [copy] => 1
+            [MODULE_ID] => iblock
+        )
+
+    [PREVIEW_TEXT] => 
+    [PREVIEW_TEXT_TYPE] => text
+    [DETAIL_PICTURE] => Array
+        (
+            [name] => 004.jpg
+            [type] => image/jpeg
+            [tmp_name] => /var/www/html/upload/tmp/tot/default
+            [size] => 139538
+            [error] => 0
+            [description] => 
+            [COPY_FILE] => Y
+            [copy] => 1
+            [MODULE_ID] => iblock
+        )
+
+    [DETAIL_TEXT] => Крепление булавочное. Мехоношин А. И. Нагрудные Знаки. Высшие органы власти 1917 - 1991. № 1.2.2. На оборотной стороне знака под винтом выгравирован номер «8». 
+
+По конституции СССР, принятой на 8 Всесоюзном съезде Советов 5 декабря 1936 г, высший орган государственной власти - двухпалатный Верховный Совет СССР, состоящий из Совета Союза и Совета Национальностей, избираемый на четыре года. Совет Союза избирался по избирательным округам по норме: один депутат на 300.000 населения. Совет Национальностей избирался из числа местных депутатов по норме: по 25 депутатов от каждой союзной республики, по 11 депутатов от каждой автономной республики, по 5 от каждой автономной области и по 1 депутату от каждого национального округа.
+    [DETAIL_TEXT_TYPE] => text
+    [TMP_ID] => 0
+    [PROPERTY_VALUES] => Array
+        (
+            [54] => Array
+                (
+                    [0] => Array
+                        (
+                            [VALUE] => 18
+                        )
+
+                )
+
+            [81] => 
+            [55] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => СССР, Московский Монетный двор, 1966 г.
+                        )
+
+                )
+
+            [58] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => Серебро, позолота, эмаль, 10.46 гр.
+                        )
+
+                )
+
+            [59] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 25.8 × 34 мм.
+                        )
+
+                )
+
+            [60] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 1517
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [77] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => Отличная (UNC-)
+                        )
+
+                )
+
+            [82] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                        )
+
+                )
+
+            [61] => Array
+                (
+                    [n1] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 004.jpg
+                                    [type] => image/jpeg
+                                    [tmp_name] => /var/www/html/upload/tmp/BXTEMP-2021-11-12/12/bxu/main/fe415e35324f005a947b379424f0c0cd/file1636666134497/default
+                                    [size] => 224489
+                                    [error] => 0
+                                )
+
+                        )
+
+                    [n0] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 001.jpg
+                                    [type] => image/jpeg
+                                    [tmp_name] => /var/www/html/upload/tmp/BXTEMP-2021-11-12/12/bxu/main/fe415e35324f005a947b379424f0c0cd/file1636666116027/default
+                                    [size] => 55173
+                                    [error] => 0
+                                )
+
+                        )
+
+                )
+
+            [1] => Array
+                (
+                )
+
+            [56] => Array
+                (
+                )
+
+            [57] => Array
+                (
+                )
+
+        )
+
+    [IBLOCK_SECTION] => Array
+        (
+            [0] => 531
+        )
+
+    [IBLOCK_SECTION_ID] => 531
+    [XML_ID] => 
+    [IPROPERTY_TEMPLATES] => Array
+        (
+            [ELEMENT_META_TITLE] => 
+            [ELEMENT_META_KEYWORDS] => 
+            [ELEMENT_META_DESCRIPTION] => 
+            [ELEMENT_PAGE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_ALT] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_NAME] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_ALT] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_TITLE] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_NAME] => 
+        )
+
+    [SEARCHABLE_CONTENT] => ЗНАК ДЕПУТАТА ВЕРХОВНОГО СОВЕТА СССР 7-ГО СОЗЫВА (1966 Г) № 8
+
+КРЕПЛЕНИЕ БУЛАВОЧНОЕ. МЕХОНОШИН А. И. НАГРУДНЫЕ ЗНАКИ. ВЫСШИЕ ОРГАНЫ ВЛАСТИ 1917 - 1991. № 1.2.2. НА ОБОРОТНОЙ СТОРОНЕ ЗНАКА ПОД ВИНТОМ ВЫГРАВИРОВАН НОМЕР «8». 
+
+ПО КОНСТИТУЦИИ СССР, ПРИНЯТОЙ НА 8 ВСЕСОЮЗНОМ СЪЕЗДЕ СОВЕТОВ 5 ДЕКАБРЯ 1936 Г, ВЫСШИЙ ОРГАН ГОСУДАРСТВЕННОЙ ВЛАСТИ - ДВУХПАЛАТНЫЙ ВЕРХОВНЫЙ СОВЕТ СССР, СОСТОЯЩИЙ ИЗ СОВЕТА СОЮЗА И СОВЕТА НАЦИОНАЛЬНОСТЕЙ, ИЗБИРАЕМЫЙ НА ЧЕТЫРЕ ГОДА. СОВЕТ СОЮЗА ИЗБИРАЛСЯ ПО ИЗБИРАТЕЛЬНЫМ ОКРУГАМ ПО НОРМЕ: ОДИН ДЕПУТАТ НА 300.000 НАСЕЛЕНИЯ. СОВЕТ НАЦИОНАЛЬНОСТЕЙ ИЗБИРАЛСЯ ИЗ ЧИСЛА МЕСТНЫХ ДЕПУТАТОВ ПО НОРМЕ: ПО 25 ДЕПУТАТОВ ОТ КАЖДОЙ СОЮЗНОЙ РЕСПУБЛИКИ, ПО 11 ДЕПУТАТОВ ОТ КАЖДОЙ АВТОНОМНОЙ РЕСПУБЛИКИ, ПО 5 ОТ КАЖДОЙ АВТОНОМНОЙ ОБЛАСТИ И ПО 1 ДЕПУТАТУ ОТ КАЖДОГО НАЦИОНАЛЬНОГО ОКРУГА.
+)

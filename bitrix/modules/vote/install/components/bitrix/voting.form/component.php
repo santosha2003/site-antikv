@@ -1,9 +1,22 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
+/**
+ * Bitrix Framework
+ * @package bitrix
+ * @copyright 2001-2016 Bitrix
+ *
+ * Bitrix vars
+ * @var array $arParams
+ * @var array $arResult
+ * @var CBitrixComponentTemplate $this
+ * @global CUser $USER
+ * @global CMain $APPLICATION
+ * @global CBitrixComponent $component
+ */
 
 if (!IsModuleInstalled("vote")):
 	ShowError(GetMessage("VOTE_MODULE_IS_NOT_INSTALLED"));
 	return;
-elseif (intVal($arParams["VOTE_ID"]) <= 0):
+elseif (intval($arParams["VOTE_ID"]) <= 0):
 	ShowError(GetMessage("VOTE_EMPTY"));
 	return;
 endif;
@@ -25,17 +38,16 @@ if (!function_exists("_GetAnswerArray1"))
 				Input params
 ********************************************************************/
 /************** BASE ***********************************************/
-	$arParams["VOTE_ID"] = intVal($arParams["VOTE_ID"]);
-	$arParams["PERMISSION"] = (isset($arParams["PERMISSION"]) && (intval($arParams["PERMISSION"] > 0 || $arParams["PERMISSION"] === 0) ?
-		intval($arParams["PERMISSION"]) : false));
+	$arParams["VOTE_ID"] = intval($arParams["VOTE_ID"]);
+	$arParams["PERMISSION"] = (isset($arParams["PERMISSION"]) && ($arParams["PERMISSION"] > 0 || $arParams["PERMISSION"] === 0 ? intval($arParams["PERMISSION"]) : false));
 /************** URL ************************************************/
 	$URL_NAME_DEFAULT = array(
 			"vote_result" => "PAGE_NAME=vote_result&VOTE_ID=#VOTE_ID#");
 	foreach ($URL_NAME_DEFAULT as $URL => $URL_VALUE):
-		if (strLen(trim($arParams[strToUpper($URL)."_TEMPLATE"])) <= 0)
-			$arParams[strToUpper($URL)."_TEMPLATE"] = $APPLICATION->GetCurPage()."?".$URL_VALUE;
-		$arParams["~".strToUpper($URL)."_TEMPLATE"] = $arParams[strToUpper($URL)."_TEMPLATE"];
-		$arParams[strToUpper($URL)."_TEMPLATE"] = htmlspecialcharsbx($arParams["~".strToUpper($URL)."_TEMPLATE"]);
+		if (trim($arParams[mb_strtoupper($URL)."_TEMPLATE"]) == '')
+			$arParams[mb_strtoupper($URL)."_TEMPLATE"] = $APPLICATION->GetCurPage()."?".$URL_VALUE;
+		$arParams["~".mb_strtoupper($URL)."_TEMPLATE"] = $arParams[mb_strtoupper($URL)."_TEMPLATE"];
+		$arParams[mb_strtoupper($URL)."_TEMPLATE"] = htmlspecialcharsbx($arParams["~".mb_strtoupper($URL)."_TEMPLATE"]);
 	endforeach;
 /************** CACHE **********************************************/
 	if ($arParams["CACHE_TYPE"] == "Y" || ($arParams["CACHE_TYPE"] == "A" && COption::GetOptionString("main", "component_cache_on", "Y") == "Y"))
@@ -43,7 +55,7 @@ if (!function_exists("_GetAnswerArray1"))
 	else
 		$arParams["CACHE_TIME"] = 0;
 
-	$arParams["ADDITIONAL_CACHE_ID"] = (isset($arParams["ADDITIONAL_CACHE_ID"]) && strlen($arParams["ADDITIONAL_CACHE_ID"]) > 0 ?
+	$arParams["ADDITIONAL_CACHE_ID"] = (isset($arParams["ADDITIONAL_CACHE_ID"]) && $arParams["ADDITIONAL_CACHE_ID"] <> '' ?
 		$arParams["ADDITIONAL_CACHE_ID"] : $USER->GetGroups());
 /********************************************************************
 				/Input params
@@ -52,16 +64,16 @@ if ($GLOBALS["VOTING_OK"] == "Y"  && ($GLOBALS["VOTING_ID"] == $arParams["VOTE_I
 {
 	$strNavQueryString = DeleteParam(array("VOTE_ID", "VOTING_OK", "VOTE_SUCCESSFULL", "view_result", "view_form"));
 	$strNavQueryString = ($strNavQueryString <> "" ? "&" : "").$strNavQueryString;
-	$delimiter = (strpos($arParams["VOTE_RESULT_TEMPLATE"], "?") === false) ? "?":"&";
-	if (strpos($arParams["VOTE_RESULT_TEMPLATE"], "#VOTE_ID#") === false)
+	$delimiter = (mb_strpos($arParams["VOTE_RESULT_TEMPLATE"], "?") === false) ? "?":"&";
+	if (mb_strpos($arParams["VOTE_RESULT_TEMPLATE"], "#VOTE_ID#") === false)
 	{
 		$arParams["VOTE_RESULT_TEMPLATE"] .= $delimiter."VOTE_ID=".$_REQUEST["VOTE_ID"];
-		$url = CComponentEngine::MakePathFromTemplate(
+		$url = CComponentEngine::makePathFromTemplate(
 			$arParams["VOTE_RESULT_TEMPLATE"]."&VOTE_SUCCESSFULL=Y".$strNavQueryString);
 	}
 	else
 	{
-		$url = CComponentEngine::MakePathFromTemplate(
+		$url = CComponentEngine::makePathFromTemplate(
 			$arParams["VOTE_RESULT_TEMPLATE"].$delimiter."VOTE_SUCCESSFULL=Y".$strNavQueryString,
 			array("VOTE_ID" => $arParams["VOTE_ID"]));
 	}
@@ -73,8 +85,8 @@ if ($GLOBALS["VOTING_OK"] == "Y"  && ($GLOBALS["VOTING_ID"] == $arParams["VOTE_I
 $arResult["URL"] = array(
 	"RESULT" => CComponentEngine::MakePathFromTemplate(
 		$arParams["VOTE_RESULT_TEMPLATE"].
-			(strpos($arParams["VOTE_RESULT_TEMPLATE"], "?") === false ? "?" : "&").
-			(strpos($arParams["VOTE_RESULT_TEMPLATE"], "#VOTE_ID#") === false ? "VOTE_ID=#VOTE_ID#&" : "").
+			(mb_strpos($arParams["VOTE_RESULT_TEMPLATE"], "?") === false ? "?" : "&").
+			(mb_strpos($arParams["VOTE_RESULT_TEMPLATE"], "#VOTE_ID#") === false ? "VOTE_ID=#VOTE_ID#&" : "").
 			"view_result=Y",
 		array("VOTE_ID" => $arParams["VOTE_ID"]))
 );
@@ -106,7 +118,7 @@ if ($_REQUEST["VOTE_ID"] == $arParams["VOTE_ID"])
 			if ($e && ($e->GetID()=="CVote::KeepVoting"))
 				break;
 		} while ($e = next($eO));
-		$arError[] = array("id" => "vote error", "text" => ($e ? preg_replace("/\<br(.*?)\>/", " ", $e->GetString()) : GetMessage("VOTE_ERROR")));
+		$arError[] = array("id" => "vote error", "text" => ($e ? preg_replace("/\\<br(.*?)\\>/", " ", $e->GetString()) : GetMessage("VOTE_ERROR")));
 	}
 }
 /********************************************************************

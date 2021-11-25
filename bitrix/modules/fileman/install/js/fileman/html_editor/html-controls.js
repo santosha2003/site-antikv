@@ -4,6 +4,7 @@
  * Time: 4:23
  *
  */
+
 ;(function() {
 function __run()
 {
@@ -201,6 +202,7 @@ function __run()
 			if (!this.bCreated)
 			{
 				this.pValuesCont = document.body.appendChild(BX.create("DIV", {props: {className: "bxhtmled-popup  bxhtmled-color-cont"}, style: {zIndex: this.zIndex}, html: '<div class="bxhtmled-popup-corner"></div>'}));
+				BX.ZIndexManager.register(this.pValuesCont);
 
 				if (this.showBgMode)
 				{
@@ -348,11 +350,21 @@ function __run()
 			this.pDefValueRow.style.display = _this.editor.synchro.IsFocusedOnTextarea() ? 'none' : '';
 
 			this.pValuesCont.style.display = 'block';
+			var component = BX.ZIndexManager.bringToFront(this.pValuesCont);
+			var zIndex = component.getZIndex();
+
 			var
-				pOverlay = this.editor.overlay.Show(),
+				pOverlay = this.editor.overlay.Show({ zIndex: zIndex - 1 }),
 				pos = BX.pos(this.pCont),
 				left = pos.left - this.pValuesCont.offsetWidth / 2 + this.pCont.offsetWidth / 2 + this.posOffset.left,
 				top = pos.bottom + this.posOffset.top;
+
+			if (left < 0)
+			{
+				var corner = this.pValuesCont.getElementsByClassName("bxhtmled-popup-corner")[0];
+				corner.style.transform = "translateX(" + left + "px)";
+				left = 0;
+			}
 
 			BX.bind(window, "keydown", BX.proxy(this.OnKeyDown, this));
 			BX.addClass(this.pCont, this.activeClassName);
@@ -697,8 +709,8 @@ function __run()
 		// Call parrent constructor
 		BbCodeButton.superclass.constructor.apply(this, arguments);
 		this.id = 'bbcode';
-		this.title = BX.message('BXEdBbCode');
-		this.className += ' bxhtmled-button-bbcode';
+		this.title = this.editor.bbCode ? BX.message('BXEdBbCode') : BX.message('BXEdHtmlCode');
+		this.className += this.editor.bbCode ? ' bxhtmled-button-bbcode' : ' bxhtmled-button-htmlcode';
 		this.disabledForTextarea = false;
 
 		this.Create();
@@ -1247,7 +1259,7 @@ function __run()
 
 	StyleSelectorList.prototype.OpenSubmenu = function (item)
 	{
-		// Hack for load font awesome css (used in some templatese to customize bullit list styles)
+		// Hack for load font awesome css (used in some templates to customize bullet list styles)
 		if (item.id == 'list')
 			BX.loadCSS(['/bitrix/css/main/font-awesome.css']);
 
@@ -1255,19 +1267,17 @@ function __run()
 		{
 			this.pSubmenuCont = BX.create("DIV", {props: {className: "bxhtmled-popup bxhtmled-popup-left bxhtmled-dropdown-list-cont bxhtmled-dropdown-list-cont-submenu"}, html: '<div class="bxhtmled-popup-corner"></div>'});
 			this.pSubmenuContWrap = this.pSubmenuCont.appendChild(BX.create("DIV", {props: {className: "bxhtmled-dd-list-wrap"}}));
+
+			BX.ZIndexManager.getStack(document.body).register(this.pSubmenuCont);
 		}
 		else
 		{
 			BX.cleanNode(this.pSubmenuContWrap);
 		}
 
-		if(this.zIndex)
-		{
-			this.pSubmenuCont.style.zIndex = this.zIndex;
-		}
-
 		document.body.appendChild(this.pSubmenuCont);
 		this.pSubmenuCont.style.display = 'block';
+		BX.ZIndexManager.bringToFront(this.pSubmenuCont);
 
 		if (this.curSubmenuItem)
 		{
@@ -2847,6 +2857,7 @@ function __run()
 				if (!this.smileSets[setInd].butWrapImage)
 				{
 					this.smileSets[setInd].butWrapImage = smileImg.cloneNode();
+					this.smileSets[setInd].butWrapImage.style.cssText = '';
 					this.smileSets[setInd].butWrapImage.className = '';
 					this.smileSets[setInd].butWrapImage.title = '';
 					this.smileSets[setInd].butWrap.appendChild(this.smileSets[setInd].butWrapImage);
@@ -3076,7 +3087,10 @@ function __run()
 		if (pEl.nodeType == 3)
 			pEl = pEl.parentNode;
 
-		if (pEl.style.zIndex > this.zIndex)
+		var component = BX.ZIndexManager.getComponent(this.pValuesCont);
+		var zIndex = component ? component.getZIndex() : this.pValuesCont.style.zIndex;
+
+		if (pEl.style.zIndex > zIndex)
 		{
 			this.CheckOverlay();
 		}
@@ -3089,7 +3103,7 @@ function __run()
 	MoreButton.prototype.CheckOverlay = function()
 	{
 		var _this = this;
-		this.editor.overlay.Show({zIndex: this.zIndex - 1}).onclick = function(){_this.Close()};
+		this.editor.overlay.Show({zIndex: this.pValuesCont.style.zIndex - 1}).onclick = function(){_this.Close()};
 	};
 
 	// Todo: Keyboard switcher
@@ -3775,8 +3789,7 @@ function __run()
 			}
 		}
 
-		this.pSrc.value = params.src || '';
-
+		this.pSrc.value = this.editor.util.spaceUrlDecode(params.src || '');
 		if (this.pTitle)
 			this.pTitle.value = params.title || '';
 
@@ -4210,7 +4223,6 @@ function __run()
 		}
 
 		var
-			_this = this,
 			r,
 			cont = BX.create('DIV');
 
@@ -4318,23 +4330,6 @@ function __run()
 				BX.toggleClass(pTableWrap, 'bxhtmled-dialog-tbl-collapsed');
 			};
 
-			// Use statistics
-			r = addRow(pTableWrap, false, true);
-			this.pStatCont = r.row;
-			this.pStat = r.leftCell.appendChild(BX.create('INPUT', {props: {type: 'checkbox', id: this.id + '-stat'}}));
-			r.rightCell.appendChild(BX.create('LABEL', {text: BX.message('BXEdLinkStat')})).setAttribute('for', this.id + '-stat');
-			var
-				wrap,
-				statInfoCont = r.rightCell.appendChild(BX.create('DIV', {props: {className: 'bxhtmled-stat-wrap'}}));
-			wrap = statInfoCont.appendChild(BX.create('DIV', {html: '<label for="event1">' + BX.message('BXEdLinkStatEv1') + ':</label> '}));
-			this.pStatEvent1 = wrap.appendChild(BX.create('INPUT', {props: {type: 'text',  id: "event1"}, style: {minWidth: '50px'}}));
-			wrap = statInfoCont.appendChild(BX.create('DIV', {html: '<label for="event2">' + BX.message('BXEdLinkStatEv2') + ':</label> '}));
-			this.pStatEvent2 = wrap.appendChild(BX.create('INPUT', {props: {type: 'text',  id: "event2"}, style: {minWidth: '50px'}}));
-			wrap = statInfoCont.appendChild(BX.create('DIV', {html: '<label for="event3">' + BX.message('BXEdLinkStatEv3') + ':</label> '}));
-			this.pStatEvent3 = wrap.appendChild(BX.create('INPUT', {props: {type: 'text',  id: "event3"}, style: {minWidth: '50px'}}));
-			BX.addClass(r.leftCell,'bxhtmled-left-c-top');
-			BX.bind(this.pStat, 'click', BX.delegate(this.CheckShowStatParams, this));
-
 			// Link title
 			r = addRow(pTableWrap, {label: BX.message('BXEdLinkTitle') + ':', id: this.id + '-title'}, true);
 			this.pTitle = r.rightCell.appendChild(BX.create('INPUT', {props: {type: 'text', id: this.id + '-title'}}));
@@ -4400,17 +4395,12 @@ function __run()
 		this.pHrefAnchCont.style.display = 'none';
 		this.pHrefEmailCont.style.display = 'none';
 
-		if (this.pStatCont)
-			this.pStatCont.style.display = 'none';
-
 		if (type == 'internal')
 		{
 			this.pHrefIntCont.style.display = '';
 		}
 		else if (type == 'external')
 		{
-			if (this.pStatCont)
-				this.pStatCont.style.display = '';
 			this.pHrefExtCont.style.display = '';
 		}
 		else if (type == 'anchor')
@@ -4424,18 +4414,6 @@ function __run()
 
 		this.editor.config.linkDialogType = type;
 		this.editor.SaveOption('link_dialog_type', this.editor.config.linkDialogType);
-	};
-
-	LinkDialog.prototype.CheckShowStatParams = function()
-	{
-		if (this.pStat.checked)
-		{
-			BX.removeClass(this.pStatCont, 'bxhtmled-link-stat-hide');
-		}
-		else
-		{
-			BX.addClass(this.pStatCont, 'bxhtmled-link-stat-hide');
-		}
 	};
 
 	LinkDialog.prototype.CheckNoindex = function()
@@ -4456,14 +4434,6 @@ function __run()
 	{
 		this.pHrefAnchor.value = '';
 
-		if (!this.editor.bbCode)
-		{
-			this.pStatEvent1.value =
-			this.pStatEvent2.value =
-			this.pStatEvent3.value = '';
-			this.pStat.checked = false;
-		}
-
 		if (!values)
 		{
 			values = {};
@@ -4471,7 +4441,8 @@ function __run()
 		else
 		{
 			// 1. Detect type
-			var href = values.href || '';
+
+			var href = this.editor.util.spaceUrlDecode(values.href || '');
 
 			if (this.editor.bbCode)
 			{
@@ -4496,39 +4467,6 @@ function __run()
 				else if (href.indexOf("://") !== -1 || href.substr(0, 'www.'.length) == 'www.' || href.indexOf("&goto=") !== -1)
 				{
 					values.type = 'external';
-
-					// Fix link in statistic
-					if(href.substr(0, '/bitrix/redirect.php'.length) == '/bitrix/redirect.php')
-					{
-						this.pStat.checked = true;
-						this.CheckShowStatParams();
-						var sParams = href.substring('/bitrix/redirect.php'.length);
-						function __ExtrParam(p, s)
-						{
-							var pos = s.indexOf(p + '=');
-							if (pos < 0)
-							{
-								return '';
-							}
-
-							var pos2 = s.indexOf('&', pos + p.length+1);
-							if (pos2 < 0)
-							{
-								s = s.substring(pos + p.length + 1);
-							}
-							else
-							{
-								s = s.substr(pos+p.length+1, pos2 - pos - 1 - p.length);
-							}
-							return unescape(s);
-						}
-
-						this.pStatEvent1.value = __ExtrParam('event1', sParams);
-						this.pStatEvent2.value = __ExtrParam('event2', sParams);
-						this.pStatEvent3.value = __ExtrParam('event3', sParams);
-
-						href = __ExtrParam('goto', sParams);
-					}
 
 					if (href.substr(0, 'www.'.length) == 'www.')
 						href = "http://" + href;
@@ -4633,7 +4571,6 @@ function __run()
 
 		if (!this.editor.bbCode)
 		{
-			this.CheckShowStatParams();
 			this.CheckNoindex();
 
 			if (!this.oClass)
@@ -4692,11 +4629,6 @@ function __run()
 			{
 				value.href = this.pHrefType.value + value.href;
 			}
-
-			if(this.pStat && this.pStat.checked)
-			{
-				value.href = '/bitrix/redirect.php?event1=' + escape(this.pStatEvent1.value) + '&event2=' + escape(this.pStatEvent2.value) + '&event3=' + escape(this.pStatEvent3.value) + '&goto=' + escape(value.href);
-			}
 		}
 		else if (type == 'anchor')
 		{
@@ -4729,6 +4661,7 @@ function __run()
 			values = {},
 			i, l, link, lastLink, linksCount = 0;
 
+		this.lastLink = false;
 		if (!this.readyToShow)
 		{
 			return setTimeout(function(){_this.Show(nodes, savedRange);}, 100);
@@ -4840,7 +4773,12 @@ function __run()
 				{
 					if (anchorPopup && anchorPopup.oPopup &&  anchorPopup.oPopup.popupContainer)
 					{
-						anchorPopup.oPopup.popupContainer.style.zIndex = 3010;
+						if (anchors.length > 20)
+						{
+							anchorPopup.oPopup.popupContainer.style.overflow = 'auto';
+							anchorPopup.oPopup.popupContainer.style.paddingRight = '20px';
+							anchorPopup.oPopup.popupContainer.style.maxHeight = '300px';
+						}
 					}
 				});
 			}
@@ -4925,6 +4863,11 @@ function __run()
 		BX.bind(this.pSource, 'mouseup', BX.delegate(this.VideoSourceChanged, this));
 		BX.bind(this.pSource, 'keyup', BX.delegate(this.VideoSourceChanged, this));
 
+		this.pErrorRow = pTableWrap.insertRow(-1);
+		this.pErrorRow.style.display = 'none';
+		c = BX.adjust(this.pErrorRow.insertCell(-1), {props:{className: 'bxhtmled-video-error-cell'}, attrs: {colSpan: 2}});
+		this.pError = c.appendChild(BX.create('SPAN', {props: {className: 'bxhtmled-video-error'}}));
+
 		r = pTableWrap.insertRow(-1);
 		c = BX.adjust(r.insertCell(-1), {props:{className: 'bxhtmled-video-params-wrap'}, attrs: {colSpan: 2}});
 		var pParTbl = c.appendChild(BX.create('TABLE', {props: {className: 'bxhtmled-dialog-tbl bxhtmled-video-dialog-tbl'}}));
@@ -4995,29 +4938,35 @@ function __run()
 		else
 		{
 			this.StartWaiting();
-			this.editor.Request({
-				getData: this.editor.GetReqData('video_oembed',
-					{
-						video_source: value
-					}
-				),
-				handler: function(res)
+
+			BX.ajax.runAction('fileman.api.htmleditorajax.getVideoOembed', {
+				data: {
+					video_source: value
+				}
+			}).then(
+				// Success
+				function(response)
 				{
-					if (res.result)
+					this.StopWaiting();
+					if (response.data.result)
 					{
-						_this.StopWaiting();
-						_this.ShowVideoParams(res.data);
+						this.ShowVideoParams(response.data.data);
 					}
 					else
 					{
-						_this.StopWaiting();
-						if (res.error !== '')
+						if (response.data.error !== '')
 						{
-							_this.ShowVideoParams(false);
+							this.ShowVideoParams(false, response.data.error);
 						}
 					}
-				}
-			});
+				}.bind(this),
+				// Failure
+				function (response)
+				{
+					this.StopWaiting();
+					this.ShowVideoParams(false);
+				}.bind(this)
+			);
 		}
 	};
 
@@ -5062,13 +5011,35 @@ function __run()
 		}
 	};
 
-	VideoDialog.prototype.ShowVideoParams = function(data)
+	VideoDialog.prototype.ShowVideoParams = function(data, error)
 	{
 		this.data = data || {};
-		BX.removeClass(this.pCont, 'bxhtmled-video-local');
+		this.pErrorRow.style.display = 'none';
+		this.pPreviewCont.style.display = 'none';
+		this.pPreview.innerHTML = '';
+			BX.removeClass(this.pCont, 'bxhtmled-video-local');
 		if (data === false || typeof data != 'object')
 		{
 			BX.addClass(this.pCont, 'bxhtmled-video-empty');
+
+			if (error)
+			{
+				this.pErrorRow.style.display = '';
+				this.pError.innerHTML = BX.util.htmlspecialchars(error);
+			}
+		}
+		else if (data.remote && !this.bEdit)
+		{
+			BX.removeClass(this.pCont, 'bxhtmled-video-empty');
+			this.pTitle.value = data.title || '';
+			if(data.width && data.height)
+			{
+				this.SetSize(data.width, data.height);
+			}
+			else
+			{
+				this.SetSize(400, 300);
+			}
 		}
 		else if (data.local && !this.bEdit)
 		{
@@ -5211,7 +5182,8 @@ function __run()
 			_this = this,
 			title = this.pTitle.value,
 			width = parseInt(this.pWidth.value) || 100,
-			height = parseInt(this.pHeight.value) || 100;
+			height = parseInt(this.pHeight.value) || 100,
+			mimeType = this.data.mimeType || '';
 
 		if (this.pSize.value !== '')
 		{
@@ -5253,6 +5225,17 @@ function __run()
 			{
 				bbSource = this.data.html = '[VIDEO width=' + width + ' height=' + height + ']' + this.data.path + '[/VIDEO]';
 				html = this.editor.bbParser.GetVideoSourse(this.data.path, {type: false, width: width, height: height, html: this.data.html}, this.data.html);
+			}
+			else if (this.editor.bbCode && this.data.remote)
+			{
+				bbSource = '[VIDEO ';
+				if(mimeType)
+				{
+					bbSource += 'mimetype=\'' + mimeType + '\' ';
+				}
+				bbSource += 'width=' + width + ' height=' + height + ']' + this.data.path + '[/VIDEO]';
+				this.data.html = bbSource;
+				html = this.editor.bbParser.GetVideoSourse(this.data.path, {type: false, width: width, height: height, html: this.data.html, title: this.data.title}, this.data.html);
 			}
 			else if (this.data.html)
 			{

@@ -1,4 +1,7 @@
 <?
+/**
+ * @deprecated Use \Bitrix\Main\IO
+ */
 class CBXVirtualIoFileSystem
 	implements IBXVirtualIO, IBXGetErrors
 {
@@ -9,16 +12,19 @@ class CBXVirtualIoFileSystem
 	const directionDecode = 2;
 	const invalidChars = "\\/:*?\"'<>|~#&;";
 
+	//the pattern should be quoted, "|" is allowed below as a delimiter
+	const invalidBytes = "\xE2\x80\xAE"; //Right-to-Left Override Unicode Character
+
 	private $arErrors = array();
 
 	public static function ConvertCharset($string, $direction = 1, $skipEvents = false)
 	{
 		if (is_null(self::$systemEncoding))
 		{
-			self::$systemEncoding = strtolower(defined("BX_FILE_SYSTEM_ENCODING") ? BX_FILE_SYSTEM_ENCODING : "");
+			self::$systemEncoding = mb_strtolower(defined("BX_FILE_SYSTEM_ENCODING")? BX_FILE_SYSTEM_ENCODING : "");
 			if (empty(self::$systemEncoding))
 			{
-				if (strtoupper(substr(PHP_OS, 0, 3)) === "WIN")
+				if (mb_strtoupper(mb_substr(PHP_OS, 0, 3)) === "WIN")
 					self::$systemEncoding = "windows-1251";
 				else
 					self::$systemEncoding = "utf-8";
@@ -29,16 +35,16 @@ class CBXVirtualIoFileSystem
 		{
 			if (defined('BX_UTF'))
 				self::$serverEncoding = "utf-8";
-			elseif (defined("SITE_CHARSET") && (strlen(SITE_CHARSET) > 0))
+			elseif (defined("SITE_CHARSET") && (SITE_CHARSET <> ''))
 				self::$serverEncoding = SITE_CHARSET;
-			elseif (defined("LANG_CHARSET") && (strlen(LANG_CHARSET) > 0))
+			elseif (defined("LANG_CHARSET") && (LANG_CHARSET <> ''))
 				self::$serverEncoding = LANG_CHARSET;
 			elseif (defined("BX_DEFAULT_CHARSET"))
 				self::$serverEncoding = BX_DEFAULT_CHARSET;
 			else
 				self::$serverEncoding = "windows-1251";
 
-			self::$serverEncoding = strtolower(self::$serverEncoding);
+			self::$serverEncoding = mb_strtolower(self::$serverEncoding);
 		}
 
 		if (self::$serverEncoding == self::$systemEncoding)
@@ -46,9 +52,9 @@ class CBXVirtualIoFileSystem
 
 		include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/charset_converter.php");
 		if ($direction == self::directionEncode)
-			$result = CharsetConverter::ConvertCharset($string, self::$serverEncoding, self::$systemEncoding);
+			$result = \Bitrix\Main\Text\Encoding::convertEncoding($string, self::$serverEncoding, self::$systemEncoding);
 		else
-			$result = CharsetConverter::ConvertCharset($string, self::$systemEncoding, self::$serverEncoding);
+			$result = \Bitrix\Main\Text\Encoding::convertEncoding($string, self::$systemEncoding, self::$serverEncoding);
 
 		if (
 			defined('BX_IO_Compartible')
@@ -170,7 +176,7 @@ class CBXVirtualIoFileSystem
 
 	public function ExtractPathFromPath($path)
 	{
-		return substr($path, 0, -strlen($this->ExtractNameFromPath($path)) - 1);
+		return mb_substr($path, 0, -mb_strlen($this->ExtractNameFromPath($path)) - 1);
 	}
 
 	private function FormatPath($path)
@@ -194,8 +200,8 @@ class CBXVirtualIoFileSystem
 
 		$res = preg_replace($pattern, "/", $path);
 
-		if (($p = strpos($res, "\0")) !== false)
-			$res = substr($res, 0, $p);
+		if (mb_strpos($res, "\0") !== false)
+			throw new \Bitrix\Main\IO\InvalidPathException($path);
 
 		$arPath = explode('/', $res);
 		$nPath = count($arPath);
@@ -218,7 +224,7 @@ class CBXVirtualIoFileSystem
 
 		$res = rtrim($res, $tailPattern);
 
-		if(substr($path, 0, 1) === "/" && substr($res, 0, 1) !== "/")
+		if(mb_substr($path, 0, 1) === "/" && mb_substr($res, 0, 1) !== "/")
 			$res = "/".$res;
 
 		if ($res === "")
@@ -227,42 +233,63 @@ class CBXVirtualIoFileSystem
 		return $res;
 	}
 
-	function ValidatePathString($path)
+	protected static function ValidateCommon($path)
 	{
-		if(strlen($path) > 4096)
+		if (trim($path) == '')
+		{
 			return false;
+		}
 
-		$p = trim($path);
-		if ($p == '')
+		if (mb_strpos($path, "\0") !== false)
+		{
 			return false;
+		}
 
-		if (strpos($path, "\0") !== false)
+		if(preg_match("#(".self::invalidBytes.")#", $path))
+		{
 			return false;
+		}
 
 		if(defined("BX_UTF") && !mb_check_encoding($path, "UTF-8"))
+		{
 			return false;
+		}
+
+		return true;
+	}
+
+	function ValidatePathString($path)
+	{
+		if(mb_strlen($path) > 4096)
+		{
+			return false;
+		}
+
+		if(!static::ValidateCommon($path))
+		{
+			return false;
+		}
 
 		return (preg_match("#^([a-z]:)?/([^\x01-\x1F".preg_quote(self::invalidChars, "#")."]+/?)*$#isD", $path) > 0);
 	}
 
 	function ValidateFilenameString($filename)
 	{
-		$fn = trim($filename);
-		if ($fn == '')
+		if(!static::ValidateCommon($filename))
+		{
 			return false;
-
-		if (strpos($filename, "\0") !== false)
-			return false;
-
-		if(defined("BX_UTF") && !mb_check_encoding($filename, "UTF-8"))
-			return false;
+		}
 
 		return (preg_match("#^[^\x01-\x1F".preg_quote(self::invalidChars, "#")."]+$#isD", $filename) > 0);
 	}
 
 	function RandomizeInvalidFilename($filename)
 	{
-		return preg_replace_callback("#([\x01-\x1F".preg_quote(self::invalidChars, "#")."])#", 'CBXVirtualIoFileSystem::getRandomChar', $filename);
+		return preg_replace_callback(
+			"#([\x01-\x1F".preg_quote(self::invalidChars, "#")."]|".self::invalidBytes.")#",
+			'CBXVirtualIoFileSystem::getRandomChar',
+			$filename
+		);
 	}
 
 	public static function getRandomChar()
@@ -302,9 +329,9 @@ class CBXVirtualIoFileSystem
 	{
 		$this->ClearErrors();
 
-		if (substr($path, 0, strlen($_SERVER["DOCUMENT_ROOT"])) == $_SERVER["DOCUMENT_ROOT"])
+		if (mb_substr($path, 0, mb_strlen($_SERVER["DOCUMENT_ROOT"])) == $_SERVER["DOCUMENT_ROOT"])
 		{
-			$pathTmp = substr($path, strlen($_SERVER["DOCUMENT_ROOT"]));
+			$pathTmp = mb_substr($path, mb_strlen($_SERVER["DOCUMENT_ROOT"]));
 			if (empty($pathTmp) || $pathTmp == '/')
 			{
 				$this->AddError("Can not delete the root folder of the project");
@@ -355,7 +382,7 @@ class CBXVirtualIoFileSystem
 	{
 		$this->ClearErrors();
 
-		if (strpos($pathTo."/", $pathFrom."/") === 0)
+		if (mb_strpos($pathTo."/", $pathFrom."/") === 0)
 		{
 			$this->AddError("Can not copy a file onto itself");
 			return false;
@@ -489,6 +516,9 @@ class CBXVirtualIoFileSystem
 	}
 }
 
+/**
+ * @deprecated Use \Bitrix\Main\IO
+ */
 class CBXVirtualFileFileSystem
 	extends CBXVirtualFile
 {
@@ -505,7 +535,7 @@ class CBXVirtualFileFileSystem
 
 	public function Open($mode)
 	{
-		$lmode = strtolower(substr($mode, 0, 1));
+		$lmode = mb_strtolower(mb_substr($mode, 0, 1));
 		$bExists = $this->IsExists();
 
 		if (
@@ -548,7 +578,7 @@ class CBXVirtualFileFileSystem
 		}
 		if (fwrite($fd, $data) === false)
 		{
-			$this->AddError(sprintf("Can not write %d bytes to file '%s'", strlen($data), $this->GetPathWithNameEncoded()));
+			$this->AddError(sprintf("Can not write %d bytes to file '%s'", mb_strlen($data), $this->GetPathWithNameEncoded()));
 			fclose($fd);
 			return false;
 		}
@@ -646,6 +676,9 @@ class CBXVirtualFileFileSystem
 	}
 }
 
+/**
+ * @deprecated Use \Bitrix\Main\IO
+ */
 class CBXVirtualDirectoryFileSystem
 	extends CBXVirtualDirectory
 {

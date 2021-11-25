@@ -1,13 +1,26 @@
 <?php
-
+/**
+ * Bitrix Framework
+ * @package bitrix
+ * @subpackage sale
+ * @copyright 2001-2012 Bitrix
+ *
+ * @ignore
+ * @see \Bitrix\Catalog\StoreProductTable
+ */
 namespace Bitrix\Sale\Internals;
 
-use Bitrix\Main\Entity;
+use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
+
+if (!Main\Loader::includeModule('catalog'))
+{
+	return;
+}
 
 Loc::loadMessages(__FILE__);
 
-class StoreProductTable extends Entity\DataManager
+class StoreProductTable extends Main\Entity\DataManager
 {
 	public static function getTableName()
 	{

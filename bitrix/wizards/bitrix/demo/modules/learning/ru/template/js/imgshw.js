@@ -41,3 +41,16 @@ function ShowImg(sImgPath, width, height, alt)
 	height = Math.min(height, screen.height-28);	
 	window.open('/bitrix/tools/imagepg.php?alt='+alt+'&img='+sImgPath,'','scrollbars='+scroll+',resizable=yes, width='+width+',height='+height+',left='+left+',top='+top);
 }
+
+function LearningInitSpoiler (oHead)
+{
+	if (typeof oHead != "object" || !oHead)
+		return false; 
+	var oBody = oHead.nextSibling;
+
+	while (oBody.nodeType != 1)
+		oBody=oBody.nextSibling;
+
+	oBody.style.display = (oBody.style.display == 'none' ? '' : 'none'); 
+	oHead.className = (oBody.style.display == 'none' ? '' : 'learning-spoiler-head-open'); 
+}

@@ -8,6 +8,8 @@ $MESS["SOE_ORDER_REFRESH"] = "Пересчитать заказ";
 $MESS["SOE_ORDER_REFRESH_TITLE"] = "Будут получены актуальные данные по товарам, скидкам т.п., после чего заказ будет полностью заново пересчитан и сохранён";
 $MESS["SOE_ORDER_VIEW"] = "Просмотр заказа";
 $MESS["SOE_ORDER_VIEW_TITLE"] = "Перейти к просмотру заказа";
+$MESS["SOE_ORDER_EDIT_EXTERNAL"] = "Редактировать заказ в БУС";
+$MESS["SOE_ORDER_EDIT_EXTERNAL_TITLE"] = "Перейти к редактированию заказ в БУС";
 $MESS["SOE_TO_LIST"] = "Список заказов";
 $MESS["SOE_TO_LIST_TITLE"] = "Перейти к списку заказов";
 $MESS["SOE_STATUS"] = "Статус заказа";
@@ -28,4 +30,7 @@ $MESS["SALE_BLOCK_TITLE_BASKET"] = "Заказ";
 $MESS["SALE_BLOCK_TITLE_ADDITIONAL"] = "Дополнительная информация";
 $MESS["SOE_ORDER_LOCKED2"] = "Заказ временно заблокирован пользователем #ID# (#DATE#)";
 $MESS["SOE_TO_UNLOCK"] = "Разблокировать заказ";
+$MESS["SOE_ORDER_UPDATE_ERROR"] = "Ошибка обновления заказа";
+$MESS["SOE_TO_ACTION"] = "Действия";
+$MESS["SOE_TO_ACTION_TITLE"] = "Выбрать действие из списка";
 ?>

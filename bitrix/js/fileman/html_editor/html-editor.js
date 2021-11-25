@@ -29,8 +29,7 @@
 		this.BLOCK_TAGS = ["H1", "H2", "H3", "H4", "H5", "H6", "P", "BLOCKQUOTE", "DIV", "SECTION", "PRE"];
 		this.NESTED_BLOCK_TAGS = ["BLOCKQUOTE", "DIV"];
 		this.TABLE_TAGS = ["TD", "TR", "TH", "TABLE", "TBODY", "CAPTION", "COL", "COLGROUP", "TFOOT", "THEAD"];
-		this.BBCODE_TAGS = ['U', 'TABLE', 'TR', 'TD', 'TH', 'IMG', 'A', 'CENTER', 'LEFT', 'RIGHT', 'JUSTIFY'];
-		//this.BBCODE_TAGS = ['P', 'U', 'DIV', 'TABLE', 'TR', 'TD', 'TH', 'IMG', 'A', 'CENTER', 'LEFT', 'RIGHT', 'JUSTIFY'];
+		this.BBCODE_TAGS = ['P', 'U', 'TABLE', 'TR', 'TD', 'TH', 'IMG', 'A', 'CENTER', 'LEFT', 'RIGHT', 'JUSTIFY'];
 
 		this.HTML_ENTITIES = ['&iexcl;','&cent;','&pound;','&curren;','&yen;','&brvbar;','&sect;','&uml;','&copy;','&ordf;','&laquo;','&not;','&reg;','&macr;','&deg;','&plusmn;','&sup2;','&sup3;','&acute;','&micro;','&para;','&middot;','&cedil;','&sup1;','&ordm;','&raquo;','&frac14;','&frac12;','&frac34;','&iquest;','&Agrave;','&Aacute;','&Acirc;','&Atilde;','&Auml;','&Aring;','&AElig;','&Ccedil;','&Egrave;','&Eacute;','&Ecirc;','&Euml;','&Igrave;','&Iacute;','&Icirc;','&Iuml;','&ETH;','&Ntilde;','&Ograve;','&Oacute;','&Ocirc;','&Otilde;','&Ouml;','&times;','&Oslash;','&Ugrave;','&Uacute;','&Ucirc;','&Uuml;','&Yacute;','&THORN;','&szlig;','&agrave;','&aacute;','&acirc;','&atilde;','&auml;','&aring;','&aelig;','&ccedil;','&egrave;','&eacute;','&ecirc;','&euml;','&igrave;','&iacute;','&icirc;','&iuml;','&eth;','&ntilde;','&ograve;','&oacute;','&ocirc;','&otilde;','&ouml;','&divide;','&oslash;','&ugrave;','&uacute;','&ucirc;','&uuml;','&yacute;','&thorn;','&yuml;','&OElig;','&oelig;','&Scaron;','&scaron;','&Yuml;','&circ;','&tilde;','&ndash;','&mdash;','&lsquo;','&rsquo;','&sbquo;','&ldquo;','&rdquo;','&bdquo;','&dagger;','&Dagger;','&permil;','&lsaquo;','&rsaquo;','&euro;','&Alpha;','&Beta;','&Gamma;','&Delta;','&Epsilon;','&Zeta;','&Eta;','&Theta;','&Iota;','&Kappa;','&Lambda;','&Mu;','&Nu;','&Xi;','&Omicron;','&Pi;','&Rho;','&Sigma;','&Tau;','&Upsilon;','&Phi;','&Chi;','&Psi;','&Omega;','&alpha;','&beta;','&gamma;','&delta;','&epsilon;','&zeta;','&eta;','&theta;','&iota;','&kappa;','&lambda;','&mu;','&nu;','&xi;','&omicron;','&pi;','&rho;','&sigmaf;','&sigma;','&tau;','&upsilon;','&phi;','&chi;','&psi;','&omega;','&bull;','&hellip;','&prime;','&Prime;','&oline;','&frasl;','&trade;','&larr;','&uarr;','&rarr;','&darr;','&harr;','&part;','&sum;','&minus;','&radic;','&infin;','&int;','&asymp;','&ne;','&equiv;','&le;','&ge;','&loz;','&spades;','&clubs;','&hearts;'];
 
@@ -94,7 +93,9 @@
 
 			this.On("OnEditorInitedBefore", [this]);
 
-			this.BuildSceleton();
+			if (!this.BuildSceleton())
+				return;
+
 			this.HTMLStyler = HTMLStyler;
 
 			// Textarea
@@ -191,8 +192,8 @@
 				this.dom.cont.parentNode.insertBefore(BX.create("DIV", {props: {className: "bxhtmled-warning"}, text: BX.message('BXEdInvalidBrowser')}), this.dom.cont);
 			}
 
+			this.InitImageUploader();
 			this.Show();
-
 			BX.onCustomEvent(BXHtmlEditor, 'OnEditorCreated', [this]);
 		},
 
@@ -301,6 +302,7 @@
 				{
 					clearInterval(_this.statusInterval);
 				}
+				_this.iframeView.stopBugusScroll = false;
 			});
 			BX.addCustomEvent(this, "OnTextareaFocus", function()
 			{
@@ -381,6 +383,7 @@
 				BX.addCustomEvent(this, "OnInsertHtml", BX.proxy(this.AutoResizeSceleton, this));
 				BX.addCustomEvent(this, "OnIframeSetValue", BX.proxy(this.AutoResizeSceleton, this));
 				BX.addCustomEvent(this, "OnFocus", BX.proxy(this.AutoResizeSceleton, this));
+				BX.addCustomEvent(this, "OnSetViewAfter", BX.proxy(this.AutoResizeSceleton, this));
 			}
 
 			BX.addCustomEvent(this, "OnIframeKeyup", BX.proxy(this.CheckBodyHeight, this));
@@ -388,28 +391,36 @@
 
 		BuildSceleton: function()
 		{
+			var result = false;
 			// Main container contain all editor parts
 			this.dom.cont = BX('bx-html-editor-' + this.id);
-			this.dom.toolbarCont = BX('bx-html-editor-tlbr-cnt-' + this.id);
-			this.dom.toolbar = BX('bx-html-editor-tlbr-' + this.id);
-			this.dom.areaCont = BX('bx-html-editor-area-cnt-' + this.id);
+			if (this.dom.cont && BX.isNodeInDom(this.dom.cont))
+			{
+				this.dom.toolbarCont = BX('bx-html-editor-tlbr-cnt-' + this.id);
+				this.dom.toolbar = BX('bx-html-editor-tlbr-' + this.id);
+				this.dom.areaCont = BX('bx-html-editor-area-cnt-' + this.id);
 
-			// Container for content editable iframe
-			this.dom.iframeCont = BX('bx-html-editor-iframe-cnt-' + this.id);
-			this.dom.textareaCont = BX('bx-html-editor-ta-cnt-' + this.id);
+				// Container for content editable iframe
+				this.dom.iframeCont = BX('bx-html-editor-iframe-cnt-' + this.id);
+				this.dom.textareaCont = BX('bx-html-editor-ta-cnt-' + this.id);
 
-			this.dom.resizerOverlay = BX('bx-html-editor-res-over-' + this.id);
-			this.dom.splitResizer = BX('bx-html-editor-split-resizer-' + this.id);
-			this.dom.splitResizer.className = this.config.splitVertical ? "bxhtmled-split-resizer-ver" : "bxhtmled-split-resizer-hor";
-			BX.bind(this.dom.splitResizer, 'mousedown', BX.proxy(this.StartSplitResize, this));
+				this.dom.resizerOverlay = BX('bx-html-editor-res-over-' + this.id);
+				this.dom.splitResizer = BX('bx-html-editor-split-resizer-' + this.id);
+				this.dom.splitResizer.style.display = 'none';
+				this.dom.splitResizer.className = this.config.splitVertical ? "bxhtmled-split-resizer-ver" : "bxhtmled-split-resizer-hor";
+				BX.bind(this.dom.splitResizer, 'mousedown', BX.proxy(this.StartSplitResize, this));
 
-			// Taskbars
-			this.dom.taskbarCont = BX('bx-html-editor-tskbr-cnt-' + this.id);
+				// Taskbars
+				this.dom.taskbarCont = BX('bx-html-editor-tskbr-cnt-' + this.id);
 
-			// Node navigation at the bottom
-			this.dom.navCont = BX('bx-html-editor-nav-cnt-' + this.id);
+				// Node navigation at the bottom
+				this.dom.navCont = BX('bx-html-editor-nav-cnt-' + this.id);
 
-			this.dom.fileDialogsWrap = BX('bx-html-editor-file-dialogs-' + this.id)
+				this.dom.fileDialogsWrap = BX('bx-html-editor-file-dialogs-' + this.id)
+
+				result = true;
+			}
+			return result;
 		},
 
 		ResizeSceleton: function(width, height, params)
@@ -790,13 +801,17 @@
 
 		OnCreateIframe: function()
 		{
+			if (!document.body.contains(this.dom.iframeCont))
+			{
+				//do not create frame if DOM doesn't contain editor's html structure (autocomposite).
+				return;
+			}
+
 			this.On('OnCreateIframeBefore');
 			this.iframeView.OnCreateIframe();
 			this.selection = new BXEditorSelection(this);
 			this.action = new BXEditorActions(this);
-
 			this.config.content = this.dom.pValueInput.value;
-
 			this.SetContent(this.config.content, true);
 			this.undoManager = new BXEditorUndoManager(this);
 			this.action.Exec("styleWithCSS", false, true);
@@ -808,6 +823,41 @@
 //			if (placeholderText) {
 //				dom.simulatePlaceholder(this.parent, this, placeholderText);
 //			}
+
+			if (this.config.view != 'wysiwyg')
+			{
+				var i, changeViewBut = false, switchCodeButton = false, controls = this.toolbar.GetControlsMap();
+
+				// Mantis: 72063
+				if (this.config.view == 'split')
+				{
+					for (i = 0; i < controls.length; i++)
+					{
+						if (controls[i] && controls[i].id == 'ChangeView')
+						{
+							changeViewBut = true;
+							break;
+						}
+					}
+					if (!changeViewBut)
+						this.config.view = 'wysiwyg';
+				}
+
+				// Mantis: 80663
+				if (this.config.view != 'wysiwyg')
+				{
+					for (i = 0; i < controls.length; i++)
+					{
+						if (controls[i] && (controls[i].id == 'BbCode' || controls[i].id == 'ChangeView'))
+						{
+							switchCodeButton = true;
+							break;
+						}
+					}
+					if (!switchCodeButton)
+						this.config.view = 'wysiwyg';
+				}
+			}
 
 			this.SetView(this.config.view, false);
 			if (this.config.setFocusAfterShow !== false)
@@ -845,7 +895,6 @@
 		SetView: function(view, saveValue)
 		{
 			this.On('OnSetViewBefore');
-
 			if (view == 'split' && this.bbCode)
 				view = 'wysiwyg';
 
@@ -1014,6 +1063,13 @@
 				BX.addCustomEvent(this, 'OnIframeKeydown', BX.proxy(this.CheckEscCollapse, this));
 				BX.bind(document.body, "keydown", BX.proxy(this.CheckEscCollapse, this));
 				BX.bind(window, "scroll", BX.proxy(this.PreventScroll, this));
+
+				if (BX.ZIndexManager)
+				{
+					BX.ZIndexManager.register(this.dom.cont);
+					BX.ZIndexManager.addStack(this.dom.cont);
+					BX.ZIndexManager.bringToFront(this.dom.cont);
+				}
 			}
 			else
 			{
@@ -1036,7 +1092,7 @@
 			this.dom.cont.style.top = startTop + 'px';
 			this.dom.cont.style.left = startLeft + 'px';
 
-			var content = this.GetContent();
+			var content = this.content;
 
 			this.expandAnimation = new BX.easing({
 				duration : 300,
@@ -1073,6 +1129,11 @@
 						_this.dom.cont.style.top = '';
 						_this.dom.cont.style.left = '';
 						BX.removeClass(_this.dom.cont, 'bx-html-editor-absolute');
+						if (BX.ZIndexManager)
+						{
+							BX.ZIndexManager.unregister(_this.dom.cont);
+						}
+						_this.dom.cont.style.removeProperty('z-index');
 						document.body.style.overflow = _this._bodyOverflow;
 						_this.config.width = _this.savedSize.configWidth;
 						_this.config.height = _this.savedSize.configHeight;
@@ -1162,6 +1223,7 @@
 			if (content !== undefined)
 			{
 				this.SetContent(content, true);
+				this.CheckBodyHeight();
 			}
 		},
 
@@ -1417,6 +1479,18 @@
 				return newNode;
 			};
 
+			this.util.spaceUrlEncode = function(str)
+			{
+				str = str.replace(/ /g,'%20');
+				return str;
+			};
+
+			this.util.spaceUrlDecode = function(str)
+			{
+				str = str.replace(/%20/g,' ');
+				return str;
+			};
+
 			// Fast way to check whether an element with a specific tag name is in the given document
 			this.util.DocumentHasTag = function(doc, tag)
 			{
@@ -1505,7 +1579,7 @@
 			this.util.IsBlockElement = function (node)
 			{
 				var styleDisplay = BX.style(node, 'display');
-				return styleDisplay && styleDisplay.toLowerCase() === "block";
+				return styleDisplay && BX.type.isString(styleDisplay) && styleDisplay.toLowerCase() === "block";
 			};
 
 			this.util.IsBlockNode = function (node)
@@ -1619,7 +1693,7 @@
 			this.util.GetTextContentEx = function(node)
 			{
 				var
-					i,
+					i, html, linkMap = [],
 					clone = node.cloneNode(true),
 					scripts = clone.getElementsByTagName('SCRIPT'),
 					links = clone.getElementsByTagName('A');
@@ -1629,14 +1703,31 @@
 					BX.remove(scripts[i]);
 				}
 
-				// mantis:64329
+				// mantis:64329, mantis:70550
 				for (i = links.length - 1; i >= 0 ; i--)
 				{
-					if (links[i].href)
-						_this.util.ReplaceNode(links[i],  links[i].ownerDocument.createTextNode(links[i].href));
+					var href = links[i].href;
+					if (href.toLowerCase().indexOf('javascript:') !== -1)
+					{
+						_this.util.ReplaceNode(links[i], links[i].ownerDocument.createTextNode(_this.util.GetTextContent(links[i])));
+					}
+					else
+					{
+						linkMap.push('<a href="' + links[i].href + '">' + _this.util.GetTextContent(links[i]) + '</a>');
+						_this.util.ReplaceNode(links[i], links[i].ownerDocument.createTextNode('#BX~TMP~LINK' + (linkMap.length - 1) + '#'));
+					}
 				}
 
-				return _this.util.GetTextContent(clone);
+				html = _this.util.GetTextContent(clone);
+
+				if (linkMap.length > 0)
+				{
+					html = html.replace(/#BX~TMP~LINK(\d+)#/ig, function(s, num)
+					{
+						return linkMap[num] || '';
+					});
+				}
+				return html;
 			};
 
 			this.util.RgbToHex = function(str)
@@ -1770,6 +1861,16 @@
 				}
 				return true;
 			};
+
+			this.util.GetNextSibling = function(node)
+			{
+				var res = node.nextSibling;
+				while (res && res.nodeType == 3 && res.nodeValue == '\ufeff' && res.nextSibling)
+				{
+					res = res.nextSibling;
+				}
+				return res || null;
+			};
 		},
 
 		Parse: function(content, bParseBxNodes, bFormat)
@@ -1777,7 +1878,6 @@
 			bParseBxNodes = !!bParseBxNodes;
 			this.content = content;
 			this.On("OnParse", [bParseBxNodes]);
-			content = this.content;
 
 			if (bParseBxNodes)
 			{
@@ -2101,6 +2201,11 @@
 			return this.templateId;
 		},
 
+		GetSiteId: function()
+		{
+			return this.config.siteId;
+		},
+
 		GetComponentFilter: function()
 		{
 			return this.componentFilter;
@@ -2352,8 +2457,11 @@
 
 		Destroy: function()
 		{
-			this.sandbox.Destroy();
-			BX.remove(this.dom.cont);
+			if (this.sandbox)
+				this.sandbox.Destroy();
+
+			if (this.Check())
+				BX.remove(this.dom.cont);
 		},
 
 		Check: function()
@@ -2526,7 +2634,9 @@
 			{
 				this.Focus();
 
-				if (this.selection.lastCheckedRange && this.selection.lastCheckedRange.range && !range)
+				if (this.selection.lastCheckedRange &&
+					this.selection.lastCheckedRange.range &&
+					!range)
 				{
 					try
 					{
@@ -2540,17 +2650,23 @@
 					range = this.selection.GetRange();
 				}
 
-				if (!range.collapsed && range.startContainer == range.endContainer && range.startContainer.nodeName !== 'BODY')
-				{
-					var surNode = this.util.CheckSurrogateNode(range.startContainer);
-					if (surNode)
-					{
-						this.selection.SetAfter(surNode);
-					}
-				}
+				if (!range && this.selection.lastRange)
+					range = this.selection.lastRange;
 
-				this.selection.InsertHTML(html, range);
-				this.selection.ScrollIntoView();
+				if (range)
+				{
+					if (!range.collapsed && range.startContainer == range.endContainer && range.startContainer.nodeName !== 'BODY')
+					{
+						var surNode = this.util.CheckSurrogateNode(range.startContainer);
+						if (surNode)
+						{
+							this.selection.SetAfter(surNode);
+						}
+					}
+
+					this.selection.InsertHTML(html, range);
+					this.selection.ScrollIntoView();
+				}
 			}
 		},
 
@@ -2591,7 +2707,7 @@
 				form = this.dom.form;
 
 			try{
-				BX.addCustomEvent(this, 'OnSubmit', function(){form.BXAUTOSAVE.Init();});
+//				BX.addCustomEvent(this, 'OnSubmit', function(){form.BXAUTOSAVE.Init();}); // to prevent save ticker after form submit, OnContentChanged is enough
 				BX.addCustomEvent(this, 'OnContentChanged', function(){form.BXAUTOSAVE.Init();});
 
 				BX.addCustomEvent(form, 'onAutoSave', function (ob, data)
@@ -2611,6 +2727,287 @@
 					}
 				});
 			}catch(e){}
+		},
+
+		InitImageUploader: function()
+		{
+			if (this.config.uploadImagesFromClipboard !== false)
+			{
+				var uploadUrl = this.config.actionUrl;
+				uploadUrl += (uploadUrl.indexOf('?') !== -1 ? "&" : "?") + 'action=uploadfile';
+				this.imageUploader = BX.Uploader.getInstance({
+					id: this.CID,
+					streams: 1,
+					allowUpload: "A",
+					uploadFileUrl: uploadUrl,
+					uploadMethod: "immediate",
+					showImage: false,
+					sortItems: false,
+					input: null,
+					placeHolder: null,
+					uploadFormData: "N"
+				});
+
+				var _this = this;
+
+				BX.addCustomEvent(this, "OnImageDataUriHandle", function (editor, imageBase64)
+				{
+					var blob = BX.UploaderUtils.dataURLToBlob(imageBase64.src);
+					if (blob && blob.size > 0 && blob.type.indexOf("image/") == 0)
+					{
+						blob.name = (blob.name || imageBase64.title || (this.GetDefaultImageName() + "." + blob.type.substr(6)));
+						blob.uniqId = imageBase64.uniqId;
+						blob.editorBase64Src = imageBase64.src;
+						_this.imageUploader.onChange([blob]);
+					}
+				});
+
+				BX.addCustomEvent(this.imageUploader, "onFileIsCreated", function (id, item)
+				{
+					BX.addCustomEvent(item, "onUploadDone", function (item, result)
+					{
+						_this.HandleImageDataUriCaughtUploadedCallback({
+							src: item.file.editorBase64Src, uniqId: item.file.uniqId
+						}, {
+							src: result.file.uploadedPath
+						});
+					});
+
+					//BX.addCustomEvent(item, "onUploadError", function(item, result){});
+				});
+			}
+		},
+
+		GetDefaultImageName: function()
+		{
+			var imageName = {value: false};
+			this.On("OnGetDefaultUploadImageName", [imageName]);
+			if (!imageName.value)
+			{
+				imageName.value = 'content-img';
+			}
+
+			return imageName.value;
+		},
+
+		InitClipboardHandler: function()
+		{
+			var
+				_this = this;
+
+			this.base64Images = [];
+
+			function checkImages(images)
+			{
+				_this.pasteCheckItteration++;
+				var i;
+				for (i = 0; i < images.length; i++)
+				{
+					if (!images[i].getAttribute('data-bx-paste-check'))
+					{
+						if (images[i].complete)
+							_this.CheckImage(images[i], false);
+						else
+							BX.bind(images[i], 'load', BX.proxy(_this.CheckImage, _this));
+						images[i].setAttribute('data-bx-paste-check', 'Y');
+					}
+				}
+
+				if (_this.pasteCheckItteration == 1)
+					setTimeout(function(){checkImages(images);}, 500);
+				else if (_this.pasteCheckItteration < 15)
+					setTimeout(function(){checkImages(images);}, 1000);
+			}
+
+			BX.bind(this.iframeView.element, 'paste', function (e)
+			{
+				var
+					chromeVerion = 0,
+					imageHandled = false,
+					clipboard = e.clipboardData;
+
+					if (BX.browser.IsChrome() || BX.browser.IsSafari())
+					{
+						var ua = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+						chromeVerion = ua ? parseInt(ua[2], 10) : Infinity;
+					}
+
+				// For firefox works wrong (see mantis:88928, mantis:122421)
+				if (clipboard && clipboard.items
+					&& !BX.browser.IsFirefox()
+					&& (!chromeVerion || chromeVerion < 83)
+				)
+				{
+					var item = clipboard.items[0];
+					if (item && item.type.indexOf('image/') > -1)
+					{
+						var blob = item.getAsFile();
+						if (blob)
+						{
+
+							var reader = new FileReader();
+							reader.readAsDataURL(blob);
+							reader.onload = function (event)
+							{
+								imageHandled = true;
+								var img = new Image();
+								img.src = event.target.result;
+								setTimeout(function()
+								{
+									_this.selection.InsertNode(img);
+									_this.HandleImageDataUri(img);
+								}, 100);
+							}
+						}
+					}
+				}
+
+				if (!imageHandled)
+				{
+					_this.pasteCheckItteration = 0;
+					checkImages(_this.GetIframeDoc().body.getElementsByTagName('IMG'));
+				}
+			});
+
+			BX.removeCustomEvent(this, 'OnImageDataUriCaughtUploaded', BX.proxy(this.HandleImageDataUriCaughtUploadedCallback, this));
+			BX.addCustomEvent(this, 'OnImageDataUriCaughtUploaded', BX.proxy(this.HandleImageDataUriCaughtUploadedCallback, this));
+		},
+
+		GetBase64Image: function(base64source)
+		{
+			var i, result = false;
+
+			for (i = 0; i < this.base64Images.length; i++)
+			{
+				if (this.base64Images[i].source == base64source)
+				{
+					result = this.base64Images[i];
+				}
+			}
+			return result;
+		},
+
+		RegisterBase64Image: function(base64source, status)
+		{
+			this.base64Images.push({
+				source: base64source,
+				status: status,
+				index: this.base64Images.length
+			});
+		},
+
+		CheckImage: function(image, unbind)
+		{
+			if (image && image.getAttribute)
+			{
+				var src = image.getAttribute('src');
+				if (src.indexOf('data:image/') !== -1)
+				{
+					this.HandleImageDataUri(image);
+				}
+
+				if (unbind !== false)
+				{
+					BX.unbind(image, 'load', BX.proxy(this.CheckImage, this));
+				}
+			}
+		},
+
+		HandleImageDataUri: function(image)
+		{
+			if (!image.getAttribute('data-bx-unique-id'))
+			{
+				this.skipPasteControl = true;
+				if (this.pasteControl.isOpened)
+				{
+					this.pasteControl.Hide();
+				}
+
+				var base64Image = this.GetBase64Image(image.src);
+
+				if (base64Image === false)
+				{
+					this.RegisterBase64Image(image.src, 'requested');
+
+					var uniqId = 'bx_base64_id_' + Math.round(Math.random() * 1000000000);
+					image.setAttribute('data-bx-unique-id', uniqId);
+					image.removeAttribute('data-bx-orig-src');
+
+					this.On('OnImageDataUriHandle', [this,
+						{
+							src: image.src,
+							title: image.title || '',
+							uniqId: uniqId
+						}]);
+				}
+				else
+				{
+					if (base64Image.status == 'uploaded')
+					{
+						this.HandleImageDataUriCaughtUploadedCallback(
+							{
+								src: image.src,
+								title: image.title || '',
+								uniqId: base64Image.uniqId
+							},
+							{
+								src: base64Image.fileSrc
+							},
+							base64Image.htmlForInsert || null
+						);
+					}
+				}
+			}
+		},
+
+		HandleImageDataUriCaughtUploadedCallback: function(imageReferer, file, htmlForInsert)
+		{
+			if (imageReferer && imageReferer.uniqId && file && file.src)
+			{
+				var base64Image = this.GetBase64Image(imageReferer.src);
+				if (base64Image && !base64Image.fileSrc)
+				{
+					base64Image.status = 'uploaded';
+					base64Image.uniqId = imageReferer.uniqId;
+					base64Image.fileSrc = file.src;
+					base64Image.htmlForInsert = htmlForInsert;
+				}
+
+				var
+						i,image,
+						images = this.GetIframeDoc().body.getElementsByTagName('IMG');
+
+				for (i = 0; i < images.length; i++)
+				{
+					image = images[i];
+					if (image.getAttribute('data-bx-unique-id') == imageReferer.uniqId
+						||
+						image.getAttribute('src') == imageReferer.src
+					)
+					{
+						if (htmlForInsert && htmlForInsert.replacement)
+						{
+							this.selection.SetAfter(image);
+							this.selection.InsertHTML(htmlForInsert.replacement);
+
+							BX.remove(image);
+							if (htmlForInsert.callback)
+							{
+								setTimeout(htmlForInsert.callback, 300);
+							}
+						}
+						else
+						{
+							image.src = file.src;
+							image.setAttribute('src', file.src);
+							image.setAttribute('data-bx-orig-src', file.src);
+							image.removeAttribute('data-bx-paste-check');
+							image.removeAttribute('data-bx-unique-id');
+						}
+					}
+				}
+			}
+			this.skipPasteControl = false;
 		}
 	};
 
@@ -2775,9 +3172,12 @@
 				headHtml = "",
 				i;
 
-			if (this.editor.config.bodyClass)
+			if (this.editor.config.bodyClass || this.editor.IsExpanded())
 			{
-				bodyParams += ' class="' + this.editor.config.bodyClass + '"';
+				var bodyClass = this.editor.config.bodyClass || '';
+				if (this.editor.IsExpanded())
+					bodyClass += ' fullscreen';
+				bodyParams += ' class="' + BX.util.trim(bodyClass) + '"';
 			}
 			if (this.editor.config.bodyId)
 			{
@@ -3269,8 +3669,8 @@
 						top += node.offsetTop || 0;
 						node = node.offsetParent;
 					} while (node);
+					tempNode.parentNode.removeChild(tempNode);
 				}
-				tempNode.parentNode.removeChild(tempNode);
 
 				var
 					scrollPos = BX.GetWindowScrollPos(doc),
@@ -3393,7 +3793,14 @@
 
 				selection = this.GetSelection();
 			}
-			return selection && selection.rangeCount && selection.getRangeAt(0);
+
+			var range = selection && selection.rangeCount && selection.getRangeAt(0);
+			if (range.commonAncestorContainer && range.commonAncestorContainer.nodeName == '#document')
+			{
+				range.selectNodeContents(this.editor.GetIframeDoc().body);
+			}
+
+			return range;
 		},
 
 		GetSelection: function(doc)
@@ -3629,7 +4036,6 @@
 		DoMerge: function()
 		{
 			var
-				onlyTextNodes = true,
 				i, len = this.textNodes.length,
 				textBits = [], textNode, parent, text;
 
@@ -3816,10 +4222,8 @@
 				range.setEnd(rangeEndNode, rangeEndOffset);
 			}
 
-
 			// Simplify elements
 			textNodes = range.getNodes([3]);
-
 			for (i = 0; i < textNodes.length; ++i)
 			{
 				textNode = textNodes[i];
@@ -3889,12 +4293,18 @@
 			}
 			else
 			{
+				// TODO: fix it. Now code fails on this example, try to make "22" italic
+				// <i>11 </i>22<i><br>
+				// 33 </i><br>
+				/*
 				// Compare element with its sibling
 				adjacentNode = el[propName];
 				if (adjacentNode && this.AreElementsMergeable(node, adjacentNode))
 				{
+
 					return adjacentNode[forward ? "firstChild" : "lastChild"];
 				}
+				*/
 			}
 			return null;
 		},
@@ -4022,13 +4432,25 @@
 				var parentRange = range.cloneRange();
 				parentRange.selectNode(styledParent);
 
-				if (parentRange.isPointInRange(range.endContainer, range.endOffset) && this.editor.util.IsSplitPoint(range.endContainer, range.endOffset) && range.endContainer.nodeName !== 'BODY')
+
+				BX.isParentForNode(styledParent, range.endContainer)
+				if (
+					range.endContainer.nodeName !== 'BODY' &&
+					parentRange.isPointInRange(range.endContainer, range.endOffset) &&
+					this.editor.util.IsSplitPoint(range.endContainer, range.endOffset) &&
+					BX.isParentForNode(styledParent, range.endContainer)
+				)
 				{
 					this.editor.util.SplitNodeAt(styledParent, range.endContainer, range.endOffset);
 					range.setEndAfter(styledParent);
 				}
 
-				if (parentRange.isPointInRange(range.startContainer, range.startOffset) && this.editor.util.IsSplitPoint(range.startContainer, range.startOffset) && range.startContainer.nodeName !== 'BODY')
+				if (
+					range.startContainer.nodeName !== 'BODY' &&
+					parentRange.isPointInRange(range.startContainer, range.startOffset) &&
+					this.editor.util.IsSplitPoint(range.startContainer, range.startOffset) &&
+					BX.isParentForNode(styledParent, range.startContainer)
+					)
 				{
 					styledParent = this.editor.util.SplitNodeAt(styledParent, range.startContainer, range.startOffset);
 				}
@@ -4061,16 +4483,14 @@
 		ApplyToRange: function(range)
 		{
 			var textNodes = range.getNodes([3]);
+
 			if (!textNodes.length)
 			{
 				try {
 					var node = this.CreateContainer();
 					range.surroundContents(node);
-
 					range = this.NormalizeNewNode(node, range);
 					this.SelectNode(range, node);
-
-
 					return range;
 				} catch(e) {}
 			}
@@ -4107,7 +4527,6 @@
 					this.PostApply(textNodes, range);
 				}
 			}
-
 			return range;
 		},
 
@@ -4596,6 +5015,7 @@
 			"figure": {},
 			"figcaption": {},
 			"fieldset": {},
+			"legend": {},
 
 			// Lists
 			"menu": {rename_tag: "ul"}, // ??
@@ -4667,6 +5087,12 @@
 
 			"details": {},
 			"summary": {},
+			"footer": {},
+
+			"video": {},
+			"source": {},
+			"audio": {},
+			"nofollow": {},
 
 			// tags to remove
 			"title": {remove: 1},
@@ -4684,17 +5110,14 @@
 			"meta": {remove: 1},
 			"isindex": {remove: 1},
 			"base": {remove: 1},
-			"video": {remove: 1},
 			"canvas": {remove: 1},
 			"applet": {remove: 1},
 			"spacer": {remove: 1},
-			"source": {remove: 1},
 			"frame": {remove: 1},
 			"style": {remove: 1},
 			"device": {remove: 1},
 			"xml": {remove: 1},
 			"nextid": {remove: 1},
-			"audio": {remove: 1},
 			"link": {remove: 1},
 			"script": {remove: 1},
 			"comment": {remove: 1},
@@ -4703,7 +5126,6 @@
 			// Tags to rename
 			// to DIV
 			"multicol": {rename_tag: "div"},
-			"footer": {rename_tag: "div"},
 			"map": {rename_tag: "div"},
 			"body": {rename_tag: "div"},
 			"html": {rename_tag: "div"},
@@ -4726,7 +5148,6 @@
 			"tt": {rename_tag: "span"},
 			"blink": {rename_tag: "span"},
 			"plaintext": {rename_tag: "span"},
-			"legend": {rename_tag: "span"},
 			"kbd": {rename_tag: "span"},
 			"meter": {rename_tag: "span"},
 			"datalist": {rename_tag: "span"},

@@ -7,6 +7,8 @@ class Collection
 	 * Sorting array by column.
 	 * You can use short mode: Collection::sortByColumn($arr, 'value'); This is equal Collection::sortByColumn($arr, array('value' => SORT_ASC))
 	 *
+	 * Pay attention: if two members compare as equal, their relative order in the sorted array is undefined. The sorting is not stable.
+	 *
 	 * More example:
 	 * Collection::sortByColumn($arr, array('value' => array(SORT_NUMERIC, SORT_ASC), 'attr' => SORT_DESC), array('attr' => 'strlen'), 'www');
 	 *
@@ -92,7 +94,7 @@ class Collection
 	/**
 	 * Takes all arguments by pairs..
 	 * Odd arguments are arrays.
-	 * Even arguments ere keys to lookup in these arrays.
+	 * Even arguments are keys to lookup in these arrays.
 	 * Keys may be arrays. In this case function will try to dig deeper.
 	 * Returns first not empty element of a[k] pair.
 	 *
@@ -137,11 +139,11 @@ class Collection
 	}
 
 	/**
-	 * convert array values to int, return unique values > 0. optionally sorted array
+	 * Convert array values to int, return unique values > 0. Optionally sorted array.
 	 *
-	 * @param array $map - array for normalize
-	 * @param bool $sorted - if sorted true, result array will be sorted
-	 * @return null
+	 * @param array &$map	Array for normalize.
+	 * @param bool $sorted	If sorted true, result array will be sorted.
+	 * @return void
 	 */
 	public static function normalizeArrayValuesByInt(&$map, $sorted = true)
 	{
@@ -175,5 +177,32 @@ class Collection
 		$array = array_keys($array);
 
 		return ($array !== array_keys($array));
+	}
+
+	/**
+	 * Clone array recursively. Keys are preserved
+	 *
+	 * @param array $originalArray - array to clone
+	 *
+	 * @return array
+	 */
+	public static function clone(array $originalArray): array
+	{
+		$clonedArray = [];
+		foreach ($originalArray as $index => $value)
+		{
+			if (is_array($value))
+			{
+				$value = static::clone($value);
+			}
+			elseif (is_object($value))
+			{
+				$value = clone $value;
+			}
+
+			$clonedArray[$index] = $value;
+		}
+
+		return $clonedArray;
 	}
 }

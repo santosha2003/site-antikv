@@ -4,10 +4,10 @@ foreach ($arResult["VALUE"] as $key => $res):
 	if (!$first):
 		?><span class="fields separator"></span><?
 	else:
-		$first = false;	
+		$first = false;
 	endif;
 
-	if (StrLen($arParams['arUserField']['PROPERTY_VALUE_LINK']) > 0)
+	if ($arParams['arUserField']['PROPERTY_VALUE_LINK'] <> '')
 		$res = '<a href="'.str_replace('#VALUE#', $arResult["~VALUE"][$key], $arParams['arUserField']['PROPERTY_VALUE_LINK']).'">'.$res.'</a>';
 ?><span class="fields enumeration"><?=$res?></span><?
 endforeach;?>

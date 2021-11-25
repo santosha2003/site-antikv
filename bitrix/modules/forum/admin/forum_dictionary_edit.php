@@ -3,7 +3,7 @@
 	Unquotable words.
 ********************************************************************/
 	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/include.php");
+	\Bitrix\Main\Loader::includeModule("forum");
 	$forumPermissions = $APPLICATION->GetGroupRight("forum");
 	if ($forumPermissions == "D")
 		$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
@@ -14,7 +14,7 @@
 	$sError = false;
 	$TYPE = ($TYPE == "T" ? "T" : "W");
 /*******************************************************************/
-	if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && (CFilterUnquotableWords::FilterPerm()) && check_bitrix_sessid())
+	if ($REQUEST_METHOD=="POST" && $Update <> '' && (CFilterUnquotableWords::FilterPerm()) && check_bitrix_sessid())
 	{
 		$erMsg = array(); $arFields = array();
 		$APPLICATION->ResetException();
@@ -99,7 +99,7 @@
 ?><form method="POST" action="<?=$APPLICATION->GetCurPage()?>?" name="forum_edit">
 	<input type="hidden" name="Update" value="Y" />
 	<input type="hidden" name="lang" value="<?=LANG ?>" />
-	<input type="hidden" name="DICTIONARY_ID" value="<?=$arFields["ID"]?>" />
+	<input type="hidden" name="DICTIONARY_ID" value="<?=htmlspecialcharsbx($arFields["ID"])?>" />
 	<?=bitrix_sessid_post()?><?
 	$aTabs = array(array("DIV" => "edit", "TAB" => GetMessage("FLTR_NEW"), "ICON" => "forum", "TITLE" => ""));
 	$tabControl = new CAdminTabControl("tabControl", $aTabs);

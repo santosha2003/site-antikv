@@ -38,4 +38,7 @@ $MESS["STA_MAILTO"] = "Написати листа";
 $MESS["STA_USER_INFO"] = "Профайл користувача";
 $MESS["STA_ORDER_VIEW"] = "Переглянути замовлення";
 $MESS["STA_AF_VIP"] = "Афіліатські виплати";
+$MESS["STA_TPAY_PART"] = "Часткова оплата замовлення";
+$MESS["STA_TTRANSF_EXCESS_SUM_PAID"] = "Переказ надлишку оплати замовлення";
+$MESS["STA_TRETURN"] = "Повернення коштів оплати замовлення";
 ?>

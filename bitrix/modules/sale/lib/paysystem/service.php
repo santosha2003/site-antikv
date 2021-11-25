@@ -4,90 +4,207 @@ namespace Bitrix\Sale\PaySystem;
 
 use Bitrix\Main\Entity\EntityError;
 use Bitrix\Main\Error;
+use Bitrix\Main\Event;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\NotSupportedException;
 use Bitrix\Main\Request;
 use Bitrix\Main\SystemException;
+use Bitrix\Sale;
 use Bitrix\Sale\Order;
 use Bitrix\Sale\Payment;
-use Bitrix\Sale\PaySystem;
+use Bitrix\Sale\Registry;
 use Bitrix\Sale\Result;
-use Bitrix\Main\IO;
+use Bitrix\Sale\ResultError;
+use Bitrix\Sale\Cashbox;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class Service
+ * @package Bitrix\Sale\PaySystem
+ */
 class Service
 {
-	/** @var ServiceHandler|IHold|IRefund|IPrePayable|ICheckable|IPayable $handler */
+	public const EVENT_ON_BEFORE_PAYMENT_PAID = 'OnSalePsServiceProcessRequestBeforePaid';
+
+	public const EVENT_BEFORE_ON_INITIATE_PAY = 'onSalePsBeforeInitiatePay';
+	public const EVENT_INITIATE_PAY_SUCCESS = 'onSalePsInitiatePaySuccess';
+	public const EVENT_INITIATE_PAY_ERROR = 'onSalePsInitiatePayError';
+
+	public const PAY_SYSTEM_PREFIX = 'PAYSYSTEM_';
+
+	/** @var ServiceHandler|IHold|IPartialHold|IRefund|IPrePayable|ICheckable|IPayable|IPdf|IDocumentGeneratePdf|IRecurring|Sale\PaySystem\Cashbox\ISupportPrintCheck $handler */
 	private $handler = null;
-	/**
-	 * @var array
-	 */
+
+	/** @var array */
 	private $fields = array();
 
+	/** @var bool */
+	protected $isClone = false;
+
+	/** @var Context  */
+	protected $context;
+
 	/**
+	 * Service constructor.
 	 * @param $fields
+	 * @throws \Bitrix\Main\ArgumentNullException
+	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
 	public function __construct($fields)
 	{
-		$handlerType = '';
-		$className = '';
-
-		$name = Manager::getFolderFromClassName($fields['ACTION_FILE']);
-
-		foreach (Manager::getHandlerDirectories() as $type => $path)
-		{
-			if (IO\File::isFileExists($_SERVER['DOCUMENT_ROOT'].$path.$name.'/handler.php'))
-			{
-				$className = Manager::getClassNameFromPath($fields['ACTION_FILE']);
-				if (!class_exists($className))
-					require_once($_SERVER['DOCUMENT_ROOT'].$path.$name.'/handler.php');
-
-				if (class_exists($className))
-				{
-					$handlerType = $type;
-					break;
-				}
-			}
-		}
-
-		if ($className === '')
-		{
-			$className = '\Bitrix\Sale\PaySystem\CompatibilityHandler';
-			$handlerType = $fields['ACTION_FILE'];
-		}
+		[$className, $handlerType] = Manager::includeHandler($fields["ACTION_FILE"]);
 
 		$this->fields = $fields;
 		$this->handler = new $className($handlerType, $this);
+
+		$this->context = new Context();
 	}
 
 	/**
 	 * @param Payment $payment
 	 * @param Request|null $request
-	 * @return mixed
+	 * @param int $mode
+	 * @return ServiceResult
+	 * @throws NotSupportedException
+	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentException
+	 * @throws \Bitrix\Main\ArgumentNullException
+	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 * @throws \Bitrix\Main\LoaderException
+	 * @throws \Bitrix\Main\NotImplementedException
+	 * @throws \Bitrix\Main\ObjectException
+	 * @throws \Bitrix\Main\ObjectPropertyException
 	 */
-	public function initiatePay(Payment $payment, Request $request = null)
+	public function initiatePay(Payment $payment, Request $request = null, $mode = BaseServiceHandler::STREAM)
 	{
-		return $this->handler->initiatePay($payment, $request);
+		$this->callEventOnBeforeInitiatePay($payment);
+
+		$this->handler->setInitiateMode($mode);
+		$initResult = $this->handler->initiatePay($payment, $request);
+
+		$psData = $initResult->getPsData();
+		if ($psData)
+		{
+			$setResult = $payment->setFields($psData);
+			if ($setResult->isSuccess())
+			{
+				$order = $payment->getCollection()->getOrder();
+				if ($order)
+				{
+					$saveResult = $order->save();
+					if (!$saveResult->isSuccess())
+					{
+						$initResult->addErrors($saveResult->getErrors());
+					}
+				}
+			}
+			else
+			{
+				$initResult->addErrors($setResult->getErrors());
+			}
+		}
+
+		if ($initResult->isSuccess())
+		{
+			$this->callEventOnInitiatePaySuccess($payment);
+		}
+		else
+		{
+			$error = implode("\n", $initResult->getErrorMessages());
+			Logger::addError(get_class($this->handler).". InitiatePay: ".$error);
+
+			$this->callEventOnInitiatePayError($payment, $initResult);
+		}
+
+		return $initResult;
 	}
 
+	private function callEventOnBeforeInitiatePay(Payment $payment)
+	{
+		$event = new Event(
+			'sale',
+			self::EVENT_BEFORE_ON_INITIATE_PAY,
+			[
+				'payment' => $payment,
+				'service' => $this
+			]
+		);
+
+		$event->send();
+	}
+
+	private function callEventOnInitiatePaySuccess(Payment $payment)
+	{
+		$event = new Event(
+			'sale',
+			self::EVENT_INITIATE_PAY_SUCCESS,
+			[
+				'payment' => $payment
+			]
+		);
+
+		$event->send();
+	}
+
+	private function callEventOnInitiatePayError(Payment $payment, ServiceResult $result)
+	{
+		$event = new Event(
+			'sale',
+			self::EVENT_INITIATE_PAY_ERROR,
+			[
+				'payment' => $payment,
+				'errors' => $result->getErrorMessages(),
+			]
+		);
+
+		$event->send();
+	}
 	/**
 	 * @return bool
 	 */
 	public function isRefundable()
 	{
+		if ($this->handler instanceof IRefundExtended)
+		{
+			return $this->handler->isRefundableExtended();
+		}
+
 		return $this->handler instanceof IRefund;
 	}
 
 	/**
 	 * @param Payment $payment
-	 * @return mixed
+	 * @param int $refundableSum
+	 * @return ServiceResult|Result
 	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
-	public function refund(Payment $payment)
+	public function refund(Payment $payment, $refundableSum = 0)
 	{
 		if ($this->isRefundable())
-			return $this->handler->refund($payment);
+		{
+			$result = new Result();
+
+			if (!$payment->isPaid())
+			{
+				$result->addError(new ResultError(Loc::getMessage('SALE_PS_SERVICE_PAYMENT_NOT_PAID')));
+				return $result;
+			}
+
+			if ($refundableSum == 0)
+				$refundableSum = $payment->getSum();
+
+			/** @var ServiceResult $result */
+			$result = $this->handler->refund($payment, $refundableSum);
+			if (!$result->isSuccess())
+			{
+				Logger::addError(get_class($this->handler).': refund: '.implode("\n", $result->getErrorMessages()));
+			}
+
+			return $result;
+		}
 
 		throw new SystemException();
 	}
@@ -95,51 +212,69 @@ class Service
 	/**
 	 * @param Request $request
 	 * @return Result
+	 * @throws NotSupportedException
+	 * @throws \Bitrix\Main\ArgumentException
 	 * @throws \Bitrix\Main\ArgumentNullException
 	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 * @throws \Bitrix\Main\ObjectException
 	 * @throws \Bitrix\Main\ObjectNotFoundException
 	 */
 	public function processRequest(Request $request)
 	{
 		$processResult = new Result();
 
+		if (!($this->handler instanceof ServiceHandler))
+		{
+			return $processResult;
+		}
+
+		$debugInfo = http_build_query($request->toArray(), "", "\n");
+		if (empty($debugInfo))
+		{
+			$debugInfo = file_get_contents("php://input");
+		}
+		Logger::addDebugInfo(
+			get_class($this->handler)." ProcessRequest. paySystemId=".$this->getField("ID").", request=".($debugInfo ? $debugInfo : "empty")
+		);
+
 		$paymentId = $this->handler->getPaymentIdFromRequest($request);
 
 		if (empty($paymentId))
 		{
-			$errorMessage = str_replace('#PAYMENT_ID#', $paymentId, Loc::getMessage('SALE_PS_SERVICE_PAYMENT_ERROR'));
-			$processResult->addError(new Error($errorMessage));
-			ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => $errorMessage
-			));
+			$processResult->addError(new Error(Loc::getMessage('SALE_PS_SERVICE_PAYMENT_ERROR_EMPTY')));
+
+			Logger::addError(
+				get_class($this->handler).'. ProcessRequest: '.Loc::getMessage('SALE_PS_SERVICE_PAYMENT_ERROR_EMPTY')
+			);
+
 			return $processResult;
 		}
 
-		list($orderId, $paymentId) = Manager::getIdsByPayment($paymentId);
+		[$orderId, $paymentId] = Manager::getIdsByPayment($paymentId, $this->getField('ENTITY_REGISTRY_TYPE'));
 
 		if (!$orderId)
 		{
 			$errorMessage = str_replace('#ORDER_ID#', $orderId, Loc::getMessage('SALE_PS_SERVICE_ORDER_ERROR'));
 			$processResult->addError(new Error($errorMessage));
-			ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => $errorMessage
-			));
+
+			Logger::addError(get_class($this->handler).'. ProcessRequest: '.$errorMessage);
+
 			return $processResult;
 		}
 
-		/** @var \Bitrix\Sale\Order $order */
-		$order = Order::load($orderId);
+		$registry = Registry::getInstance($this->getField('ENTITY_REGISTRY_TYPE'));
+		/** @var Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
 
+		$order = $orderClassName::load($orderId);
 		if (!$order)
 		{
 			$errorMessage = str_replace('#ORDER_ID#', $orderId, Loc::getMessage('SALE_PS_SERVICE_ORDER_ERROR'));
 			$processResult->addError(new Error($errorMessage));
-			ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => $errorMessage
-			));
+
+			Logger::addError(get_class($this->handler).'. ProcessRequest: '.$errorMessage);
+
 			return $processResult;
 		}
 
@@ -147,12 +282,12 @@ class Service
 		{
 			$errorMessage = str_replace('#ORDER_ID#', $orderId, Loc::getMessage('SALE_PS_SERVICE_ORDER_CANCELED'));
 			$processResult->addError(new Error($errorMessage));
-			ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => $errorMessage
-			));
+
+			Logger::addError(get_class($this->handler).'. ProcessRequest: '.$errorMessage);
+
 			return $processResult;
 		}
+
 		/** @var \Bitrix\Sale\PaymentCollection $collection */
 		$collection = $order->getPaymentCollection();
 
@@ -161,26 +296,16 @@ class Service
 
 		if (!$payment)
 		{
-			$errorMessage = str_replace('#PAYMENT_ID#', $orderId, Loc::getMessage('SALE_PS_SERVICE_PAYMENT_ERROR'));
+			$errorMessage = str_replace('#PAYMENT_ID#', $paymentId, Loc::getMessage('SALE_PS_SERVICE_PAYMENT_ERROR'));
 			$processResult->addError(new Error($errorMessage));
-			ErrorLog::add(array(
-				'ACTION' => 'processRequest',
-				'MESSAGE' => $errorMessage
-			));
-			return $processResult;
-		}
 
-		if (ErrorLog::DEBUG_MODE)
-		{
-			ErrorLog::add(array(
-				'ACTION' => 'RESPONSE',
-				'MESSAGE' => print_r($request->toArray(), 1)
-			));
+			Logger::addError(get_class($this->handler).'. ProcessRequest: '.$errorMessage);
+
+			return $processResult;
 		}
 
 		/** @var \Bitrix\Sale\PaySystem\ServiceResult $serviceResult */
 		$serviceResult = $this->handler->processRequest($payment, $request);
-
 		if ($serviceResult->isSuccess())
 		{
 			$status = null;
@@ -193,13 +318,21 @@ class Service
 
 			if ($status !== null)
 			{
+				$event = new Event('sale', self::EVENT_ON_BEFORE_PAYMENT_PAID,
+					array(
+						'payment' => $payment,
+						'status' => $status,
+						'pay_system_id' => $this->getField('ID')
+					)
+				);
+				$event->send();
+
 				$paidResult = $payment->setPaid($status);
 				if (!$paidResult->isSuccess())
 				{
-					ErrorLog::add(array(
-						'ACTION' => 'PAYMENT SET PAID',
-						'MESSAGE' => join(' ', $paidResult->getErrorMessages())
-					));
+					$error = 'PAYMENT SET PAID: '.join(' ', $paidResult->getErrorMessages());
+					Logger::addError(get_class($this->handler).'. ProcessRequest: '.$error);
+
 					$serviceResult->setResultApplied(false);
 				}
 			}
@@ -208,13 +341,11 @@ class Service
 			if ($psData)
 			{
 				$res = $payment->setFields($psData);
-
 				if (!$res->isSuccess())
 				{
-					ErrorLog::add(array(
-						'ACTION' => 'PAYMENT SET DATA',
-						'MESSAGE' => join(' ', $res->getErrorMessages())
-					));
+					$error = 'PAYMENT SET PAID: '.join(' ', $res->getErrorMessages());
+					Logger::addError(get_class($this->handler).'. ProcessRequest: '.$error);
+
 					$serviceResult->setResultApplied(false);
 				}
 			}
@@ -223,12 +354,27 @@ class Service
 
 			if (!$saveResult->isSuccess())
 			{
-				ErrorLog::add(array(
-					'ACTION' => 'ORDER SAVE',
-					'MESSAGE' => join(' ', $saveResult->getErrorMessages())
-				));
+				$error = 'ORDER SAVE: '.join(' ', $saveResult->getErrorMessages());
+				Logger::addError(get_class($this->handler).'. ProcessRequest: '.$error);
+
 				$serviceResult->setResultApplied(false);
 			}
+		}
+		else
+		{
+			$serviceResult->setResultApplied(false);
+			$processResult->addErrors($serviceResult->getErrors());
+
+			$markerClassName = $registry->getEntityMarkerClassName();
+			$markerResult = new Result();
+			$markerResult->addWarnings($serviceResult->getErrors());
+			$markerClassName::addMarker($order, $payment, $markerResult);
+			$payment->setField('MARKED', 'Y');
+
+			$order->save();
+
+			$error = implode("\n", $serviceResult->getErrorMessages());
+			Logger::addError(get_class($this->handler).'. ProcessRequest Error: '.$error);
 		}
 
 		$this->handler->sendResponse($serviceResult, $request);
@@ -241,7 +387,7 @@ class Service
 	 */
 	public function getConsumerName()
 	{
-		return 'PAYSYSTEM_'.$this->fields['ID'];
+		return static::PAY_SYSTEM_PREFIX.$this->fields['ID'];
 	}
 
 	/**
@@ -257,33 +403,47 @@ class Service
 	 */
 	public function isBlockable()
 	{
-		return $this->handler instanceof IHold;
+		return $this->handler instanceof IHold || $this->handler instanceof IPartialHold;
 	}
 
 	/**
 	 * @param Payment $payment
-	 * @return mixed
+	 * @return ServiceResult
 	 * @throws SystemException
 	 */
 	public function cancel(Payment $payment)
 	{
 		if ($this->isBlockable())
+		{
 			return $this->handler->cancel($payment);
+		}
 
-		throw new SystemException();
+		throw new SystemException(Loc::getMessage('SALE_PS_SERVICE_ERROR_HOLD_IS_NOT_SUPPORTED'));
 	}
 
 	/**
 	 * @param Payment $payment
-	 * @return mixed
+	 * @param int $sum
+	 * @return ServiceResult
 	 * @throws SystemException
 	 */
-	public function confirm(Payment $payment)
+	public function confirm(Payment $payment, $sum = 0)
 	{
 		if ($this->isBlockable())
-			return  $this->handler->confirm($payment);
+		{
+			if ($this->handler instanceof IPartialHold)
+			{
+				return $this->handler->confirm($payment, $sum);
+			}
+			else if ($sum > 0)
+			{
+				throw new SystemException(Loc::getMessage('SALE_PS_SERVICE_ERROR_PARTIAL_CONFIRM_IS_NOT_SUPPORTED'));
+			}
 
-		throw new SystemException();
+			return $this->handler->confirm($payment);
+		}
+
+		throw new SystemException(Loc::getMessage('SALE_PS_SERVICE_ERROR_HOLD_IS_NOT_SUPPORTED'));
 	}
 
 	/**
@@ -308,16 +468,61 @@ class Service
 	 */
 	public function isCash()
 	{
-		return $this->fields['IS_CASH'] == 'Y';
+		return $this->fields['IS_CASH'] === 'Y';
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function canPrintCheck(): bool
+	{
+		return $this->fields['CAN_PRINT_CHECK'] === 'Y';
 	}
 
 	/**
 	 * @param Payment $payment
-	 * @return Result
+	 * @return bool
+	 */
+	public function canPrintCheckSelf(Payment $payment): bool
+	{
+		$service = $payment->getPaySystem();
+		if (!$this->isSupportPrintCheck() || !$this->canPrintCheck())
+		{
+			return false;
+		}
+
+		/** @var Cashbox\CashboxPaySystem $cashboxClass */
+		$cashboxClass = $this->getCashboxClass();
+
+		$paySystemParams = $service->getParamsBusValue($payment);
+		$paySystemCodeForKkm = $cashboxClass::getPaySystemCodeForKkm();
+
+		return (bool)Cashbox\Manager::getList([
+			'select' => ['ID'],
+			'filter' => [
+				'=ACTIVE' => 'Y',
+				'=HANDLER' => $cashboxClass,
+				'=KKM_ID' => $paySystemParams[$paySystemCodeForKkm],
+			],
+		])->fetch();
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return ServiceResult
 	 */
 	public function creditNoDemand(Payment $payment)
 	{
 		return $this->handler->creditNoDemand($payment);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return ServiceResult
+	 */
+	public function debitNoDemand(Payment $payment)
+	{
+		return $this->handler->debitNoDemand($payment);
 	}
 
 	/**
@@ -339,7 +544,76 @@ class Service
 	 */
 	public function isAffordPdf()
 	{
-		return $this->handler->isAffordPdf();
+		return $this->handler instanceof IPdf;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAffordDocumentGeneratePdf()
+	{
+		return $this->handler instanceof IDocumentGeneratePdf;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed
+	 * @throws NotSupportedException
+	 */
+	public function getPdfContent(Payment $payment)
+	{
+		if ($this->isAffordPdf())
+		{
+			return $this->handler->getContent($payment);
+		}
+
+		throw new NotSupportedException('Handler is not implemented interface '.IPdf::class);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed
+	 * @throws NotSupportedException
+	 */
+	public function getPdf(Payment $payment)
+	{
+		if ($this->isAffordPdf())
+		{
+			return $this->handler->getFile($payment);
+		}
+
+		throw new NotSupportedException('Handler is not implemented interface '.IPdf::class);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @param $params
+	 * @return mixed
+	 * @throws NotSupportedException
+	 */
+	public function registerCallbackOnGenerate(Payment $payment, $params)
+	{
+		if ($this->isAffordDocumentGeneratePdf())
+		{
+			return $this->handler->registerCallbackOnGenerate($payment, $params);
+		}
+
+		throw new NotSupportedException('Handler is not implemented interface '.IDocumentGeneratePdf::class);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed
+	 * @throws NotSupportedException
+	 */
+	public function isPdfGenerated(Payment $payment)
+	{
+		if ($this->isAffordPdf())
+		{
+			return $this->handler->isGenerated($payment);
+		}
+
+		throw new NotSupportedException('Handler is not implemented interface '.IPdf::class);
 	}
 
 	/**
@@ -365,10 +639,11 @@ class Service
 	/**
 	 * @param Payment|null $payment
 	 * @param $templateName
+	 * @return ServiceResult
 	 */
 	public function showTemplate(Payment $payment = null, $templateName)
 	{
-		$this->handler->showTemplate($payment, $templateName);
+		return $this->handler->showTemplate($payment, $templateName);
 	}
 
 	/**
@@ -412,7 +687,7 @@ class Service
 	public function basketButtonAction(array $orderData = array())
 	{
 		if ($this->isPrePayable())
-			return $this->handler->basketButtonAction($orderData = array());
+			return $this->handler->basketButtonAction($orderData);
 
 		throw new NotSupportedException;
 	}
@@ -470,17 +745,17 @@ class Service
 		if (method_exists($this->handler, 'isCheckableCompatibility'))
 			return $this->handler->isCheckableCompatibility();
 
-		return true;
+		return false;
 	}
 
 	/**
 	 * @param Payment $payment
-	 * @return \Bitrix\Main\Entity\AddResult|\Bitrix\Main\Entity\UpdateResult|ServiceResult|Result|mixed
-	 * @throws NotSupportedException
-	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
+	 * @return ServiceResult
 	 */
 	public function check(Payment $payment)
 	{
+		$result = new ServiceResult();
+
 		if ($this->isCheckable())
 		{
 			/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
@@ -492,38 +767,212 @@ class Service
 			if (!$order->isCanceled())
 			{
 				/** @var ServiceResult $result */
-				$result = $this->handler->check($payment);
-				if ($result instanceof ServiceResult && $result->isSuccess())
+				$checkResult = $this->handler->check($payment);
+				if ($checkResult instanceof ServiceResult && $checkResult->isSuccess())
 				{
-					$psData = $result->getPsData();
+					$psData = $checkResult->getPsData();
 					if ($psData)
 					{
 						$res = $payment->setFields($psData);
 						if (!$res->isSuccess())
-							return $res;
-
-						if ($result->getOperationType() == ServiceResult::MONEY_COMING)
-						{
-							$res = $payment->setPaid('Y');
-							if (!$res->isSuccess())
-								return $res;
-						}
-
-						$res = $order->save();
-						if (!$res->isSuccess())
-							return $res;
+							$result->addErrors($res->getErrors());
 					}
+
+					if ($checkResult->getOperationType() == ServiceResult::MONEY_COMING)
+					{
+						$res = $payment->setPaid('Y');
+						if (!$res->isSuccess())
+							$result->addErrors($res->getErrors());
+					}
+
+					$res = $order->save();
+					if (!$res->isSuccess())
+						$result->addErrors($res->getErrors());
+				}
+				elseif (!$checkResult)
+				{
+					$result->addError(new Error(Loc::getMessage('SALE_PS_SERVICE_ERROR_CONNECT_PS')));
 				}
 			}
 			else
 			{
-				$result = new ServiceResult();
 				$result->addError(new EntityError(Loc::getMessage('SALE_PS_SERVICE_ORDER_CANCELED', array('#ORDER_ID#' => $order->getId()))));
 			}
-
-			return $result;
 		}
 
-		throw new NotSupportedException;
+		return $result;
+	}
+
+	/**
+	 * @param \SplObjectStorage $cloneEntity
+	 *
+	 * @return Service
+	 */
+	public function createClone(\SplObjectStorage $cloneEntity)
+	{
+		if ($this->isClone() && $cloneEntity->contains($this))
+		{
+			return $cloneEntity[$this];
+		}
+
+		$paySystemServiceClone = clone $this;
+		$paySystemServiceClone->isClone = true;
+
+		if (!$cloneEntity->contains($this))
+		{
+			$cloneEntity[$this] = $paySystemServiceClone;
+		}
+
+		if ($handler = $this->handler)
+		{
+			if (!$cloneEntity->contains($handler))
+			{
+				$cloneEntity[$handler] = $handler->createClone($cloneEntity);
+			}
+
+			if ($cloneEntity->contains($handler))
+			{
+				$paySystemServiceClone->handler = $cloneEntity[$handler];
+			}
+		}
+
+		return $paySystemServiceClone;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isClone()
+	{
+		return $this->isClone;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCustom()
+	{
+		return in_array($this->handler->getHandlerType(), array('CUSTOM', 'USER'));
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return array
+	 */
+	public function getParamsBusValue(Payment $payment)
+	{
+		return $this->handler->getParamsBusValue($payment);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isTuned()
+	{
+		return $this->handler->isTuned();
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getDemoParams()
+	{
+		return $this->handler->getDemoParams();
+	}
+
+	/**
+	 * @param $mode
+	 */
+	public function setTemplateMode($mode)
+	{
+		$this->handler->setInitiateMode($mode);
+	}
+
+	/**
+	 * @return Context
+	 */
+	public function getContext(): Context
+	{
+		return $this->context;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return bool
+	 */
+	public function isRecurring(Payment $payment): bool
+	{
+		return $this->handler instanceof IRecurring
+			&& $this->handler->isRecurring($payment);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @param Request|null $request
+	 * @return ServiceResult
+	 */
+	public function repeatRecurrent(Payment $payment, Request $request = null): ServiceResult
+	{
+		$result = new ServiceResult();
+
+		if ($this->isRecurring($payment))
+		{
+			return $this->handler->repeatRecurrent($payment, $request);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @param Request|null $request
+	 * @return ServiceResult
+	 */
+	public function cancelRecurrent(Payment $payment, Request $request = null): ServiceResult
+	{
+		$result = new ServiceResult();
+
+		if ($this->isRecurring($payment))
+		{
+			return $this->handler->cancelRecurrent($payment, $request);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Returns true if handler extends ISupportPrintCheck interface
+	 *
+	 * @return bool
+	 */
+	public function isSupportPrintCheck(): bool
+	{
+		return $this->handler instanceof Sale\PaySystem\Cashbox\ISupportPrintCheck;
+	}
+
+	/**
+	 * Returns class name of cashbox for pay system
+	 *
+	 * @return string
+	 * @throws NotSupportedException
+	 */
+	public function getCashboxClass(): string
+	{
+		if ($this->isSupportPrintCheck())
+		{
+			$cashboxClassName = $this->handler::getCashboxClass();
+			if (!Cashbox\Manager::isPaySystemCashbox($cashboxClassName))
+			{
+				throw new NotSupportedException(
+					'Cashbox is not extended class '.Cashbox\CashboxPaySystem::class
+				);
+			}
+
+			return $cashboxClassName;
+		}
+
+		throw new NotSupportedException(
+			'Handler is not implemented interface '.Sale\PaySystem\Cashbox\ISupportPrintCheck::class
+		);
 	}
 }

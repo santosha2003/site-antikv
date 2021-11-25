@@ -1,9 +1,9 @@
 <?php
 namespace Bitrix\Catalog;
 
-use Bitrix\Main;
-use Bitrix\Main\Localization\Loc;
-use Bitrix\Currency;
+use Bitrix\Main,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Currency;
 
 Loc::loadMessages(__FILE__);
 
@@ -21,15 +21,11 @@ Loc::loadMessages(__FILE__);
  * <li> ACTIVE_TO datetime optional
  * <li> RENEWAL bool optional default 'N'
  * <li> NAME string(255) optional
- * <li> MAX_USES int mandatory
- * <li> COUNT_USES int mandatory
- * <li> COUPON string(20) optional
  * <li> SORT int optional default 100
  * <li> MAX_DISCOUNT double optional
  * <li> VALUE_TYPE string(1) mandatory default 'P'
  * <li> VALUE double mandatory default 0.0000
  * <li> CURRENCY string(3) mandatory
- * <li> MIN_ORDER_SUM double optional default 0.0000
  * <li> TIMESTAMP_X datetime mandatory default 'CURRENT_TIMESTAMP'
  * <li> COUNT_PERIOD string(1) mandatory default 'U'
  * <li> COUNT_SIZE int mandatory
@@ -47,10 +43,27 @@ Loc::loadMessages(__FILE__);
  * <li> NOTES string(255) optional
  * <li> CONDITIONS string optional
  * <li> UNPACK string optional
+ * <li> USE_COUPONS bool optional default 'N'
+ * <li> CREATED_BY_USER reference to {@link \Bitrix\Main\UserTable}
+ * <li> MODIFIED_BY_USER reference to {@link \Bitrix\Main\UserTable}
+ * <li> RESTRICTION reference to {@link \Bitrix\Catalog\DiscountRestriction}
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Discount_Query query()
+ * @method static EO_Discount_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Discount_Result getById($id)
+ * @method static EO_Discount_Result getList(array $parameters = array())
+ * @method static EO_Discount_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_Discount createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_Discount_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_Discount wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_Discount_Collection wakeUpCollection($rows)
+ */
 
 class DiscountTable extends Main\Entity\DataManager
 {
@@ -141,15 +154,6 @@ class DiscountTable extends Main\Entity\DataManager
 				'validation' => array(__CLASS__, 'validateName'),
 				'title' => Loc::getMessage('DISCOUNT_ENTITY_NAME_FIELD')
 			)),
-			'MAX_USES' => new Main\Entity\IntegerField('MAX_USES', array(
-				'default_value' => 0
-			)),
-			'COUNT_USES' => new Main\Entity\IntegerField('COUNT_USES', array(
-				'default_value' => 0
-			)),
-			'COUPON' => new Main\Entity\StringField('COUPON', array(
-				'validation' => array(__CLASS__, 'validateCoupon')
-			)),
 			'SORT' => new Main\Entity\IntegerField('SORT', array(
 				'title' => Loc::getMessage('DISCOUNT_ENTITY_SORT_FIELD')
 			)),
@@ -171,12 +175,12 @@ class DiscountTable extends Main\Entity\DataManager
 				'validation' => array(__CLASS__, 'validateCurrency'),
 				'title' => Loc::getMessage('DISCOUNT_ENTITY_CURRENCY_FIELD')
 			)),
-			'MIN_ORDER_SUM' => new Main\Entity\FloatField('MIN_ORDER_SUM', array(
-				'default_value' => 0
-			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
 				'required' => true,
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function()
+					{
+						return new Main\Type\DateTime();
+					},
 				'title' => Loc::getMessage('DISCOUNT_ENTITY_TIMESTAMP_X_FIELD')
 			)),
 			'COUNT_PERIOD' => new Main\Entity\EnumField('COUNT_PERIOD', array(
@@ -237,15 +241,26 @@ class DiscountTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('DISCOUNT_ENTITY_CONDITIONS_LIST_FIELD')
 			)),
 			'UNPACK' => new Main\Entity\TextField('UNPACK', array()),
+			'USE_COUPONS' => new Main\Entity\BooleanField('USE_COUPONS', array(
+				'values' => array('N', 'Y'),
+				'default_value' => 'N',
+				'title' => Loc::getMessage('DISCOUNT_ENTITY_USE_COUPONS_FIELD')
+			)),
+			'SALE_ID' => new Main\Entity\IntegerField('SALE_ID'),
 			'CREATED_BY_USER' => new Main\Entity\ReferenceField(
 				'CREATED_BY_USER',
-				'Bitrix\Main\User',
+				'\Bitrix\Main\User',
 				array('=this.CREATED_BY' => 'ref.ID')
 			),
 			'MODIFIED_BY_USER' => new Main\Entity\ReferenceField(
 				'MODIFIED_BY_USER',
-				'Bitrix\Main\User',
+				'\Bitrix\Main\User',
 				array('=this.MODIFIED_BY' => 'ref.ID')
+			),
+			'SALE_DISCOUNT' => new Main\Entity\ReferenceField(
+				'SALE_DISCOUNT',
+				'Bitrix\Sale\Internals\DiscountTable',
+				array('=this.SALE_ID' => 'ref.ID')
 			)
 		);
 	}
@@ -291,17 +306,6 @@ class DiscountTable extends Main\Entity\DataManager
 	{
 		return array(
 			new Main\Entity\Validator\Length(null, 255),
-		);
-	}
-	/**
-	 * Returns validators for COUPON field.
-	 *
-	 * @return array
-	 */
-	public static function validateCoupon()
-	{
-		return array(
-			new Main\Entity\Validator\Length(null, 20),
 		);
 	}
 	/**
@@ -413,20 +417,45 @@ class DiscountTable extends Main\Entity\DataManager
 		{
 			case self::VALUE_TYPE_FIX:
 			case self::VALUE_TYPE_SALE:
-				$discount['VALUE'] = roundEx(
-					\CCurrencyRates::convertCurrency($discount['VALUE'], $discount['CURRENCY'], $currency),
-					CATALOG_VALUE_PRECISION
+				$discount['VALUE'] = round(
+					\CCurrencyRates::convertCurrency($discount['VALUE'], $discount['CURRENCY'], $currency)
 				);
 				$discount['CURRENCY'] = $currency;
 				break;
 			case self::VALUE_TYPE_PERCENT:
 				if ($discount['MAX_DISCOUNT'] > 0)
-					$discount['MAX_DISCOUNT'] = roundEx(
-						\CCurrencyRates::convertCurrency($discount['MAX_DISCOUNT'], $discount['CURRENCY'], $currency),
-						CATALOG_VALUE_PRECISION
+					$discount['MAX_DISCOUNT'] = round(
+						\CCurrencyRates::convertCurrency($discount['MAX_DISCOUNT'], $discount['CURRENCY'], $currency)
 					);
 				$discount['CURRENCY'] = $currency;
 				break;
 		}
+	}
+
+	/**
+	 * Set exist coupons flag for discount list.
+	 *
+	 * @param array|int $discountList		Discount ids for update.
+	 * @param string $use					Value for update use coupons.
+	 * @return void
+	 */
+	public static function setUseCoupons($discountList, $use)
+	{
+		if (!is_array($discountList))
+			$discountList = array($discountList);
+		$use = (string)$use;
+		if ($use !== 'Y' && $use !== 'N')
+			return;
+		Main\Type\Collection::normalizeArrayValuesByInt($discountList);
+		if (empty($discountList))
+			return;
+		$conn = Main\Application::getConnection();
+		$helper = $conn->getSqlHelper();
+		$conn->queryExecute(
+			'update '.$helper->quote(self::getTableName()).
+			' set '.$helper->quote('USE_COUPONS').' = \''.$use.'\' where '.
+			$helper->quote('ID').' in ('.implode(',', $discountList).')'
+		);
+		unset($helper, $conn);
 	}
 }

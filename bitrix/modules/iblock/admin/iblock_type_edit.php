@@ -11,7 +11,7 @@ if($back_url=='')
 	$back_url = '/bitrix/admin/iblock_type_admin.php?lang='.$lang;
 
 $arIBTLang = Array();
-$l = CLanguage::GetList($lby="sort", $lorder="asc");
+$l = CLanguage::GetList();
 while($ar = $l->GetNext())
 	$arIBTLang[]=$ar;
 
@@ -33,27 +33,27 @@ $aTabs[] = array(
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 
 $bVarsFromForm = false;
-if($REQUEST_METHOD=="POST" && strlen($Update)>0 && check_bitrix_sessid())
+if($_SERVER["REQUEST_METHOD"] == "POST" && $Update <> '' && check_bitrix_sessid())
 {
 	$arFields = Array();
-	if(strlen($ID)<=0)
+	if($ID == '')
 		$arFields["ID"] = $NEW_ID;
 	$arFields["EDIT_FILE_BEFORE"] = $EDIT_FILE_BEFORE;
 	$arFields["EDIT_FILE_AFTER"] = $EDIT_FILE_AFTER;
 	$arFields["IN_RSS"] = $IN_RSS;
 	$arFields["SECTIONS"] = $SECTIONS;
-	$arFields["SORT"] = $SORT;
+	$arFields["SORT"] = $_POST['SORT'];
 	$arFields["LANG"] = Array();
 	foreach($arIBTLang as $ar)
 		$arFields["LANG"][$ar["LID"]] = $LANG_FIELDS[$ar["LID"]];
 
 	$obBlocktype = new CIBlockType;
-	if(strlen($ID)>0)
+	if($ID <> '')
 		$res = $obBlocktype->Update($ID, $arFields);
 	else
 	{
 		$ID = $obBlocktype->Add($arFields);
-		$res = (strlen($ID)>0);
+		$res = ($ID <> '');
 	}
 
 	if(!$res)
@@ -65,9 +65,9 @@ if($REQUEST_METHOD=="POST" && strlen($Update)>0 && check_bitrix_sessid())
 	else
 	{
 		$DB->Commit();
-		if(strlen($apply)<=0)
+		if($apply == '')
 		{
-			if(strlen($back_url)>0)
+			if($back_url <> '')
 				LocalRedirect("/".ltrim($back_url, "/"));
 		}
 		else
@@ -75,7 +75,7 @@ if($REQUEST_METHOD=="POST" && strlen($Update)>0 && check_bitrix_sessid())
 	}
 }
 
-if(strlen($ID)>0)
+if($ID <> '')
 	$APPLICATION->SetTitle(GetMessage("IBTYPE_E_TITLE", array('#ITYPE#' => $ID)));
 else
 	$APPLICATION->SetTitle(GetMessage("IBTYPE_E_TITLE_2"));
@@ -105,7 +105,7 @@ $aMenu = array(
 	)
 );
 
-if(strlen($ID)>0)
+if($ID <> '')
 {
 	$aMenu[] = array("SEPARATOR"=>"Y");
 	$aMenu[] = array(
@@ -132,12 +132,12 @@ $context->Show();
 <?echo GetFilterHiddens("find_");?>
 <input type="hidden" name="Update" value="Y">
 <input type="hidden" name="ID" value="<?echo $ID?>">
-<?if(strlen($back_url)>0):?><input type="hidden" name="back_url" value="<?=htmlspecialcharsbx($back_url)?>"><?endif?>
+<?if($back_url <> ''):?><input type="hidden" name="back_url" value="<?=htmlspecialcharsbx($back_url)?>"><?endif?>
 <?
 	$tabControl->Begin();
 	$tabControl->BeginNextTab();
 ?>
-	<?if(strlen($ID)>0):?>
+	<?if($ID <> ''):?>
 	<tr>
 		<td><?echo GetMessage("IBTYPE_E_ID")?></td>
 		<td><?=$str_ID?></td>

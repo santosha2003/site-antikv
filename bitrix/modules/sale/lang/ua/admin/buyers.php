@@ -1,4 +1,6 @@
 <?
+$MESS["BUYER_SUB_ACTION_EDIT_PROFILE"] = "Редагувати покупця";
+$MESS["BUYER_ADD_USER"] = "Додати покупця";
 $MESS["BUYER_TITLE"] = "Покупці";
 $MESS["BUYER_PRLIST"] = "Покупці";
 $MESS["BUYER_PROFILE"] = "Профайл користувача";
@@ -52,4 +54,10 @@ $MESS["BUYER_F_TO"] = "по";
 $MESS["BUYER_ROW_LAST_ORDER_DATE"] = "Дата останнього замовлення";
 $MESS["BUYER_F_LAST_ORDER_DATE"] = "Дата останнього замовлення";
 $MESS["BUYER_ORDERS_LID"] = "Замовлення сайту";
+$MESS["BUYER_ROW_COUNT_FULL_PAID_ORDER"] = "Кіл-сть повністю сплачених замовлень";
+$MESS["BUYER_ROW_COUNT_PART_PAID_ORDER"] = "Кіл-сть частково сплачених замовлень";
+$MESS["BUYER_ROW_SUM_PAID"] = "Сума отриманих оплат";
+$MESS["BUYER_F_PAID_ALL"] = "Сума отриманих оплат";
+$MESS["BUYER_F_QUANTITY_FULL"] = "Кількість повністю сплачених замовлень";
+$MESS["BUYER_F_QUANTITY_PART"] = "Кількість частково сплачених замовлень";
 ?>

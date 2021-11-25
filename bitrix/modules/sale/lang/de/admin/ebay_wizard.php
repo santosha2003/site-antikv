@@ -91,4 +91,7 @@ $MESS["SALE_EBAY_W_STEP_DEFAULT_POLICY_DESCR"] = "eBay-Richtlinien als Standard 
 $MESS["SALE_EBAY_W_STEP_DEFAULT_POLICY_P"] = "Zahlungsrichtlinien";
 $MESS["SALE_EBAY_W_STEP_DEFAULT_POLICY_S"] = "Lieferungsrichtlinien";
 $MESS["SALE_EBAY_W_STEP_DEFAULT_POLICY_R"] = "Rückgaberichtlinien";
+$MESS["SALE_EBAY_W_USER_INFO_ERROR"] = "Daten des eBay-Nutzers können nicht angefordert werden.";
+$MESS["SALE_EBAY_W_PAYMENT_METHOD_ERROR"] = "Für eBay-Zahlungen kann nur PayPal benutzt werden. Aktuell ist \"#PAYMENT_METHOD#\" ausgewählt.";
+$MESS["SALE_EBAY_W_SITE_ERROR"] = "Der Nutzer muss an die eBay Website-ID unter \"Russia\" gebunden werden. Aktuell ist der Nutzer an die Website \"#SITE#\" gebunden.";
 ?>

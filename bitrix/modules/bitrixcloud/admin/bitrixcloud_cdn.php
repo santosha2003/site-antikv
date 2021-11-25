@@ -8,14 +8,12 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admi
 IncludeModuleLangFile(__FILE__);
 /** @global CMain $APPLICATION */
 /** @global CUser $USER */
-if (!$USER->IsAdmin())
+if (!$USER->CanDoOperation("bitrixcloud_cdn"))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 $strError = "";
 if (!CModule::IncludeModule("bitrixcloud"))
 	$strError = GetMessage("MODULE_INCLUDE_ERROR");
-elseif (IsModuleInstalled('intranet'))
-	$strError = GetMessage("MODULE_INTRANET_ERROR");
 
 if ($strError != "")
 {
@@ -93,7 +91,7 @@ if (
 				CBitrixCloudCDN::domainChanged();
 			}
 
-			$cdn_config->setSites(array_keys($_POST["site"]));
+			$cdn_config->setSites(is_array($_POST["site"])? array_keys($_POST["site"]): array());
 			$cdn_config->setDomain($server_name);
 			$cdn_config->setHttps($https);
 			$cdn_config->setOptimization($optimize);
@@ -134,33 +132,6 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 if (is_object($message))
 	echo $message->Show();
 
-if (CBitrixCloudCDN::IsActive())
-{
-	try
-	{
-		if ($cdn_config->getQuota()->isExpired())
-			$cdn_config->updateQuota();
-
-		$cdn_quota = $cdn_config->getQuota();
-		if ($cdn_quota->getAllowedSize() > 0.0 || $cdn_quota->getTrafficSize() > 0.0)
-		{
-			CAdminMessage::ShowMessage(array(
-				"TYPE" => "PROGRESS",
-				"DETAILS" => '<p><b>'.GetMessage("BCL_CDN_USAGE", array(
-					"#TRAFFIC#" => CFile::FormatSize($cdn_quota->getTrafficSize()),
-					"#ALLOWED#" => CFile::FormatSize($cdn_quota->getAllowedSize()),
-				)).'</b></p>#PROGRESS_BAR#',
-				"HTML" => true,
-				"PROGRESS_TOTAL" => $cdn_quota->getAllowedSize(),
-				"PROGRESS_VALUE" => $cdn_quota->getTrafficSize(),
-			));
-		}
-	}
-	catch (Exception $e)
-	{
-		CAdminMessage::ShowMessage($e->getMessage());
-	}
-}
 if ($bVarsFromForm)
 {
 	$active = $_POST["cdn_active"] === "Y";
@@ -175,6 +146,7 @@ if ($bVarsFromForm)
 		);
 	$server_name = $_POST["server_name"];
 	$https = $_POST["https"]==="y";
+	$savedOnce = true;
 }
 else
 {
@@ -194,6 +166,7 @@ else
 	$sites = $cdn_config->getSites();
 	$server_name = $cdn_config->getDomain();
 	$https = $cdn_config->isHttpsEnabled();
+	$savedOnce = CBitrixCloudOption::getOption("cdn_config_active")->isExists();
 }
 ?>
 <form method="POST" action="bitrixcloud_cdn.php?lang=<?echo LANGUAGE_ID ?><?echo $_GET["return_url"] ? "&amp;return_url=".urlencode($_GET["return_url"]) : "" ?>" enctype="multipart/form-data" name="editform">
@@ -250,13 +223,11 @@ $tabControl->BeginNextTab();
 			<label for="site_admin"><?echo GetMessage("BCL_ADMIN_PANEL"); ?>:</label>
 		</td>
 		<td width="60%">
-			<input type="checkbox" id="site_admin" name="site[admin]" value="y" <?echo (empty($sites) || isset($sites["admin"])) ? 'checked="checked"' : '' ?>>
+			<input type="checkbox" id="site_admin" name="site[admin]" value="y" <?echo (!$savedOnce || isset($sites["admin"])) ? 'checked="checked"' : '' ?>>
 		</td>
 	</tr>
 <?
-$by = 'sort';
-$order = 'asc';
-$rsSites = CSite::GetList($by, $order);
+$rsSites = CSite::GetList();
 while ($arSite = $rsSites->Fetch())
 {
 ?>
@@ -265,7 +236,7 @@ while ($arSite = $rsSites->Fetch())
 			<label for="site_<?echo htmlspecialcharsbx($arSite["LID"]); ?>"><?echo htmlspecialcharsEx($arSite["NAME"]." [".$arSite["LID"]."]"); ?>:</label>
 		</td>
 		<td>
-			<input type="checkbox" id="site_<?echo htmlspecialcharsbx($arSite["LID"]); ?>" name="site[<?echo htmlspecialcharsbx($arSite["LID"]); ?>]" value="y" <?echo (empty($sites) || isset($sites[$arSite["LID"]])) ? 'checked="checked"' : '' ?>>
+			<input type="checkbox" id="site_<?echo htmlspecialcharsbx($arSite["LID"]); ?>" name="site[<?echo htmlspecialcharsbx($arSite["LID"]); ?>]" value="y" <?echo (!$savedOnce || isset($sites[$arSite["LID"]])) ? 'checked="checked"' : '' ?>>
 		</td>
 	</tr>
 <?

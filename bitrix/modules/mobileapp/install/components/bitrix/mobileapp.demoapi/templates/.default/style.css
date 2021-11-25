@@ -31,3 +31,28 @@ i
     text-align: center;
     font-size: 12px;
 }
+.range-badge
+{
+    padding-top:20px;
+    text-align: center;
+}
+
+input[type=range][orient=vertical]
+{
+    writing-mode: bt-lr; /* IE */
+    /*-webkit-appearance: slider-vertical; !* WebKit *!*/
+    width: 90%;
+    height: 175px;
+    background: #f0f0f0;
+    padding: 0 10px;
+}
+
+.range-badge input
+{
+    /*float:right;*/
+    height: 50px;
+}
+.range-badge .badge_num
+{
+    font-size: 130px;
+}

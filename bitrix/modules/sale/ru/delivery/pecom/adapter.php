@@ -1,6 +1,7 @@
 <?php
 
 namespace Bitrix\Sale\Delivery\Pecom;
+use Bitrix\Sale\Location\LocationTable;
 
 /**
  * Class Adapter
@@ -133,6 +134,64 @@ class Adapter
 		return $result;
 	}
 
+	protected static function getUpperCityId($locationId)
+	{
+		if($locationId == '')
+			return 0;
+
+		$res = LocationTable::getList(array(
+			'filter' => array(
+				array(
+					'LOGIC' => 'OR',
+					'=CODE' => $locationId,
+					'=ID' => $locationId
+				),
+				'=PARENTS.TYPE.CODE' => 'CITY',
+			),
+			'select' => array(
+				'ID', 'CODE',
+				'PID' => 'PARENTS.ID',
+			)
+		));
+
+		if($loc = $res->fetch())
+			return $loc['PID'];
+
+		return 0;
+	}
+
+	protected static function mapLocation2($internalLocationId)
+	{
+		if(intval($internalLocationId) <=0)
+			return array();
+
+		static $result = array();
+
+		if(!isset($result[$internalLocationId]))
+		{
+			$result[$internalLocationId] = array();
+
+			$internalLocation = \CSaleHelper::getLocationByIdHitCached($internalLocationId);
+			$externalId = Location::getExternalId($internalLocationId);
+
+			//Let's try to find upper city
+			if($externalId == '')
+			{
+				$cityId = self::getUpperCityId($internalLocationId);
+				$externalId = Location::getExternalId($cityId);
+			}
+
+			if($externalId <> '')
+			{
+				$result[$internalLocationId] = array(
+						$externalId => !empty($internalLocation["CITY_NAME_LANG"]) ? $internalLocation["CITY_NAME_LANG"] : ""
+				);
+			}
+		}
+
+		return $result[$internalLocationId];
+	}
+
 	/**
 	 * Returns Pecom .location id
 	 * @param $locationId - Bitrix location id
@@ -141,6 +200,9 @@ class Adapter
 	 */
 	public static function mapLocation($locationId, $cleanCache = false)
 	{
+		if(Location::isInstalled())
+			return self::mapLocation2($locationId);
+
 		$cityName = static::getCityNameFromLocationId($locationId);
 
 		if(!$cityName)
@@ -171,15 +233,15 @@ class Adapter
 			{
 				foreach($cities as $smallCityKey => $smallCityName)
 				{
-					$pos = strpos($smallCityName, $cityName);
+					$pos = mb_strpos($smallCityName, $cityName);
 					if($pos !== false
 						&& (
-							strlen($cityName) == strlen($smallCityName)
+							mb_strlen($cityName) == mb_strlen($smallCityName)
 							|| (
-								substr($smallCityName,$pos+strlen($cityName), 1) == " "
+								mb_substr($smallCityName, $pos + mb_strlen($cityName), 1) == " "
 								&& (
 									$pos == 0
-									|| substr($smallCityName,$pos-1, 1) == " "
+									|| mb_substr($smallCityName, $pos - 1, 1) == " "
 								)
 							)
 						)
@@ -223,9 +285,10 @@ class Adapter
 				"streamTimeout" => 30,
 				"redirect" => true,
 				"redirectMax" => 5,
+				"disableSslVerification" => true
 			));
 
-			$jsnData = $http->get("http://www.pecom.ru/ru/calc/towns.php");
+			$jsnData = $http->get("https://www.pecom.ru/ru/calc/towns.php");
 			$errors = $http->getError();
 
 			if (!$jsnData && !empty($errors))
@@ -246,7 +309,7 @@ class Adapter
 
 			$data = json_decode($jsnData, true);
 
-			if(strtolower(SITE_CHARSET) != 'utf-8')
+			if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 			{
 				$data = $APPLICATION->ConvertCharsetArray($data, 'utf-8', SITE_CHARSET);
 				if(is_array($data))
@@ -282,7 +345,7 @@ class Adapter
 		$cacheId = "SaleDeliveryPecomFilialAndCity".$cityId;
 		$cacheManager = \Bitrix\Main\Application::getInstance()->getManagedCache();
 
-		if(strlen($cityId) > 0)
+		if($cityId <> '')
 		{
 			if($cacheManager->read($ttl, $cacheId))
 			{
@@ -321,14 +384,14 @@ class Adapter
 	{
 		$arData = array();
 
-		if(is_array($arCargoCodes) && !empty($arCargoCodes) && (strlen($email) > 0 || strlen($phone) > 0))
+		if(is_array($arCargoCodes) && !empty($arCargoCodes) && ($email <> '' || $phone <> ''))
 		{
 			$arData["cargoCodes"] = $arCargoCodes;
 
-			if(strlen($email) > 0)
+			if($email <> '')
 				$arData["email"] = $email;
 
-			if(strlen($phone) > 0)
+			if($phone <> '')
 				$arData["phone"] = $phone;
 		}
 

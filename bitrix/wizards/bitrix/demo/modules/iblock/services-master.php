@@ -14,11 +14,12 @@ if(strlen($arParams["site_id"]) <= 0)
 //Import XML
 if($IBLOCK_ID = DEMO_IBlock_ImportXML("010_services_services-master_".LANGUAGE_ID.".xml", $arParams["site_id"], false, true))
 {
+	$import = new CIBlockCMLImport();
 
 	$replace = array(
 		$IBLOCK_ID,
-		CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "services-master-property-type"),
-		CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "services-master-property-values"),
+		$import->GetPropertyByXML_ID($IBLOCK_ID, "services-master-property-type"),
+		$import->GetPropertyByXML_ID($IBLOCK_ID, "services-master-property-values"),
 	);
 
 	DEMO_IBlock_EditFormLayout($IBLOCK_ID, array(

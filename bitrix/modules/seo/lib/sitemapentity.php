@@ -28,8 +28,10 @@ class SitemapEntityTable extends Entity\DataManager
 		return 'b_seo_sitemap_entity';
 	}
 
-	public static function add($sitemapId, $entityId )
+	public static function add(array $data)
 	{
+		$sitemapId = $data['SITEMAP_ID'];
+		$entityId = $data['ENTITY_ID'];
 		return parent::add(array(
 			'ENTITY_TYPE' => static::ENTITY_TYPE,
 			'ENTITY_ID' => $entityId,
@@ -86,7 +88,7 @@ class SitemapEntityTable extends Entity\DataManager
 			$arSitemaps = array();
 			while($arRes = $dbRes->fetch())
 			{
-				$arRes["SITEMAP_SETTINGS"] = unserialize($arRes['SITEMAP_SETTINGS']);
+				$arRes["SITEMAP_SETTINGS"] = unserialize($arRes['SITEMAP_SETTINGS'], ['allowed_classes' => false]);
 				self::$entityCache[$entityId][] = $arRes;
 				if ($arRes["SITEMAP_SETTINGS"][static::ENTITY_TYPE."_ACTIVE"] &&
 					$arRes["SITEMAP_SETTINGS"][static::ENTITY_TYPE."_ACTIVE"][$entityId] == "Y")

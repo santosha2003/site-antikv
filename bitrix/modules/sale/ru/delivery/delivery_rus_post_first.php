@@ -28,7 +28,7 @@ class CDeliveryRusPostFirst
 	private static $TARIF_DESCR = 1;
 
 	/* Standard mandatory delivery services functions */
-	function Init()
+	public static function Init()
 	{
 		self::$TARIFS = array(
 							'WEIGHT_LESS_100' => array(6, GetMessage('SALE_DH_RPF_WRP_LESS_100')),
@@ -50,6 +50,7 @@ class CDeliveryRusPostFirst
 			'DESCRIPTION_INNER' => GetMessage('SALE_DH_RPF_DESCR').' <a href="http://www.russianpost.ru/rp/servise/ru/home/postuslug/1class">http://www.russianpost.ru/rp/servise/ru/home/postuslug/1class</a>',
 			'BASE_CURRENCY' => 'RUB',
 			'HANDLER' => __FILE__,
+			
 			/* Handler methods */
 			'DBGETSETTINGS' => array('CDeliveryRusPostFirst', 'GetSettings'),
 			'DBSETSETTINGS' => array('CDeliveryRusPostFirst', 'SetSettings'),
@@ -57,6 +58,8 @@ class CDeliveryRusPostFirst
 			'GETFEATURES' => array('CDeliveryRusPostFirst', 'GetFeatures'),
 			'COMPABILITY' => array('CDeliveryRusPostFirst', 'Compability'),
 			'CALCULATOR' => array('CDeliveryRusPostFirst', 'Calculate'),
+			'DEPRECATED' => 'Y',
+			"GET_ADMIN_MESSAGE" => array("CDeliveryRUSSIANPOST", "getAdminMessage"),
 			"TRACKING_CLASS_NAME" => '\Bitrix\Sale\Delivery\Tracking\RusPost',
 
 			/* List of delivery profiles */
@@ -75,7 +78,7 @@ class CDeliveryRusPostFirst
 		);
 	}
 
-	function GetConfig($siteId = false)
+	public static function GetConfig($siteId = false)
 	{
 		$shopLocationId = CSaleHelper::getShopLocationId($siteId);
 		$arShopLocation = CSaleHelper::getLocationByIdHitCached($shopLocationId);
@@ -164,9 +167,9 @@ class CDeliveryRusPostFirst
 		return $arConfig;
 	}
 
-	function GetSettings($strSettings)
+	public static function GetSettings($strSettings)
 	{
-		$result = unserialize($strSettings);
+		$result = unserialize($strSettings, ['allowed_classes' => false]);
 
 		if(isset($result['RESET_TARIF_SETTINGS']))
 			unset($result['RESET_TARIF_SETTINGS']);
@@ -176,21 +179,21 @@ class CDeliveryRusPostFirst
 			COption::RemoveOption('sale', 'delivery_rus_post_first_tarifs');
 
 			foreach($result as $key => $value)
-				if(substr($key, 0, 6) == 'TARIF_' || substr($key, 0, 8) == 'service_')
+				if(mb_substr($key, 0, 6) == 'TARIF_' || mb_substr($key, 0, 8) == 'service_')
 					unset($result[$key]);
 		}
 
 		return $result;
 	}
 
-	function SetSettings($arSettings)
+	public static function SetSettings($arSettings)
 	{
 		if(isset($arSettings['RESET_TARIF_SETTINGS']))
 			unset($arSettings['RESET_TARIF_SETTINGS']);
 
 		foreach ($arSettings as $key => $value)
 		{
-			if (strlen($value) > 0)
+			if ($value <> '')
 				$arSettings[$key] = $value;
 			else
 				unset($arSettings[$key]);
@@ -199,7 +202,7 @@ class CDeliveryRusPostFirst
 		return serialize($arSettings);
 	}
 
-	function GetFeatures($arConfig)
+	public static function GetFeatures($arConfig)
 	{
 		$arResult = array();
 
@@ -215,7 +218,7 @@ class CDeliveryRusPostFirst
 		return $arResult;
 	}
 
-	function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
+	public static function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
 	{
 		$arPacks = CSaleDeliveryHelper::getBoxesFromConfig($profile, $arConfig);
 
@@ -248,7 +251,7 @@ class CDeliveryRusPostFirst
 		return $arResult;
 	}
 
-	function Compability($arOrder, $arConfig)
+	public static function Compability($arOrder, $arConfig)
 	{
 		$result = array();
 
@@ -289,8 +292,8 @@ class CDeliveryRusPostFirst
 		while ($arRes = $csvFile->Fetch())
 		{
 			if(
-				(strlen($regionCodeFromCode) > 0 && in_array($regionCodeFromCode, $arRes))
-				|| (strlen($regionCodeFromName) > 0 && in_array($regionCodeFromName, $arRes))
+				($regionCodeFromCode <> '' && in_array($regionCodeFromCode, $arRes))
+				|| ($regionCodeFromName <> '' && in_array($regionCodeFromName, $arRes))
 			)
 			{
 				$tarifNumber = $arRes[$COL_TARIF_NUM];
@@ -411,7 +414,7 @@ class CDeliveryRusPostFirst
 
 	protected static function getRegionCodeByOldName($regionLangName)
 	{
-		if(strlen($regionLangName) <= 0)
+		if($regionLangName == '')
 			return "";
 
 		static $data = array();
@@ -423,6 +426,21 @@ class CDeliveryRusPostFirst
 		}
 
 		return isset($data[$regionLangName]) ? $data[$regionLangName] : "";
+	}
+
+	public static function getAdminMessage()
+	{
+		return array(
+			'MESSAGE' => GetMessage(
+				'SALE_DH_RPF_DEPRECATED_MESSAGE',
+				array(
+					'#A1#' => '<a href="/bitrix/admin/sale_delivery_service_edit.php?lang='.LANGUAGE_ID.'&PARENT_ID=0&CLASS_NAME=%5CSale%5CHandlers%5CDelivery%5CAdditionalHandler&SERVICE_TYPE=RUSPOST">',
+					'#A2#' => '</a>'
+				)
+			),
+			"TYPE" => "ERROR",
+			"HTML" => true
+		);
 	}
 }
 

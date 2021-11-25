@@ -27,10 +27,48 @@ class CSaleRecommendedProductsComponent extends CCatalogViewedProductsComponent
 	{
 		if(Loader::includeModule("catalog"))
 		{
-			$catalogIterator = CCatalog::getList(array("IBLOCK_ID" => "ASC"));
-			while($row = $catalogIterator->fetch())
+			$cache = new CPHPCache();
+			$cacheTtl = 86400;
+			$cacheID = 'sale_catalog_recommended_products';
+			$cacheDir = '/sale/sale_recommended_products';
+			if($cache->InitCache($cacheTtl, $cacheID, $cacheDir))
 			{
-				$params['SHOW_PRODUCTS_' . $row['IBLOCK_ID']] = true;
+				$rows = $cache->GetVars();
+			}
+			else
+			{
+				$cache->StartDataCache();
+				$rows = array();
+				$catalogIterator = \Bitrix\Catalog\CatalogIblockTable::getList(array(
+					'select' => array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID'),
+					'order' => array('IBLOCK_ID' => 'ASC')
+				));
+				while ($row = $catalogIterator->fetch())
+				{
+					$iblockId = (int)$row['IBLOCK_ID'];
+					$rows[$iblockId] = $iblockId;
+					$iblockId = (int)$row['PRODUCT_IBLOCK_ID'];
+					if ($iblockId > 0)
+						$rows[$iblockId] = $iblockId;
+					unset($iblockId);
+				}
+				unset($row, $catalogIterator);
+				if(defined("BX_COMP_MANAGED_CACHE") && !empty($rows))
+				{
+					global $CACHE_MANAGER;
+					$CACHE_MANAGER->StartTagCache($cacheDir);
+					foreach ($rows as $id)
+						CIBlock::registerWithTagCache($id);
+					$CACHE_MANAGER->EndTagCache();
+				}
+				$cache->EndDataCache($rows);
+			}
+
+			if (!empty($rows))
+			{
+				foreach ($rows as $id)
+					$params['SHOW_PRODUCTS_'.$id] = true;
+				unset($id);
 			}
 		}
 
@@ -41,7 +79,7 @@ class CSaleRecommendedProductsComponent extends CCatalogViewedProductsComponent
 
 		$params["DETAIL_URL"] = trim($params["DETAIL_URL"]);
 
-		$params["MIN_BUYES"] = IntVal($params["MIN_BUYES"]);
+		$params["MIN_BUYES"] = intval($params["MIN_BUYES"]);
 		if($params["MIN_BUYES"] <= 0)
 			$params["MIN_BUYES"] = 2;
 
@@ -105,26 +143,6 @@ class CSaleRecommendedProductsComponent extends CCatalogViewedProductsComponent
 	protected function abortDataCache()
 	{
 		$this->AbortResultCache();
-	}
-
-	/**
-	 * @override
-	 * @param $productIds
-	 */
-	protected function resortItemsByIds($productIds)
-	{
-		parent::resortItemsByIds($productIds);
-
-		$newItems = array();
-		foreach ($this->items as $item)
-		{
-			if(!isset($newItems[$item['ID']]))
-			{
-				$newItems[$item['ID']] = $item;
-				unset($newItems[$item['ID']]['IS_CONVERTED']);
-			}
-		}
-		$this->items = $newItems;
 	}
 
 	/**

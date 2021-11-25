@@ -14,6 +14,11 @@ if(strlen($arParams["site_id"]) <= 0)
 	$arParams["site_id"] = "s1";
 
 //Import XML
-if($_SESSION["DEMO_IBLOCK_1C_CATALOG"] === false)
+if (
+	CModule::IncludeModule('catalog')
+	&& $_SESSION["DEMO_IBLOCK_1C_CATALOG"] === false
+)
+{
 	DEMO_IBlock_ImportXML("100_xmlcatalog_FUTURE-1C-CATALOG-offers_ru.xml", $arParams["site_id"], true);
+}
 ?>

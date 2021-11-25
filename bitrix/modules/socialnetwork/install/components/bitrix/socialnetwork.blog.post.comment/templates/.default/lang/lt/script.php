@@ -1,8 +1,0 @@
-<?
-$MESS["BPC_TEXT_ENTER_URL"] = "Ávesti pilnà adresà (URL).";
-$MESS["BPC_TEXT_ENTER_URL_NAME"] = "Ávesti hipernuorodos tekstà";
-$MESS["BPC_TEXT_ENTER_IMAGE"] = "Ávesti vaizdo URL";
-$MESS["BPC_LIST_PROMPT"] = "Áveskite sàraðo objektø tekstà. Paspauskite \"Atðaukti\" arba áraðykite vienà tarpà, norëdami uþdaryti sàraðà.";
-$MESS["BPC_ERROR_NO_URL"] = "URL nenurodytas.";
-$MESS["BPC_ERROR_NO_TITLE"] = "Antraðtë nenurodyta.";
-?>

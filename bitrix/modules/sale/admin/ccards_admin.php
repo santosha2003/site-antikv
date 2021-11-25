@@ -12,7 +12,7 @@ $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions=="D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+\Bitrix\Main\Loader::includeModule('sale');
 
 if(!CBXFeatures::IsFeatureEnabled('SaleCCards'))
 {
@@ -42,17 +42,17 @@ $lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
 
-if (IntVal($filter_user_id) > 0) $arFilter["USER_ID"] = IntVal($filter_user_id);
-if (strlen($filter_login) > 0) $arFilter["USER_LOGIN"] = $filter_login;
-if (strlen($filter_user) > 0) $arFilter["%USER_USER"] = $filter_user;
-if (strlen($filter_active) > 0) $arFilter["ACTIVE"] = $filter_active;
+if (intval($filter_user_id) > 0) $arFilter["USER_ID"] = intval($filter_user_id);
+if ($filter_login <> '') $arFilter["USER_LOGIN"] = $filter_login;
+if ($filter_user <> '') $arFilter["%USER_USER"] = $filter_user;
+if ($filter_active <> '') $arFilter["ACTIVE"] = $filter_active;
 
 if ($lAdmin->EditAction() && $saleModulePermissions >= "W")
 {
 	foreach ($FIELDS as $ID => $arFields)
 	{
 		$DB->StartTransaction();
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (!$lAdmin->IsUpdated($ID))
 			continue;
@@ -89,7 +89,7 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -164,9 +164,9 @@ while ($arCCard = $dbResultList->NavNext(true, "f_"))
 	$row->AddField("ID", $f_ID);
 
 	$fieldValue  = "[<a href=\"/bitrix/admin/user_edit.php?ID=".$f_USER_ID."&lang=".LANG."\">".$f_USER_ID."</a>] ";
-	$fieldValue .= htmlspecialcharsEx($arCCard["USER_NAME"].((strlen($arCCard["USER_NAME"])<=0 || strlen($arCCard["USER_LAST_NAME"])<=0) ? "" : " ").$arCCard["USER_LAST_NAME"])."<br>";
+	$fieldValue .= htmlspecialcharsEx($arCCard["USER_NAME"].(($arCCard["USER_NAME"] == '' || $arCCard["USER_LAST_NAME"] == '') ? "" : " ").$arCCard["USER_LAST_NAME"])."<br>";
 	$fieldValue .= htmlspecialcharsEx($arCCard["USER_LOGIN"])."&nbsp;&nbsp;&nbsp; ";
-	$fieldValue .= "<a href=\"mailto:".htmlspecialcharsEx($arCCard["USER_EMAIL"])."\">".htmlspecialcharsEx($arCCard["USER_EMAIL"])."</a>";
+	$fieldValue .= "<a href=\"mailto:".htmlspecialcharsbx($arCCard["USER_EMAIL"])."\">".htmlspecialcharsEx($arCCard["USER_EMAIL"])."</a>";
 	$row->AddField("USER_ID", $fieldValue);
 
 	$row->AddCheckField("ACTIVE");
@@ -249,19 +249,19 @@ $oFilter->Begin();
 	<tr>
 		<td><?= GetMessage("SCA_USER") ?>:</td>
 		<td>
-			<input type="text" name="filter_user" size="50" value="<?= htmlspecialcharsEx($filter_user) ?>">&nbsp;<?=ShowFilterLogicHelp()?>
+			<input type="text" name="filter_user" size="50" value="<?= htmlspecialcharsbx($filter_user) ?>">&nbsp;<?=ShowFilterLogicHelp()?>
 		</td>
 	</tr>
 	<tr>
 		<td><?= GetMessage("SCA_USER_ID") ?>:</td>
 		<td>
-			<input type="text" name="filter_user_id" size="5" value="<?= htmlspecialcharsEx($filter_user_id) ?>">
+			<input type="text" name="filter_user_id" size="5" value="<?= htmlspecialcharsbx($filter_user_id) ?>">
 		</td>
 	</tr>
 	<tr>
 		<td><?= GetMessage("SCA_USER_LOGIN") ?>:</td>
 		<td>
-			<input type="text" name="filter_login" size="50" value="<?= htmlspecialcharsEx($filter_login) ?>">
+			<input type="text" name="filter_login" size="50" value="<?= htmlspecialcharsbx($filter_login) ?>">
 		</td>
 	</tr>
 	<tr>
@@ -288,7 +288,7 @@ $oFilter->End();
 
 <?
 if (!CSaleUserCards::CheckPassword())
-	echo CAdminMessage::ShowMessage(Array("DETAILS"=>GetMessage("SCA_NO_VALID_PASSWORD"), "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("SCA_ATTENTION")));
+	CAdminMessage::ShowMessage(array("DETAILS"=>GetMessage("SCA_NO_VALID_PASSWORD"), "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("SCA_ATTENTION")));
 ?>
 
 <?

@@ -16,12 +16,12 @@ $io = CBXVirtualIo::GetInstance();
 
 //Folder path
 $path = "/";
-if (isset($_REQUEST["path"]) && strlen($_REQUEST["path"]) > 0)
+if (isset($_REQUEST["path"]) && $_REQUEST["path"] <> '')
 	$path = $io->CombinePath("/", $_REQUEST["path"]);
 
 //Site ID
 $site = SITE_ID;
-if (isset($_REQUEST["site"]) && strlen($_REQUEST["site"]) > 0)
+if (isset($_REQUEST["site"]) && $_REQUEST["site"] <> '')
 {
 	$obSite = CSite::GetByID($_REQUEST["site"]);
 	if ($arSite = $obSite->Fetch())
@@ -40,7 +40,7 @@ elseif (!$USER->CanDoFileOperation('fm_edit_permission', array($site, $path)))
 	$popupWindow->ShowError(GetMessage("EDIT_ACCESS_TO_DENIED")." \"".htmlspecialcharsbx($path)."\"");
 
 //Lang
-if (!isset($_REQUEST["lang"]) || strlen($_REQUEST["lang"]) <= 0)
+if (!isset($_REQUEST["lang"]) || $_REQUEST["lang"] == '')
 	$lang = LANGUAGE_ID;
 
 //BackUrl
@@ -61,7 +61,7 @@ while(true)
 	//Cut / from the end
 	$currentPath = rtrim($currentPath, "/");
 
-	if (strlen($currentPath) <= 0)
+	if ($currentPath == '')
 	{
 		$accessFile = "/.access.php";
 		$name = "/";
@@ -69,15 +69,15 @@ while(true)
 	else
 	{
 		//Find file or folder name
-		$position = strrpos($currentPath, "/");
+		$position = mb_strrpos($currentPath, "/");
 		if ($position === false)
 			break;
 
-		$name = substr($currentPath, $position+1);
+		$name = mb_substr($currentPath, $position + 1);
 		$name = TrimUnsafe($name); //security fix: under Windows "my." == "my"
 
 		//Find parent folder
-		$currentPath = substr($currentPath, 0, $position + 1);
+		$currentPath = mb_substr($currentPath, 0, $position + 1);
 		$accessFile = $currentPath.".access.php";
 	}
 
@@ -94,7 +94,7 @@ while(true)
 	if (isset($PERM[$name]) && is_array($PERM[$name]))
 		$arUserGroupsID = array_merge($arUserGroupsID, array_keys($PERM[$name]));
 
-	if (strlen($currentPath)<=0)
+	if ($currentPath == '')
 		break;
 }
 
@@ -232,6 +232,18 @@ $popupWindow->StartContent();
 $access = new CAccess();
 $arNames = $access->GetNames($arUserGroupsID, true);
 
+//sort codes by sorted names
+$positions = array_flip(array_keys($arNames));
+usort($arUserGroupsID,
+	function($a, $b) use ($positions)
+	{
+		if(!isset($positions[$a]) && !isset($positions[$b])) return 0;
+		if(!isset($positions[$a])) return 1;
+		if(!isset($positions[$b])) return -1;
+		return ($positions[$a] > $positions[$b]? 1 : -1);
+	}
+);
+
 //Javascript variables
 $jsTaskArray = "window.BXTaskArray = {'0':'".CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_INHERIT"))."'";
 foreach ($arPermTypes as $taskID => $taskTitle)
@@ -242,9 +254,7 @@ $jsInheritPerm = "";
 $jsInheritPermID = "var jsInheritPermIDs = [";
 $bWasCurrentPerm = false;
 
-foreach($arNames as $access_code => $dummy):
-	if(!in_array($access_code, $arUserGroupsID))
-		continue;
+foreach($arUserGroupsID as $access_code):
 
 	//Restore post value if error occured
 	$errorOccured = ($strWarning != "" && isset($_POST["PERMISSION"]) && is_array($_POST["PERMISSION"]) && array_key_exists($access_code, $_POST["PERMISSION"]));
@@ -272,9 +282,9 @@ foreach($arNames as $access_code => $dummy):
 	{
 		$permLetter = $currentPermission[$assignFileName][$access_code];
 
-		if (substr($permLetter, 0, 2) == "T_")
+		if (mb_substr($permLetter, 0, 2) == "T_")
 		{
-			$currentPerm = intval(substr($permLetter, 2));
+			$currentPerm = intval(mb_substr($permLetter, 2));
 			if (!array_key_exists($currentPerm, $arPermTypes))
 				$currentPerm = false;
 		}
@@ -291,7 +301,12 @@ foreach($arNames as $access_code => $dummy):
 	$permissionID = $access_code."_".intval($currentPerm)."_".intval($inheritTaskID);?>
 
 	<tr>
-		<td><?=($access_code == "*"? GetMessage("EDIT_ACCESS_ALL_GROUPS") : ($arNames[$access_code]["provider"] <> ''? '<b>'.$arNames[$access_code]["provider"].':</b> ':'').$arNames[$access_code]["name"])?></td>
+		<td><?=(
+			$access_code == "*" ?
+				GetMessage("EDIT_ACCESS_ALL_GROUPS")
+				: ($arNames[$access_code]["provider"] <> '' ? '<b>'.htmlspecialcharsbx($arNames[$access_code]["provider"]).': </b> ' : '')
+					. htmlspecialcharsbx($arNames[$access_code]["name"])
+		)?></td>
 		<td>
 			<?if ($currentPerm === false && $path != "/"): //Inherit permission
 				$jsInheritPermID .= ",'".$permissionID."'";
@@ -372,7 +387,7 @@ window.BXAddNewPermission = function(arRights)
 			var currentTD = tableRow.insertCell(1);
 
 			var pr = BX.Access.GetProviderName(provider);
-			groupTD.innerHTML = (pr? '<b>'+pr+':</b> ':'')+arRights[provider][id].name;
+			groupTD.innerHTML = (pr? '<b>'+BX.util.htmlspecialchars(pr)+':</b> ':'')+BX.util.htmlspecialchars(arRights[provider][id].name);
 
 			//Insert Task Select
 			var permissionID = Math.round(Math.random() * 100000);
@@ -384,7 +399,7 @@ window.BXAddNewPermission = function(arRights)
 	}
 
 	return false;
-}
+};
 
 window.BXCreateTaskList = function(permissionID, currentPermission, inheritPermission, userGroupID)
 {
@@ -402,15 +417,15 @@ window.BXCreateTaskList = function(permissionID, currentPermission, inheritPermi
 	var selectedIndex = 0;
 
 	<?if ($path == "/"):?>
-		BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_NOT_SET"))?>";
+		window.BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_NOT_SET"))?>";
 	<?else:?>
-		BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_INHERIT"))?>" + " \"" + BXTaskArray[(inheritPermission == 0 ? <?=intval($jsInheritPerm)?> : inheritPermission)] + "\"";
+		window.BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_INHERIT"))?>" + " \"" + window.BXTaskArray[(inheritPermission == 0 ? <?=intval($jsInheritPerm)?> : inheritPermission)] + "\"";
 	<?endif?>
 
 	for(var taskID in BXTaskArray)
 	{
 		var option = selectDocument.createElement("OPTION");
-		option.text = BXTaskArray[taskID];
+		option.text = window.BXTaskArray[taskID];
 		option.value = taskID;
 
 		select.options.add(option);
@@ -422,7 +437,7 @@ window.BXCreateTaskList = function(permissionID, currentPermission, inheritPermi
 	select.selectedIndex = selectedIndex;
 
 	return select;
-}
+};
 
 window.BXBlurEditPermission = function(select, permissionID)
 {
@@ -443,7 +458,7 @@ window.BXBlurEditPermission = function(select, permissionID)
 		while (editPermission.firstChild)
 			editPermission.removeChild(editPermission.firstChild);
 	}
-}
+};
 
 window.BXEditPermission = function(permissionID)
 {
@@ -469,7 +484,7 @@ window.BXEditPermission = function(permissionID)
 
 	editPermission.appendChild(taskSelect);
 	taskSelect.focus();
-}
+};
 
 
 window.BXCreateAccessHint = function()
@@ -480,7 +495,7 @@ window.BXCreateAccessHint = function()
 	var groupTD = tableRow.cells[0];
 	var currentTD = tableRow.cells[1];
 
-	oBXHint = new BXHint("<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_PERMISSION_INFO"))?>");
+	var oBXHint = new BXHint("<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_PERMISSION_INFO"))?>");
 	currentTD.appendChild(oBXHint.oIcon);
 
 
@@ -488,7 +503,7 @@ window.BXCreateAccessHint = function()
 
 	for (var index = 0; index < jsInheritPermIDs.length; index++)
 		oBXHint = new BXHint("<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_PERMISSION"))?>", document.getElementById("bx_permission_view_"+ jsInheritPermIDs[index]), {"width":200});
-}
+};
 
 window.BXClearPermission = function()
 {
@@ -497,7 +512,7 @@ window.BXClearPermission = function()
 		BX("REMOVE_PERMISSIONS").value = "Y";
 		BX.WindowManager.Get().PostParameters();
 	}
-}
+};
 
 window.BXCreateAccessHint();
 </script>

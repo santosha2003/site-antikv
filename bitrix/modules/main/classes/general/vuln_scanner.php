@@ -1,6 +1,8 @@
 <?php
 IncludeModuleLangFile(__FILE__);
 
+if (!defined("T_BAD_CHARACTER")) define("T_BAD_CHARACTER", 401);
+
 class CVariableDeclare
 {
 	public $line = 0;
@@ -335,7 +337,10 @@ class CVulnScanner
 
 	private function dependencyHave($tokens, $type)
 	{
-
+		if (!is_array($tokens))
+		{
+			return false;
+		}
 		for ($i = 1, $tokens_count = count($tokens) - 1; $i < $tokens_count; $i++)
 		{
 			if(is_array($tokens[$i]))
@@ -358,6 +363,7 @@ class CVulnScanner
 
 	public function process()
 	{
+		$this->objects = array();
 		for ($i = 0, $tokens_count = count($this->tokens); $i < $tokens_count; $i++)
 		{
 		
@@ -374,6 +380,14 @@ class CVulnScanner
 				{
 					if($this->tokens[$i + 1] === '=' || (is_array($this->tokens[$i + 1]) && in_array($this->tokens[$i + 1][0], $this->tokens_type['ASSIGNMENT'])))
 					{
+						if (
+							is_array($this->tokens[$i + 2]) && ($this->tokens[$i + 2][0] === T_NEW)
+							&& ($className = $this->getClassName($i + 3))
+						)
+						{
+							$this->objects[$token_value] = ltrim(strtoupper($className), '\\');
+							$i += $this->getBraceEnd($this->tokens, $i);
+						}
 						if(!(is_array($this->tokens[$i + 2]) && $this->tokens[$i + 2][0] === T_ARRAY))
 							$this->addVariable($this->tokens[$i], $i, $cur_line, $i, $this->getBraceEnd($this->tokens, $i), '');
 						else
@@ -406,7 +420,7 @@ class CVulnScanner
 									//if(!empty(substr($this->tokens[$i+2][1], 1, -1)))
 									$component_name = substr($this->tokens[$i + 2][1], 1, -1);
 								}
-								$component_name = self::strtolower($component_name);
+								$component_name = strtolower($component_name);
 								if(empty($component_name)) // || strpos($component_name, 'bitrix:') === 0)
 									continue;
 
@@ -571,11 +585,24 @@ class CVulnScanner
 						&& !(($this->tokens[$i + 1] === '(' && $this->tokens[$i + 2] === ')') || $this->tokens[$i + 1] === ';') //skip function with empty parameter list
 					)
 					{
-
-						if($this->tokens[$i + 1] === '(')
+						//check if query function is NOT belong to CHTTP object
+						if (
+							$token_value === 'query'
+							&& (is_array($this->tokens[$i-2]) && $this->tokens[$i-2][0] === T_VARIABLE)
+							&& isset($this->objects[$this->tokens[$i-2][1]])
+							&& $this->objects[$this->tokens[$i-2][1]] === 'CHTTP'
+						)
+						{
+							$result = false;
+						}
+						elseif($this->tokens[$i + 1] === '(')
+						{
 							$result = $this->getTokensInfo(array_slice($this->tokens, $i + 2, $this->getBraceEnd($this->tokens, $i + 2) - 1), false, $token_value);
+						}
 						else
+						{
 							$result = $this->getTokensInfo(array_slice($this->tokens, $i + 1, $this->getBraceEnd($this->tokens, $i + 1)), false, $token_value);
+						}
 
 						if($result !== false)
 						{
@@ -697,6 +724,23 @@ class CVulnScanner
 				$result .= $token[$i][1];
 		}
 		return $result;
+	}
+
+	private function getClassName($token)
+	{
+		$className = '';
+		while(
+			is_array($this->tokens[$token])
+			&& (
+				($this->tokens[$token][0] === T_STRING)
+				|| ($this->tokens[$token][0] === T_NS_SEPARATOR)
+			)
+		)
+		{
+			$className .= $this->tokens[$token][1];
+			$token++;
+		}
+		return $className;
 	}
 
 	private function getVarName($token, $level = -1)
@@ -840,7 +884,7 @@ class CVulnScanner
 
 					if(is_array($tokens[$i + 1]) && $tokens[$i + 1][0] === T_STRING)
 					{
-						$this->sec_func['STRING'][] = self::strtolower($tokens[$i + 1][1]);
+						$this->sec_func['STRING'][] = strtolower($tokens[$i + 1][1]);
 					}
 					else
 					{
@@ -851,7 +895,7 @@ class CVulnScanner
 						}
 						if(is_array($tokens[$i + $f - 1]) && $tokens[$i + $f - 1][0] === T_STRING)
 						{
-							$this->sec_func['STRING'][] = self::strtolower($tokens[$i + $f - 1][1]);
+							$this->sec_func['STRING'][] = strtolower($tokens[$i + $f - 1][1]);
 						}
 					}
 
@@ -930,18 +974,18 @@ class CVulnScanner
 			}
 			elseif(is_array($tokens[$i]))
 			{
-				if(is_array($tokens[$i]) && (self::strtolower($tokens[$i][1]) === 'includecomponenttemplate' || self::strtolower($tokens[$i][1]) === 'initcomponenttemplate'))
+				if(is_array($tokens[$i]) && (strtolower($tokens[$i][1]) === 'includecomponenttemplate' || strtolower($tokens[$i][1]) === 'initcomponenttemplate'))
 				{
 					$tokens[$i][3] = $component_template;
-					$tokens[$i][1] = self::strtolower($tokens[$i][1]);
+					$tokens[$i][1] = strtolower($tokens[$i][1]);
 					$tokens[$i][0] = T_INCLUDE_COMPONENTTEMPLATE;
 					$tmp = array(array(T_INCLUDE_RESULT_MODIFIER, 'include_result_modifier', $tokens[$i][2], $component_template));
 					array_splice($tokens, $i - 1, 0, $tmp);
 					$i++;
 				}
-				elseif(is_array($tokens[$i]) && (self::strtolower($tokens[$i][1]) == 'includecomponent'))
+				elseif(is_array($tokens[$i]) && (strtolower($tokens[$i][1]) == 'includecomponent'))
 				{
-					$tokens[$i][1] = self::strtolower($tokens[$i][1]);
+					$tokens[$i][1] = strtolower($tokens[$i][1]);
 					$tokens[$i][0] = T_INCLUDE_COMPONENT;
 				}
 				elseif(($tokens[$i][0] === T_IF || $tokens[$i][0] === T_ELSEIF || $tokens[$i][0] === T_FOR
@@ -1119,11 +1163,11 @@ class CVulnScanner
 				}
 				elseif($tokens[$i][0] === T_FUNCTION)
 				{
-					$tokens[$i + 1][1] = self::strtolower($tokens[$i + 1][1]);
+					$tokens[$i + 1][1] = strtolower($tokens[$i + 1][1]);
 				}
 				elseif($tokens[$i][0] === T_STRING && $tokens[$i + 1] === '(')
 				{
-					$tokens[$i][1] = self::strtolower($tokens[$i][1]);
+					$tokens[$i][1] = strtolower($tokens[$i][1]);
 				}
 				elseif($tokens[$i][0] === T_DO)
 				{
@@ -1283,7 +1327,7 @@ class CVulnScanner
 					{
 						if($tokens[$i][1] === 'DIRECTORY_SEPARATOR' || $tokens[$i][1] === 'PATH_SEPARATOR')
 							$value .= '/';
-						elseif(self::strtolower($tokens[$i][1]) === '$componentpath')
+						elseif(strtolower($tokens[$i][1]) === '$componentpath')
 							$value = dirname($file_name);
 						elseif($tokens[$i][1] === '$_SERVER' && $tokens[$i][3][0] === 'DOCUMENT_ROOT')
 							$value .= $this->arParams['doc_root_path'];
@@ -1662,50 +1706,37 @@ class CVulnScanner
 		}
 		return $result;
 	}
-
-	protected static function strtolower($pString)
-	{
-		if(function_exists("mb_orig_strtolower"))
-		{
-			return mb_orig_strtolower($pString);
-		}
-		else
-		{
-			return strtolower($pString);
-		}
-	}
-
 }
 
 class CQAACheckListTests
 {
-	static private function getFiles($path, $skip_preg, $filetypes, $doc_root)
+	static private function getFiles($path, $skip_preg, $file_types, $doc_root, &$files, &$dirs)
 	{
-		$arResult = Array();
 		$handle = opendir($path);
-		if($handle)
+		if ($handle)
 		{
-
-			while (false !== ($file = readdir($handle)))
+			while (($file = readdir($handle)) !== false)
 			{
-				if($file !== '.' && $file !== '..')
-				{
-					$name = $path.'/'.str_replace("\\", "/", $file);
+				if($file === '.' || $file === '..')
+					continue;
 
-					if(!preg_match($skip_preg, str_replace($doc_root, "", $name)))
-						if(is_dir($name))
-						{
-							$arResult = array_merge($arResult, self::getFiles($name, $skip_preg, $filetypes, $doc_root));
-						}
-						elseif(in_array(substr($name, -4), $filetypes))
-						{
-							$arResult[] = $name;
-						}
+				$name = $path.'/'.str_replace("\\", "/", $file);
+				if (preg_match($skip_preg, str_replace($doc_root, "", $name)))
+				{
+					continue;
+				}
+
+				if (is_dir($name))
+				{
+					$dirs[] = $name;
+				}
+				elseif(in_array(substr($name, -4), $file_types))
+				{
+					$files[] = $name;
 				}
 			}
 		}
 		closedir($handle);
-		return $arResult;
 	}
 
 	static private function defineScanParams()
@@ -2193,9 +2224,9 @@ class CQAACheckListTests
 	{
 		if(extension_loaded('tokenizer') === true)
 		{
-		if(!$_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']])
-			$_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']] = Array();
-		$NS = &$_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']];
+		if(!\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']])
+			\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']] = Array();
+		$NS = &\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']];
 
 		$arScanParams = self::defineScanParams();
 		$phpMaxExecutionTime = ini_get("max_execution_time");
@@ -2208,13 +2239,44 @@ class CQAACheckListTests
 			$NS = Array();
 
 			$NS['CUR_FILE_ID'] = 0;
-			$NS['FILE_LIST'] = self::getFiles($arScanParams['path'], $arScanParams['PREG_FOR_SKIP_SCAN'], $arScanParams['FILE_TYPES'], $arScanParams['path']);
+			$NS['FILE_LIST'] = array();
+			$NS['DIR_LIST'] = array();
+			self::getFiles(
+				$arScanParams['path'],
+				$arScanParams['PREG_FOR_SKIP_SCAN'],
+				$arScanParams['FILE_TYPES'],
+				$arScanParams['path'],
+				$NS['FILE_LIST'],
+				$NS['DIR_LIST']
+			);
 			$NS['VULN_COUNT'] = 0;
 			$NS['STUCK_FILE'] = -1;
 			$NS['MESSAGE'] = Array();
 		}
-		$result=true;
 
+		$time_end = $arScanParams['time_start'] + $arScanParams['time_out'];
+		while ($NS['DIR_LIST'] && $time_end > time())
+		{
+			$dir = array_shift($NS['DIR_LIST']);
+			self::getFiles(
+				$dir,
+				$arScanParams['PREG_FOR_SKIP_SCAN'],
+				$arScanParams['FILE_TYPES'],
+				$arScanParams['path'],
+				$NS['FILE_LIST'],
+				$NS['DIR_LIST']
+			);
+		}
+
+		if ($NS['DIR_LIST'])
+		{
+			return Array(
+				'IN_PROGRESS' => 'Y',
+				'PERCENT' => 0,
+			);
+		}
+
+		$result=true;
 		do
 		{
 			if(is_file($file = $NS['FILE_LIST'][$NS['CUR_FILE_ID']]))
@@ -2265,7 +2327,7 @@ class CQAACheckListTests
 						$vulnCount += $file_output['VULN_COUNT'];
 					}
 
-			unset($_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']]);
+			unset(\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']]);
 
 			$arResult = Array(
 				'MESSAGE' => Array(

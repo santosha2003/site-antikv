@@ -1,4 +1,0 @@
-<?
-$MESS["DISK_BIZPROC_BACK_TEXT"] = "Gráþti";
-$MESS["DISK_BIZPROC_BACK_TITLE"] = "Gráþti";
-?>

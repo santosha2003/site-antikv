@@ -52,9 +52,9 @@ endif;
 				$cache->EndDataCache(array("arUserPM"=>$arUserPM));
 			endif;
 		}
-		if (intVal($arUserPM["UNREAD_PM"]) > 0)
+		if (intval($arUserPM["UNREAD_PM"]) > 0)
 		{
-			$pm = " (".intVal($arUserPM["UNREAD_PM"]).")";
+			$pm = " (".intval($arUserPM["UNREAD_PM"]).")";
 		}
 		?>
 		<span class="forum-menu-item forum-menu-messages"><a href="<?=$arResult["URL_TEMPLATES"]["MESSAGES"]?>"><span><?=GetMessage("F_MESSAGES")?><?=$pm?></span></a>&nbsp;</span>
@@ -84,8 +84,24 @@ endif;
 if ($arParams["SHOW_AUTH_FORM"] == "Y"):
 ?>
 		<span class="forum-menu-item forum-menu-item-last forum-menu-authorize">
-		<?$GLOBALS["APPLICATION"]->IncludeComponent("bitrix:system.auth.form", "", Array(), $component, array("HIDE_ICONS" => "Y"));?>&nbsp;</span>
+
 <?
+	if ($USER->isAuthorized())
+	{
+	?><a href="<?
+		?><?=htmlspecialcharsbx($APPLICATION->GetCurPageParam("logout=yes&".bitrix_sessid_get(),
+		array("login", "logout", "register", "forgot_password", "change_password", BX_AJAX_PARAM_ID, "forum_auth", "sessid")))?><?
+		?>" rel="nofollow"><span><?=GetMessage("AUTH_LOGOUT_BUTTON")?></span></a>
+		<?
+	}
+	else
+	{
+		?><a href="<?
+			?><?=htmlspecialcharsbx($APPLICATION->GetCurPageParam("login=yes",
+			array("login", "logout", "register", "forgot_password", "change_password", BX_AJAX_PARAM_ID, "forum_auth")))?><?
+			?>" rel="nofollow"><span><?=GetMessage("AUTH_LOGIN_BUTTON")?></span></a>
+			<?
+	}
 endif;
 ?>
 	</div>
@@ -110,19 +126,19 @@ if ($arParams["SHOW_NAVIGATION"] != "N" && $arParams["SET_NAVIGATION"] != "N" &&
 		{
 			$sSectionName = "";
 			include($chain_file_name);
-			if(strlen($sSectionName)>0)
+			if($sSectionName <> '')
 				$arChain[] = Array("TITLE"=>$sSectionName, "LINK"=>$path."/");
 		}
 
 		if($path.'/' == SITE_DIR)
 			break;
 
-		if(strlen($path)<=0)
+		if($path == '')
 			break;
 		$pos = bxstrrpos($path, "/");
 		if($pos===false)
 			break;
-		$path = substr($path, 0, $pos+1);
+		$path = mb_substr($path, 0, $pos + 1);
 	}
 	if ($arResult["PAGE_NAME"] == "read")
 	{

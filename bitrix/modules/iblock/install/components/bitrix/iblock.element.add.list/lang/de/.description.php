@@ -1,4 +1,0 @@
-<?
-$MESS ['IBLOCK_ELEMENT_ADD_LIST_DESCRIPTION'] = "Eigene Elemente";
-$MESS ['IBLOCK_ELEMENT_ADD_LIST_NAME'] = "Eigene Elemente";
-?>

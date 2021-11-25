@@ -20,25 +20,28 @@ $arFilterFields = array(
 	"filter_url",
 	"filter_group_id",
 	//"filter_use_socnet",
-	"filter_owner"
+	"filter_owner",
+	"filter_id"
 );
 $USER_FIELD_MANAGER->AdminListAddFilterFields("BLOG_BLOG", $arFilterFields);
 
 $lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
-if (strlen($filter_name) > 0)
+if ($filter_name <> '')
 	$arFilter["~NAME"] = "%".$filter_name."%";
-if (strlen($filter_active) > 0)
+if ($filter_active <> '')
 	$arFilter["ACTIVE"] = $filter_active;
-if (strlen($filter_url) > 0)
+if ($filter_url <> '')
 	$arFilter["URL"] = $filter_url;
 if (is_array($filter_group_id))
 	$arFilter["GROUP_ID"] = $filter_group_id;
 else
 	$filter_group_id = array();
-if (strlen($filter_owner) > 0)
+if ($filter_owner <> '')
 	$arFilter["%OWNER"] = $filter_owner;
+if ($filter_id <> '')
+	$arFilter["ID"] = $filter_id;
 
 $USER_FIELD_MANAGER->AdminListAddFilter("BLOG_BLOG", $arFilter);
 
@@ -60,7 +63,7 @@ if (($arID = $lAdmin->GroupAction()) && $blogModulePermissions >= "W")
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -149,9 +152,9 @@ while ($arBlog = $dbResultList->NavNext(true, "f_"))
 	$row->AddField("DATE_CREATE", $f_DATE_CREATE);
 	$row->AddField("DATE_UPDATE", $f_DATE_UPDATE);
 	$row->AddField("ACTIVE", (($f_ACTIVE == "Y") ? GetMessage("BLB_YES") : GetMessage("BLB_NO")));
-	if(IntVal($f_OWNER_ID) > 0)
+	if(intval($f_OWNER_ID) > 0)
 		$row->AddField("OWNER_INFO", "<a href=\"/bitrix/admin/user_edit.php?ID=".$f_OWNER_ID."&lang=".LANG."\">[".$f_OWNER_ID."] ".$f_OWNER_NAME." ".$f_OWNER_LAST_NAME." (".$f_OWNER_LOGIN.")</a>");
-	if(IntVal($f_SOCNET_GROUP_ID) > 0)
+	if(intval($f_SOCNET_GROUP_ID) > 0)
 	{
 		$row->AddField("SOCNET_GROUP_ID", $f_SOCNET_GROUP_ID);	
 		if(CModule::IncludeModule("socialnetwork"))
@@ -231,7 +234,8 @@ $oFilter = new CAdminFilter(
 		GetMessage("BLB_FILTER_ACTIVE"),
 		GetMessage("BLB_FILTER_URL"),
 		GetMessage("BLB_FILTER_GROUP_ID"),
-		GetMessage("BLB_FILTER_OWNER")
+		GetMessage("BLB_FILTER_OWNER"),
+		"ID"
 	)
 );
 
@@ -259,8 +263,8 @@ $oFilter->Begin();
 		<td valign="top"><?echo GetMessage("BLB_FILTER_GROUP_ID");?>:</td>
 		<td>
 			<select name="filter_group_id[]" multiple size="5">
-				<option value=""><?echo GetMessage("BLB_F_ALL")?></option>
 				<?
+				
 				$dbGroup = CBlogGroup::GetList(array("NAME" => "ASC"), array());
 				while ($arGroup = $dbGroup->GetNext())
 				{
@@ -273,6 +277,10 @@ $oFilter->Begin();
 	<tr>
 		<td><?echo GetMessage("BLB_FILTER_OWNER")?>:</td>
 		<td><input type="text" name="filter_owner" value="<?echo htmlspecialcharsbx($filter_owner)?>" size="40"><?=ShowFilterLogicHelp()?></td>
+	</tr>
+	<tr>
+		<td>ID:</td>
+		<td><input type="text" name="filter_id" value="<?echo htmlspecialcharsbx($filter_id)?>" size="40"></td>
 	</tr>
 <?
 $USER_FIELD_MANAGER->AdminListShowFilter("BLOG_BLOG");

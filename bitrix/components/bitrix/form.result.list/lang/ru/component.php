@@ -17,4 +17,5 @@ $MESS ['FORM_PAGES'] = "Результаты";
 $MESS ['FORM_WRONG_DATE_CREATE_FROM'] = "Введите правильную дату \"с\" (поле \"Дата ввода\")";
 $MESS ['FORM_WRONG_DATE_CREATE_TO'] = "Введите правильную дату \"по\" (поле \"Дата ввода\")";
 $MESS ['FORM_FROM_TILL_DATE_CREATE'] = "Дата \"по\" должна быть больше либо равна дате \"с\" (поле \"Дата ввода\")";
+$MESS["FORM_MODULE_NOT_INSTALLED"] = "Модуль веб-форм не установлен.";
 ?>

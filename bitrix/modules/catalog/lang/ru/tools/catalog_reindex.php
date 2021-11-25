@@ -9,4 +9,5 @@ $MESS["BX_CATALOG_REINDEX_IBLOCK_ID"] = "Инфоблок";
 $MESS["BX_CATALOG_REINDEX_MAX_EXECUTION_TIME"] = "Продолжительность одного шага, сек:";
 $MESS["BX_CATALOG_REINDEX_UPDATE_BTN"] = "Начать";
 $MESS["BX_CATALOG_REINDEX_STOP_BTN"] = "Остановить";
+$MESS["BX_CATALOG_REINDEX_ERRORS_TITLE"] = "Ошибки во время выполнения переиндексации";
 ?>

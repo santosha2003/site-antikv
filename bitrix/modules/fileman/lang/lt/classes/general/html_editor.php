@@ -1,6 +1,0 @@
-<?
-$MESS["HTMLED_SEARCH_PLACEHOLDER"] = "Ieðkoti...";
-$MESS["HTMLED_SEARCH_NOTHING"] = "Áraðø nerasta.";
-$MESS["HTMLED_SEARCH_CANCEL"] = "Atstatyti filtrà";
-$MESS["HTMLED_VIDEO_NOT_FOUND"] = "Video nerastas";
-?>

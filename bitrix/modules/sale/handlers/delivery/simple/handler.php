@@ -10,21 +10,7 @@ use \Bitrix\Sale\Location\GroupTable;
 
 Loc::loadMessages(__FILE__);
 
-/**
- * Class Simple
- * Simple delivery handler as an example for custom  handlers.
- * To enable using this handler add code below to init.php.
- *
- *	function addCustomDeliveryServices()
- *	{
- *		return array(
- *			'\Bitrix\Sale\Delivery\Services\Simple' => '/bitrix/modules/sale/lib/delivery/services/simple.php'
- *		);
- *	}
- *
- *  $eventManager = \Bitrix\Main\EventManager::getInstance();
- *	$eventManager->addEventHandler('sale', 'onSaleDeliveryHandlersClassNamesBuildList', 'addCustomDeliveryServices');
- *
+/*
  * @package Bitrix\Sale\Delivery\Services
  */
 class SimpleHandler extends \Bitrix\Sale\Delivery\Services\Base
@@ -50,7 +36,7 @@ class SimpleHandler extends \Bitrix\Sale\Delivery\Services\Base
 	 */
 	public static function getClassTitle()
 	{
-		return Loc::getMessage("SALE_DLVR_HANDL_SMPL_TITLE");
+		return Loc::getMessage("SALE_DLVR_HANDL_SMPL_TITLE2");
 	}
 
 	/**

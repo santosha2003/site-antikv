@@ -103,7 +103,7 @@ if ($arID = $lAdmin->GroupAction())
 						'filter' => array('=ID' => $ID)
 					))->fetch();
 					if (empty($iblockInfo) || $iblockInfo['PROPERTY_INDEX'] != 'Y')
-						continue;
+						break;
 					$conn->startTransaction();
 					$result = Iblock\IblockTable::update($ID, array('PROPERTY_INDEX' => 'I'));
 					if (!$result->isSuccess())
@@ -114,6 +114,8 @@ if ($arID = $lAdmin->GroupAction())
 					else
 					{
 						$conn->commitTransaction();
+						CIBlock::clearIblockTagCache($ID);
+						CIBlock::CleanCache($ID);
 					}
 					unset($result);
 					break;
@@ -201,7 +203,7 @@ while($iblockInfo = $rsIBlocks->Fetch())
 	$row = $lAdmin->AddRow($iblockInfo["ID"], $iblockInfo);
 
 	$row->AddViewField("ID", $iblockInfo["ID"]);
-	$row->AddViewField("NAME", $iblockInfo["NAME"]);
+	$row->AddViewField("NAME", htmlspecialcharsEx($iblockInfo["NAME"]));
 	$row->AddViewField('ACTIVE', ($iblockInfo['ACTIVE'] == 'Y' ? GetMessage('IBLOCK_RADM_ACTIVE_YES') : GetMessage('IBLOCK_RADM_ACTIVE_NO')));
 
 	if ($iblockInfo["PROPERTY_INDEX"] == "I")

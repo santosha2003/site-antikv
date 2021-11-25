@@ -32,12 +32,15 @@ if(is_dir($wizardPath))
 
 	if ($success)
 	{
+		$filename = str_replace(":", "-", $ID);
+		$filename = str_replace(array("\r", "\n"), "", $filename);
+
 		header('Pragma: public');
 		header('Cache-control: private');
 		header('Accept-Ranges: bytes');
 		header("Content-Length: ".filesize($tempFile));
-		header("Content-Type: application/x-force-download; filename=".str_replace(":", "-", $ID).".tar.gz");
-		header("Content-Disposition: attachment; filename=\"".str_replace(":", "-", $ID).".tar.gz\"");
+		header("Content-Type: application/x-force-download; filename=".$filename.".tar.gz");
+		header("Content-Disposition: attachment; filename=\"".$filename.".tar.gz\"");
 		header("Content-Transfer-Encoding: binary");
 
 		readfile($tempFile);
@@ -60,7 +63,7 @@ if(is_dir($wizardPath))
 else
 	$strError .= GetMessage("MAIN_WIZARD_EXPORT_ERROR");
 
-if (strlen($strError) > 0)
+if ($strError <> '')
 {
 	$APPLICATION->SetTitle(GetMessage("MAIN_WIZARD_EXPORT_ERROR"));
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");

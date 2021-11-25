@@ -1,4 +1,5 @@
-<?
+<?php
+
 use Bitrix\Main;
 use Bitrix\Main\ModuleManager;
 use Bitrix\Main\Localization\Loc;
@@ -19,13 +20,13 @@ class CAllCurrency
 		return CCurrency::GetByID($currency);
 	}
 
-	public function CheckFields($ACTION, &$arFields, $strCurrencyID = false)
+	public static function CheckFields($ACTION, &$arFields, $strCurrencyID = false)
 	{
 		global $APPLICATION, $DB, $USER;
 
 		$arMsg = array();
 
-		$ACTION = strtoupper($ACTION);
+		$ACTION = mb_strtoupper($ACTION);
 		if ($ACTION != 'UPDATE' && $ACTION != 'ADD')
 			return false;
 		if (!is_array($arFields))
@@ -75,7 +76,7 @@ class CAllCurrency
 			}
 			else
 			{
-				$arFields['CURRENCY'] = strtoupper($arFields['CURRENCY']);
+				$arFields['CURRENCY'] = mb_strtoupper($arFields['CURRENCY']);
 				$currencyExist = Currency\CurrencyTable::getList(array(
 					'select' => array('CURRENCY'),
 					'filter' => array('=CURRENCY' => $arFields['CURRENCY'])
@@ -97,6 +98,28 @@ class CAllCurrency
 			$strCurrencyID = Currency\CurrencyManager::checkCurrencyID($strCurrencyID);
 			if ($strCurrencyID === false)
 				$arMsg[] = array('id' => 'CURRENCY','text' => Loc::getMessage('BT_MOD_CURR_ERR_CURR_CUR_ID_BAD'));
+			$iterator = Currency\CurrencyTable::getList(array(
+				'select' => array('*'),
+				'filter' => array('=CURRENCY' => $strCurrencyID)
+			));
+			$row = $iterator->fetch();
+			unset($iterator);
+			if (!empty($row) && $row['BASE'] == 'Y')
+			{
+				if (array_key_exists('AMOUNT_CNT', $arFields))
+				{
+					$arFields['AMOUNT_CNT'] = (int)$arFields['AMOUNT_CNT'];
+					if ($arFields['AMOUNT_CNT'] != 1)
+						$arMsg[] = array('id' => 'AMOUNT_CNT','text' => Loc::getMessage('BX_CURRENCY_ERR_CURR_BASE_AMOUNT_CNT_BAD'));
+				}
+				if (array_key_exists('AMOUNT', $arFields))
+				{
+					$arFields['AMOUNT'] = (float)$arFields['AMOUNT'];
+					if ($arFields['AMOUNT'] != 1)
+						$arMsg[] = array('id' => 'AMOUNT','text' => Loc::getMessage('BX_CURRENCY_ERR_CURR_BASE_AMOUNT_BAD'));
+				}
+			}
+			unset($row);
 		}
 
 		if (empty($arMsg))
@@ -229,6 +252,7 @@ class CAllCurrency
 			unset($settings, $lang);
 		}
 
+		Currency\CurrencyTable::getEntity()->cleanCache();
 		Currency\CurrencyManager::updateBaseRates($arFields['CURRENCY']);
 		Currency\CurrencyManager::clearCurrencyCache();
 
@@ -278,6 +302,7 @@ class CAllCurrency
 		}
 		if (!empty($strUpdate) || isset($arFields['LANG']))
 			Currency\CurrencyManager::clearCurrencyCache();
+		Currency\CurrencyTable::getEntity()->cleanCache();
 
 		foreach (GetModuleEvents("currency", "OnCurrencyUpdate", true) as $arEvent)
 			ExecuteModuleEventEx($arEvent, array($currency, $arFields));
@@ -324,6 +349,8 @@ class CAllCurrency
 		$DB->Query("delete from b_catalog_currency_rate where CURRENCY = '".$sqlCurrency."'", true);
 
 		Currency\CurrencyManager::clearTagCache($currency);
+		Currency\CurrencyTable::getEntity()->cleanCache();
+		Currency\CurrencyLangTable::getEntity()->cleanCache();
 
 		if (isset(self::$currencyCache[$currency]))
 			unset(self::$currencyCache[$currency]);
@@ -360,6 +387,12 @@ class CAllCurrency
 		return self::$currencyCache[$currency];
 	}
 
+	/**
+	 * @deprecated deprecated since currency 16.0.0
+	 * @see \Bitrix\Currency\CurrencyManager::getBaseCurrency
+	 *
+	 * @return string
+	 */
 	public static function GetBaseCurrency()
 	{
 		return Currency\CurrencyManager::getBaseCurrency();
@@ -402,24 +435,39 @@ class CAllCurrency
 			foreach ($currencyList as $currency => $title)
 			{
 				$found = ($currency == $sValue);
-				$s1 .= '<option value="'.$currency.'"'.($found ? ' selected' : '').'>'.($bFullName ? htmlspecialcharsex($title) : $currency).'</option>';
+				$s1 .= '<option value="'.$currency.'"'.($found ? ' selected' : '').'>'.($bFullName ? htmlspecialcharsbx($title) : $currency).'</option>';
 			}
 		}
 		if ('' != $sDefaultValue)
-			$s .= '<option value=""'.($found ? '' : ' selected').'>'.htmlspecialcharsex($sDefaultValue).'</option>';
+			$s .= '<option value=""'.($found ? '' : ' selected').'>'.htmlspecialcharsbx($sDefaultValue).'</option>';
 		return $s.$s1.'</select>';
 	}
 
-	public static function GetList(&$by, &$order, $lang = LANGUAGE_ID)
+	/**
+	 * @deprecated deprecated since currency 16.5.0
+	 * @see \Bitrix\Currency\CurrencyTable::getList
+	 *
+	 * @param string $by
+	 * @param string $order
+	 * @param string $lang
+	 * @return CDBResult
+	 */
+	public static function GetList($by = 'sort', $order = 'asc', $lang = LANGUAGE_ID)
 	{
 		global $CACHE_MANAGER;
 
-		if (defined("CURRENCY_SKIP_CACHE") && CURRENCY_SKIP_CACHE
-			|| strtolower($by) == "name"
-			|| strtolower($by) == "currency"
-			|| strtolower($order) == "desc")
+		$by = strtolower($by);
+		$order = strtolower($order);
+
+		if (
+			defined("CURRENCY_SKIP_CACHE") && CURRENCY_SKIP_CACHE
+			|| $by == "name"
+			|| $by == "currency"
+			|| $order == "desc"
+		)
 		{
-			$dbCurrencyList = CCurrency::__GetList($by, $order, $lang);
+			/** @noinspection PhpDeprecationInspection */
+			$dbCurrencyList = static::__GetList($by, $order, $lang);
 		}
 		else
 		{
@@ -436,7 +484,8 @@ class CAllCurrency
 			else
 			{
 				$arCurrencyList = array();
-				$dbCurrencyList = CCurrency::__GetList($by, $order, $lang);
+				/** @noinspection PhpDeprecationInspection */
+				$dbCurrencyList = static::__GetList($by, $order, $lang);
 				while ($arCurrency = $dbCurrencyList->Fetch())
 					$arCurrencyList[] = $arCurrency;
 
@@ -450,20 +499,27 @@ class CAllCurrency
 		return $dbCurrencyList;
 	}
 
-	public static function __GetList(&$by, &$order, $lang = LANGUAGE_ID)
+	/**
+	 * @deprecated deprecated since currency 16.5.0
+	 * @see \Bitrix\Currency\CurrencyTable::getList
+	 *
+	 * @param string $by
+	 * @param string $order
+	 * @param string $lang
+	 * @return CDBResult
+	 */
+	public static function __GetList($by = 'sort', $order = 'asc', $lang = LANGUAGE_ID)
 	{
 		$lang = substr((string)$lang, 0, 2);
 		$normalBy = strtolower($by);
 		if ($normalBy != 'currency' && $normalBy != 'name')
 		{
 			$normalBy = 'sort';
-			$by = 'sort';
 		}
 		$normalOrder = strtoupper($order);
 		if ($normalOrder != 'DESC')
 		{
 			$normalOrder = 'ASC';
-			$order = 'asc';
 		}
 		switch($normalBy)
 		{
@@ -480,7 +536,8 @@ class CAllCurrency
 		}
 		unset($normalOrder, $normalBy);
 
-		$datetimeField = Currency\CurrencyManager::getDatetimeExpressionTemplate();
+		/** @noinspection PhpInternalEntityUsedInspection */
+		$datetimeField = Currency\Compatible\Tools::getDatetimeExpressionTemplate();
 		$currencyIterator = Currency\CurrencyTable::getList(array(
 			'select' => array(
 				'CURRENCY', 'AMOUNT_CNT', 'AMOUNT', 'SORT', 'BASE', 'NUMCODE', 'CREATED_BY', 'MODIFIED_BY',
@@ -521,16 +578,35 @@ class CAllCurrency
 		return (isset($USER) && $USER instanceof CUser);
 	}
 
+	/**
+	 * @deprecated deprecated since currency 16.5.0
+	 * @see \Bitrix\Currency\CurrencyManager::getInstalledCurrencies
+	 *
+	 * @return array
+	 */
 	public static function getInstalledCurrencies()
 	{
 		return Currency\CurrencyManager::getInstalledCurrencies();
 	}
 
+	/**
+	 * @deprecated deprecated since currency 16.5.0
+	 * @see \Bitrix\Currency\CurrencyManager::clearCurrencyCache
+	 *
+	 * @return void
+	 */
 	public static function clearCurrencyCache()
 	{
 		Currency\CurrencyManager::clearCurrencyCache();
 	}
 
+	/**
+	 * @deprecated deprecated since currency 16.5.0
+	 * @see \Bitrix\Currency\CurrencyManager::clearTagCache
+	 *
+	 * @param string $currency
+	 * @return void
+	 */
 	public static function clearTagCache($currency)
 	{
 		Currency\CurrencyManager::clearTagCache($currency);
@@ -577,7 +653,7 @@ class CAllCurrency
 				if (!($currencyAgent = $agentIterator->Fetch()))
 				{
 					Currency\CurrencyManager::updateBaseRates();
-					$checkDate = Main\Type\DateTime::createFromTimestamp(strtotime('tomorrow 00:01:00'));;
+					$checkDate = Main\Type\DateTime::createFromTimestamp(strtotime('tomorrow 00:01:00'));
 					CAgent::AddAgent('\Bitrix\Currency\CurrencyManager::currencyBaseRateAgent();', 'currency', 'Y', 86400, '', 'Y', $checkDate->toString(), 100, false, true);
 				}
 			}
@@ -617,5 +693,4 @@ class CAllCurrency
 
 class CCurrency extends CAllCurrency
 {
-
 }

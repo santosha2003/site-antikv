@@ -1,17 +1,22 @@
 <?php
 namespace Bitrix\Sale\Delivery\Services;
 
+use Bitrix\Main\Error;
 use Bitrix\Main\Event;
+use Bitrix\Main\Loader;
+use Bitrix\Sale\Result;
 use Bitrix\Sale\Delivery;
 use Bitrix\Sale\Shipment;
 use Bitrix\Main\EventResult;
+use \Bitrix\Main\ModuleManager;
 use Bitrix\Main\SystemException;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Delivery\Requests;
 
 Loc::loadMessages(__FILE__);
 
 /* Inputs for deliveries */
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/delivery/inputs.php");
+require_once __DIR__.'/../inputs.php';
 
 /**
  * Class Base (abstract)
@@ -23,6 +28,7 @@ abstract class Base
 	protected $id = 0;
 	protected $name = "";
 	protected $code = "";
+	protected $vatId = 0;
 	protected $sort = 100;
 	protected $logotip = 0;
 	protected $parentId = 0;
@@ -32,6 +38,9 @@ abstract class Base
 	protected $config = array();
 	protected $restricted = false;
 	protected $trackingClass = "";
+	/** @var Requests\HandlerBase  */
+	protected $deliveryRequestHandler = null;
+
 	protected $extraServices = array();
 	protected $trackingParams = array();
 	protected $allowEditShipment = array();
@@ -43,10 +52,12 @@ abstract class Base
 
 	const EVENT_ON_CALCULATE = "onSaleDeliveryServiceCalculate";
 
+	/** @var bool  */
+	protected $isClone = false;
+
 	/**
 	 * Constructor
 	 * @param array $initParams Delivery service params
-	 * @throws \Bitrix\Main\ArgumentNullException
 	 * @throws \Bitrix\Main\ArgumentTypeException
 	 * @throws \Bitrix\Main\SystemException
 	 */
@@ -65,13 +76,13 @@ abstract class Base
 		if(!isset($initParams["NAME"]))
 			$initParams["NAME"] = "";
 
-		if(!isset($initParams["CONFIG"]))
+		if(!isset($initParams["CONFIG"]) || !is_array($initParams["CONFIG"]))
 			$initParams["CONFIG"] = array();
 
 		if(!is_array($initParams["CONFIG"]))
 			throw new \Bitrix\Main\ArgumentTypeException("CONFIG", "array");
 
-		$this->active = $initParams["ACTIVE"];
+		$this->active = $initParams["ACTIVE"] == "Y";
 		$this->name = $initParams["NAME"];
 		$this->config = $initParams["CONFIG"];
 
@@ -96,6 +107,9 @@ abstract class Base
 		if(isset($initParams["ALLOW_EDIT_SHIPMENT"]))
 			$this->allowEditShipment = $initParams["ALLOW_EDIT_SHIPMENT"];
 
+		if(isset($initParams["VAT_ID"]))
+			$this->vatId = intval($initParams["VAT_ID"]);
+
 		if(isset($initParams["RESTRICTED"]))
 			$this->restricted = $initParams["RESTRICTED"];
 
@@ -118,7 +132,11 @@ abstract class Base
 	public function calculate(\Bitrix\Sale\Shipment $shipment = null, $extraServices = array()) // null for compability with old configurable services api
 	{
 		if($shipment && !$shipment->getCollection())
-			return false;
+		{
+			$result = new Delivery\CalculationResult();
+			$result->addError(new Error('\Bitrix\Sale\Delivery\Services\Base::calculate() can\'t calculate empty shipment!'));
+			return $result;
+		}
 
 		$result = $this->calculateConcrete($shipment);
 
@@ -129,7 +147,7 @@ abstract class Base
 
 			$this->extraServices->setValues($extraServices);
 			$this->extraServices->setOperationCurrency($shipment->getCurrency());
-			$extraServicePrice = $this->extraServices->getTotalCost();
+			$extraServicePrice = $this->extraServices->getTotalCostShipment($shipment);
 
 			if(floatval($extraServicePrice) > 0)
 				$result->setExtraServicesPrice($extraServicePrice);
@@ -137,7 +155,8 @@ abstract class Base
 
 		$eventParams = array(
 			"RESULT" => $result,
-			"SHIPMENT" => $shipment
+			"SHIPMENT" => $shipment,
+			"DELIVERY_ID" => $this->id
 		);
 
 		$event = new Event('sale', self::EVENT_ON_CALCULATE, $eventParams);
@@ -162,7 +181,7 @@ abstract class Base
 	}
 
 	/**
-	 * @return Delivery\ExtraServices\Manager[]
+	 * @return Delivery\ExtraServices\Manager
 	 */
 	public function getExtraServices()
 	{
@@ -189,6 +208,13 @@ abstract class Base
 		{
 			/** @var  \Bitrix\Sale\BasketItem $basketItem */
 			$basketItem = $shipmentItem->getBasketItem();
+
+			if(!$basketItem)
+				continue;
+
+			if($basketItem->isBundleChild())
+				continue;
+
 			$result += $basketItem->getPrice();
 		}
 
@@ -214,10 +240,26 @@ abstract class Base
 	}
 
 	/**
-	 * @param \Bitrix\Sale\Shipment $shipment.
-	 * @return \Bitrix\Sale\Delivery\CalculationResult
+	 * @return float|null
 	 */
-	abstract protected function calculateConcrete(\Bitrix\Sale\Shipment $shipment);
+	public static function getDefaultVatRate(): ?float
+	{
+		return null;
+	}
+
+	/**
+	 * @param \Bitrix\Sale\Shipment $shipment.
+	 * @return Delivery\CalculationResult
+	 */
+	protected function calculateConcrete(\Bitrix\Sale\Shipment $shipment)
+	{
+		return (new Delivery\CalculationResult())
+			->addError(
+				new Error(
+					Loc::getMessage('SALE_DLVR_BASE_DELIVERY_PRICE_CALC_ERROR'),
+					'DELIVERY_CALCULATION'
+			));
+	}
 
 	/**
 	 * @param array $fields
@@ -227,8 +269,8 @@ abstract class Base
 	public function prepareFieldsForSaving(array $fields)
 	{
 		$strError = "";
-
 		$structure = $fields["CLASS_NAME"]::getConfigStructure();
+
 		foreach($structure as $key1 => $rParams)
 		{
 			foreach($rParams["ITEMS"] as $key2 => $iParams)
@@ -236,7 +278,12 @@ abstract class Base
 				if($iParams["TYPE"] == "DELIVERY_SECTION")
 					continue;
 
-				$errors = \Bitrix\Sale\Internals\Input\Manager::getError($iParams, $fields["CONFIG"][$key1][$key2]);
+				$errors = \Bitrix\Sale\Internals\Input\Manager::getRequiredError($iParams, $fields["CONFIG"][$key1][$key2]);
+
+				if(empty($errors))
+				{
+					$errors = \Bitrix\Sale\Internals\Input\Manager::getError($iParams, $fields["CONFIG"][$key1][$key2]);
+				}
 
 				if(!empty($errors))
 				{
@@ -247,6 +294,11 @@ abstract class Base
 
 		if($strError != "")
 			throw new SystemException($strError);
+
+		if(mb_strpos($fields['CLASS_NAME'], '\\') !== 0)
+		{
+			$fields['CLASS_NAME'] = '\\'.$fields['CLASS_NAME'];
+		}
 
 		return $fields;
 	}
@@ -309,6 +361,14 @@ abstract class Base
 			$configStructure[$key] = $this->glueValuesToConfig($configSection, isset($this->config[$key]) ? $this->config[$key] : array());
 
 		return $configStructure;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getConfigValues()
+	{
+		return $this->config;
 	}
 
 	/**
@@ -431,11 +491,18 @@ abstract class Base
 	}
 
 	/**
-	 * @return Base
+	 * @return Base|null
+	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentNullException
 	 */
 	public function getParentService()
 	{
-		return null;
+		$result = null;
+
+		if(intval($this->parentId) > 0)
+			$result =  Manager::getObjectById($this->parentId);
+
+		return $result;
 	}
 
 	/**
@@ -479,6 +546,15 @@ abstract class Base
 	}
 
 	/**
+	 * @param array $fields
+	 * @return \Bitrix\Main\Result
+	 */
+	public static function onBeforeAdd(array &$fields = array()): \Bitrix\Main\Result
+	{
+		return new \Bitrix\Main\Result();
+	}
+
+	/**
 	 * @param int $serviceId
 	 * @param array $fields
 	 * @return bool
@@ -517,7 +593,19 @@ abstract class Base
 	}
 
 	/**
-	 * @return array
+	 * Returns array of extra service ids available for the specified shipment
+	 * OR null in case all extra services are available
+	 *
+	 * @param Shipment $shipment
+	 * @return array|null
+	 */
+	public function getCompatibleExtraServiceIds(Shipment $shipment): ?array
+	{
+		return null;
+	}
+
+	/**
+	 * @return array Profiles list
 	 */
 	public function getProfilesList()
 	{
@@ -559,6 +647,14 @@ abstract class Base
 	/**
 	 * @return bool
 	 */
+	public function isTrackingInherited()
+	{
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
 	public function isCalculatePriceImmediately()
 	{
 		return self::$isCalculatePriceImmediately;
@@ -576,6 +672,14 @@ abstract class Base
 	 * @return array
 	 */
 	public static function onGetBusinessValueConsumers()
+	{
+		return array();
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function onGetBusinessValueGroups()
 	{
 		return array();
 	}
@@ -599,12 +703,174 @@ abstract class Base
 	}
 
 	/**
-	 * @return array
+	 * @return bool
 	 */
 	public function isAllowEditShipment()
 	{
 		return $this->allowEditShipment != 'N';
 	}
 
+	/**
+	 * Show message on service edit page.
+	 * @return array
+	 * array("MESSAGE"=>"", "TYPE"=>("ERROR"|"OK"|"PROGRESS"), "DETAILS"=>"", "HTML"=>true)
+	 * @see \CAdminMessage::CAdminMessage
+	 */
+	public function getAdminMessage()
+	{
+		return array();
+	}
 
+	/**
+	 * Execute some code on service edit page if need.
+	 * @return Result
+	 */
+	public function execAdminAction()
+	{
+		return new Result();
+	}
+
+	/**
+	 * @param Shipment $shipment
+	 * @return array
+	 */
+	public function getAdditionalInfoShipmentEdit(Shipment $shipment)
+	{
+		return array();
+	}
+
+	/**
+	 * @param Shipment $shipment
+	 * @param array $requestData
+	 * @return Shipment|null
+	 */
+	public function processAdditionalInfoShipmentEdit(Shipment $shipment, array $requestData)
+	{
+		return $shipment;
+	}
+
+	/**
+	 * @param Shipment $shipment
+	 * @return array
+	 */
+	public function getAdditionalInfoShipmentView(Shipment $shipment)
+	{
+		return array();
+	}
+
+	/**
+	 * @param Shipment $shipment
+	 * @return array
+	 */
+	public function getAdditionalInfoShipmentPublic(Shipment $shipment)
+	{
+		return array();
+	}
+
+	/**
+	 * @internal
+	 * @param \SplObjectStorage $cloneEntity
+	 *
+	 * @return EmptyDeliveryService
+	 */
+	public function createClone(\SplObjectStorage $cloneEntity)
+	{
+		if ($this->isClone() && $cloneEntity->contains($this))
+		{
+			return $cloneEntity[$this];
+		}
+
+		$deliveryServiceClone = clone $this;
+		$deliveryServiceClone->isClone = true;
+
+		if (!$cloneEntity->contains($this))
+		{
+			$cloneEntity[$this] = $deliveryServiceClone;
+		}
+
+		/** @var Delivery\ExtraServices\Manager $extraServices */
+		if ($extraServices = $this->getExtraServices())
+		{
+			if (!$cloneEntity->contains($extraServices))
+			{
+				$cloneEntity[$extraServices] = $extraServices->createClone($cloneEntity);
+			}
+
+			if ($cloneEntity->contains($extraServices))
+			{
+				$deliveryServiceClone->extraServices = $cloneEntity[$extraServices];
+			}
+		}
+		
+		return $deliveryServiceClone;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isClone()
+	{
+		return $this->isClone;
+	}
+
+	/**
+	 * Returns names of supported delivery services
+	 * @return array
+	 */
+	public static function getSupportedServicesList()
+	{
+		return array();
+	}
+
+	/**
+	 * @return array Additional tabs to show on edit admin page.
+	 */
+	public function getAdminAdditionalTabs()
+	{
+		return array();
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getVatId()
+	{
+		return $this->vatId;
+	}
+
+	/**
+	 * @param int $vatId
+	 */
+	public function setVatId($vatId)
+	{
+		$this->vatId = $vatId;
+	}
+
+	/**
+	 * @return Requests\HandlerBase
+	 */
+	public function getDeliveryRequestHandler()
+	{
+		return $this->deliveryRequestHandler;
+	}
+
+	public function createProfileObject($fields)
+	{
+		return Manager::createObject($fields);
+	}
+
+	/**
+	 * Checks if handler is compatible
+	 *
+	 * @return bool
+	 */
+	public static function isHandlerCompatible()
+	{
+		// Actually only configurable are fully compatible with all languages
+		return in_array(
+			\Bitrix\Sale\Delivery\Helper::getPortalZone(),
+			['', 'ru', 'kz', 'by', 'ua'],
+			true
+		);
+	}
 }

@@ -41,6 +41,8 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("020_news_content-news_".LANGUAGE_ID.".xml
 		),
 	));
 
+	$import = new CIBlockCMLImport();
+
 	DEMO_IBlock_EditFormLayout($IBLOCK_ID, array(
 		"edit1" => array(
 			"TITLE" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_TAB_TITLE"),
@@ -53,12 +55,12 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("020_news_content-news_".LANGUAGE_ID.".xml
 				"DETAIL_TEXT" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_DETAIL_TEXT"),
 				"DETAIL_PICTURE" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_DETAIL_PICTURE"),
 				"TAGS" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_TAGS"),
-				"PROPERTY_".CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-themes") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_THEMES"),
-				"PROPERTY_".CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-source") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_SOURCE"),
+				"PROPERTY_".$import->GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-themes") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_THEMES"),
+				"PROPERTY_".$import->GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-source") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_SOURCE"),
 				"edit1_csection1" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_edit1_csection1"),
-				"PROPERTY_".CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-keywords") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_KEYWORDS"),
-				"PROPERTY_".CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-description") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_DESCRIPTION"),
-				"PROPERTY_".CIBlockCMLImport::GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-browser_title") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_BROWSER_TITLE"),
+				"PROPERTY_".$import->GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-keywords") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_KEYWORDS"),
+				"PROPERTY_".$import->GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-description") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_DESCRIPTION"),
+				"PROPERTY_".$import->GetPropertyByXML_ID($IBLOCK_ID, "content-news-property-browser_title") => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_PROPERTY_BROWSER_TITLE"),
 				"edit1_csection2" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_edit1_csection2"),
 				"WF_STATUS_ID" => GetMessage("DEMO_IBLOCK_CONTENT_NEWS_FIELD_WF_STATUS_ID"),
 			),

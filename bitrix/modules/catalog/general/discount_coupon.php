@@ -1,8 +1,8 @@
 <?
-use Bitrix\Main;
-use Bitrix\Main\Localization\loc;
-use Bitrix\Catalog;
-use Bitrix\Sale\DiscountCouponsManager;
+use Bitrix\Main,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Catalog,
+	Bitrix\Sale\DiscountCouponsManager;
 
 Loc::loadMessages(__FILE__);
 
@@ -31,7 +31,7 @@ class CAllCatalogDiscountCoupon
 	{
 		global $DB, $APPLICATION, $USER;
 
-		$ACTION = strtoupper($ACTION);
+		$ACTION = mb_strtoupper($ACTION);
 		if ('UPDATE' != $ACTION && 'ADD' != $ACTION)
 			return false;
 
@@ -64,7 +64,7 @@ class CAllCatalogDiscountCoupon
 			return false;
 		}
 
-		if ((is_set($arFields, "COUPON") || $ACTION=="ADD") && strlen($arFields["COUPON"]) <= 0)
+		if ((is_set($arFields, "COUPON") || $ACTION=="ADD") && $arFields["COUPON"] == '')
 		{
 			$APPLICATION->ThrowException(Loc::getMessage("KGDC_EMPTY_COUPON"), "EMPTY_COUPON");
 			return false;
@@ -72,7 +72,7 @@ class CAllCatalogDiscountCoupon
 		elseif(is_set($arFields, "COUPON"))
 		{
 			$currentId = ($ACTION == 'UPDATE' ? $ID : 0);
-			$arFields['COUPON'] = substr($arFields['COUPON'], 0, 32);
+			$arFields['COUPON'] = mb_substr($arFields['COUPON'], 0, 32);
 			if (self::$existCouponsManager)
 			{
 				$existCoupon = DiscountCouponsManager::isExist($arFields['COUPON']);
@@ -131,6 +131,23 @@ class CAllCatalogDiscountCoupon
 			}
 		}
 
+		return true;
+	}
+
+	/**
+	 * @deprecated deprecated since catalog 17.6.7
+	 * @see \Bitrix\Catalog\DiscountCouponTable::deleteByDiscount()
+	 *
+	 * @param int $ID
+	 * @param bool $bAffectDataFile
+	 * @return bool
+	 */
+	public static function DeleteByDiscountID($ID, $bAffectDataFile = true)
+	{
+		$ID = (int)$ID;
+		if ($ID <= 0)
+			return false;
+		Catalog\DiscountCouponTable::deleteByDiscount($ID);
 		return true;
 	}
 
@@ -316,7 +333,7 @@ class CAllCatalogDiscountCoupon
 	* @see \Bitrix\Sale\DiscountCouponsManager::get
 	*
 	* @param int $intUserID			User id.
-	* @return bool
+	* @return bool|array
 	*/
 	public static function GetCouponsByManage($intUserID)
 	{

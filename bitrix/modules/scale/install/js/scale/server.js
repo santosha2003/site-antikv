@@ -25,11 +25,14 @@
 		{
 			for(var i in BX.Scale.rolesList)
 			{
+				if(!BX.Scale.rolesList.hasOwnProperty(i))
+					continue;
+
 				var rParams = {};
 
 				if(i != "SERVER")
 				{
-					if(!params.roles[i])
+					if(!params.roles[i] || typeof params.roles[i] === 'function')
 					{
 						rParams.type = "norole";
 
@@ -46,7 +49,13 @@
 				rParams.showMenu = !this.bxInfoError && !this.bxEnvNeedUpdate;
 
 				if(i == "web" && params.roles["mgmt"] !== undefined)
+				{
 					rParams.noActions = true;
+				}
+				else if(i == "mysql" && params.BX_INFO)
+				{
+					rParams.state = params.BX_INFO.mysql_service_status;
+				}
 
 				this.roles[i] =  new BX.Scale.Role(i, hostname, rParams);
 			}
@@ -55,10 +64,16 @@
 
 			for(var r in this.roles)
 			{
+				if(!this.roles.hasOwnProperty(r))
+					continue;
+
 				var rmCat =  this.roles[r].getMonitoringCategories(hostname);
 
 				for(var cat in rmCat)
 				{
+					if(!rmCat.hasOwnProperty(cat))
+						continue;
+
 					if(BX.Scale.monitoringCategories[hostname][cat] && this.roles[r].type != "norole")
 						monCat[cat] = BX.Scale.monitoringCategories[hostname][cat];
 				}
@@ -200,12 +215,16 @@
 			this.domObj.appendChild(this.getRolesObj());
 
 			if(this.infoTable)
+			{
 				this.domObj.appendChild(this.infoTable.getDomObj());
-			else if(!BX.Scale.monitoringEnabled)
-				this.domObj.appendChild(BX.create("DIV", {props: {className:'adm-scale-block-bottom'}, html: BX.message("SCALE_PANEL_MONITORING_DISABLED")}));
-			else if(!BX.Scale.isMonitoringDbCreated[this.hostname])
-				this.domObj.appendChild(BX.create("DIV", {props: {className:'adm-scale-block-bottom'}, html: BX.message("SCALE_PANEL_JS_MONITORING_DATABASE_CREATING")}));
-
+			}
+			else if(BX.Scale.bitrixEnvType != 'crm')
+			{
+				if(!BX.Scale.monitoringEnabled)
+					this.domObj.appendChild(BX.create("DIV", {props: {className:'adm-scale-block-bottom'}, html: BX.message("SCALE_PANEL_MONITORING_DISABLED")}));
+				else if(!BX.Scale.isMonitoringDbCreated[this.hostname])
+					this.domObj.appendChild(BX.create("DIV", {props: {className:'adm-scale-block-bottom'}, html: BX.message("SCALE_PANEL_JS_MONITORING_DATABASE_CREATING")}));
+			}
 		}
 
 		return this.domObj;

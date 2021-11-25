@@ -1,6 +1,6 @@
 <?
-$MESS ['DEMO_SITE_WIZARD_NAME'] = "Мастер создания демо-сайта";
-$MESS ['DEMO_SITE_WIZARD_DESC'] = "Мастер предлагает выбрать дизайн для демо-сайта";
+$MESS ['DEMO_SITE_WIZARD_NAME'] = "Демо-сайт для разработчиков";
+$MESS ['DEMO_SITE_WIZARD_DESC'] = "Технологическая демонстрация возможностей продукта";
 $MESS ['DEMO_SITE_WELCOME_TITLE'] = "Добро пожаловать!";
 $MESS ['DEMO_SITE_SELECT_TEMPLATE_TITLE'] = "Дизайн сайта (шаг 1 из 4)";
 $MESS ['DEMO_SITE_START_INSTALL_TITLE'] = "Мастер готов к началу установки (шаг 4 из 4)";
@@ -31,6 +31,7 @@ $MESS ['SERVICE_PHOTOGALLERY'] = "Фотогалерея";
 $MESS ['SERVICE_FORM'] = "Веб-формы";
 $MESS ['SERVICE_SOCIALNETWORK'] = "Социальная сеть";
 $MESS ['SERVICE_BLOGS'] = "Блоги";
+$MESS ['SERVICE_IDEA'] = "Идеи";
 $MESS ['SERVICE_SUPPORT'] = "Техподдержка";
 $MESS ['SERVICE_VOTE'] = "Опросы";
 $MESS ['SERVICE_LEARNING'] = "Обучение";
@@ -38,6 +39,8 @@ $MESS ['SERVICE_EXAMPLES'] = "Типовые примеры";
 $MESS ['SERVICE_EXAMPLES_DESC'] = "FAQ, Каталог ресурсов, Доска объявлений, Платный контент";
 $MESS ['SERVICE_MEDIALIBRARY'] = "Медиабиблиотека";
 $MESS ['SERVICE_MEDIALIBRARY_DESC'] = "Примеры коллекций в медиабиблиотеке";
+$MESS ['SERVICE_CALENDAR'] = "Календарь событий";
 $MESS ['MAIN_WIZARD_TEMPLATE_INSTALL'] = "Установка шаблона...";
 $MESS ['SERVICE_LAST_STEP'] = "Завершение установки";
+$MESS ['SERVICE_LISTS'] = "Универсальные списки";
 ?>

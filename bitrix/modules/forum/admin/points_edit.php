@@ -5,16 +5,16 @@ $forumPermissions = $APPLICATION->GetGroupRight("forum");
 if ($forumPermissions == "D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/include.php");
+\Bitrix\Main\Loader::includeModule("forum");
 ClearVars();
 IncludeModuleLangFile(__FILE__);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/prolog.php");
 
-$ID = IntVal($ID);
+$ID = intval($ID);
 $message = false;
 $arSysLangs = array();
 $arSysLangNames = array();
-$db_lang = CLangAdmin::GetList(($b="sort"), ($o="asc"));
+$db_lang = CLangAdmin::GetList();
 $langCount = 0;
 while ($arLang = $db_lang->Fetch())
 {
@@ -32,7 +32,7 @@ if ($REQUEST_METHOD=="POST" && $forumPermissions=="W" && (!empty($save) || !empt
 		"CODE" => $CODE);
 		
 	if (isset($VOTES))
-		$arFields["VOTES"] = IntVal($VOTES);
+		$arFields["VOTES"] = intval($VOTES);
 		
 	for ($i = 0; $i<count($arSysLangs); $i++)
 	{
@@ -49,12 +49,12 @@ if ($REQUEST_METHOD=="POST" && $forumPermissions=="W" && (!empty($save) || !empt
 		$res = CForumPoints::Update($ID, $arFields);
 	else
 		$res = CForumPoints::Add($arFields);
-	if (intVal($res) <= 0 && $e = $GLOBALS["APPLICATION"]->GetException())
+	if (intval($res) <= 0 && $e = $GLOBALS["APPLICATION"]->GetException())
 	{
 		$message = new CAdminMessage(($ID > 0 ? GetMessage("FORUM_PE_ERROR_UPDATE") : GetMessage("FORUM_PE_ERROR_ADD")), $e);
 		$bInitVars = True;
 	}
-	elseif (strlen($save)>0)
+	elseif ($save <> '')
 		LocalRedirect("forum_points.php?lang=".LANG."&".GetFilterParams("filter_", false));
 	else 
 		$ID = $res;
@@ -146,14 +146,14 @@ $tabControl->BeginNextTab();
 					GetMessage("FORUM_PE_RATING_VOTES"): GetMessage("FORUM_PE_RATING_VALUE")))?>:
 		</td>
 		<td width="60%">
-			<input type="text" name="MIN_POINTS" value="<?=htmlspecialcharsEx($str_MIN_POINTS)?>" size="10" />
+			<input type="text" name="MIN_POINTS" value="<?=htmlspecialcharsbx($str_MIN_POINTS)?>" size="10" />
 		</td>
 	</tr>
 
 	<tr>
 		<td><?= GetMessage("FORUM_PE_MNEMOCODE") ?>:</td>
 		<td>
-			<input type="text" name="CODE" value="<?=htmlspecialcharsEx($str_CODE)?>" size="30" />
+			<input type="text" name="CODE" value="<?=htmlspecialcharsbx($str_CODE)?>" size="30" />
 		</td>
 	</tr>
 	<?
@@ -162,7 +162,7 @@ $tabControl->BeginNextTab();
 	<tr>
 		<td><?= GetMessage("FORUM_PE_VOTES") ?>:</td>
 		<td>
-			<input type="text" name="VOTES" value="<?=htmlspecialcharsEx($str_VOTES)?>" size="10" />
+			<input type="text" name="VOTES" value="<?=htmlspecialcharsbx($str_VOTES)?>" size="10" />
 		</td>
 	</tr>
 

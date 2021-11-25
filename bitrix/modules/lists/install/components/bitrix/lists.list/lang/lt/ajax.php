@@ -1,9 +1,0 @@
-<?
-$MESS["LISTS_LAC_MESSAGE_SUCCESS"] = "Sëkmë";
-$MESS["LISTS_LAC_WRONG_IBLOCK_TYPE"] = "Neteisingas informacinio bloko tipas.";
-$MESS["LISTS_LAC_WRONG_IBLOCK"] = "Nurodytas sàraðas yra neteisingas.";
-$MESS["LISTS_LAC_SONET_GROUP_DISABLED"] = "Sàraðai yra iðjungti ðiai grupei.";
-$MESS["LISTS_LAC_UNKNOWN_ERROR"] = "Neþinoma klaida.";
-$MESS["LISTS_LAC_ACCESS_DENIED"] = "Prieiga uþdrausta";
-$MESS["LISTS_LAC_MODULE_NOT_INSTALLED"] = "Universaliø sàraðø modulis nëra ádiegtas.";
-?>

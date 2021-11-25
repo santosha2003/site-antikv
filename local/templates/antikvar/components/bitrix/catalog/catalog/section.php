@@ -11,12 +11,55 @@
 		"CACHE_TYPE" => $arParams["CACHE_TYPE"],
 		"CACHE_TIME" => $arParams["CACHE_TIME"],
 		"CACHE_GROUPS" => $arParams["CACHE_GROUPS"],
-
+        "COUNT_ELEMENTS" => "Y",
 		"SECTION_URL" => $arResult["FOLDER"].$arResult["URL_TEMPLATES"]["section"],
 	),
 	$component
 );?>
 <?if($arParams["USE_FILTER"]=="Y"):?>
+
+<?
+// Родительские разделы, где использовать кастомные фильтры наград
+$custSectData = [
+    'znaki' => 282,
+    'ordena-i-medali' => 529,
+    'USSR-znaki' => 531,
+    'inostrannie' => 1807,
+];
+
+$custSectCodes = array_keys($custSectData);
+$useCustFilters = in_array($arResult["VARIABLES"]["SECTION_CODE"], $custSectCodes);
+
+if (!$useCustFilters && $arResult["VARIABLES"]["SECTION_CODE"]) {
+    $rsSections = CIBlockSection::GetList(
+        array(),
+        array(
+            "IBLOCK_ID"=>$arParams["IBLOCK_ID"],
+            "IBLOCK_ACTIVE"=>"Y",
+            "ACTIVE"=>"Y",
+            "GLOBAL_ACTIVE"=>"Y",
+            "=CODE" => $arResult["VARIABLES"]["SECTION_CODE"],
+        ),
+        false
+    );
+
+    $arSection = $rsSections->Fetch();
+
+    if ($arSection) {
+        $custSectIds = array_values($custSectData);
+        $useCustFilters = $arSection['IBLOCK_SECTION_ID'] && in_array($arSection['IBLOCK_SECTION_ID'], $custSectIds);
+    }
+}
+
+if ($useCustFilters) {
+    $arParams["FILTER_PROPERTY_CODE"] = array(
+        0 => "CONDITIO",
+        1 => "RARITY",
+        2 => "MATERIAL",
+    );
+}
+?>
+
 <?$APPLICATION->IncludeComponent(
 	"bitrix:catalog.filter",
 	"",
@@ -62,8 +105,13 @@
 
 	if ($_GET["order"] == "up") $arParams["ELEMENT_SORT_ORDER"]= "asc";
 	elseif ($_GET["order"] == "down") $arParams["ELEMENT_SORT_ORDER"]= "desc";
-	?>
 
+    // Раздел Ордена и медали
+    $medali_section_code = 'ordena-i-medali';
+    $arhiv_section_id = 1805;
+    $cIncludeSubsections = $arResult["VARIABLES"]["SECTION_CODE"] == $medali_section_code ? 'Y' : 'N';
+
+	?>
 
 <?$APPLICATION->IncludeComponent(
 	"bitrix:catalog.section",
@@ -77,7 +125,7 @@
 		"META_KEYWORDS" => $arParams["LIST_META_KEYWORDS"],
 		"META_DESCRIPTION" => $arParams["LIST_META_DESCRIPTION"],
 		"BROWSER_TITLE" => $arParams["LIST_BROWSER_TITLE"],
-		"INCLUDE_SUBSECTIONS" => $arParams["INCLUDE_SUBSECTIONS"],
+		"INCLUDE_SUBSECTIONS" => $cIncludeSubsections,
 		"BASKET_URL" => $arParams["BASKET_URL"],
 		"ACTION_VARIABLE" => $arParams["ACTION_VARIABLE"],
 		"PRODUCT_ID_VARIABLE" => $arParams["PRODUCT_ID_VARIABLE"],

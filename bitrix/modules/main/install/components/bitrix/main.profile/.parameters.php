@@ -4,12 +4,11 @@ $userProp = array();
 if (!empty($arRes))
 {
 	foreach ($arRes as $key => $val)
-		$userProp[$val["FIELD_NAME"]] = (strLen($val["EDIT_FORM_LABEL"]) > 0 ? $val["EDIT_FORM_LABEL"] : $val["FIELD_NAME"]);
+		$userProp[$val["FIELD_NAME"]] = ($val["EDIT_FORM_LABEL"] <> '' ? $val["EDIT_FORM_LABEL"] : $val["FIELD_NAME"]);
 }
 $arComponentParameters = array(
 	"PARAMETERS" => array(
 		"SET_TITLE" => array(),
-		"AJAX_MODE" => array(),
 		"USER_PROPERTY"=>array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("USER_PROPERTY"),

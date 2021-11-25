@@ -19,6 +19,8 @@
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 	die();
 
+$this->setFrameMode(false);
+
 include_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/components/bitrix/desktop/include.php');
 
 $arParams["ID"] = (isset($arParams["ID"])? preg_replace("/[^a-z0-9_]/i", "", $arParams["ID"]) : "gdholder1");
@@ -28,7 +30,7 @@ if ($arParams["MULTIPLE"] == "Y")
 
 if (
 	in_array($arParams["MODE"], array("SU", "SG"))
-	&& strlen($arParams["DEFAULT_ID"]) > 0
+	&& $arParams["DEFAULT_ID"] <> ''
 )
 {
 	$arUserOptionsDefault = CUserOptions::GetOption("intranet", "~gadgets_".$arParams["DEFAULT_ID"], false, 0);
@@ -59,7 +61,7 @@ if (
 	}
 }
 
-if (array_key_exists("DEFAULT_ID", $arParams) && strlen(trim($arParams["DEFAULT_ID"])) > 0)
+if (array_key_exists("DEFAULT_ID", $arParams) && trim($arParams["DEFAULT_ID"]) <> '')
 {
 	$user_option_id = 0;
 	$arUserOptionsDefault = CUserOptions::GetOption("intranet", "~gadgets_".$arParams["DEFAULT_ID"], false, 0);
@@ -73,7 +75,7 @@ else
 
 if (IsModuleInstalled('intranet'))
 {
-	if (strlen(trim($arParams["NAME_TEMPLATE"])) <= 0)
+	if (trim($arParams["NAME_TEMPLATE"]) == '')
 		$arParams["NAME_TEMPLATE"] = CSite::GetNameFormat();
 	$arParams['SHOW_LOGIN'] = $arParams['SHOW_LOGIN'] != "N" ? "Y" : "N";
 
@@ -134,7 +136,7 @@ if($USER->IsAuthorized() && $arResult["PERMISSION"]>"R" && check_bitrix_sessid()
 		if($_POST['holderid'] == $arParams["ID"])
 		{
 			$gdid = $_POST['gid'];
-			$p = strpos($gdid, "@");
+			$p = mb_strpos($gdid, "@");
 			if($p === false)
 			{
 				$gadget_id = $gdid;
@@ -142,7 +144,7 @@ if($USER->IsAuthorized() && $arResult["PERMISSION"]>"R" && check_bitrix_sessid()
 			}
 			else
 			{
-				$gadget_id = substr($gdid, 0, $p);
+				$gadget_id = mb_substr($gdid, 0, $p);
 			}
 
 			$arGadget = BXGadget::GetById($gadget_id);
@@ -198,8 +200,8 @@ if($USER->IsAuthorized() && $arResult["PERMISSION"]>"R" && check_bitrix_sessid()
 				{
 					foreach($arUserOptions["GADGETS"] as $tempid => $tempgadget)
 					{
-						$p = strpos($tempid, "@");
-						$gadget_id_tmp = ($p === false ? $tempid : substr($tempid, 0, $p));
+						$p = mb_strpos($tempid, "@");
+						$gadget_id_tmp = ($p === false? $tempid : mb_substr($tempid, 0, $p));
 			
 						if ($gadget_id_tmp == $gadget_id)
 						{
@@ -261,11 +263,11 @@ if($_REQUEST['gd_ajax']==$arParams["ID"])
 			case 'get_settings':
 				$gdid = $_REQUEST['gid'];
 
-				$p = strpos($gdid, "@");
+				$p = mb_strpos($gdid, "@");
 				if($p === false)
 					break;
 
-				$gadget_id = substr($gdid, 0, $p);
+				$gadget_id = mb_substr($gdid, 0, $p);
 
 				// closed by an admin
 				if(is_array($arParams["GADGETS"]) && !in_array($gadget_id, $arParams["GADGETS"]) && !in_array("ALL", $arParams["GADGETS"]))
@@ -280,8 +282,8 @@ if($_REQUEST['gd_ajax']==$arParams["ID"])
 					foreach($arParams as $id=>$p)
 					{
 						$pref = "GU_".$gadget_id."_";
-						if(strpos($id, $pref)===0 && is_set($arGadgetParams, substr($id, strlen($pref))))
-							$arGadgetParams[substr($id, strlen($pref))]["VALUE"] = $p;
+						if(mb_strpos($id, $pref) === 0 && is_set($arGadgetParams, mb_substr($id, mb_strlen($pref))))
+							$arGadgetParams[mb_substr($id, mb_strlen($pref))]["VALUE"] = $p;
 					}
 
 					$arUserOptions = CUserOptions::GetOption("intranet", "~gadgets_".$arParams["ID"], $arUserOptionsDefault, $user_option_id);
@@ -321,7 +323,7 @@ if($_REQUEST['gd_ajax']==$arParams["ID"])
 				CUserOptions::DeleteOption("intranet", "~gadgets_".$arParams["ID"], false, $user_option_id);
 				if (
 					in_array($arParams["MODE"], array("SU", "SG"))
-					&& strlen($arParams["DEFAULT_ID"]) > 0
+					&& $arParams["DEFAULT_ID"] <> ''
 				)
 				{
 					$arTmp = explode("_", $arParams["ID"]);
@@ -350,7 +352,7 @@ if($_REQUEST['gd_ajax']==$arParams["ID"])
 							$arUserOptions = CUserOptions::GetOption("intranet", "~gadgets_".$tmp_desktop_id, false, false);
 					}
 
-					if (array_key_exists("DEFAULT_ID", $arParams) && strlen(trim($arParams["DEFAULT_ID"])) > 0)
+					if (array_key_exists("DEFAULT_ID", $arParams) && trim($arParams["DEFAULT_ID"]) <> '')
 						CUserOptions::SetOption("intranet", "~gadgets_".$arParams["DEFAULT_ID"], $arUserOptions, false, 0);
 					else
 						CUserOptions::SetOption("intranet", "~gadgets_".$arParams["ID"], $arUserOptions, true);
@@ -449,18 +451,18 @@ if (
 )
 {
 	for($i = 0, $intCount = count($arUserOptions["arCOLUMN_WIDTH"]); $i < $intCount; $i++)
-		$arResult["COLUMN_WIDTH"][$i] = $arUserOptions["arCOLUMN_WIDTH"][$i];
+		$arResult["COLUMN_WIDTH"][$i] = htmlspecialcharsbx($arUserOptions["arCOLUMN_WIDTH"][$i]);
 }
 else
 {
 	for($i = 0; $i < $arResult["COLS"]; $i++)
-		$arResult["COLUMN_WIDTH"][$i] = $arParams["COLUMN_WIDTH_".$i];
+		$arResult["COLUMN_WIDTH"][$i] = htmlspecialcharsbx($arParams["COLUMN_WIDTH_".$i]);
 }
 
 if (
 	is_array($arUserOptions)
 	&& array_key_exists("NAME", $arUserOptions)
-	&& strlen($arUserOptions["NAME"]) > 0
+	&& $arUserOptions["NAME"] <> ''
 )
 {
 	$arResult["DESKTOP_NAME"] = $arUserOptions["NAME"];
@@ -563,6 +565,10 @@ foreach($arGadgets as $gadget)
 	if ($arParams["MODE"] == "AI" && $gadget["AI_ONLY"] != true && $gadget["AI"] != true)
 		continue;
 
+	if ($gadget["DISABLED"] === true)
+	{
+		continue;
+	}
 	if ($gadget["EXTRANET_ONLY"] == true && (!CModule::IncludeModule('extranet') || !CExtranet::IsExtranetSite()))
 		continue;
 	if ($gadget["SEARCH_ONLY"] == true && !IsModuleInstalled("search"))
@@ -600,20 +606,6 @@ foreach($arGadgets as $gadget)
 			$arIBlock = false;
 
 		if (!$arIBlock)
-			continue;
-	}
-	if ($gadget["SECURITY_ONLY"] == true)
-	{
-		$aGlobalOpt = CUserOptions::GetOption("global", "settings", array());
-		$bShowSecurity = (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/security/install/index.php") && $aGlobalOpt['messages']['security'] <> 'N');
-		if (!$bShowSecurity)
-			continue;
-	}
-	if ($gadget["PERFMON_ONLY"] == true)
-	{
-		$aGlobalOpt = CUserOptions::GetOption("global", "settings", array());
-		$bShowPerfmon = (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/perfmon/install/index.php") && $aGlobalOpt['messages']['perfmon'] <> 'N');
-		if (!$bShowPerfmon)
 			continue;
 	}
 	if (
@@ -762,7 +754,7 @@ if(is_array($arUserOptions))
 		{
 			$gadgetUserSettings = $arUserOptions["GADGETS"][$gdid];
 
-			$p = strpos($gdid, "@");
+			$p = mb_strpos($gdid, "@");
 			if($p === false)
 			{
 				$gadget_id = $gdid;
@@ -770,27 +762,29 @@ if(is_array($arUserOptions))
 			}
 			else
 			{
-				$gadget_id = substr($gdid, 0, $p);
+				$gadget_id = mb_substr($gdid, 0, $p);
 			}
 
 			if($arResult["ALL_GADGETS"][$gadget_id])
 			{
-				$arGadgetParams = $gadgetUserSettings["SETTINGS"];
+				$arGadgetParams = $gadgetUserSettings["SETTINGS"] ?? [];
 
 				$arGadget = $arResult["ALL_GADGETS"][$gadget_id];
 				foreach($arParams as $id=>$p)
 				{
 					$pref = "G_".$gadget_id."_";
-					if(strpos($id, $pref)===0)
-						$arGadgetParams[substr($id, strlen($pref))]=$p;
+					if(mb_strpos($id, $pref) === 0)
+						$arGadgetParams[mb_substr($id, mb_strlen($pref))]=$p;
 
 					$pref = "GU_".$gadget_id."_";
-					if(strpos($id, $pref)===0 && !isset($arGadgetParams[substr($id, strlen($pref))]))
-						$arGadgetParams[substr($id, strlen($pref))]=$p;
+					if(mb_strpos($id, $pref) === 0 && !isset($arGadgetParams[mb_substr($id, mb_strlen($pref))]))
+						$arGadgetParams[mb_substr($id, mb_strlen($pref))]=$p;
 				}
 
 				if(intval($gadgetUserSettings["COLUMN"])<=0 || intval($gadgetUserSettings["COLUMN"])>=$arResult["COLS"])
-						$arUserOptions["GADGETS"][$gdid]["COLUMN"] = 0;
+				{
+					$gadgetUserSettings["COLUMN"] = 0;
+				}
 
 				$arGCol = &$arResult["GADGETS"][$gadgetUserSettings["COLUMN"]];
 
@@ -798,7 +792,7 @@ if(is_array($arUserOptions))
 				{
 					ksort($arGCol, SORT_NUMERIC);
 					$ks = array_keys($arGCol);
-					$arUserOptions["GADGETS"][$gdid]["ROW"] = $ks[count($ks)-1] + 1;
+					$gadgetUserSettings["ROW"] = $ks[count($ks)-1] + 1;
 				}
 
 				$arGadget["ID"] = $gdid;
@@ -809,9 +803,11 @@ if(is_array($arUserOptions))
 				if (
 					is_array($arGadgetParams)
 					&& array_key_exists("TITLE_STD", $arGadgetParams)
-					&& strlen($arGadgetParams["TITLE_STD"]) > 0
+					&& $arGadgetParams["TITLE_STD"] <> ''
 				)
+				{
 					$arGadget["TITLE"] = htmlspecialcharsbx($arGadgetParams["TITLE_STD"]);
+				}
 
 				$arGadget["HIDE"] = $gadgetUserSettings["HIDE"];
 				if($arParams["PERMISSION"]>"R")
@@ -821,13 +817,15 @@ if(is_array($arUserOptions))
 				$arGadget["CONTENT"] = BXGadget::GetGadgetContent($arGadget, $arParams);
 				$arResult["GADGETS"][$gadgetUserSettings["COLUMN"]][$gadgetUserSettings["ROW"]] = $arGadget;
 
-				if($arGadget["FORCE_REDIRECT"])
+				if(isset($arGadget["FORCE_REDIRECT"]) && $arGadget["FORCE_REDIRECT"])
 				{
 					$bForceRedirect = true;
 				}
 			}
 			else
+			{
 				unset($arUserOptions["GADGETS"][$gdid]);
+			}
 		}
 	}
 

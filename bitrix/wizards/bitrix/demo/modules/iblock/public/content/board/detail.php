@@ -18,7 +18,7 @@ $APPLICATION->SetTitle(GetMessage("DEMO_IBLOCK_CONTENT_BOARD_DETAIL_TITLE"));
 		3 => "USER_ID",
 		4 => "",
 	),
-	"SECTION_URL" => "?SECTION_ID=#SECTION_ID#",
+	"SECTION_URL" => "/content/board/?SECTION_ID=#SECTION_ID#",
 	"DETAIL_URL" => "detail.php?SECTION_ID=#SECTION_ID#&ELEMENT_ID=#ELEMENT_ID#",
 	"BASKET_URL" => "",
 	"ACTION_VARIABLE" => "action",

@@ -9,7 +9,7 @@ $APPLICATION->IncludeComponent(
 				"PAGE_VAR" => $arResult["ALIASES"]["page"],
 				"PATH_TO_POST" => $arResult["PATH_TO_POST"],
 				"PATH_TO_USER" => $arResult["PATH_TO_USER"],
-				"GROUP_ID" => (IntVal($arParams["GROUP_ID"]) > 0) ?  $arParams["GROUP_ID"] : $arResult["VARIABLES"]["group_id"],
+				"GROUP_ID" => (intval($arParams["GROUP_ID"]) > 0) ?  $arParams["GROUP_ID"] : $arResult["VARIABLES"]["group_id"],
 				"TYPE" => $arResult["VARIABLES"]["type"],
 				"CACHE_TYPE" => $arResult["CACHE_TYPE"],
 				"CACHE_TIME" => $arResult["CACHE_TIME"],

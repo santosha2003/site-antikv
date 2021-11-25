@@ -51,6 +51,14 @@ $MESS["SOC_ORDER_PRICE_DELIVERY_CHANGED_INFO"] = "Стоимость доста�
 $MESS["SOC_ORDER_PRICE_CHANGED"] = "Изменение стоимости заказа";
 $MESS["SOC_ORDER_PRICE_CHANGED_INFO"] = "Стоимость заказа изменилась с #OLD_AMOUNT# на #AMOUNT#";
 $MESS["SOC_ORDER_1C_IMPORT"] = "Импорт сведений о заказе из 1C";
+
+$MESS["SOC_ORDER_SYNCHRONIZATION_IMPORT_TITLE"] = "Импорт заказа из внешней сиcтемы";
+$MESS["SOC_ORDER_SYNCHRONIZATION_IMPORT_INFO"] = "Импорт внешнего заказа  \"#EXTERNAL_ORDER_ID#\"";
+
+$MESS["SOC_ORDER_SYNCHRONIZATION_EXPORT_TITLE"] = "Экспорт заказа во внешую сиcтему";
+$MESS["SOC_ORDER_SYNCHRONIZATION_EXPORT_ERROR_TITLE"] = "Ошибка экспорта заказа во внешую сиcтему";
+$MESS["SOC_ORDER_SYNCHRONIZATION_EXPORT_ERROR_INFO"] = "При экспорте возникла ошибка \"#ERROR#\"";
+
 $MESS["SOC_ORDER_ADDED"] = "Создание заказа";
 $MESS["SOC_ORDER_DELIVERY_REQUEST_SENT"] = "Заявка в ТК";
 $MESS["SOC_ORDER_DELIVERY_REQUEST_SENT_ERROR"] = "Ошибка";
@@ -146,5 +154,42 @@ $MESS["SOC_TAX_SAVED_TITLE"] = "Сохранение налогов";
 $MESS["SOC_DISCOUNT_SAVED_TITLE"] = "Сохранение скидок";
 $MESS["SOC_PROPERTY_SAVED_TITLE"] = "Сохранение свойств заказа";
 
+
+$MESS["SOC_ORDER_UPDATE_ERROR_TITLE"] = "Ошибка обновления заказа";
+$MESS["SOC_ORDER_UPDATE_ERROR_INFO"] = "При обновлении заказа возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_BASKET_ITEM_ADD_ERROR_TITLE"] = "Ошибка добавления позиции корзины";
+$MESS["SOC_BASKET_ITEM_ADD_ERROR_INFO"] = "При добавлении позиции корзины возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_BASKET_ITEM_UPDATE_ERROR_TITLE"] = "Ошибка обновлении позиции корзины";
+$MESS["SOC_BASKET_ITEM_UPDATE_ERROR_INFO"] = "При обновлении позиции корзины возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_ADD_ERROR_TITLE"] = "Ошибка добавлении отгрузки";
+$MESS["SOC_SHIPMENT_ADD_ERROR_INFO"] = "При добавлении отгрузки возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_UPDATE_ERROR_TITLE"] = "Ошибка обновлении отгрузки";
+$MESS["SOC_SHIPMENT_UPDATE_ERROR_INFO"] = "При обновлении отгрузки возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_ITEM_ADD_ERROR_TITLE"] = "Ошибка добавлении элемента отгрузки";
+$MESS["SOC_SHIPMENT_ITEM_ADD_ERROR_INFO"] = "При добавлении элемента отгрузки возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_ITEM_UPDATE_ERROR_TITLE"] = "Ошибка обновлении элемента отгрузки";
+$MESS["SOC_SHIPMENT_ITEM_UPDATE_ERROR_INFO"] = "При обновлении элемента отгрузки возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_ITEM_STORE_ADD_ERROR_TITLE"] = "Ошибка добавлении элемента отгрузки";
+$MESS["SOC_SHIPMENT_ITEM_STORE_ADD_ERROR_INFO"] = "При добавлении элемента отгрузки возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_ITEM_STORE_UPDATE_ERROR_TITLE"] = "Ошибка обновлении элемента отгрузки";
+$MESS["SOC_SHIPMENT_ITEM_STORE_UPDATE_ERROR_INFO"] = "При обновлении элемента отгрузки возникла ошибка \"#ERROR#\"";
+
+$MESS["SOC_SHIPMENT_ITEM_BASKET_ITEM_EMPTY_ERROR_TITLE"] = "Ошибка обновлении элемента отгрузки";
+$MESS["SOC_SHIPMENT_ITEM_BASKET_ITEM_EMPTY_ERROR_INFO"] = "При обновлении элемента отгрузки возникла ошибка \"#ERROR#\"";
+
+
+$MESS["SOC_MARKER_SHIPMENT_INFO"] = "отгрузки";
+$MESS["SOC_MARKER_ORDER_INFO"] = "заказа";
+$MESS["SOC_MARKER_PAYMENT_INFO"] = "оплаты";
+$MESS["SOC_MARKER_SUCCESS"] = "Исправление ошибки";
+$MESS["SOC_MARKER_SUCCESS_INFO"] = "Ошибка \"#MESSAGE#\" у #ENTITY_NAME# (##ENTITY_ID#) исправлена.";
 
 ?>

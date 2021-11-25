@@ -9,11 +9,6 @@ class ParametersTable
 	const SEF_MODE = 'Y';
 	const NOT_SEF_MODE = 'N';
 
-	public static function getFilePath()
-	{
-		return __FILE__;
-	}
-
 	public static function getTableName()
 	{
 		return 'b_component_params';
@@ -44,7 +39,7 @@ class ParametersTable
 			),
 			'SEF_MODE' => array(
 				'data_type' => 'boolean',
-				'values' => array(self::SEF_MODE, self::NOT_SEF_MODE),
+				'values' => array(self::NOT_SEF_MODE, self::SEF_MODE),
 			),
 			'SEF_FOLDER' => array(
 				'data_type' => 'string',

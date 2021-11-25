@@ -70,14 +70,22 @@ if(($arID = $adminList->GroupAction()) && $isAdmin)
 
 $APPLICATION->SetTitle(Loc::getMessage("TITLE"));
 
-/**
- * @global $by
- * @global $order
- */
+$sortBy = mb_strtoupper($sorting->getField());
+if(!CultureTable::getEntity()->hasField($sortBy))
+{
+	$sortBy = "NAME";
+}
+
+$sortOrder = mb_strtoupper($sorting->getOrder());
+if($sortOrder <> "DESC")
+{
+	$sortOrder = "ASC";
+}
+
 $nav = new \Bitrix\Main\UI\AdminPageNavigation("nav-culture");
 
 $cultureList = CultureTable::getList(array(
-	'order' => array(strtoupper($by) => $order),
+	'order' => array($sortBy => $sortOrder),
 	'count_total' => true,
 	'offset' => $nav->getOffset(),
 	'limit' => $nav->getLimit(),

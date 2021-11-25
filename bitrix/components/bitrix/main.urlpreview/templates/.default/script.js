@@ -14,6 +14,24 @@ BXUrlPreview.prototype.init = function()
 	this.inputElement = this.element.querySelector('.urlpreview__ufvalue');
 	this.initCarousel();
 	this.bindEventHandlers();
+
+	if (
+		BX.type.isDomNode(this.inputElement)
+		&& this.inputElement.form
+	)
+	{
+		BX.addCustomEvent(this.inputElement.form, 'onAutoSaveRestoreFinished', function(ob, data) {
+			if (
+				this.inputElement.form == ob.FORM
+				&& BX.type.isNotEmptyString(data[this.inputElement.name])
+			)
+			{
+				this.attachUrlPreview({
+					id: data[this.inputElement.name]
+				});
+			}
+		}.bind(this));
+	}
 };
 
 BXUrlPreview.prototype.detachUrlPreview = function()
@@ -42,7 +60,7 @@ BXUrlPreview.prototype.attachUrlPreview = function(params)
 
 	ufId = this.element.getAttribute('data-field-id');
 	requestParams = {
-		'action': 'getUrlPreviewEditForm',
+		'action': 'attachUrlPreview',
 		'userFieldId': ufId,
 		'elementId': this.id,
 		'sessid': BX.bitrix_sessid()
@@ -120,8 +138,11 @@ BXUrlPreview.prototype.initCarousel = function()
 			this.carouselImages[i] = carouselImages[i];
 		}
 		imageId = this.element.dataset.imageId ? parseInt(this.element.dataset.imageId) : 0;
-		this.setCarouselImage(imageId);
-		this.carouselElement.style.removeProperty('display');
+		if(this.carouselImages.length > 0)
+		{
+			this.setCarouselImage(imageId);
+			this.carouselElement.style.removeProperty('display');
+		}
 	}
 };
 
@@ -130,7 +151,7 @@ BXUrlPreview.prototype.setCarouselImage = function(imageId)
 	var imageUrl;
 	var imgElement;
 	var ufValue;
-	if(!(imageId >= 0 || imageId <= this.carouselImages.length-1))
+	if(!(imageId >= 0 && imageId <= this.carouselImages.length-1))
 		return null;
 
 	this.carouselImages.map(function(imageElement)
@@ -172,6 +193,26 @@ BXUrlPreview.showEmbed = function()
 	{
 		BX.addClass(this, 'urlpreview__container-hide-image');
 		BX.removeClass(this, 'urlpreview__container-hide-embed');
+		var playerNode = BX.findChildByClassName(this, 'video-js');
+		if(playerNode)
+		{
+			if(BX.getClass('BX.Fileman.PlayerManager'))
+			{
+				var player = BX.Fileman.PlayerManager.getPlayerById(playerNode.getAttribute('id'));
+				if(player)
+				{
+					player.play();
+				}
+			}
+		}
+		else
+		{
+			var iframe = BX.findChildByClassName(this, 'urlpreview-iframe-html-embed');
+			if(iframe)
+			{
+				BXUrlPreview.adjustFrameHeight(iframe, 5);
+			}
+		}
 	}
 };
 
@@ -182,5 +223,79 @@ BXUrlPreview.bindEmbedHandler = function()
 	for(i = 0; i < switchableElements.length; i++)
 	{
 		switchableElements.item(i).addEventListener('click', BXUrlPreview.showEmbed);
+	}
+
+	var imageElements = document.querySelectorAll('.urlpreview:not(.urlpreview__edit) .urlpreview__image img.urlpreview__image-not-inited');
+	for(i = 0; i < imageElements.length; i++)
+	{
+		imageElements.item(i).addEventListener('load', BXUrlPreview.onEmbeddedImageLoad);
+		imageElements.item(i).classList.remove('urlpreview__image-not-inited');
+	}
+};
+
+BXUrlPreview.onEmbeddedImageLoad = function(event)
+{
+	var imageNode = event.currentTarget;
+	if (BX.type.isDomNode(imageNode))
+	{
+		BX.onCustomEvent(window, 'BX.BXUrlPreview.onImageLoaded', [{
+			imageNode: imageNode
+		}]);
+	}
+};
+
+BXUrlPreview.adjustFrameHeight = function(iframe, counter)
+{
+	if(BX.hasClass(iframe, 'urlpreview-iframe-html-embed-adjusted'))
+	{
+		return;
+	}
+	counter = counter || 0;
+	if(counter > 10)
+	{
+		return;
+	}
+	var addToHeight = 50;
+	if(iframe.contentWindow.document.body.scrollHeight > iframe.height)
+	{
+		iframe.height = iframe.contentWindow.document.body.scrollHeight + addToHeight + "px";
+		BX.addClass(iframe, 'urlpreview-iframe-html-embed-adjusted');
+		return;
+	}
+	var videos = iframe.contentWindow.document.getElementsByTagName('video');
+	if(videos[0])
+	{
+		iframe.height = iframe.contentWindow.document.body.scrollHeight + addToHeight + "px";
+		BX.addClass(iframe, 'urlpreview-iframe-html-embed-adjusted');
+		return;
+	}
+	else
+	{
+		var iframes = iframe.contentWindow.document.getElementsByTagName('iframe');
+		var height = 0;
+		for(var i = 0; i < iframes.length; i++)
+		{
+			if(iframes[i] && iframes[i].height > 0)
+			{
+				height = parseInt(iframes[i].height);
+			}
+			else if (iframes[i] && iframes[i].style.height)
+			{
+				height = parseInt(iframes[i].style.height);
+			}
+			if(height !== 0)
+			{
+				iframe.height = height + addToHeight + 'px';
+				BX.addClass(iframe, 'urlpreview-iframe-html-embed-adjusted');
+			}
+		}
+		if(height === 0)
+		{
+			setTimeout(function()
+			{
+				counter++;
+				BXUrlPreview.adjustFrameHeight(iframe, counter);
+			}, 500);
+		}
 	}
 };

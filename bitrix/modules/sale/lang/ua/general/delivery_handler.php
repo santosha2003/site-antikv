@@ -8,4 +8,6 @@ $MESS["SALE_DH_CF_ERROR_P_RESTRICTIONS_MAX_SIZE"] = "Максимальний р
 $MESS["SALE_DH_CF_ERROR_P_RESTRICTIONS_DIMENSIONS_SUM"] = "Максимальна сума трьох вимірів";
 $MESS["SALE_DH_CF_ERROR_P_RESTRICTIONS_DIMENSION"] = "Максимальний розмір коробки";
 $MESS["SALE_DH_CF_ERROR_SORT"] = "Сортування";
+$MESS["SALE_DH_ACTION_REQUEST_SELF"] = "Самостійна доставка до ТК";
+$MESS["SALE_DH_ACTION_REQUEST_TAKE"] = "Забір вантажу ТК";
 ?>

@@ -1,3 +1,0 @@
-<?
-$sSectionName="URL processing";
-?>

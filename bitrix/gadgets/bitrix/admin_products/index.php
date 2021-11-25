@@ -1,7 +1,7 @@
 <?
-use Bitrix\Main\Entity\Query as Query;
-use Bitrix\Main\Loader as Loader;
-use Bitrix\Catalog\CatalogViewedProductTable as ViewedProducts;
+use Bitrix\Main,
+	Bitrix\Main\Loader,
+	Bitrix\Catalog;
 
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
@@ -12,9 +12,9 @@ $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions == "D")
 	return false;
 
-if (strlen($arGadgetParams["SITE_ID"]) > 0)
+if ($arGadgetParams["SITE_ID"] <> '')
 {
-	if (strlen($arGadgetParams["TITLE_STD"]) <= 0)
+	if ($arGadgetParams["TITLE_STD"] == '')
 	{
 		$rsSites = CSite::GetByID($arGadgetParams["SITE_ID"]);
 		if ($arSite = $rsSites->GetNext())
@@ -25,7 +25,7 @@ if (strlen($arGadgetParams["SITE_ID"]) > 0)
 $arGadgetParams["RND_STRING"] = randString(8);
 
 $arFilter = array();
-if (strlen($arGadgetParams["SITE_ID"]) > 0)
+if ($arGadgetParams["SITE_ID"] <> '')
 {
 	$arFilter["LID"] = $arGadgetParams["SITE_ID"];
 	$arGadgetParams["RND_STRING"] = $arGadgetParams["SITE_ID"].'_'.$arGadgetParams["RND_STRING"];
@@ -36,7 +36,7 @@ if($arGadgetParams["PERIOD"] == "WEEK")
 	$arFilter[">=DATE_INSERT"] = ConvertTimeStamp(AddToTimeStamp(Array("DD" => -7)));
 	$cache_time = 60*60*4;
 }
-elseif(strlen($arGadgetParams["PERIOD"]) <= 0 || $arGadgetParams["PERIOD"] == "MONTH")
+elseif($arGadgetParams["PERIOD"] == '' || $arGadgetParams["PERIOD"] == "MONTH")
 {
 	$arFilter[">=DATE_INSERT"] = ConvertTimeStamp(AddToTimeStamp(Array("MM" => -1)));
 	$cache_time = 60*60*12;
@@ -79,88 +79,110 @@ else
 	// VIEWED
 	$arResult["VIEWED"] = array();
 
-	if (!Loader::includeModule("catalog"))
+	if (!Loader::includeModule('catalog'))
 	{
+		$obCache->AbortDataCache();
 		return;
 	}
-	$arFilter[">=DATE_VISIT"] = $arFilter[">=DATE_INSERT"];
-	unset($arFilter[">=DATE_INSERT"]);
-	if(isset($arFilter['LID']))
+
+	$basePrice = CCatalogGroup::GetBaseGroup();
+	if (empty($basePrice))
 	{
-		$arFilter['SITE_ID'] = $arFilter['LID'];
-		unset($arFilter['LID']);
-	}
-	unset($arFilter['PAYED']);
-
-	$viewedQuery = new Query(ViewedProducts::getEntity());
-	$viewedQuery->setSelect(array(
-		"PRODUCT_ID",
-		"NAME" => "ELEMENT.NAME",
-		"PRICE" => "PRODUCT.PRICE",
-		"CURRENCY" => "PRODUCT.CURRENCY",
-		"RATE" => "PRODUCT.CURRENT_CURRENCY_RATE",
-		"CURRENCY_RATE" => "PRODUCT.CURRENT_CURRENCY_RATE_CNT"
-	))->setfilter($arFilter);
-	$viewedIterator = $viewedQuery->exec();
-
-	$viewedProducts = array();
-	while($row = $viewedIterator->fetch())
-	{
-		$row['VIEW_COUNT'] = 1;
-		if((int)$row['CURRENCY_RATE'] > 0)
-		{
-			$row['SORT_PRICE'] = $row['PRICE'] * $row['RATE'] / (int)($row['CURRENCY_RATE']);
-		}
-		else
-			$row['SORT_PRICE'] = $row['PRICE'] * $row['RATE'];
-
-		if (!isset($viewedProducts[$row['PRODUCT_ID']]))
-		{
-			$viewedProducts[$row['PRODUCT_ID']] = $row;
-		}
-		else
-		{
-			$viewedProducts[$row['PRODUCT_ID']]['VIEW_COUNT']++;
-			if ($viewedProducts[$row['PRODUCT_ID']]['SORT_PRICE'] > $row['SORT_PRICE'])
-			{
-				$viewedProducts[$row['PRODUCT_ID']]['SORT_PRICE'] = $row['SORT_PRICE'];
-				$viewedProducts[$row['PRODUCT_ID']]['PRICE'] = $row['PRICE'];
-				$viewedProducts[$row['PRODUCT_ID']]['CURRENCY'] = $row['CURRENCY'];
-				$viewedProducts[$row['PRODUCT_ID']]['CURRENCY_RATE'] = $row['CURRENCY_RATE'];
-				$viewedProducts[$row['PRODUCT_ID']]['RATE'] = $row['RATE'];
-			}
-		}
+		$obCache->AbortDataCache();
+		return;
 	}
 
-	unset($row);
+	$productFilter = array(
+		'>ELEMENT_ID' => 0,
+		'>PRODUCT_ID' => 0,
+		'>=DATE_VISIT' => $arFilter['>=DATE_INSERT']
+	);
+	if (isset($arFilter['LID']))
+		$productFilter['=SITE_ID'] = $arFilter['LID'];
 
-	$productsMap = ViewedProducts::getProductsMap(array_keys($viewedProducts));
-
-	// Group by Parent product id
-	$groupViewedProducts = array();
-	foreach($viewedProducts as $product)
+	$elementIds = array();
+	$elements = array();
+	$productMap = array();
+	$productIds = array();
+	$iterator = Catalog\CatalogViewedProductTable::getList(array(
+		'select' => array('ELEMENT_ID', 'PRODUCT_ID' ,'VIEW_COUNT'),
+		'filter' => $productFilter,
+		'group' => 'ELEMENT_ID',
+		'order' => array('VIEW_COUNT' => 'DESC'),
+		'limit' => $arGadgetParams['LIMIT']
+	));
+	while ($row = $iterator->fetch())
 	{
-		$parentId = $productsMap[$product['PRODUCT_ID']];
-		if(!isset($groupViewedProducts[$parentId]))
+		$elementIds[$row['ELEMENT_ID']] = $row['ELEMENT_ID'];
+		$productIds[$row['PRODUCT_ID']] = $row['PRODUCT_ID'];
+		$productMap[$row['PRODUCT_ID']] = $row['ELEMENT_ID'];
+		$row['NAME'] = '';
+
+		if (isset($elements[$row['ELEMENT_ID']]))
 		{
-			$groupViewedProducts[$parentId] = $product;
+			$elements[$row['ELEMENT_ID']]['VIEW_COUNT'] += $row['VIEW_COUNT'];
 		}
 		else
 		{
-			$groupViewedProducts[$parentId]['VIEW_COUNT'] += $product['VIEW_COUNT'];
-			// Min Price
-			if((float)$groupViewedProducts[$parentId]['SORT_PRICE'] > (float)$product['SORT_PRICE'])
-			{
-				$groupViewedProducts[$parentId]['PRICE'] = $product['PRICE'];
-				$groupViewedProducts[$parentId]['CURRENCY'] = $product['CURRENCY'];
-			}
+			$elements[$row['ELEMENT_ID']] = $row;
 		}
 	}
-	$groupViewedProducts = array_values($groupViewedProducts);
+	unset($item, $iterator);
 
-	\Bitrix\Main\Type\Collection::sortByColumn($groupViewedProducts, array("VIEW_COUNT" => SORT_DESC));
-	$groupViewedProducts = array_slice($groupViewedProducts, 0, $arGadgetParams['LIMIT']);
-	$arResult['VIEWED'] = $groupViewedProducts;
+	if (!empty($elementIds))
+	{
+		sort($elementIds);
+		sort($productIds);
+		$iterator = Catalog\CatalogViewedProductTable::getList(array(
+			'select' => array('ELEMENT_ID', 'NAME' => 'PARENT_ELEMENT.NAME'),
+			'filter' => array('@ELEMENT_ID' => $elementIds)
+		));
+		while ($row = $iterator->fetch())
+			$elements[$row['ELEMENT_ID']]['NAME'] = (string)$row['NAME'];
+		unset($row, $iterator);
+
+
+		$iterator = Catalog\PriceTable::getList(array(
+			'select' => array('PRODUCT_ID', 'PRICE', 'CURRENCY'),
+			'filter' => array(
+				'@PRODUCT_ID' => $productIds,
+				'=CATALOG_GROUP_ID' => $basePrice['ID'],
+				array(
+					'LOGIC' => 'OR',
+					'<=QUANTITY_FROM' => 1,
+					'=QUANTITY_FROM' => null
+				),
+				array(
+					'LOGIC' => 'OR',
+					'>=QUANTITY_TO' => 1,
+					'=QUANTITY_TO' => null
+				)
+			)
+		));
+		while ($row = $iterator->fetch())
+		{
+			if (!isset($productMap[$row['PRODUCT_ID']]))
+				continue;
+			$index = $productMap[$row['PRODUCT_ID']];
+			$elements[$index]['PRICE'] = $row['PRICE'];
+			$elements[$index]['CURRENCY'] = $row['CURRENCY'];
+			unset($index);
+		}
+		unset($row, $iterator);
+
+		$clearElements = array();
+		foreach ($elements as $row)
+		{
+			if ($row['NAME'] == '' || !isset($row['PRICE']))
+				continue;
+			$clearElements[] = $row;
+		}
+		unset($row);
+		$elements = $clearElements;
+		unset($clearElements);
+	}
+
+	$arResult['VIEWED'] = $elements;
 
 	if ($cacheStart)
 	{
@@ -221,8 +243,8 @@ $tabControl = new CAdminViewTabControl("salePrdTabControl_".$arGadgetParams["RND
 								foreach($arResult["SEL"] as $val)
 								{
 									?><tr>
-										<td><?=htmlspecialcharsbx($val["NAME"])?></td>
-										<td align="right"><?=IntVal($val["QUANTITY"])?></td>
+										<td><?=htmlspecialcharsEx($val["NAME"])?></td>
+										<td align="right"><?=intval($val["QUANTITY"])?></td>
 										<td align="right" nowrap><?=CCurrencyLang::CurrencyFormat(DoubleVal($val["AVG_PRICE"]), $val["CURRENCY"], true)?></td>
 										<td align="right" nowrap><?=CCurrencyLang::CurrencyFormat(DoubleVal($val["PRICE"]), $val["CURRENCY"], true)?></td>
 									</tr><?
@@ -249,8 +271,8 @@ $tabControl = new CAdminViewTabControl("salePrdTabControl_".$arGadgetParams["RND
 								foreach($arResult["VIEWED"] as $val)
 								{
 									?><tr>
-										<td><?=htmlspecialcharsbx($val["NAME"])?></td>
-										<td align="right"><?=IntVal($val["VIEW_COUNT"])?></td>
+										<td><?=htmlspecialcharsEx($val["NAME"])?></td>
+										<td align="right"><?=intval($val["VIEW_COUNT"])?></td>
 										<td align="right" nowrap><?=(DoubleVal($val["PRICE"]) > 0 ? CCurrencyLang::CurrencyFormat(DoubleVal($val["PRICE"]), $val["CURRENCY"], true) : "")?></td>
 									</tr><?
 								}

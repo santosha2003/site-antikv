@@ -82,6 +82,7 @@ else
 if($group_id)
 	$APPLICATION->SetGroupRight("support", $group_id, "W");
 
+//WizardServices::SetFilePermission(Array(WIZARD_SITE_ID, WIZARD_SITE_DIR), Array($groupID => 'R'));
 //Public files
 if(CModule::IncludeModule('iblock'))
 {

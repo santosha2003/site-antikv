@@ -12,16 +12,16 @@ CModule::IncludeModule("forum");
 if ($_SERVER["REQUEST_METHOD"] == "GET" && $FORUM_RIGHT > "R" && $_REQUEST["RestoreDefaults"] <> '' && check_bitrix_sessid())
 {
 	COption::RemoveOption("forum");
-	$z = CGroup::GetList($v1="id",$v2="asc", array("ACTIVE" => "Y", "ADMIN" => "N"));
+	$z = CGroup::GetList("id", "asc", array("ACTIVE" => "Y", "ADMIN" => "N"));
 	while($zr = $z->Fetch())
 		$APPLICATION->DelGroupRight($module_id, array($zr["ID"]));
 }
 
 $arLangs = array();
 $arNameStatusesDefault = array();
-$arNameStatuses = @unserialize(COption::GetOptionString("forum", "statuses_name"));
+$arNameStatuses = @unserialize(COption::GetOptionString("forum", "statuses_name"), ["allowed_classes" => false]);
 
-$db_res = CLanguage::GetList(($b="sort"), ($o="asc"));
+$db_res = CLanguage::GetList();
 if ($db_res && $res = $db_res->Fetch())
 {
 	do 
@@ -42,7 +42,7 @@ GetMessage("FR_ADMINISTRATOR");
 */
 		$arMess = IncludeModuleLangFile(__FILE__, $res["LID"], true);
 		foreach ($name as $k => $v):
-			$mess = $arMess["FR_".strToUpper($k)];
+			$mess = $arMess["FR_".mb_strtoupper($k)];
 			$name[$k] = (!empty($mess) ? $mess : $name[$k]);
 		endforeach;
 		$arNameStatusesDefault[$res["LID"]] = $name;
@@ -63,7 +63,7 @@ GetMessage("FR_ADMINISTRATOR");
 			unset($arNameStatuses[$k]); 
 	endforeach;
 }
-if ($_SERVER["REQUEST_METHOD"] == "POST" && $FORUM_RIGHT == "W" && strlen($_REQUEST["Update"]) > 0 && check_bitrix_sessid())
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $FORUM_RIGHT == "W" && $_REQUEST["Update"] <> '' && check_bitrix_sessid())
 {
 	COption::SetOptionString("forum", "avatar_max_size", $_REQUEST["avatar_max_size"]);
 	COption::SetOptionString("forum", "avatar_max_width", $_REQUEST["avatar_max_width"]);
@@ -185,8 +185,11 @@ $tabControl->BeginNextTab();
 	<tr>
 		<td><label for="USER_EDIT_OWN_POST"><?=GetMessage("FORUM_USER_EDIT_OWN_POST") ?></label></td>
 		<td>
-			<?$val = COption::GetOptionString("forum", "USER_EDIT_OWN_POST", "N");?>
-			<input type="checkbox" value="Y" name="USER_EDIT_OWN_POST" id="USER_EDIT_OWN_POST" <?if ($val=="Y") echo "checked";?>></td>
+			<?$val = COption::GetOptionString("forum", "USER_EDIT_OWN_POST", "Y");?>
+			<select name="USER_EDIT_OWN_POST" id="USER_EDIT_OWN_POST">
+				<option value="Y" <?if ($val=="Y") echo "selected";?>><?=GetMessage("FORUM_USER_EDIT_OWN_POST_Y") ?></option>
+				<option value="N" <?if ($val!="Y") echo "selected";?>><?=GetMessage("FORUM_USER_EDIT_OWN_POST_N") ?></option>
+			</select>
 	</tr>
 	<tr>
 		<td><label for="USER_SHOW_NAME"><?=GetMessage("FORUM_USER_SHOW_NAME") ?></label></td>
@@ -262,7 +265,7 @@ $tabControl->BeginNextTab();
 		<td><?=GetMessage("FORUM_PRIVATE_MESSAGE")?>:</td>
 		<td>
 			<?$val = COption::GetOptionString("forum", "MaxPrivateMessages", 100);?>
-			<input type="text" size="35" maxlength="255" value="<?=intVal($val)?>" name="MaxPrivateMessages"></td>
+			<input type="text" size="35" maxlength="255" value="<?=intval($val)?>" name="MaxPrivateMessages"></td>
 	</tr>
 	<tr class="heading">
 		<td colspan="2"><?=GetMessage("F_SEARCH_HEADER")?></td>
@@ -270,8 +273,8 @@ $tabControl->BeginNextTab();
 	<tr>
 		<td><?=GetMessage("F_SEARCH_COUNT")?>:</td>
 		<td>
-			<?$val = COption::GetOptionString("forum", "search_message_count", 0);?>
-			<input type="text" size="35" maxlength="255" value="<?=intVal($val)?>" name="search_message_count"></td>
+			<?$val = COption::GetOptionString("forum", "search_message_count", 50);?>
+			<input type="text" size="35" maxlength="255" value="<?=intval($val)?>" name="search_message_count"></td>
 	</tr>
 	<tr class="heading"><td colspan="2"><?=GetMessage("F_FORUM_STATUSES")?></td></tr>
 	<tr>
@@ -293,7 +296,7 @@ $tabControl->BeginNextTab();
 <?
 			foreach ($names as $key => $val):
 ?>
-					<td><input type="text" style="width:110px" name="STATUS_NAME[<?=$lid?>][<?=$key?>]" value="<?=htmlspecialcharsEx($val)?>" /></td>
+					<td><input type="text" style="width:110px" name="STATUS_NAME[<?=$lid?>][<?=$key?>]" value="<?=htmlspecialcharsbx($val)?>" /></td>
 <?				
 			endforeach;
 ?>
@@ -323,7 +326,7 @@ $tabControl->BeginNextTab();
 	<tr>
 		<td><?=GetMessage("FILTER_RPL")?>:</td>
 		<?$val = COption::GetOptionString("forum", "FILTER_RPL", "*");?>
-		<td><input type="text" value="<?=htmlspecialcharsEx($val)?>" name="FILTER_RPL" id="FILTER_RPL"></td>
+		<td><input type="text" value="<?=htmlspecialcharsbx($val)?>" name="FILTER_RPL" id="FILTER_RPL"></td>
 	</tr>
 	<script language="JavaScript">
 	function DisableAction(CheckB)
@@ -371,7 +374,7 @@ $tabControl->BeginNextTab();
 			$Dict['W']["reference"][] = GetMessage("DICTIONARY_NONE");
 			$Dict['T']["reference_id"][] = "";
 			$Dict['T']["reference"][] = GetMessage("DICTIONARY_NONE");
-			$l = CLanguage::GetList($lby="sort", $lorder="asc");
+			$l = CLanguage::GetList();
 			while($ar = $l->ExtractFields("l_"))
 			{
 				?><tr class="adm-detail-required-field">

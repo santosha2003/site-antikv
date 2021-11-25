@@ -57,7 +57,7 @@ if (
 		'IBLOCK_ID' => $request['iblockId']
 	);
 
-	$catalogReindex = new CCatalogProductAvailable(
+	$catalogReindex = new CCatalogIblockReindex(
 		$params['sessID'],
 		$params['maxExecutionTime'],
 		$params['maxOperationCounter']
@@ -76,14 +76,14 @@ elseif (
 	&& $request['getIblock'] == 'Y'
 )
 {
-	$result = CCatalogProductAvailable::getIblockList($request['iblock']);
+	$result = CCatalogIblockReindex::getIblockList($request['iblock']);
 	header('Content-Type: application/x-javascript; charset='.LANG_CHARSET);
 	echo CUtil::PhpToJSObject($result, false, true);
 	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin_after.php');
 }
 elseif (
 	$request->getRequestMethod() == 'GET'
-	&& $request['clearTags'] == 'Y'
+	&& $request['finalRequest'] == 'Y'
 )
 {
 	$iblockList = $request['iblockList'];
@@ -93,13 +93,21 @@ elseif (
 			CIBlock::clearIblockTagCache($iblock);
 		unset($iblock);
 	}
+	$emptyAvailable = Catalog\ProductTable::getList(array(
+		'select' => array('ID', 'AVAILABLE'),
+		'filter' => array('=AVAILABLE' => null),
+		'limit' => 1
+	))->fetch();
+	if (empty($emptyAvailable))
+		\CCatalogIblockReindex::removeNotify();
+	unset($emptyAvailable);
 	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin_after.php');
 }
 else
 {
 	$APPLICATION->SetTitle(Loc::getMessage('BX_CATALOG_REINDEX_PAGE_TITLE'));
 
-	$oneStepTime = CCatalogProductAvailable::getDefaultExecutionTime();
+	$oneStepTime = CCatalogIblockReindex::getDefaultExecutionTime();
 
 	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
 
@@ -112,7 +120,7 @@ else
 	?><div id="catalog_reindex_error_div" style="margin:0; display: none;">
 	<div class="adm-info-message-wrap adm-info-message-red">
 		<div class="adm-info-message">
-			<div class="adm-info-message-title"><? echo Loc::getMessage('SALE_DISCOUNT_REINDEX_ERRORS_TITLE'); ?></div>
+			<div class="adm-info-message-title"><? echo Loc::getMessage('BX_CATALOG_REINDEX_ERRORS_TITLE'); ?></div>
 			<div id="catalog_reindex_error_cont"></div>
 			<div class="adm-info-message-icon"></div>
 		</div>
@@ -185,9 +193,6 @@ else
 		),
 		'ajaxParams' => array(
 			'operation' => 'Y'
-		),
-		'messages' => array(
-			'catalogErrorTitle' => Loc::getMessage('')
 		)
 	);
 	?>

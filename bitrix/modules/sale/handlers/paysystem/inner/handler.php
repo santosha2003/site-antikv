@@ -4,9 +4,10 @@ namespace Sale\Handlers\PaySystem;
 
 
 use Bitrix\Main\Request;
+use Bitrix\Sale\Order;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\Payment;
-use Bitrix\Sale\Result;
+use Bitrix\Sale\PriceMaths;
 use Bitrix\Sale\Internals\UserBudgetPool;
 use Bitrix\Main\Entity\EntityError;
 use Bitrix\Main\Localization\Loc;
@@ -17,26 +18,38 @@ class InnerHandler extends PaySystem\BaseServiceHandler implements PaySystem\IRe
 {
 	/**
 	 * @param Payment $payment
-	 * @param Request|null $request
-	 * @return Result
+	 * @param Request $request
+	 * @return PaySystem\ServiceResult
+	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
 	public function initiatePay(Payment $payment, Request $request = null)
 	{
-		$result = new Result();
+		$result = new PaySystem\ServiceResult();
 
-		/** @var \Bitrix\Sale\PaymentCollection $collection */
-		$collection = $payment->getCollection();
+		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $payment->getCollection();
 
-		/** @var \Bitrix\Sale\Order $order */
-		$order = $collection->getOrder();
-
-		$paymentSum = Payment::roundByFormatCurrency($payment->getSum(), $order->getCurrency());
-		$userBudget = Payment::roundByFormatCurrency(UserBudgetPool::getUserBudgetByOrder($order), $order->getCurrency());
-
-		if($userBudget >= $paymentSum)
-			UserBudgetPool::addPoolItem($order, ( $paymentSum * -1 ), UserBudgetPool::BUDGET_TYPE_ORDER_PAY, $payment);
-		else
-			$result->addError(new EntityError(Loc::getMessage('ORDER_PSH_INNER_ERROR_INSUFFICIENT_MONEY')));
+		if ($paymentCollection)
+		{
+			/** @var \Bitrix\Sale\Order $order */
+			$order = $paymentCollection->getOrder();
+			if ($order)
+			{
+				$res = $payment->setPaid('Y');
+				if ($res->isSuccess())
+				{
+					$res = $order->save();
+					if (!$res->isSuccess())
+					{
+						$result->addErrors($res->getErrors());
+					}
+				}
+				else
+				{
+					$result->addErrors($res->getErrors());
+				}
+			}
+		}
 
 		return $result;
 	}
@@ -49,9 +62,40 @@ class InnerHandler extends PaySystem\BaseServiceHandler implements PaySystem\IRe
 		return array();
 	}
 
-	public function refund(Payment $payment)
+	/**
+	 * @param Payment $payment
+	 * @param int $refundableSum
+	 * @return PaySystem\ServiceResult
+	 */
+	public function refund(Payment $payment, $refundableSum)
 	{
-		$result = new Result();
+		$result = new PaySystem\ServiceResult();
+
+		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $payment->getCollection();
+
+		/** @var \Bitrix\Sale\Order $order */
+		$order = $paymentCollection->getOrder();
+
+		if ($this->isUserBudgetLock($order))
+		{
+			$result->addError(new EntityError(Loc::getMessage('ORDER_PSH_INNER_ERROR_USER_BUDGET_LOCK')));
+			return $result;
+		}
+
+		UserBudgetPool::addPoolItem($order, $refundableSum, UserBudgetPool::BUDGET_TYPE_ORDER_UNPAY, $payment);
+		$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
+
+		return $result;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return PaySystem\ServiceResult
+	 */
+	public function creditNoDemand(Payment $payment)
+	{
+		$result = new PaySystem\ServiceResult();
 
 		/** @var \Bitrix\Sale\PaymentCollection $collection */
 		$collection = $payment->getCollection();
@@ -59,17 +103,41 @@ class InnerHandler extends PaySystem\BaseServiceHandler implements PaySystem\IRe
 		/** @var \Bitrix\Sale\Order $order */
 		$order = $collection->getOrder();
 
-		UserBudgetPool::addPoolItem($order, $payment->getSum(), UserBudgetPool::BUDGET_TYPE_ORDER_UNPAY, $payment);
+		if ($this->isUserBudgetLock($order))
+		{
+			$result->addError(new EntityError(Loc::getMessage('ORDER_PSH_INNER_ERROR_USER_BUDGET_LOCK')));
+			return $result;
+		}
+
+		$paymentSum = PriceMaths::roundPrecision($payment->getSum());
+		$userBudget = PriceMaths::roundPrecision(UserBudgetPool::getUserBudgetByOrder($order));
+
+		if($userBudget >= $paymentSum)
+			UserBudgetPool::addPoolItem($order, ( $paymentSum * -1 ), UserBudgetPool::BUDGET_TYPE_ORDER_PAY, $payment);
+		else
+			$result->addError(new EntityError(Loc::getMessage('ORDER_PSH_INNER_ERROR_INSUFFICIENT_MONEY')));
 
 		return $result;
 	}
 
 	/**
 	 * @param Payment $payment
-	 * @return Result
+	 * @return PaySystem\ServiceResult
 	 */
-	public function creditNoDemand(Payment $payment)
+	public function debitNoDemand(Payment $payment)
 	{
-		return $this->initiatePay($payment);
+		return $this->refund($payment, $payment->getSum());
+	}
+
+	/**
+	 * @param Order $order
+	 * @return bool
+	 */
+	private function isUserBudgetLock(Order $order)
+	{
+		if ($userAccount = \CSaleUserAccount::GetByUserId($order->getUserId(), $order->getCurrency()))
+			 return $userAccount['LOCKED'] == 'Y';
+
+		return false;
 	}
 }

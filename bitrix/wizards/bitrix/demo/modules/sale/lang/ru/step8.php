@@ -8,7 +8,7 @@ $MESS ['SALE_WIZARD_COUR1'] = "Доставка курьером";
 $MESS ['SALE_WIZARD_SPSR'] = "СПСР-Экспресс";
 $MESS ['SALE_WIZARD_SPSR_DESCR'] = "Срочная доставка почты";
 $MESS ['SALE_WIZARD_MAIL'] = "Почта России";
-$MESS ['SALE_WIZARD_MAIL_DESC'] = "Доставка почтой";
+$MESS ['SALE_WIZARD_MAIL_DESCR'] = "Доставка почтой";
 $MESS ['SALE_WIZARD_UPS'] = "международная доставка";
 $MESS ['SALE_WIZARD_VAT'] = "НДС";
 ?>

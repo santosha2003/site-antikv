@@ -1,5 +1,7 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?><?
 
+$this->setFramemode(false);
+
 if (!CBXFeatures::IsFeatureEnabled('SaleCCards'))
 	return;
 
@@ -48,7 +50,7 @@ else
 	$arVariableAliases = CComponentEngine::MakeComponentVariableAliases($arDefaultVariableAliases404, $arParams["VARIABLE_ALIASES"]);
 	CComponentEngine::InitComponentVariables(false, $arComponentVariables, $arVariableAliases, $arVariables);
 
-	if (strlen($_REQUEST["ID"]) > 0)
+	if ($_REQUEST["ID"] <> '')
 		$componentPage = "detail";
 	else
 		$componentPage = "list";

@@ -81,6 +81,7 @@
 <?foreach ($arResult["GET"] as $key => $value):?>
 	<input type="hidden" name="<?=$key?>" value="<?=$value?>" />
 <?endforeach?>
+	<?=bitrix_sessid_post()?>
 	<input type="hidden" name="logout" value="yes" />
 	<input type="image" src="<?=$templateFolder?>/images/login.gif" alt="<?=GetMessage("AUTH_LOGOUT_BUTTON")?>">
 </form>

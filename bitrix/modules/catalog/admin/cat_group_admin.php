@@ -1,9 +1,24 @@
 <?
+/** @global CUser $USER */
+/** @global CMain $APPLICATION */
+/** @global CDatabase $DB */
+use Bitrix\Main\Loader,
+	Bitrix\Catalog;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
+
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
+
+$publicMode = $adminPage->publicMode;
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+
 if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_group')))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-CModule::IncludeModule("catalog");
+Loader::includeModule('catalog');
 $bReadOnly = !$USER->CanDoOperation('catalog_group');
 
 if ($ex = $APPLICATION->GetException())
@@ -21,9 +36,9 @@ IncludeModuleLangFile(__FILE__);
 
 $sTableID = "tbl_catalog_group";
 
-$oSort = new CAdminSorting($sTableID, "ID", "asc");
+$oSort = new CAdminUiSorting($sTableID, "ID", "asc");
 
-$lAdmin = new CAdminList($sTableID, $oSort);
+$lAdmin = new CAdminUiList($sTableID, $oSort);
 
 $arFilterFields = array();
 
@@ -69,7 +84,7 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -91,7 +106,31 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 					$DB->Commit();
 				}
 				break;
+			case 'setbase':
+				$DB->StartTransaction();
+				if (!CCatalogGroup::Update($ID, ['BASE' => 'Y']))
+				{
+					$DB->Rollback();
+
+					if ($ex = $APPLICATION->GetException())
+						$lAdmin->AddGroupError($ex->GetString(), $ID);
+					else
+						$lAdmin->AddGroupError(GetMessage("ERROR_UPDATING_REC"), $ID);
+				}
+				else
+				{
+					$DB->Commit();
+				}
+				break;
 		}
+	}
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
 	}
 }
 
@@ -187,31 +226,39 @@ $arLangList = array();
 $arLangDefList = array();
 if ($arSelectFieldsMap['NAME_LID'])
 {
-	$rsPriceLangs = CLangAdmin::GetList(($by1="sort"), ($order1="asc"));
+	$rsPriceLangs = CLangAdmin::GetList();
 	while ($arPriceLang = $rsPriceLangs->Fetch())
 	{
 		$arLangList[$arPriceLang['LID']] = true;
-		$arLangDefList[$arPriceLang['LID']] = str_replace('#LANG#', htmlspecialcharsex($arPriceLang['NAME']), GetMessage('BT_CAT_GROUP_ADM_LANG_MESS'));
+		$arLangDefList[$arPriceLang['LID']] = str_replace('#LANG#', htmlspecialcharsbx($arPriceLang['NAME']), GetMessage('BT_CAT_GROUP_ADM_LANG_MESS'));
 	}
+	unset($arPriceLang, $rsPriceLangs);
+	unset($order1, $by1);
 }
 
-$arNavParams = (isset($_REQUEST["mode"]) && 'excel' == $_REQUEST["mode"]
-	? false
-	: array("nPageSize" => CAdminResult::GetNavSize($sTableID))
-);
+global $by, $order;
+
+if (!in_array('ID', $arSelectFields))
+{
+	$arSelectFields[] = 'ID';
+}
+if (!in_array('BASE', $arSelectFields))
+{
+	$arSelectFields[] = 'BASE';
+}
 
 $dbResultList = CCatalogGroup::GetList(
 	array($by => $order),
 	array(),
 	false,
-	$arNavParams,
+	false,
 	$arSelectFields
 );
 
-$dbResultList = new CAdminResult($dbResultList, $sTableID);
+$dbResultList = new CAdminUiResult($dbResultList, $sTableID);
 $dbResultList->NavStart();
 
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("group_admin_nav")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => $selfFolderUrl."cat_group_admin.php"));
 
 $arUserList = array();
 $arUserID = array();
@@ -234,9 +281,11 @@ while ($arRes = $dbResultList->Fetch())
 		if (0 < $arRes['MODIFIED_BY'])
 			$arUserID[$arRes['MODIFIED_BY']] = true;
 	}
-	$arRows[$arRes['ID']] = $row = &$lAdmin->AddRow($arRes['ID'], $arRes);
 
-	$row->AddViewField("ID", '<a href="/bitrix/admin/cat_group_edit.php?lang='.LANGUAGE_ID.'&ID='.$arRes["ID"].'&'.GetFilterParams("filter_").'">'.$arRes["ID"].'</a>');
+	$editUrl = $selfFolderUrl."cat_group_edit.php?ID=".$arRes["ID"]."&lang=".LANGUAGE_ID;
+	$editUrl = $adminSidePanelHelper->editUrlToPublicPage($editUrl);
+	$arRows[$arRes['ID']] = $row = &$lAdmin->AddRow($arRes['ID'], $arRes, $editUrl);
+	$row->AddViewField("ID", '<a href="'.$editUrl.'">'.$arRes["ID"].'</a>');
 
 	if (!$bReadOnly)
 	{
@@ -250,7 +299,7 @@ while ($arRes = $dbResultList->Fetch())
 	else
 	{
 		if ($arSelectFieldsMap['NAME'])
-			$row->AddViewField("NAME", '<a href="/bitrix/admin/cat_group_edit.php?lang='.LANGUAGE_ID.'&ID='.$arRes["ID"].'&'.GetFilterParams("filter_").'">'.htmlspecialcharsex($arRes['NAME']).'</a>');
+			$row->AddViewField("NAME", '<a href="'.$editUrl.'">'.htmlspecialcharsbx($arRes['NAME']).'</a>');
 		if ($arSelectFieldsMap['SORT'])
 			$row->AddInputField('SORT', false);
 		if ($arSelectFieldsMap['XML_ID'])
@@ -258,13 +307,15 @@ while ($arRes = $dbResultList->Fetch())
 	}
 
 	if ($arSelectFieldsMap['BASE'])
-		$row->AddViewField("BASE", ("Y" == $arRes['BASE'] ? GetMessage("BASE_YES") : "&nbsp;"));
+	{
+		$row->AddViewField("BASE", ("Y" == $arRes['BASE'] ? GetMessage("BASE_YES") : GetMessage("BASE_NO")));
+	}
 
 	$arActions = array();
 	$arActions[] = array(
 		"ICON" => "edit",
 		"TEXT" => GetMessage("EDIT_STATUS_ALT"),
-		"ACTION" => $lAdmin->ActionRedirect("/bitrix/admin/cat_group_edit.php?ID=".$arRes['ID']."&lang=".LANGUAGE_ID."&".GetFilterParams("filter_").""),
+		"LINK" => $editUrl,
 		"DEFAULT" => true
 	);
 
@@ -273,13 +324,16 @@ while ($arRes = $dbResultList->Fetch())
 		if ('Y' != $arRes['BASE'])
 		{
 			$arActions[] = array(
-				"SEPARATOR" => true
-			);
-			$arActions[] = array(
 				"ICON" => "delete",
 				"TEXT" => GetMessage("DELETE_STATUS_ALT"),
 				"ACTION" => "if(confirm('".GetMessageJS('DELETE_STATUS_CONFIRM')."')) ".$lAdmin->ActionDoGroup($arRes['ID'], "delete")
 			);
+			$arActions[] = [
+				'ICON' => 'edit',
+				'TEXT' => GetMessage('BT_CAT_GROUP_ADM_ACTION_SET_BASE_PRICE'),
+				'ACTION' => $lAdmin->ActionDoGroup($arRes['ID'], 'setbase'),
+				'ONCLICK' => '',
+			];
 		}
 	}
 
@@ -299,7 +353,7 @@ if ($arSelectFieldsMap['NAME_LID'])
 			$arLang['CATALOG_GROUP_ID'] = (int)$arLang['CATALOG_GROUP_ID'];
 			if (isset($arLangList[$arLang['LID']]))
 			{
-				$arLangResult[$arLang['CATALOG_GROUP_ID']][$arLang['LID']] = str_replace('#VALUE#', htmlspecialcharsex($arLang["NAME"]), $arLangResult[$arLang['CATALOG_GROUP_ID']][$arLang['LID']]);
+				$arLangResult[$arLang['CATALOG_GROUP_ID']][$arLang['LID']] = str_replace('#VALUE#', htmlspecialcharsbx($arLang["NAME"]), $arLangResult[$arLang['CATALOG_GROUP_ID']][$arLang['LID']]);
 			}
 		}
 
@@ -317,18 +371,20 @@ if ($arSelectFieldsMap['CREATED_BY'] || $arSelectFieldsMap['MODIFIED_BY'])
 {
 	if (!empty($arUserID))
 	{
-		$byUser = 'ID';
-		$byOrder = 'ASC';
 		$rsUsers = CUser::GetList(
-			$byUser,
-			$byOrder,
+			'ID',
+			'ASC',
 			array('ID' => implode(' | ', array_keys($arUserID))),
 			array('FIELDS' => array('ID', 'LOGIN', 'NAME', 'LAST_NAME', 'SECOND_NAME', 'EMAIL'))
 		);
 		while ($arOneUser = $rsUsers->Fetch())
 		{
 			$arOneUser['ID'] = (int)$arOneUser['ID'];
-			$arUserList[$arOneUser['ID']] = '<a href="/bitrix/admin/user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arOneUser['ID'].'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
+			$userEdit = $selfFolderUrl."user_edit.php?lang=".LANGUAGE_ID."&ID=".$arOneUser["ID"];
+			if ($publicMode)
+				$arUserList[$arOneUser['ID']] = CUser::FormatName($strNameFormat, $arOneUser);
+			else
+				$arUserList[$arOneUser['ID']] = '<a href="'.$userEdit.'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
 		}
 	}
 
@@ -373,44 +429,48 @@ $lAdmin->AddFooter(
 
 if (!$bReadOnly)
 {
-	if (CBXFeatures::IsFeatureEnabled('CatMultiPrice'))
+	$actions = [];
+	if (!Catalog\Config\State::isExceededPriceTypeLimit())
 	{
-		$lAdmin->AddGroupActionTable(
-			array(
-				"delete" => GetMessage("MAIN_ADMIN_LIST_DELETE"),
-			)
-		);
+		$actions['edit'] = true;
+	}
+	$actions['delete'] = true;
+	$lAdmin->AddGroupActionTable($actions);
+	unset($actions);
+}
+
+$aContext = array();
+if (!$bReadOnly)
+{
+	if (Catalog\Config\State::isAllowedNewPriceType())
+	{
+		$addUrl = $selfFolderUrl."cat_group_edit.php?lang=".LANGUAGE_ID;
+		$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
+		$aContext[] = [
+			"TEXT" => GetMessage("CGAN_ADD_NEW"),
+			"ICON" => "btn_new",
+			"LINK" => $addUrl,
+			"TITLE" => GetMessage("CGAN_ADD_NEW_ALT")
+		];
 	}
 	else
 	{
-		$lAdmin->AddGroupActionTable(
-			array()
-		);
+		$helpLink = Catalog\Config\Feature::getMultiPriceTypesHelpLink();
+		if (!empty($helpLink))
+		{
+			$aContext[] = [
+				'TEXT' => GetMessage('CGAN_ADD_NEW'),
+				'ICON' => 'btn_lock',
+				$helpLink['TYPE'] => $helpLink['LINK'],
+				'TITLE' => GetMessage('CGAN_ADD_NEW_ALT')
+			];
+		}
+		unset($helpLink);
 	}
 }
-
-if (!$bReadOnly)
-{
-	$aContext = array();
-	$boolEmptyPrice = true;
-	$dbCatGroup = CCatalogGroup::GetList(array("ID" => "ASC"), array(), false, array("nTopCount" => 1), array("ID"));
-	if ($arCatGroup = $dbCatGroup->Fetch())
-	{
-		$boolEmptyPrice = false;
-	}
-	if (CBXFeatures::IsFeatureEnabled('CatMultiPrice') || $boolEmptyPrice)
-	{
-		$aContext = array(
-			array(
-				"TEXT" => GetMessage("CGAN_ADD_NEW"),
-				"ICON" => "btn_new",
-				"LINK" => "cat_group_edit.php?lang=".LANG,
-				"TITLE" => GetMessage("CGAN_ADD_NEW_ALT")
-			),
-		);
-	}
-	$lAdmin->AddAdminContextMenu($aContext);
-}
+$lAdmin->setContextSettings(array("pagePath" => $selfFolderUrl."cat_group_admin.php"));
+$lAdmin->AddAdminContextMenu($aContext);
+unset($aContext);
 
 $lAdmin->CheckListMode();
 
@@ -418,5 +478,5 @@ $APPLICATION->SetTitle(GetMessage("GROUP_TITLE"));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
 $lAdmin->DisplayList();
-?><?
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");?>
+
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

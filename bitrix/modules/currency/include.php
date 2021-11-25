@@ -1,29 +1,40 @@
 <?
-use Bitrix\Main\Loader;
+require_once __DIR__.'/autoload.php';
 
-global $DB;
-$strDBType = strtolower($DB->type);
+//class_alias('Bitrix\Currency\UserField\Types\Money', 'Bitrix\Currency\UserField\Money');
 
-Loader::registerAutoLoadClasses(
+\CJSCore::RegisterExt(
 	'currency',
 	array(
-		'CCurrency' => 'general/currency.php',
-		'CCurrencyLang' => 'general/currency_lang.php',
-		'CCurrencyRates' => $strDBType.'/currency_rate.php',
-		'\Bitrix\Currency\CurrencyTable' => 'lib/currency.php',
-		'\Bitrix\Currency\CurrencyLangTable' => 'lib/currencylang.php',
-		'\Bitrix\Currency\CurrencyRateTable' => 'lib/currencyrate.php',
-		'\Bitrix\Currency\CurrencyManager' => 'lib/currencymanager.php'
+		'js' => '/bitrix/js/currency/core_currency.js',
+		'rel' => array('core', 'main.polyfill.promise', 'currency.currency-core')
 	)
 );
-unset($strDBType);
 
-$jsCurrencyDescr = array(
-	'js' => '/bitrix/js/currency/core_currency.js',
-	'rel' => array('core')
+\CJSCore::RegisterExt(
+	'core_money_editor',
+	array(
+		'rel' => array('core', 'currency.money-editor'),
+		'oninit' => function()
+		{
+			return array(
+				'lang_additional' => array(
+					'CURRENCY' => \Bitrix\Currency\Helpers\Editor::getListCurrency(),
+				),
+			);
+		}
+	)
 );
-CJSCore::RegisterExt('currency', $jsCurrencyDescr);
-unset($jsCurrencyDescr);
+
+\CJSCore::RegisterExt(
+	'core_uf_money',
+	array(
+		'js' => '/bitrix/js/currency/core_uf_money.js',
+		'css' => '/bitrix/js/currency/css/core_uf_money.css',
+		'rel' => array('uf', 'core_money_editor'),
+	)
+);
+
 
 define('CURRENCY_CACHE_DEFAULT_TIME', 10800);
 define('CURRENCY_ISO_STANDART_URL', 'http://www.iso.org/iso/home/standards/currency_codes.htm');

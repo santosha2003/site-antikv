@@ -162,7 +162,9 @@ class CPerfomanceMeasure
 			$result[] = new CPerfAccelAPC;
 		if (extension_loaded('xcache'))
 			$result[] = new CPerfAccelXCache;
-		if (extension_loaded('wincache'))
+		// Wincache removed opcode cache since 2.0.0.1
+		// https://pecl.php.net/package-changelog.php?package=WinCache&release=2.0.0.1
+		if (extension_loaded('wincache') && function_exists('wincache_ocache_meminfo'))
 			$result[] = new CPerfAccelWinCache;
 		if (extension_loaded('Zend OPcache'))
 			$result[] = new CPerfAccelZendOpCache;
@@ -265,7 +267,8 @@ class CPerfAccel
 			$is_ok = $this->max_file_size >= 4 * 1024 * 1024;
 			foreach ($arParams["max_file_size"] as $ar)
 			{
-				$ar["IS_OK"] = $is_ok;
+				if (!isset($ar["IS_OK"]))
+					$ar["IS_OK"] = $is_ok;
 				$arResult[] = $ar;
 			}
 		}
@@ -275,7 +278,8 @@ class CPerfAccel
 			$is_ok = $this->check_mtime;
 			foreach ($arParams["check_mtime"] as $ar)
 			{
-				$ar["IS_OK"] = $is_ok;
+				if (!isset($ar["IS_OK"]))
+					$ar["IS_OK"] = $is_ok;
 				$arResult[] = $ar;
 			}
 		}
@@ -313,7 +317,8 @@ class CPerfAccel
 			$is_ok = $this->memory_total >= 40 * 1024 * 1024;
 			foreach ($arParams["memory_abs"] as $ar)
 			{
-				$ar["IS_OK"] = $is_ok;
+				if (!isset($ar["IS_OK"]))
+					$ar["IS_OK"] = $is_ok;
 				$arResult[] = $ar;
 			}
 		}
@@ -323,7 +328,8 @@ class CPerfAccel
 			$is_ok = $this->cache_limit != 0;
 			foreach ($arParams["cache_limit"] as $ar)
 			{
-				$ar["IS_OK"] = $is_ok;
+				if (!isset($ar["IS_OK"]))
+					$ar["IS_OK"] = $is_ok;
 				$arResult[] = $ar;
 			}
 		}
@@ -333,9 +339,9 @@ class CPerfAccel
 
 	public static function unformat($str)
 	{
-		$str = strtolower($str);
+		$str = mb_strtolower($str);
 		$res = intval($str);
-		$suffix = substr($str, -1);
+		$suffix = mb_substr($str, -1);
 		if ($suffix == "k")
 			$res *= 1024;
 		elseif ($suffix == "m")
@@ -354,10 +360,10 @@ class CPerfAccelZend extends CPerfAccel
 		$zend_mtime = ini_get('zend_optimizerplus.validate_timestamps');
 
 		parent::__construct(
-			strtolower($zend_enable) == "on" || $zend_enable == "1",
+			mb_strtolower($zend_enable) == "on" || $zend_enable == "1",
 			-1,
 			-1,
-			strtolower($zend_mtime) == "on" || $zend_mtime == "1",
+			mb_strtolower($zend_mtime) == "on" || $zend_mtime == "1",
 			intval(ini_get('zend_optimizerplus.memory_consumption')) * 1024 * 1024,
 			-1
 		);
@@ -419,11 +425,11 @@ class CPerfAccelAPC extends CPerfAccel
 
 	function __construct()
 	{
-		$apc_enabled = strtolower(ini_get('apc.enabled'));
+		$apc_enabled = mb_strtolower(ini_get('apc.enabled'));
 		$this->is_enabled = !($apc_enabled == "0" || $apc_enabled == "off");
-		$apc_cache_by_default = strtolower(ini_get('apc.cache_by_default'));
+		$apc_cache_by_default = mb_strtolower(ini_get('apc.cache_by_default'));
 		$this->is_cache_by_default = !($apc_cache_by_default == "0" || $apc_cache_by_default == "off");
-		$apc_stat = strtolower(ini_get('apc.stat'));
+		$apc_stat = mb_strtolower(ini_get('apc.stat'));
 		$this->num_files_hint = intval(ini_get('apc.num_files_hint'));
 		$this->user_entries_hint = intval(ini_get('apc.user_entries_hint'));
 
@@ -441,7 +447,7 @@ class CPerfAccelAPC extends CPerfAccel
 
 	function GetParams()
 	{
-		return array(
+		$result = array(
 			"enabled" => array(
 				array(
 					"PARAMETER" => 'apc.enabled',
@@ -498,6 +504,19 @@ class CPerfAccelAPC extends CPerfAccel
 				),
 			),
 		);
+
+		$enable_opcode_cache = mb_strtolower(ini_get('apc.enable_opcode_cache'));
+		if ($enable_opcode_cache <> '')
+		{
+			$result["enabled"][] = array(
+				"PARAMETER" => 'apc.enable_opcode_cache',
+				"VALUE" => ini_get('apc.enable_opcode_cache'),
+				"RECOMMENDATION" => GetMessage("PERFMON_MEASURE_SET_REC", array("#value#" => "On")),
+				"IS_OK" => $enable_opcode_cache !== "off" && $enable_opcode_cache !== "0",
+			);
+		}
+
+		return $result;
 	}
 }
 
@@ -511,7 +530,7 @@ class CPerfAccelXCache extends CPerfAccel
 			ini_get('xcache.cacher') != "0",
 			intval(ini_get('xcache.ttl')),
 			-1,
-			!($xcache_stat == "0" || strtolower($xcache_stat) == "off"),
+			!($xcache_stat == "0" || mb_strtolower($xcache_stat) == "off"),
 			static::unformat(ini_get('xcache.size')),
 			-1
 		);
@@ -519,6 +538,7 @@ class CPerfAccelXCache extends CPerfAccel
 
 	function GetParams()
 	{
+		$var_size = static::unformat(ini_get('xcache.var_size'));
 		return array(
 			"enabled" => array(
 				array(
@@ -531,7 +551,14 @@ class CPerfAccelXCache extends CPerfAccel
 				array(
 					"PARAMETER" => 'xcache.ttl',
 					"VALUE" => ini_get('xcache.ttl'),
-					"RECOMMENDATION" => GetMessage("PERFMON_MEASURE_GREATER_THAN_ZERO_REC"),
+					"RECOMMENDATION" => GetMessage("PERFMON_MEASURE_EQUAL_OR_GREATER_THAN_REC", array("#value#" => 86400)),
+					"IS_OK" => ini_get('xcache.ttl') >= 86400,
+				),
+				array(
+					"PARAMETER" => 'xcache.var_ttl',
+					"VALUE" => ini_get('xcache.var_ttl'),
+					"RECOMMENDATION" => GetMessage("PERFMON_MEASURE_EQUAL_OR_GREATER_THAN_REC", array("#value#" => 2592000)),
+					"IS_OK" => ini_get('xcache.var_ttl') >= 2592000,
 				),
 			),
 			"check_mtime" => array(
@@ -547,6 +574,12 @@ class CPerfAccelXCache extends CPerfAccel
 					"VALUE" => ini_get('xcache.size'),
 					"RECOMMENDATION" => GetMessage("PERFMON_MEASURE_EQUAL_OR_GREATER_THAN_REC", array("#value#" => "40M")),
 				),
+				array(
+					"PARAMETER" => 'xcache.var_size',
+					"VALUE" => ini_get('xcache.var_size'),
+					"RECOMMENDATION" => GetMessage("PERFMON_MEASURE_EQUAL_OR_GREATER_THAN_REC", array("#value#" => "64M")),
+					"IS_OK" => $var_size >= static::unformat("64M"),
+				),
 			),
 		);
 	}
@@ -560,7 +593,7 @@ class CPerfAccelWinCache extends CPerfAccel
 		$memory = wincache_ocache_meminfo();
 
 		parent::__construct(
-			!($wincache_enabled == "0" || strtolower($wincache_enabled) == "off"),
+			!($wincache_enabled == "0" || mb_strtolower($wincache_enabled) == "off"),
 			-1,
 			-1,
 			true, //Because there is no way to turn on check file mtime we'll assume it's ok
@@ -680,6 +713,20 @@ class CPerfAccelZendOpCache extends CPerfAccel
 				),
 			),
 		);
+		if (function_exists("opcache_get_status"))
+		{
+			$conf = opcache_get_status(false);
+			$res["memory_abs"][] = array(
+				"PARAMETER" => 'opcache.memory_usage.used_memory',
+				"VALUE" => CFile::FormatSize($conf["memory_usage"]["used_memory"]),
+				"RECOMMENDATION" => "",
+			);
+			$res["memory_abs"][] = array(
+				"PARAMETER" => 'opcache.memory_usage.free_memory',
+				"VALUE" => CFile::FormatSize($conf["memory_usage"]["free_memory"]),
+				"RECOMMENDATION" => "",
+			);
+		}
 		return $res;
 	}
 }

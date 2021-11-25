@@ -8,8 +8,8 @@ $MESS ['FM_FOLDER_ACCESS_FULL'] = "Full access";
 $MESS ['FM_FOLDER_ACCESS_WORKFLOW'] = "Workflow";
 $MESS ['FILEMAN_FOLDER_ACCESS_INHERIT'] = "Inherit";
 
-$MESS ['FILEMAN_ACCESS_TO_DENIED'] = "Not enough rights to change access rights to";
-$MESS ['FILEMAN_ACCESS_CHANGE_TO'] = "Change access rights to";
+$MESS ['FILEMAN_ACCESS_TO_DENIED'] = "Not enough rights to change access rights to ";
+$MESS ['FILEMAN_ACCESS_CHANGE_TO'] = "Change access rights to ";
 $MESS ['FILEMAN_ACCESS_FOLDERS_FILES'] = "files/folders:";
 $MESS ['FILEMAN_ACCESS_DIFFERENT'] = "Access settings of this group provide different rights for folders! After save, access rights to all folders will be unified.";
 $MESS ['FILEMAN_ACCESS_GROUP'] = "Group";

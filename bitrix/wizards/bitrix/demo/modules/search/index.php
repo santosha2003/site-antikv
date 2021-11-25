@@ -10,9 +10,11 @@ __IncludeLang(GetLangFileName(dirname(__FILE__)."/lang/", "/".basename(__FILE__)
 //public_rewrite - when set to Y will force public files overwite
 
 //Set options which will overwrite defaults
+COption::SetOptionString("search", "use_word_distance", "Y");
+COption::SetOptionString("search", "use_social_rating", "Y");
 COption::SetOptionString("search", "use_stemming", "Y");
 COption::SetOptionString("search", "use_tf_cache", "Y");
-COption::SetOptionString("search", "exclude_mask", "/bitrix/*;/404.php;/auth*;*/search*;*/tags*;/personal/*;/e-store/affiliates/*;/content/*/my/*;/examples/*;/map.php;*/detail.php;/communication/voting/*;/club/index.php");
+COption::SetOptionString("search", "exclude_mask", "/bitrix/*;/404.php;/upload/*;/auth*;*/search*;*/tags*;/personal/*;/e-store/affiliates/*;/content/*/my/*;/examples/*;/map.php;*/detail.php;/communication/voting/*;/club/index.php");
 
 //Copy public files with "on the fly" translation
 $bReWriteAdditionalFiles = ($arParams["public_rewrite"] == "Y");

@@ -5,7 +5,7 @@ class CCatalogStoreDocsBarcodeAll
 {
 	protected static function checkFields($action, &$arFields)
 	{
-		if ((($action == 'ADD') || is_set($arFields, "BARCODE")) && (strlen($arFields["BARCODE"]) <= 0))
+		if ((($action == 'ADD') || is_set($arFields, "BARCODE")) && ($arFields["BARCODE"] == ''))
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("CP_EMPTY_BARCODE"));
 			return false;
@@ -47,14 +47,14 @@ class CCatalogStoreDocsBarcodeAll
 
 			$DB->Query("DELETE FROM b_catalog_docs_barcode WHERE ID = ".$id." ", true);
 
-			foreach(GetModuleEvents("OnCatalogStoreDocsBarcodeDelete", true) as $arEvent)
+			foreach (GetModuleEvents("catalog", "OnCatalogStoreDocsBarcodeDelete", true) as $arEvent)
 				ExecuteModuleEventEx($arEvent, array($id));
 			return true;
 		}
 		return false;
 	}
 
-	static function OnBeforeDocumentDelete($id)
+	public static function OnBeforeDocumentDelete($id)
 	{
 		global $DB;
 		$id = intval($id);
@@ -67,6 +67,6 @@ class CCatalogStoreDocsBarcodeAll
 
 		foreach(GetModuleEvents("catalog", "OnDocumentBarcodeDelete", true) as $arEvent)
 			ExecuteModuleEventEx($arEvent, array($id));
+		return true;
 	}
-
 }

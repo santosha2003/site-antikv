@@ -1,4 +1,0 @@
-<?
-$MESS ['SEARCH_ERROR_OPEN_FILE'] = "äÁèÊÒÁÒÃ¶à»Ô´ä¿Åìä´é";
-$MESS ['SEARCH_ERROR_SITE_ID'] = "äÁè¾ºàÇçºä«µì";
-?>

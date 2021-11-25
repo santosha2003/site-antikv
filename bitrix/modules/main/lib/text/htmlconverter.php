@@ -1,8 +1,7 @@
 <?php
 namespace Bitrix\Main\Text;
 
-class HtmlConverter
-	extends Converter
+class HtmlConverter	extends Converter
 {
 	public function encode($text, $textType = "")
 	{
@@ -14,11 +13,7 @@ class HtmlConverter
 		if ($textType == Converter::HTML)
 			return $text;
 
-<<<<<<< HEAD
-		return String::htmlEncode($text);
-=======
-		return TString::htmlEncode($text);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+		return HtmlFilter::encode($text);
 	}
 
 	public function decode($text, $textType = "")
@@ -31,10 +26,6 @@ class HtmlConverter
 		if ($textType == Converter::HTML)
 			return $text;
 
-<<<<<<< HEAD
-		return String::htmlDecode($text);
-=======
-		return TString::htmlDecode($text);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+		return htmlspecialchars_decode($text);
 	}
 }

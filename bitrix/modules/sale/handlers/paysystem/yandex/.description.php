@@ -1,11 +1,44 @@
 <?php
-use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Loader,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Sale\PaySystem;
+
 
 Loc::loadMessages(__FILE__);
+
+$description = array(
+	'RETURN' => Loc::getMessage('SALE_HPS_YANDEX_RETURN'),
+	'RESTRICTION' => Loc::getMessage('SALE_HPS_YANDEX_RESTRICTION'),
+	'COMMISSION' => Loc::getMessage('SALE_HPS_YANDEX_COMMISSION'),
+	'MAIN' => Loc::getMessage('SALE_HPS_YANDEX_DESCRIPTION')
+);
+
+if (IsModuleInstalled('bitrix24'))
+{
+	$description['REFERRER'] = Loc::getMessage('SALE_HPS_YANDEX_REFERRER');
+}
+
+$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_TRUE;
+
+$portalZone = Loader::includeModule('intranet') ? CIntranetUtils::getPortalZone() : "";
+$licensePrefix = Loader::includeModule('bitrix24') ? \CBitrix24::getLicensePrefix() : "";
+
+if (Loader::includeModule('bitrix24'))
+{
+	if ($licensePrefix !== 'ru')
+	{
+		$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+	}
+}
+elseif (Loader::includeModule('intranet') && $portalZone !== 'ru')
+{
+	$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+}
 
 $data = array(
 	'NAME' => Loc::getMessage('SALE_HPS_YANDEX'),
 	'SORT' => 500,
+	'IS_AVAILABLE' => $isAvailable,
 	'CODES' => array(
 		"YANDEX_SHOP_ID" => array(
 			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_SHOP_ID"),
@@ -31,7 +64,7 @@ $data = array(
 			'GROUP' => 'PAYMENT',
 			'DEFAULT' => array(
 				'PROVIDER_KEY' => 'PAYMENT',
-				'PROVIDER_VALUE' => 'ID'
+				'PROVIDER_VALUE' => 'ACCOUNT_NUMBER'
 			)
 		),
 		"PAYMENT_DATE_INSERT" => array(
@@ -59,6 +92,10 @@ $data = array(
 			"INPUT" => array(
 				'TYPE' => 'Y/N'
 			),
+			'DEFAULT' => array(
+				"PROVIDER_KEY" => "INPUT",
+				"PROVIDER_VALUE" => "Y",
+			)
 		),
 		"PS_IS_TEST" => array(
 			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_IS_TEST"),
@@ -67,6 +104,15 @@ $data = array(
 			"INPUT" => array(
 				'TYPE' => 'Y/N'
 			)
-		)
+		),
+		"PAYMENT_BUYER_ID" => array(
+			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_BUYER_ID"),
+			'SORT' => 1000,
+			'GROUP' => 'PAYMENT',
+			'DEFAULT' => array(
+				'PROVIDER_KEY' => 'ORDER',
+				'PROVIDER_VALUE' => 'USER_ID'
+			)
+		),
 	)
 );

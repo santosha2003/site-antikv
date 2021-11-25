@@ -93,8 +93,8 @@ class CodeTree
 			foreach ($updaterSteps as $i => $statement)
 			{
 				/**
-				 * @var Condition $condition
-				 */
+				* @var Condition $condition
+				*/
 				foreach ($statement->conditions as $condition)
 				{
 					$predicate = $condition->getPredicate();
@@ -102,6 +102,7 @@ class CodeTree
 					{
 						$byPredicates[$predicate] = array(
 							"predicate" => $predicate,
+							"dep" => $statement->dependOn,
 							"sort" => $this->getPredicateSort($predicate),
 							"count" => 1,
 						);
@@ -116,6 +117,7 @@ class CodeTree
 			if ($byPredicates)
 			{
 				sortByColumn($byPredicates, array(
+					"dep" => SORT_ASC,
 					"count" => SORT_DESC,
 					"sort" => SORT_ASC,
 				));
@@ -144,7 +146,7 @@ class CodeTree
 					&& is_array($ifStatement["body"][0])
 					&& isset($ifStatement["body"][0]["if"])
 					&& isset($ifStatement["body"][0]["body"])
-					&& strlen(implode(' && ', array_merge($ifStatement["if"], $ifStatement["body"][0]["if"]))) < 100
+					&& mb_strlen(implode(' && ', array_merge($ifStatement["if"], $ifStatement["body"][0]["if"]))) < 100
 				)
 				{
 					$ifStatement["if"] = array_merge($ifStatement["if"], $ifStatement["body"][0]["if"]);
@@ -162,13 +164,21 @@ class CodeTree
 	 */
 	protected function getPredicateSort($predicate)
 	{
-		if (strpos($predicate, "CanUpdateDatabase"))
+		if(mb_strpos($predicate, "CanUpdateDatabase"))
+		{
 			return 10;
-		elseif (strpos($predicate, "->type"))
+		}
+		elseif(mb_strpos($predicate, "->type"))
+		{
 			return 20;
-		elseif (strpos($predicate, "TableExists"))
+		}
+		elseif(mb_strpos($predicate, "TableExists"))
+		{
 			return 30;
+		}
 		else
+		{
 			return 50;
+		}
 	}
 }

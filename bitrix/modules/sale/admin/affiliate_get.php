@@ -22,16 +22,22 @@ if (!CBXFeatures::IsFeatureEnabled('SaleAffiliate'))
 </head>
 <body><?
 $res = "";
-$ID = IntVal($ID);
+$ID = intval($ID);
 $func_name = preg_replace("/[^a-zA-Z0-9_-]/is", "", $func_name);
 
 if ($ID > 0)
 {
 	$dbAffiliate = CSaleAffiliate::GetList(array(), array("ID" => $ID), false, false, array("ID", "SITE_ID", "USER_ID", "USER_LOGIN", "USER_NAME", "USER_LAST_NAME"));
 	if ($arAffiliate = $dbAffiliate->Fetch())
-		$res = "[".$arAffiliate["USER_ID"].", ".$arAffiliate["SITE_ID"]."] ".$arAffiliate["USER_NAME"]." ".$arAffiliate["USER_LAST_NAME"]." (".$arAffiliate["USER_LOGIN"].")";
+	{
+		$res = "[".$arAffiliate["USER_ID"].", ".$arAffiliate["SITE_ID"]."] ";
+		$res .= htmlspecialcharsbx($arAffiliate["USER_NAME"])." ".htmlspecialcharsbx($arAffiliate["USER_LAST_NAME"]);
+		$res .= " (".htmlspecialcharsbx($arAffiliate["USER_LOGIN"]).")";
+	}
 	else
+	{
 		$res = "NA";
+	}
 }
 ?>
 <script type="text/javascript">

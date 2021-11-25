@@ -22,9 +22,6 @@ $MESS["BT_SALE_DISCOUNT_SECTIONS_COND_ADD"] = "Zusätzliche Bedingungen";
 $MESS["BT_SALE_DISCOUNT_SECTIONS_APP"] = "Aktionen";
 $MESS["BT_SALE_DISCOUNT_EDIT_ERR_ADD"] = "Fehler beim Hinzufügen der Regel";
 $MESS["BT_SALE_DISCOUNT_EDIT_ERR_UPDATE"] = "Fehler beim Ändern der Regel mit ID #ID#";
-$MESS["BT_SALE_DISCOUNT_ACTIONS_SELECT_CONTROL"] = "Aktion auswählen";
-$MESS["BT_SALE_DISCOUNT_ACTIONS_ADD_CONTROL"] = "Aktion hinzufügen";
-$MESS["BT_SALE_DISCOUNT_ACTIONS_DELETE_CONTROL"] = "Aktion löschen";
 $MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_SORT"] = "Sortierindex (für Regeln mit gleicher Priorität)";
 $MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_DESCR"] = "(Rabatte mit einem niedrigeren Index werden zuerst angewendet)";
 $MESS["BT_SALE_DISCOUNT_EDIT_MESS_ADD_DISCOUNT"] = "Neue Regel erstellen";
@@ -48,4 +45,7 @@ $MESS["BX_SALE_DISCOUNT_EDIT_FIELDS_COUPON_TYPE"] = "Gutscheintyp:";
 $MESS["BX_SALE_DISCOUNT_EDIT_FIELDS_COUPON_MAX_USE"] = "Kann maximal genutzt werden:";
 $MESS["BX_SALE_DISCOUNT_EDIT_ERR_COUPONS_COUNT"] = "Die Anzahl der Gutscheine, die erstellt werden sollen, ist nicht angegeben";
 $MESS["BX_SALE_DISCOUNT_EDIT_ERR_MODULE_CATALOG_IS_ABSENT"] = "Das Modul Kommerzieller Katalog konnte nicht geladen werden. Konditionen der Warenkorbregeln sowie API's der Aktionen sind nicht verfügbar.";
+$MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_LAST_LEVEL_DISCOUNT"] = "Beim aktuellen Prioritätslevel Rabatte nicht anwenden";
+$MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_2"] = "Sortierungsindex innerhalb des Prioritätslevels";
+$MESS["BT_SALE_DISCOUNT_SECTION_PRIORITY"] = "Prioritätseinstellungen";
 ?>

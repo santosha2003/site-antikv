@@ -11,7 +11,8 @@ $APPLICATION->SetTitle("Заказы");
 	"PATH_TO_BASKET" => "/personal/cart/",
 	"PATH_TO_PERSONAL" => "/personal/order/",
 	"PATH_TO_PAYMENT" => "/personal/order/payment/",
-	"SET_TITLE" => "Y"
+	"SET_TITLE" => "Y",
+	"DELIVERY_NO_SESSION" => "Y"
 	),
 	false
 );?><?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

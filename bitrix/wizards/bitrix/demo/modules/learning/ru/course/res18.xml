@@ -1,2 +1,70 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE18"><presentation><material><mattext>��� ����� ������� ��� ���������� ��������� �������� ��� ������ ��������� �� ������?</mattext></material><response_lid ident="LID18" rcardinality="Single"><render_choice><response_label ident="ANS24"><material><mattext>������� ������ �������� � ���� ����������</mattext></material></response_label><response_label ident="ANS25"><material><mattext>���������� ���� � ���� ���� �����, ����� ������� ������ �������� � ���� ���������� ������ �� ���������</mattext></material></response_label><response_label ident="ANS26"><material><mattext>������� ����������� �������� �� ������ �������� ����� ��������, �������������� ������� ������ �������� � �������� �������</mattext></material></response_label><response_label ident="ANS27"><material><mattext>������� ����������� �������� �� ������ �������� ����� ��������, �������������� ��������� ���� � ���� ���� �����</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID18">ANS26</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>N</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>888</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>300</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Режим Разработка</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p>Режим предназначен для использования разработчиками сайта, т.к. предоставляет возможности по изменению внешнего облика сайта (настройки параметров компонентов, изменение стилей шаблона сайта и др.)</p>
+<p>Режим <b>Разработка</b> содержит все действия из режимов <b>Просмотр</b> и <b>Редактирование</b> и дополнительно позволяет:</p>
+<ul>
+  <li>Редактировать текущую страницу в режиме полного php-кода:
+  <p><img hight="167" width="232" border="0" src="cid:resources/res18/efWVm.mRAer.php_edit.png" /></p>
+  </li>
+
+  <li>Редактировать параметры компонентов, использованных на текущей странице:
+  <p><img hight="227" width="218" border="0" src="cid:resources/res18/Eym1O.yKEf2.components_list.png" /></p>
+  </li>	  
+
+  <li>Редактировать шаблон: изменить стили сайта и стили шаблона в форме из публичной части или перейти к полному редактированию шаблона в нужном разделе панели управления:
+  <p><img hight="117" width="368" border="0" src="cid:resources/res18/hcjBL.QSvJ0.template_edit.png" /></p>
+  </li>
+
+  <li>Расширены возможности работы с кешем: можно обновить кеш компонентов:
+  <p><img hight="95" width="206" border="0" src="cid:resources/res18/XeHyl.N2Z7y.cache_button_dev.png" /></p>
+  </li>
+
+  <li>Режим предоставляет разработчику отладочную информацию, которая позволяет оценить время отработки различных областей на странице, компонентов или всей страницы в целом:
+  <p><img hight="145" width="245" border="0" src="cid:resources/res18/nR24X.Sn5Mg.dev_statistics.png" /></p>
+  </li>
+</ul>
+ 
+<p>Компоненты и включаемые области выделены на странице и для каждой имеется определенный набор действий, доступный по клику на иконку <img hight="25" width="48" border=0 src="cid:resources/res18/XdbSC.UrYmQ.dev_action_button.png" />:</p>
+
+<p><img height="376" border="0" width="497" src="cid:resources/res18/xKFvQ.sM5gC.component_actions.png" /></p>
+
+<p>В режиме <b>Разработка</b> доступны следующие действия над компонентами (например, для компонента <b>Меню (bitrix:menu)</b>):</p>
+<p><img hight="144" width="316" border=0 src="cid:resources/res18/8GjsQ.el3KA.bitrix_menu_actions.png" /></p>
+<ul>
+  <li><b>Редактировать параметры компонента</b> в форме из публичной части. После сохранения установленные настройки будут сразу применены.</li>
+  <li><b>Копировать шаблон компонента</b>.</li>
+  <li><b>Редактировать шаблон  компонента</b> - позволяет изменить текущий шаблон. Однако если применен системный шаблон, то его необходимо сначала скопировать в шаблон сайта.</li>
+  <li>Другие действия, набор которых зависит от специфики данного компонента.</li>
+</ul>
+ 
+<p><div class="hint"><b>Примечание</b>: подробно о работе с компонентами смотрите в разделе <a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=34&CHAPTER_ID=632" target="_blank">
+Компоненты 2.0 (начальные сведения)</a>.</div></p> ]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>300</edge_sort>
+<id>888</id>
+</content>

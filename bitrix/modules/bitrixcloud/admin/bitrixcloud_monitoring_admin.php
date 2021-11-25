@@ -18,7 +18,7 @@ if ($_REQUEST["referer"] === "monitoring")
 	die();
 }
 
-if (!$USER->IsAdmin())
+if (!$USER->CanDoOperation("bitrixcloud_monitoring"))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 $strError = "";
@@ -50,7 +50,7 @@ try
 	{
 		foreach($arID as $ID)
 		{
-			if(strlen($ID)<=0)
+			if($ID == '')
 				continue;
 			switch($_REQUEST['action'])
 			{

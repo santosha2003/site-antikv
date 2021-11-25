@@ -27,12 +27,12 @@ if (is_object($arParams["NAV_RESULT"]) &&  is_subclass_of($arParams["NAV_RESULT"
 	$arResult["add_anchor"] = $dbresult->add_anchor;
 	$arResult["nPageWindow"] = $nPageWindow = $dbresult->nPageWindow;
 	$arResult["bSavePage"] = (CPageOption::GetOptionString("main", "nav_page_in_session", "Y")=="Y");
-	if($arParams["BASE_LINK"] <> '')
+	if(($arParams["BASE_LINK"] ?? '') <> '')
 	{
-		if(($pos = strpos($arParams["BASE_LINK"], "?")) !== false)
+		if(($pos = mb_strpos($arParams["BASE_LINK"], "?")) !== false)
 		{
-			$arResult["sUrlPath"] = substr($arParams["BASE_LINK"], 0, $pos);
-			$arResult["NavQueryString"] = substr($arParams["BASE_LINK"], $pos+1);
+			$arResult["sUrlPath"] = mb_substr($arParams["BASE_LINK"], 0, $pos);
+			$arResult["NavQueryString"] = mb_substr($arParams["BASE_LINK"], $pos + 1);
 		}
 		else
 		{
@@ -43,14 +43,16 @@ if (is_object($arParams["NAV_RESULT"]) &&  is_subclass_of($arParams["NAV_RESULT"
 	else
 	{
 		$arResult["sUrlPath"] = GetPagePath(false, false);
-		$arResult["NavQueryString"] = htmlspecialcharsbx(DeleteParam(array(
-			"PAGEN_".$dbresult->NavNum,
-			"SIZEN_".$dbresult->NavNum,
-			"SHOWALL_".$dbresult->NavNum,
-			"PHPSESSID",
-			"clear_cache",
-			"bitrix_include_areas"
-		)));
+		$delParam = array_merge(
+			array(
+				"PAGEN_".$dbresult->NavNum,
+				"SIZEN_".$dbresult->NavNum,
+				"SHOWALL_".$dbresult->NavNum,
+				"PHPSESSID",
+			),
+			\Bitrix\Main\HttpRequest::getSystemParameters()
+		);
+		$arResult["NavQueryString"] = htmlspecialcharsbx(DeleteParam($delParam));
 	}
 	$arResult['sUrlPathParams'] = $arResult['sUrlPath'].'?'.($arResult['NavQueryString'] <> ''? $arResult['NavQueryString'].'&' : '');
 

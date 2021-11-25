@@ -1,8 +1,7 @@
 <?
 global $MESS;
-$strPath2Lang = str_replace("\\", "/", __FILE__);
-$strPath2Lang = substr($strPath2Lang, 0, strlen($strPath2Lang)-strlen("/install/index.php"));
-include(GetLangFileName($strPath2Lang."/lang/", "/install/index.php"));
+IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/install/index.php");
+
 
 Class blog extends CModule
 {
@@ -14,13 +13,11 @@ Class blog extends CModule
 	var $MODULE_CSS;
 	var $MODULE_GROUP_RIGHTS = "Y";
 
-	function blog()
+	public function __construct()
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace("\\", "/", __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
-		include($path."/version.php");
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists("VERSION", $arModuleVersion))
 		{
@@ -94,7 +91,51 @@ Class blog extends CModule
 		return $errors;
 	}
 
-	function InstallUserFields($id = "all")
+	public static function installMailUserFields(&$errors = [])
+	{
+		global $APPLICATION;
+
+		if (!\Bitrix\Main\ModuleManager::isModuleInstalled('mail'))
+		{
+			return;
+		}
+
+		$rsUserType = \CUserTypeEntity::getList(
+			array(),
+			array(
+				'ENTITY_ID'  => 'BLOG_POST',
+				'FIELD_NAME' => 'UF_MAIL_MESSAGE',
+			)
+		);
+		if (!$rsUserType->fetch())
+		{
+			$userType = new \CUserTypeEntity();
+			$intID = $userType->add(array(
+				'ENTITY_ID'     => 'BLOG_POST',
+				'FIELD_NAME'    => 'UF_MAIL_MESSAGE',
+				'USER_TYPE_ID'  => 'mail_message',
+				'XML_ID'        => '',
+				'SORT'          => 100,
+				'MULTIPLE'      => 'N',
+				'MANDATORY'     => 'N',
+				'SHOW_FILTER'   => 'N',
+				'SHOW_IN_LIST'  => 'N',
+				'EDIT_IN_LIST'  => 'Y',
+				'IS_SEARCHABLE' => 'N',
+			));
+			if (false == $intID)
+			{
+				if ($strEx = $APPLICATION->getException())
+				{
+					$errors[] = $strEx->getString();
+				}
+			}
+		}
+
+		return $errors;
+	}
+
+	public static function InstallUserFields($id = "all")
 	{
 		global $USER_FIELD_MANAGER;
 		$errors = null;
@@ -102,6 +143,10 @@ Class blog extends CModule
 		if($id == 'disk' || $id == 'all')
 		{
 			self::installDiskUserFields();
+		}
+		if ($id == 'mail' || $id == 'all')
+		{
+			self::installMailUserFields($errors);
 		}
 		if($id == 'all')
 		{
@@ -225,7 +270,7 @@ Class blog extends CModule
 
 	function InstallDB($install_wizard = true)
 	{
-		global $DB, $DBType, $APPLICATION, $install_smiles;
+		global $DB, $DBType, $APPLICATION;
 
 		if (!$DB->Query("SELECT 'x' FROM b_blog_user_group", true))
 		{
@@ -235,7 +280,7 @@ Class blog extends CModule
 
 		if (empty($errors))
 		{
-			$errors = $this->InstallUserFields();
+			$errors = static::InstallUserFields();
 		}
 
 		if (!empty($errors))
@@ -246,14 +291,16 @@ Class blog extends CModule
 
 		RegisterModule("blog");
 		RegisterModuleDependences("search", "OnReindex", "blog", "CBlogSearch", "OnSearchReindex");
-		RegisterModuleDependences("main", "OnUserDelete", "blog", "CBlogUser", "Delete");
+		RegisterModuleDependences("main", "OnUserDelete", "blog", "\Bitrix\Blog\BlogUser", "onUserDelete");
 		RegisterModuleDependences("main", "OnSiteDelete", "blog", "CBlogSitePath", "DeleteBySiteID");
 
 		RegisterModuleDependences("socialnetwork", "OnSocNetGroupDelete", "blog", "CBlogSoNetPost", "OnGroupDelete");
 
 		RegisterModuleDependences("socialnetwork", "OnSocNetFeaturesAdd", "blog", "CBlogSearch", "SetSoNetFeatureIndexSearch");
 		RegisterModuleDependences("socialnetwork", "OnSocNetFeaturesUpdate", "blog", "CBlogSearch", "SetSoNetFeatureIndexSearch");
+		RegisterModuleDependences("socialnetwork", "OnBeforeSocNetFeaturesPermsAdd", "blog", "CBlogSearch", "OnBeforeSocNetFeaturesPermsAdd");
 		RegisterModuleDependences("socialnetwork", "OnSocNetFeaturesPermsAdd", "blog", "CBlogSearch", "SetSoNetFeaturePermIndexSearch");
+		RegisterModuleDependences("socialnetwork", "OnBeforeSocNetFeaturesPermsUpdate", "blog", "CBlogSearch", "OnBeforeSocNetFeaturesPermsUpdate");
 		RegisterModuleDependences("socialnetwork", "OnSocNetFeaturesPermsUpdate", "blog", "CBlogSearch", "SetSoNetFeaturePermIndexSearch");
 
 		RegisterModuleDependences("main", "OnAfterAddRating", 	"blog", "CRatingsComponentsBlog", "OnAfterAddRating", 200);
@@ -264,6 +311,7 @@ Class blog extends CModule
 
 		RegisterModuleDependences("main", "OnGetRatingContentOwner", "blog", "CRatingsComponentsBlog", "OnGetRatingContentOwner", 200);
 		RegisterModuleDependences("im", "OnGetNotifySchema", "blog", "CBlogNotifySchema", "OnGetNotifySchema");
+		RegisterModuleDependences("im", "OnAnswerNotify", "blog", "CBlogNotifySchema", "CBlogEventsIMCallback");
 
 		RegisterModuleDependences("main", "OnAfterRegisterModule", "main", "blog", "installUserFields", 100, "/modules/blog/install/index.php"); // check UF
 
@@ -274,128 +322,13 @@ Class blog extends CModule
 		$eventManager = \Bitrix\Main\EventManager::getInstance();
 		$eventManager->registerEventHandler('mail', 'onReplyReceivedBLOG_POST', 'blog', '\Bitrix\Blog\Internals\MailHandler', 'handleReplyReceivedBlogPost');
 		$eventManager->registerEventHandler('mail', 'onForwardReceivedBLOG_POST', 'blog', '\Bitrix\Blog\Internals\MailHandler', 'handleForwardReceivedBlogPost');
+		$eventManager->registerEventHandler('socialnetwork', 'onLogIndexGetContent', 'blog', '\Bitrix\Blog\Integration\Socialnetwork\Log', 'onIndexGetContent');
+		$eventManager->registerEventHandler('socialnetwork', 'onLogCommentIndexGetContent', 'blog', '\Bitrix\Blog\Integration\Socialnetwork\LogComment', 'onIndexGetContent');
+		$eventManager->registerEventHandler('socialnetwork', 'onContentViewed', 'blog', '\Bitrix\Blog\Integration\Socialnetwork\ContentViewHandler', 'onContentViewed');
 
 		CModule::IncludeModule("blog");
 		if (CModule::IncludeModule("search"))
 			CSearch::ReIndexModule("blog");
-
-		if($install_smiles == "Y" || $install_wizard)
-		{
-			$dbSmile = CBlogSmile::GetList();
-			if(!($dbSmile->Fetch()))
-			{
-
-				$arSmile = Array(
-					Array(
-						"TYPING" => ":D :-D",
-						"IMAGE" => "icon_biggrin.png",
-						"FICON_SMILE" => "FICON_BIGGRIN",
-						"SORT" => "120",
-					),
-					Array(
-						"TYPING" => ":) :-)",
-						"IMAGE" => "icon_smile.png",
-						"FICON_SMILE" => "FICON_SMILE",
-						"SORT" => "100",
-					),
-					Array(
-						"TYPING" => ":( :-(",
-						"IMAGE" => "icon_sad.png",
-						"FICON_SMILE" => "FICON_SAD",
-						"SORT" => "140",
-					),
-					Array(
-						"TYPING" => ":o :-o :shock:",
-						"IMAGE" => "icon_eek.png",
-						"FICON_SMILE" => "FICON_EEK",
-						"SORT" => "180",
-					),
-					Array(
-						"TYPING" => "8) 8-)",
-						"IMAGE" => "icon_cool.png",
-						"FICON_SMILE" => "FICON_COOL",
-						"SORT" => "130",
-					),
-					Array(
-						"TYPING" => ":{} :-{}",
-						"IMAGE" => "icon_kiss.png",
-						"FICON_SMILE" => "FICON_KISS",
-						"SORT" => "200",
-					),
-					Array(
-						"TYPING" => ":oops:",
-						"IMAGE" => "icon_redface.png",
-						"FICON_SMILE" => "FICON_REDFACE",
-						"SORT" => "190",
-					),
-					Array(
-						"TYPING" => ":cry: :~(",
-						"IMAGE" => "icon_cry.png",
-						"FICON_SMILE" => "FICON_CRY",
-						"SORT" => "160",
-					),
-					Array(
-						"TYPING" => ":evil: >:-<",
-						"IMAGE" => "icon_evil.png",
-						"FICON_SMILE" => "FICON_EVIL",
-						"SORT" => "170",
-					),
-					Array(
-						"TYPING" => ";) ;-)",
-						"IMAGE" => "icon_wink.png",
-						"FICON_SMILE" => "FICON_WINK",
-						"SORT" => "110",
-					),
-					Array(
-						"TYPING" => ":!:",
-						"IMAGE" => "icon_exclaim.png",
-						"FICON_SMILE" => "FICON_EXCLAIM",
-						"SORT" => "220",
-					),
-					Array(
-						"TYPING" => ":?:",
-						"IMAGE" => "icon_question.png",
-						"FICON_SMILE" => "FICON_QUESTION",
-						"SORT" => "210",
-					),
-					Array(
-						"TYPING" => ":idea:",
-						"IMAGE" => "icon_idea.png",
-						"FICON_SMILE" => "FICON_IDEA",
-						"SORT" => "230",
-					),
-					Array(
-						"TYPING" => ":| :-|",
-						"IMAGE" => "icon_neutral.png",
-						"FICON_SMILE" => "FICON_NEUTRAL",
-						"SORT" => "150",
-					),
-				);
-				$arLang = Array();
-				$dbLangs = CLanguage::GetList(($b = ""), ($o = ""), array("ACTIVE" => "Y"));
-				while ($arLangs = $dbLangs->Fetch())
-				{
-					IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/install/smiles.php", $arLangs["LID"]);
-
-					foreach($arSmile as $key => $val)
-					{
-						$arSmile[$key]["LANG"][] = Array("LID" => $arLangs["LID"], "NAME" => GetMessage($val["FICON_SMILE"]));
-					}
-				}
-
-				foreach($arSmile as $val)
-				{
-					$val["SMILE_TYPE"] = "S";
-					$val["CLICKABLE"] = "Y";
-
-					$val["IMAGE_WIDTH"] = 16;
-					$val["IMAGE_HEIGHT"] = 16;
-
-					$id = CBlogSmile::Add($val);
-				}
-
-			}
-		}
 
 		return true;
 	}
@@ -405,6 +338,12 @@ Class blog extends CModule
 		global $DB, $DBType, $APPLICATION;
 		if(array_key_exists("savedata", $arParams) && $arParams["savedata"] != "Y")
 		{
+			if ($DB->TableExists("b_blog_smile") || $DB->TableExists("B_BLOG_SMILE"))
+			{
+				$DB->Query("DELETE FROM b_blog_smile");
+				$DB->Query("DROP TABLE b_blog_smile");
+				$DB->Query("DROP TABLE b_blog_smile_lang");
+			}
 			$errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/install/".$DBType."/uninstall.sql");
 
 			if (!empty($errors))
@@ -422,13 +361,15 @@ Class blog extends CModule
 			CSearch::DeleteIndex("blog");
 
 		UnRegisterModuleDependences("search", "OnReindex", "blog", "CBlogSearch", "OnSearchReindex");
-		UnRegisterModuleDependences("main", "OnUserDelete", "blog", "CBlogUser", "Delete");
+		UnRegisterModuleDependences("main", "OnUserDelete", "blog", "\Bitrix\Blog\BlogUser", "onUserDelete");
 		UnRegisterModuleDependences("main", "OnSiteDelete", "blog", "CBlogSitePath", "DeleteBySiteID");
 
 		UnRegisterModuleDependences("socialnetwork", "OnSocNetGroupDelete", "blog", "CBlogSoNetPost", "OnGroupDelete");
 		UnRegisterModuleDependences("socialnetwork", "OnSocNetFeaturesAdd", "blog", "CBlogSearch", "SetSoNetFeatureIndexSearch");
 		UnRegisterModuleDependences("socialnetwork", "OnSocNetFeaturesUpdate", "blog", "CBlogSearch", "SetSoNetFeatureIndexSearch");
+		UnRegisterModuleDependences("socialnetwork", "OnBeforeSocNetFeaturesPermsAdd", "blog", "CBlogSearch", "OnBeforeSocNetFeaturesPermsAdd");
 		UnRegisterModuleDependences("socialnetwork", "OnSocNetFeaturesPermsAdd", "blog", "CBlogSearch", "SetSoNetFeaturePermIndexSearch");
+		UnRegisterModuleDependences("socialnetwork", "OnBeforeSocNetFeaturesPermsUpdate", "blog", "CBlogSearch", "OnBeforeSocNetFeaturesPermsUpdate");
 		UnRegisterModuleDependences("socialnetwork", "OnSocNetFeaturesPermsUpdate", "blog", "CBlogSearch", "SetSoNetFeaturePermIndexSearch");
 
 		UnRegisterModuleDependences("main", "OnAfterAddRating",    "blog", "CRatingsComponentsBlog", "OnAfterAddRating");
@@ -439,6 +380,7 @@ Class blog extends CModule
 		
 		UnRegisterModuleDependences("main", "OnGetRatingContentOwner", "blog", "CRatingsComponentsBlog", "OnGetRatingContentOwner");
 		UnRegisterModuleDependences("im", "OnGetNotifySchema", "blog", "CBlogNotifySchema", "OnGetNotifySchema");
+		UnRegisterModuleDependences("im", "OnAnswerNotify", "blog", "CBlogNotifySchema", "CBlogEventsIMCallback");
 
 		UnRegisterModuleDependences("main", "OnAfterRegisterModule", "main", "blog", "installUserFields", "/modules/blog/install/index.php"); // check UF
 
@@ -449,6 +391,9 @@ Class blog extends CModule
 		$eventManager = \Bitrix\Main\EventManager::getInstance();
 		$eventManager->unregisterEventHandler('mail', 'onReplyReceivedBLOG_POST', 'blog', '\Bitrix\Blog\Internals\MailHandler', 'handleReplyReceivedBlogPost');
 		$eventManager->unregisterEventHandler('mail', 'onForwardReceivedBLOG_POST', 'blog', '\Bitrix\Blog\Internals\MailHandler', 'handleForwardReceivedBlogPost');
+		$eventManager->unregisterEventHandler('socialnetwork', 'onLogIndexGetContent', 'blog', '\Bitrix\Blog\Integration\Socialnetwork\Log', 'onIndexGetContent');
+		$eventManager->unregisterEventHandler('socialnetwork', 'onLogCommentIndexGetContent', 'blog', '\Bitrix\Blog\Integration\Socialnetwork\LogComment', 'onIndexGetContent');
+		$eventManager->unregisterEventHandler('socialnetwork', 'onContentViewed', 'blog', '\Bitrix\Blog\Integration\Socialnetwork\ContentViewHandler', 'onContentViewed');
 
 		UnRegisterModule("blog");
 
@@ -480,7 +425,11 @@ Class blog extends CModule
 				"ENTITY_ID" => "BLOG_COMMENT",
 				"FIELD_NAME" => "UF_BLOG_COMM_URL_PRV",
 				"XML_ID" => "UF_BLOG_COMM_URL_PRV",
-			)
+			),
+			'UF_MAIL_MESSAGE' => array(
+				'ENTITY_ID'  => 'BLOG_POST',
+				'FIELD_NAME' => 'UF_MAIL_MESSAGE',
+			),
 		);
 
 		foreach ($arFields as $fieldName => $arField)
@@ -533,7 +482,8 @@ Class blog extends CModule
 
 		$arSite = Array();
 		$public_installed = false;
-		$dbSites = CSite::GetList(($b = ""), ($o = ""), Array("ACTIVE" => "Y"));
+
+		$dbSites = CSite::GetList('', '', Array("ACTIVE" => "Y"));
 		while ($site = $dbSites->Fetch())
 		{
 			$arSite[] = Array(
@@ -617,7 +567,7 @@ Class blog extends CModule
 	function DoInstall()
 	{
 		global $APPLICATION, $step;
-		$step = IntVal($step);
+		$step = intval($step);
 		if ($step < 2)
 			$APPLICATION->IncludeAdminFile(GetMessage("BLOG_INSTALL_TITLE"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/install/step1.php");
 		elseif($step==2)
@@ -634,7 +584,7 @@ Class blog extends CModule
 	function DoUninstall()
 	{
 		global $APPLICATION, $step;
-		$step = IntVal($step);
+		$step = intval($step);
 		if($step<2)
 			$APPLICATION->IncludeAdminFile(GetMessage("BLOG_INSTALL_TITLE"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/install/unstep1.php");
 		elseif($step==2)

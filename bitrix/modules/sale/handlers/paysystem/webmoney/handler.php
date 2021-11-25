@@ -8,6 +8,8 @@ use Bitrix\Main\Request;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Sale\Payment;
 use Bitrix\Sale\PaySystem;
+use Bitrix\Sale\PaySystem\ServiceResult;
+use Bitrix\Sale\PriceMaths;
 
 Loc::loadMessages(__FILE__);
 
@@ -40,9 +42,11 @@ class WebMoneyHandler extends PaySystem\ServiceHandler
 	public function initiatePay(Payment $payment, Request $request = null)
 	{
 		$extraParams = array(
-			'URL' => $this->getUrl('pay'),
+			'URL' => $this->getUrl($payment, 'pay'),
 			'ENCODING' => $this->service->getField('ENCODING'),
-			'BX_PAYSYSTEM_CODE' => $payment->getPaymentSystemId()
+			'BX_PAYSYSTEM_CODE' => $this->service->getField('ID'),
+			'WEBMONEY_SUCCESS_URL' => $this->getSuccessUrl($payment),
+			'WEBMONEY_FAIL_URL' => $this->getFailUrl($payment),
 		);
 
 		$this->setExtraParams($extraParams);
@@ -133,11 +137,6 @@ class WebMoneyHandler extends PaySystem\ServiceHandler
 			}
 		}
 
-		PaySystem\ErrorLog::add(array(
-			'ACTION' => $request->get('LMI_PREREQUEST'),
-			'MESSAGE' => join(' ', $serviceResult->getErrorMessages())
-		));
-
 		return $serviceResult;
 	}
 
@@ -151,11 +150,12 @@ class WebMoneyHandler extends PaySystem\ServiceHandler
 	}
 
 	/**
+	 * @param Payment $payment
 	 * @return mixed
 	 */
-	protected function isTestMode()
+	protected function isTestMode(Payment $payment = null)
 	{
-		return $this->getBusinessValue(null, 'PS_IS_TEST');
+		return $this->getBusinessValue($payment, 'PS_IS_TEST');
 	}
 
 	/**
@@ -177,7 +177,10 @@ class WebMoneyHandler extends PaySystem\ServiceHandler
 	 */
 	protected function checkSum(Payment $payment, Request $request)
 	{
-		return $this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY') == $request->get('LMI_PAYMENT_AMOUNT');
+		$paymentShouldPay = round($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'), 2);
+		$lmiPaymentAmount = round($request->get('LMI_PAYMENT_AMOUNT'), 2);
+
+		return $paymentShouldPay == $lmiPaymentAmount;
 	}
 
 	/**
@@ -202,5 +205,41 @@ class WebMoneyHandler extends PaySystem\ServiceHandler
 	public function getCurrencyList()
 	{
 		return array('RUB', 'USD', 'EUR', 'UAH');
+	}
+
+	/**
+	 * @param ServiceResult $result
+	 * @param Request $request
+	 * @return mixed
+	 */
+	public function sendResponse(ServiceResult $result, Request $request)
+	{
+		global $APPLICATION;
+
+		if ($result->isSuccess() && (int)$request->get('LMI_PREREQUEST') == 1)
+		{
+			$APPLICATION->RestartBuffer();
+
+			echo 'YES';
+			die();
+		}
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getSuccessUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'WEBMONEY_SUCCESS_URL') ?: $this->service->getContext()->getUrl();
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getFailUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'WEBMONEY_FAIL_URL') ?: $this->service->getContext()->getUrl();
 	}
 }

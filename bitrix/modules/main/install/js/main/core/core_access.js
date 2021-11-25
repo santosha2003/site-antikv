@@ -3,10 +3,10 @@ var BX = window.BX;
 if(BX.Access)
 	return;
 
-BX.Access = 
+BX.Access =
 {
 	bInit: false,
-	waitDiv: null, 
+	waitDiv: null,
 	waitPopup: null,
 	bDialogLoaded: false,
 	selectedProvider: '',
@@ -25,12 +25,12 @@ BX.Access.Init = function(arParams)
 {
 	if(arParams)
 		BX.Access.arParams = arParams;
-	
+
 	if(BX.Access.bInit)
 		return;
 
 	BX.Access.bInit = true;
-		
+
 	BX.ready(BX.delegate(function()
 	{
 		BX.Access.popup = BX.PopupWindowManager.create("BXUserRights", null, {
@@ -40,13 +40,15 @@ BX.Access.Init = function(arParams)
 			offsetTop: 0,
 			draggable: {restrict:true},
 			closeByEsc: true,
-			titleBar: {content: BX.create("span", {html: BX.message('js_access_title'), 'props': {'className': 'access-title-bar'}})}, 
-			closeIcon: { right : "12px", top : "10px"}, 
+			titleBar: BX.message('js_access_title'),
+			contentColor : 'white',
+			contentNoPaddings : true,
+			closeIcon: true,
 			buttons: [
 				new BX.PopupWindowButton({
 					text : BX.message('js_access_select'),
 					className : "popup-window-button-accept",
-					events : { click : function() 
+					events : { click : function()
 					{
 						BX.Access.SaveLRU();
 
@@ -58,13 +60,13 @@ BX.Access.Init = function(arParams)
 						this.popupWindow.close();
 					}}
 				}),
-	
+
 				new BX.PopupWindowButtonLink({
 					text: BX.message('js_access_close'),
 					className: "popup-window-button-link-cancel",
 					events: { click : function()
 					{
-						this.popupWindow.close(); 
+						this.popupWindow.close();
 					}}
 				})
 			],
@@ -76,12 +78,12 @@ BX.Access.Init = function(arParams)
 					{
 						BX.Access.showWait(this.contentContainer);
 						BX.ajax.post(
-							'/bitrix/tools/access_dialog.php', 
+							'/bitrix/tools/access_dialog.php',
 							{
 								lang: BX.message('LANGUAGE_ID'),
 								site_id: BX.message('SITE_ID') || '',
 								arParams: BX.Access.arParams
-							}, 
+							},
 							BX.delegate(function(result)
 							{
 								this.setContent(result);
@@ -98,7 +100,7 @@ BX.Access.Init = function(arParams)
 										}
 									}
 								}
-							}, 
+							},
 							this)
 						);
 					}
@@ -140,7 +142,6 @@ BX.Access.ShowForm = function(arParams)
 		BX.Access.obAlreadySelected = {};
 
 	BX.Access.callback = arParams.callback;
-	BX.Access.popup.params.zIndex = (BX.WindowManager? BX.WindowManager.GetZIndex() : 0);
 	BX.Access.popup.show();
 };
 
@@ -154,7 +155,6 @@ BX.Access.showWait = function(div)
 		BX.Access.waitPopup = new BX.PopupWindow('ur_wait', div, {
 			autoHide: true,
 			lightShadow: true,
-			zIndex: (BX.WindowManager? BX.WindowManager.GetZIndex() : 2),
 			content: BX.create('DIV', {props: {className: 'ur-wait'}})
 		});
 	}
@@ -193,12 +193,17 @@ BX.Access.SelectProvider = function(id)
 	BX('access_btn_'+id).className = 'access-provider-button access-provider-button-selected';
 	BX('access_provider_'+id).style.display = '';
 	BX.Access.selectedProvider = id;
-	
+
 	BX.onCustomEvent(BX.Access, "onSelectProvider", [{'provider': id}]);
 };
 
 BX.Access.AddSelection = function(ob)
 {
+	if(!ob.provider)
+	{
+		return;
+	}
+
 	if(!BX.Access.obSelected[ob.provider])
 	{
 		BX.Access.obSelected[ob.provider] = {};
@@ -217,8 +222,8 @@ BX.Access.AddSelection = function(ob)
 			props: {
 				'className':'bx-finder-box-selected-item',
 				'id': 'access_selected_item_'+ob.id
-			}, 
-			html: '<a href="javascript:void(0);" onclick="BX.Access.RemoveSelection(\''+ob.provider+'\', \''+ob.id+'\')" class="bx-finder-box-selected-item-icon"></a><span class="bx-finder-box-selected-item-text">'+ob.name+'</span>'
+			},
+			html: '<a href="javascript:void(0);" onclick="BX.Access.RemoveSelection(\''+ob.provider+'\', \''+ob.id+'\')" class="bx-finder-box-selected-item-icon"></a><span class="bx-finder-box-selected-item-text">'+BX.util.htmlspecialchars(ob.name)+'</span>'
 		}));
 
 		BX('access_sel_count_'+ob.provider).innerHTML = '('+BX.Access.obCnt[ob.provider]+')';
@@ -230,7 +235,7 @@ BX.Access.RemoveSelection = function(provider, id)
 	delete BX.Access.obSelected[provider][id];
 
 	BX.Access.obCnt[provider]--;
-	
+
 	var item = BX('access_selected_item_'+id);
 	item.parentNode.removeChild(item);
 
@@ -240,7 +245,7 @@ BX.Access.RemoveSelection = function(provider, id)
 		BX.Access.obCnt.__providers_cnt--;
 
 		BX('access_selected_provider_'+provider).style.display = 'none';
-		
+
 		if(BX.Access.obCnt.__providers_cnt == 0)
 			BX('access_selected_title').style.display = '';
 	}
@@ -273,7 +278,7 @@ BX.Access.SaveSelected = function()
 {
 	if(BX.Access.showSelected || !BX.Access.obSelectedBind[BX.Access.bind])
 		BX.Access.obSelectedBind[BX.Access.bind] = {};
-	
+
 	for(var pr in BX.Access.obSelected)
 	{
 		for(var id in BX.Access.obSelected[pr])

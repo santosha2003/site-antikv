@@ -1,8 +1,0 @@
-<?
-$MESS["F_ERR_NO_REVIEW_TEXT"] = "Proszê wpisz swoje komentarze.";
-$MESS["COMM_COMMENT_OK"] = "Komentarz zosta³ zapisany.";
-$MESS["F_ERR_ADD_TOPIC"] = "B³±d utworzenia tematu.";
-$MESS["F_ERR_ADD_MESSAGE"] = "B³±d utworzenia postu";
-$MESS["F_FORUM_TOPIC_ID"] = "Tematy forum";
-$MESS["F_FORUM_MESSAGE_CNT"] = "Kometarze";
-?>

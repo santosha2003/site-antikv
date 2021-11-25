@@ -1,5 +1,0 @@
-<?
-$MESS["IDEA_STATUS_NEW"] = "Neu";
-$MESS["IDEA_STATUS_PROCESSING"] = "In Arbeit";
-$MESS["IDEA_STATUS_COMPLETED"] = "Eingeführt";
-?>

@@ -1,7 +1,8 @@
 <?
+define("HIDE_SIDEBAR", true);
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("Заказы");
-?><?$APPLICATION->IncludeComponent("bitrix:sale.order.ajax", "", array(
+?><?$APPLICATION->IncludeComponent("bitrix:sale.order.ajax", "bootstrap_v4", array(
 	"PAY_FROM_ACCOUNT" => "Y",
 	"COUNT_DELIVERY_TAX" => "N",
 	"COUNT_DISCOUNT_4_ALL_QUANTITY" => "N",
@@ -17,9 +18,16 @@ $APPLICATION->SetTitle("Заказы");
 	"PATH_TO_PAYMENT" => "#SITE_DIR#personal/order/payment/",
 	"PATH_TO_ORDER" => "#SITE_DIR#personal/order/make/",
 	"SET_TITLE" => "Y" ,
-	"DELIVERY2PAY_SYSTEM" => Array(),
 	"SHOW_ACCOUNT_NUMBER" => "Y",
-	"DELIVERY_NO_SESSION" => "Y"
+	"DELIVERY_NO_SESSION" => "Y",
+	"COMPATIBLE_MODE" => "N",
+	"BASKET_POSITION" => "before",
+	"BASKET_IMAGES_SCALING" => "adaptive",
+	"SERVICES_IMAGES_SCALING" => "adaptive",
+	"USER_CONSENT" => "Y",
+	"USER_CONSENT_ID" => "#USER_CONSENT_ID#",
+	"USER_CONSENT_IS_CHECKED" => "Y",
+	"USER_CONSENT_IS_LOADED" => "Y"
 	),
 	false
 );?><?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

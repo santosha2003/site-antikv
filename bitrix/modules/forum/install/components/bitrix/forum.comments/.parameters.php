@@ -21,8 +21,8 @@ if ($db_res && ($res = $db_res->GetNext()))
 {
 	do 
 	{
-		$iForumDefault = intVal($res["ID"]);
-		$arForum[intVal($res["ID"])] = $res["NAME"];
+		$iForumDefault = intval($res["ID"]);
+		$arForum[intval($res["ID"])] = $res["NAME"];
 		if ($selectedForum !== null && $selectedForum === intval($res['ID']))
 			$selectedForumProps = $res;
 	}while ($res = $db_res->GetNext());
@@ -72,12 +72,7 @@ $arComponentParameters = Array(
 			"VALUES" => $F_USER_FIELDS,
 			"MULTIPLE" => "Y",
 			"DEFAULT" => array_keys($F_USER_FIELDS),
-			"HIDDEN" => $hidden),
-		"URL_TEMPLATES_READ" => Array(
-			"PARENT" => "URL_TEMPLATES",
-			"NAME" => GetMessage("F_READ_TEMPLATE"),
-			"TYPE" => "STRING",
-			"DEFAULT" => ""),
+			"HIDDEN" => "$hidden"),
 		"URL_TEMPLATES_PROFILE_VIEW" => Array(
 			"PARENT" => "URL_TEMPLATES",
 			"NAME" => GetMessage("F_PROFILE_VIEW_TEMPLATE"),
@@ -87,7 +82,7 @@ $arComponentParameters = Array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("F_MESSAGES_PER_PAGE"),
 			"TYPE" => "STRING",
-			"DEFAULT" => intVal(COption::GetOptionString("forum", "MESSAGES_PER_PAGE", "10"))),
+			"DEFAULT" => intval(COption::GetOptionString("forum", "MESSAGES_PER_PAGE", "10"))),
 		"PAGE_NAVIGATION_TEMPLATE" => Array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("F_PAGE_NAVIGATION_TEMPLATE"),
@@ -142,13 +137,19 @@ $arComponentParameters = Array(
 			"NAME" => GetMessage("F_PREORDER"),
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "Y"),
+		"SET_LAST_VISIT" => Array(
+			"PARENT" => "ADDITIONAL_SETTINGS",
+			"NAME" => GetMessage("F_SET_LAST_VISIT"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N"),
 		"CACHE_TIME" => Array(),
 	)
 );
 
 $arEditorSettings = array("ALLOW_HTML", "ALLOW_ANCHOR", "ALLOW_BIU", 
 	"ALLOW_IMG", "ALLOW_VIDEO", "ALLOW_LIST", "ALLOW_QUOTE", "ALLOW_CODE", 
-	"ALLOW_TABLE", "ALLOW_FONT", "ALLOW_SMILES", "ALLOW_NL2BR", "ALLOW_ALIGN");
+	"ALLOW_TABLE", "ALLOW_FONT", "ALLOW_SMILES", "ALLOW_NL2BR", "ALLOW_ALIGN",
+	"ALLOW_MENTION");
 foreach ($arEditorSettings as $settingName)
 {
 	$hidden = "N";
@@ -170,12 +171,12 @@ GetMessage("ALLOW_IMG_TITLE");
 GetMessage("ALLOW_VIDEO_TITLE");
 GetMessage("ALLOW_LIST_TITLE");
 GetMessage("ALLOW_QUOTE_TITLE");
-GetMessage("ALLOW_QUOTE_TITLE");
 GetMessage("ALLOW_CODE_TITLE");
 GetMessage("ALLOW_TABLE_TITLE");
 GetMessage("ALLOW_FONT_TITLE");
 GetMessage("ALLOW_SMILES_TITLE");
 GetMessage("ALLOW_NL2BR_TITLE");
 GetMessage("ALLOW_ALIGN_TITLE");
+GetMessage("ALLOW_MENTION_TITLE");
 */
 ?>

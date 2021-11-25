@@ -15,11 +15,7 @@ IncludeModuleLangFile(dirname(__FILE__).'/dump.php');
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/backup.php");
 $strBXError = '';
-$bMcrypt = function_exists('mcrypt_encrypt');
-$bBitrixCloud = $bMcrypt && CModule::IncludeModule('bitrixcloud') && CModule::IncludeModule('clouds');
-
-if (function_exists('mb_internal_encoding'))
-	mb_internal_encoding('ISO-8859-1');
+$bBitrixCloud = function_exists('openssl_encrypt') && CModule::IncludeModule('bitrixcloud') && CModule::IncludeModule('clouds');
 
 define('DOCUMENT_ROOT', rtrim(str_replace('\\','/',$_SERVER['DOCUMENT_ROOT']),'/'));
 
@@ -40,9 +36,11 @@ if ($_REQUEST['action'])
 
 	if ($_REQUEST['action'] == 'download')
 	{
-		$name = $path.'/'.$_REQUEST['f_id'];
-		echo '<script>';
+		$arLink = array();
 
+		$name = $path.'/'.$_REQUEST['f_id'];
+
+		$tar = new CTar;
 		if ($BUCKET_ID = intval($_REQUEST['BUCKET_ID']))
 		{
 			if (CModule::IncludeModule('clouds'))
@@ -52,8 +50,8 @@ if ($_REQUEST['action'])
 				{
 					while($obBucket->FileExists($name))
 					{
-						echo 'window.open("'.htmlspecialcharsbx($obBucket->GetFileSRC(array("URN" => $name))).'");'."\n";
-						$name = CTar::getNextName($name);
+						$arLink[] = htmlspecialcharsbx($obBucket->GetFileSRC(array("URN" => $name)));
+						$name = $tar->getNextName($name);
 					}
 				}
 			}
@@ -62,11 +60,12 @@ if ($_REQUEST['action'])
 		{
 			while(file_exists(DOCUMENT_ROOT.$name))
 			{
-				echo 'window.open("'.htmlspecialcharsbx($name).'");'."\n";
-				$name = CTar::getNextName($name);
+				$arLink[] = htmlspecialcharsbx($name);
+				$name = $tar->getNextName($name);
 			}
 		}
-		echo '</script>';
+
+		echo "links=".\Bitrix\Main\Web\Json::encode($arLink).";";
 		die();
 	}
 	elseif ($_REQUEST['action'] == 'link')
@@ -98,57 +97,38 @@ if ($_REQUEST['action'])
 	}
 	elseif ($_REQUEST['action'] == 'restore')
 	{
-		if (!copy($f = DOCUMENT_ROOT.BX_ROOT.'/modules/main/admin/restore.php', DOCUMENT_ROOT.'/restore.php'))
+		$http = new CHTTP;
+		if (!$http->Download('https://www.1c-bitrix.ru/download/files/scripts/restore.php', DOCUMENT_ROOT.'/restore.php'))
 		{
+			if (file_exists(DOCUMENT_ROOT.'/restore.php'))
+				unlink(DOCUMENT_ROOT.'/restore.php');
 			CAdminMessage::ShowMessage(array(
 				"MESSAGE" => GetMessage("MAIN_DUMP_ERROR"),
-				"DETAILS" =>  GetMessage("MAIN_DUMP_ERR_COPY_FILE").htmlspecialcharsbx($f),
+				"DETAILS" =>  GetMessage("MAIN_DUMP_ERR_COPY_FILE").' restore.php',
 				"TYPE" => "ERROR",
 				"HTML" => true));
 		}
-
-		$url = '';
-		$name = $path.'/'.$_REQUEST['f_id'];
-		$BUCKET_ID = intval($_REQUEST['BUCKET_ID']);
-		if ($BUCKET_ID == -1)
-				$url = 'bitrixcloud_backup='.htmlspecialcharsbx(basename($name));
-		elseif ($BUCKET_ID > 0)
+		else
 		{
-			if (CModule::IncludeModule('clouds'))
+			$url = '';
+			$name = $path.'/'.$_REQUEST['f_id'];
+			$BUCKET_ID = intval($_REQUEST['BUCKET_ID']);
+			if ($BUCKET_ID == -1)
+					$url = 'bitrixcloud_backup='.htmlspecialcharsbx(basename($name));
+			elseif ($BUCKET_ID > 0)
 			{
-				$obBucket = new CCloudStorageBucket($BUCKET_ID);
-				if ($obBucket->Init())
-					$url = 'arc_down_url='.htmlspecialcharsbx($obBucket->GetFileSRC(array("URN" => $name)));
+				if (CModule::IncludeModule('clouds'))
+				{
+					$obBucket = new CCloudStorageBucket($BUCKET_ID);
+					if ($obBucket->Init())
+						$url = 'arc_down_url='.htmlspecialcharsbx($obBucket->GetFileSRC(array("URN" => $name)));
+				}
 			}
+			else
+				$url = 'local_arc_name='.htmlspecialcharsbx($name);
+			if ($url)
+				echo '<script>document.location = "/restore.php?Step=1&lang='.LANGUAGE_ID.'&'.$url.'";</script>';
 		}
-		else
-			$url = 'local_arc_name='.htmlspecialcharsbx($name);
-		if ($url)
-			echo '<script>document.location = "/restore.php?Step=1&'.$url.'";</script>';
-		die();
-	}
-	elseif ($_REQUEST['action'] == 'restore.php')
-	{
-		if(CModule::IncludeModule("compression"))
-			Ccompress::DisableCompression();
-
-		if ($contents = file_get_contents($f = DOCUMENT_ROOT.BX_ROOT.'/modules/main/admin/restore.php'))
-		{
-			header("Content-Type: application/octet-stream");
-			header("Content-Length: ".CTar::strlen($contents));
-			header("Content-Disposition: attachment; filename=\"restore.php\"");
-			header("Expires: 0");
-			header("Cache-Control: no-cache, must-revalidate");
-			header("Pragma: no-cache");
-
-			echo $contents;
-		}
-		else
-			CAdminMessage::ShowMessage(array(
-				"MESSAGE" => GetMessage("MAIN_DUMP_ERROR"),
-				"DETAILS" => GetMessage("MAIN_DUMP_ERR_COPY_FILE").htmlspecialcharsbx($f),
-				"TYPE" => "ERROR",
-				"HTML" => true));
 		die();
 	}
 }
@@ -200,7 +180,7 @@ if ($arID = $lAdmin->GroupAction())
 	foreach ($arID as $ID)
 	{
 
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -210,6 +190,8 @@ if ($arID = $lAdmin->GroupAction())
 				{
 					$BUCKET_ID = $regs[1];
 					$item = $regs[2];
+
+					$tar = new CTar;
 
 					if ($BUCKET_ID == -1)
 					{
@@ -230,7 +212,7 @@ if ($arID = $lAdmin->GroupAction())
 									$file_size = $obBucket->GetFileSize($name);
 									if ($obBucket->DeleteFile($name))
 										$obBucket->DecFileCounter($file_size);
-									$name = CTar::getNextName($name);
+									$name = $tar->getNextName($name);
 								}
 
 								$e = $APPLICATION->GetException();
@@ -248,7 +230,7 @@ if ($arID = $lAdmin->GroupAction())
 							if (!unlink($f))
 								$lAdmin->AddGroupError(GetMessage('DUMP_DELETE_ERROR',array('#FILE#' => $f)), $ID);
 
-							$item = CTar::getNextName($item);
+							$item = $tar->getNextName($item);
 						}
 					}
 				}
@@ -265,6 +247,7 @@ if ($arID = $lAdmin->GroupAction())
 					}
 					else
 					{
+						$tar = new CTar;
 						while(file_exists(DOCUMENT_ROOT.$path.'/'.$ID))
 						{
 							if (!rename(DOCUMENT_ROOT.$path.'/'.$ID, DOCUMENT_ROOT.$path.'/'.$new_name))
@@ -273,8 +256,8 @@ if ($arID = $lAdmin->GroupAction())
 								break;
 							}
 
-							$ID = CTar::getNextName($ID);
-							$new_name = CTar::getNextName($new_name);
+							$ID = $tar->getNextName($ID);
+							$new_name = $tar->getNextName($new_name);
 						}
 					}
 				}
@@ -419,7 +402,7 @@ while($f = $rsDirContent->NavNext(true, "f_"))
 	$row->AddField("SIZE", CFile::FormatSize($size));
 	$row->AddField("PLACE", $f['PLACE']);
 	if ($f['DATE'])
-		$row->AddField("DATE", ($t = time() - $f['DATE']) < 86400 && $t > 0 ? HumanTime($t).' '.GetMessage('DUMP_BACK') : ConvertTimeStamp($f['DATE'], 'FULL'));
+		$row->AddField("DATE", FormatDate('x', $f['DATE']));
 
 	$arActions = Array();
 
@@ -433,11 +416,11 @@ while($f = $rsDirContent->NavNext(true, "f_"))
 		$arActions[] = array(
 			"ICON" => "archive",
 			"TEXT" => 'DEBUG - '.GetMessage("INTEGRITY_CHECK"),
-			"ACTION" => 
-			strpos($f['NAME'], '.enc.') ?
-			"if(k=prompt('".CUtil::JSEscape(GetMessage("INTEGRITY_CHECK"))."?')) document.location=\"/bitrix/admin/dump.php?f_id=".urlencode($f['NAME'])."&action=check_archive&".bitrix_sessid_get().'&dump_encrypt_key="+k;'
-			:
-			"if(confirm('".CUtil::JSEscape(GetMessage("INTEGRITY_CHECK"))."?')) document.location=\"/bitrix/admin/dump.php?f_id=".urlencode($f['NAME'])."&action=check_archive&".bitrix_sessid_get().'";'
+			"ACTION" =>
+				strpos($f['NAME'], '.enc.')?
+					"if(k=prompt('".CUtil::JSEscape(GetMessage("INTEGRITY_CHECK"))."?')) document.location=\"/bitrix/admin/dump.php?f_id=".urlencode($f['NAME'])."&action=check_archive&".bitrix_sessid_get().'&dump_encrypt_key="+k;'
+					:
+					"if(confirm('".CUtil::JSEscape(GetMessage("INTEGRITY_CHECK"))."?')) document.location=\"/bitrix/admin/dump.php?f_id=".urlencode($f['NAME'])."&action=check_archive&".bitrix_sessid_get().'";'
 		);
 	}
 
@@ -449,7 +432,7 @@ while($f = $rsDirContent->NavNext(true, "f_"))
 				"ICON" => "download",
 				"DEFAULT" => true,
 				"TEXT" => GetMessage("MAIN_DUMP_ACTION_DOWNLOAD"),
-				"ACTION" => "AjaxSend('/bitrix/admin/dump_list.php?action=download&f_id=".$f['NAME']."&BUCKET_ID=".$BUCKET_ID."&".bitrix_sessid_get()."')"
+				"ACTION" => "PartList('/bitrix/admin/dump_list.php?action=download&f_id=".$f['NAME']."&BUCKET_ID=".$BUCKET_ID."&".bitrix_sessid_get()."')"
 			);
 			$arActions[] = array(
 				"ICON" => "link",
@@ -472,7 +455,7 @@ while($f = $rsDirContent->NavNext(true, "f_"))
 				foreach($arWriteBucket as $arBucket)
 					$arActions[] = array(
 						"ICON" => "clouds",
-						"TEXT" => GetMessage("MAIN_DUMP_SEND_CLOUD").htmlspecialcharsbx('"'.$arBucket['BUCKET'].'"'),
+						"TEXT" => GetMessage("MAIN_DUMP_SEND_CLOUD").' "'.htmlspecialcharsbx($arBucket['BUCKET']).'"',
 						"ACTION" => "if(confirm('".CUtil::JSEscape(GetMessage("MAIN_DUMP_SEND_FILE_CLOUD"))."?')) ".$lAdmin->ActionRedirect("/bitrix/admin/dump.php?f_id=".urlencode($f['NAME'])."&action=cloud_send&dump_bucket_id=".$arBucket['ID']."&".bitrix_sessid_get())
 					);
 			}
@@ -538,6 +521,31 @@ require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_af
 			CHttpRequest.Send(url);
 	}
 
+	var links;
+	function PartList(url)
+	{
+		CHttpRequest.Action = function(result)
+		{
+			eval(result);
+			PartDownload();
+		}
+		CHttpRequest.Send(url);
+	}
+
+	function PartDownload()
+	{
+		if (!links || links.length == 0)
+			return;
+
+		var link = links.pop();
+		var iframe = document.createElement('iframe');
+		iframe.style.display = "none";
+		iframe.src = link;
+		document.body.appendChild(iframe);
+
+		window.setTimeout(PartDownload, 10000);
+	}
+
 	function EndDump()
 	{
 	}
@@ -547,7 +555,7 @@ require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_af
 $lAdmin->DisplayList();
 
 echo BeginNote();
-echo GetMessage("MAIN_DUMP_HEADER_MSG1", array('#EXPORT#' => '/bitrix/admin/dump_list.php?action=restore.php&'.bitrix_sessid_get()));
+echo GetMessage("MAIN_DUMP_HEADER_MSG1", array('#EXPORT#' => 'https://www.1c-bitrix.ru/download/files/scripts/restore.php'));
 echo EndNote();
 
 require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/epilog_admin.php");

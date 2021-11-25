@@ -2,8 +2,10 @@
 define("NEED_AUTH", true);
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 
-if (isset($_REQUEST["backurl"]) && strlen($_REQUEST["backurl"])>0) 
-	LocalRedirect($backurl);
+if (is_string($_REQUEST["backurl"]) && mb_strpos($_REQUEST["backurl"], "/") === 0)
+{
+	LocalRedirect($_REQUEST["backurl"]);
+}
 
 $APPLICATION->SetTitle("Авторизация");
 ?>

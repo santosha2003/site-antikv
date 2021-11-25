@@ -2,6 +2,7 @@
 /** @global CMain $APPLICATION */
 /** @global CUser $USER */
 /** @global CDatabase $DB */
+/** @global string $mid */
 $module_id = 'catalog';
 
 use Bitrix\Main\Loader,
@@ -31,6 +32,8 @@ $applyDiscSaveModeList = CCatalogDiscountSave::GetApplyModeList(true);
 
 $saleSettingsUrl = 'settings.php?lang='.LANGUAGE_ID.'&mid=sale&mid_menu=1';
 
+$enabledCommonCatalog = Catalog\Config\Feature::isCommonProductProcessingEnabled();
+
 if ($_SERVER['REQUEST_METHOD'] == 'GET' && !empty($_REQUEST['RestoreDefaults']) && !$bReadOnly && check_bitrix_sessid())
 {
 	$strValTmp = '';
@@ -38,9 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && !empty($_REQUEST['RestoreDefaults']) 
 		$strValTmp = Option::get('catalog', 'avail_content_groups');
 
 	Option::delete('catalog', array());
-	$v1 = 'id';
-	$v2 = 'asc';
-	$z = CGroup::GetList($v1, $v2, array("ACTIVE" => "Y", "ADMIN" => "N"));
+	$z = CGroup::GetList('id', 'asc', array("ACTIVE" => "Y", "ADMIN" => "N"));
 	while($zr = $z->Fetch())
 		$APPLICATION->DelGroupRight($module_id, array($zr["ID"]));
 
@@ -52,7 +53,7 @@ $arAllOptions = array(
 	array("export_default_path", Loc::getMessage("CAT_EXPORT_DEFAULT_PATH"), "/bitrix/catalog_export/", array("text", 30)),
 	array("default_catalog_1c", Loc::getMessage("CAT_DEF_IBLOCK"), "", array("text", 30)),
 	array("deactivate_1c_no_price", Loc::getMessage("CAT_DEACT_NOPRICE"), "N", array("checkbox")),
-	array("yandex_xml_period", Loc::getMessage("CAT_YANDEX_XML_PERIOD"), "24", array("text", 5)),
+	array("yandex_xml_period", Loc::getMessage("CAT_YANDEX_MARKET_XML_PERIOD"), "24", array("text", 5)),
 );
 
 $strWarning = "";
@@ -125,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 		$strYandexAgent = Rel2Abs('/', $strYandexAgent);
 		if (preg_match(BX_CATALOG_FILENAME_REG, $strYandexAgent) || (!file_exists($_SERVER['DOCUMENT_ROOT'].$strYandexAgent) || !is_file($_SERVER['DOCUMENT_ROOT'].$strYandexAgent)))
 		{
-			$strWarning .= Loc::getMessage('CAT_PATH_ERR_YANDEX_AGENT').'<br />';
+			$strWarning .= Loc::getMessage('CAT_YANDEX_CUSTOM_AGENT_FILE_NOT_FOUND').'<br />';
 			$strYandexAgent = '';
 		}
 	}
@@ -166,41 +167,71 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 	}
 	unset($oneSelect);
 
-	$viewedPeriodChange = false;
-	$viewedTimeChange = false;
-	if (isset($_POST['viewed_period']))
+	$updateViewedProductSettings = (isset($_POST['enable_viewed_products'])
+		&& ($_POST['enable_viewed_products'] === 'Y' || $_POST['enable_viewed_products'] === 'N')
+	);
+	if ($updateViewedProductSettings)
 	{
-		$viewedPeriod = (int)$_POST['viewed_period'];
-		if ($viewedPeriod > 0)
+		$enableViewedProducts = $_POST['enable_viewed_products'];
+		$oldEnableViewedProducts = Option::get('catalog', 'enable_viewed_products');
+		$viewedProductChange = $enableViewedProducts !== $oldEnableViewedProducts;
+		Option::set('catalog', 'enable_viewed_products', $enableViewedProducts, '');
+		if ($enableViewedProducts === 'Y')
 		{
-			$oldViewedPeriod = (int)Option::get('catalog', 'viewed_period');
-			$viewedPeriodChange = ($viewedPeriod !== $oldViewedPeriod);
-			Option::set('catalog', 'viewed_period', $viewedPeriod, '');
-		}
-	}
+			$viewedPeriodChange = false;
+			$viewedTimeChange = false;
+			if (isset($_POST['viewed_period']) && is_string($_POST['viewed_period']))
+			{
+				$viewedPeriod = (int)$_POST['viewed_period'];
+				if ($viewedPeriod > 0)
+				{
+					$oldViewedPeriod = (int)Option::get('catalog', 'viewed_period');
+					$viewedPeriodChange = ($viewedPeriod !== $oldViewedPeriod);
+					Option::set('catalog', 'viewed_period', $viewedPeriod);
+				}
+			}
 
-	if (isset($_POST['viewed_time']))
-	{
-		$viewedTime = (int)$_POST['viewed_time'];
-		if ($viewedTime > 0)
+			if (isset($_POST['viewed_time']) && is_string($_POST['viewed_time']))
+			{
+				$viewedTime = (int)$_POST['viewed_time'];
+				if ($viewedTime > 0)
+				{
+					$oldViewedTime = (int)Option::get('catalog', 'viewed_time');
+					$viewedTimeChange = ($viewedTime !== $oldViewedTime);
+					Option::set('catalog', 'viewed_time', $viewedTime);
+				}
+			}
+
+			if ($viewedProductChange || $viewedPeriodChange || $viewedTimeChange)
+			{
+				CAgent::RemoveAgent(
+					'\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();',
+					'catalog'
+				);
+				CAgent::AddAgent(
+					'\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();',
+					'catalog',
+					'N',
+					(int)Option::get('catalog', 'viewed_period') * 86400
+				);
+			}
+
+			if (isset($_POST['viewed_count']) && is_string($_POST['viewed_count']))
+			{
+				$viewedCount = (int)$_POST['viewed_count'];
+				if ($viewedCount >= 0)
+				{
+					Option::set('catalog', 'viewed_count', $viewedCount);
+				}
+			}
+		}
+		else
 		{
-			$oldViewedTime = (int)Option::get('catalog', 'viewed_time');
-			$viewedTimeChange = ($viewedTime !== $oldViewedTime);
-			Option::set('catalog', 'viewed_time', $viewedTime, '');
+			CAgent::RemoveAgent(
+				'\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();',
+				'catalog'
+			);
 		}
-	}
-
-	if ($viewedPeriodChange || $viewedTimeChange)
-	{
-		CAgent::RemoveAgent('\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();', 'catalog');
-		CAgent::AddAgent('\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();', 'catalog', 'N', (int)Option::get('catalog', 'viewed_period') * 24 * 3600);
-	}
-
-	if (isset($_POST['viewed_count']))
-	{
-		$viewedCount = (int)$_POST['viewed_count'];
-		if ($viewedCount > 0)
-			Option::set('catalog', 'viewed_count', $viewedCount, '');
 	}
 
 	if ($USER->IsAdmin() && CBXFeatures::IsFeatureEnabled('SaleRecurring'))
@@ -216,44 +247,47 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 		if (isset($_POST['AVAIL_CONTENT_GROUPS']) && is_array($_POST['AVAIL_CONTENT_GROUPS']))
 		{
 			$fieldsClear = $_POST['AVAIL_CONTENT_GROUPS'];
-			CatalogClearArray($fieldsClear);
-			foreach ($fieldsClear as &$oneValue)
+			Main\Type\Collection::normalizeArrayValuesByInt($fieldsClear);
+			if (!empty($fieldsClear))
 			{
-				if (isset($arOldAvailContentGroups[$oneValue]))
-					unset($arOldAvailContentGroups[$oneValue]);
-			}
-			if (isset($oneValue))
+				foreach ($fieldsClear as $oneValue)
+				{
+					if (isset($arOldAvailContentGroups[$oneValue]))
+						unset($arOldAvailContentGroups[$oneValue]);
+				}
 				unset($oneValue);
-
+			}
 		}
 		Option::set('catalog', 'avail_content_groups', implode(',', $fieldsClear), '');
 		if (!empty($arOldAvailContentGroups))
 		{
 			$arOldAvailContentGroups = array_keys($arOldAvailContentGroups);
-			foreach ($arOldAvailContentGroups as &$oneValue)
-			{
+			foreach ($arOldAvailContentGroups as $oneValue)
 				CCatalogProductGroups::DeleteByGroup($oneValue);
-			}
 			unset($oneValue);
 		}
 	}
 
 	$oldSimpleSearch = Option::get('catalog', 'product_form_simple_search');
 	$newSimpleSearch = $oldSimpleSearch;
+	$oldProcessingEvents = Option::get('catalog', 'enable_processing_deprecated_events');
+	$newProcessingEvents = $oldProcessingEvents;
 	$checkboxFields = array(
 		'save_product_without_price',
 		'save_product_with_empty_price_range',
 		'show_catalog_tab_with_offers',
 		'default_product_vat_included',
-		'default_quantity_trace',
-		'default_can_buy_zero',
-		'default_subscribe',
 		'product_form_show_offers_iblock',
 		'product_form_simple_search',
-		'product_form_show_offer_name'
+		'product_form_show_offer_name',
+		'enable_processing_deprecated_events'
 	);
+	if ($enabledCommonCatalog)
+	{
+		$checkboxFields[] = 'product_card_slider_enabled';
+	}
 
-	foreach ($checkboxFields as &$oneCheckbox)
+	foreach ($checkboxFields as $oneCheckbox)
 	{
 		if (empty($_POST[$oneCheckbox]) || !is_string($_POST[$oneCheckbox]))
 			continue;
@@ -262,22 +296,30 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 			continue;
 		Option::set('catalog', $oneCheckbox, $value, '');
 
-		if ($oneCheckbox === 'default_can_buy_zero')
-			Option::set('catalog', 'allow_negative_amount', $value, '');
-
 		if ($oneCheckbox === 'product_form_simple_search')
 			$newSimpleSearch = $value;
+		elseif ($oneCheckbox === 'enable_processing_deprecated_events')
+			$newProcessingEvents = $value;
 	}
 	unset($value, $oneCheckbox);
 
 	if ($oldSimpleSearch != $newSimpleSearch)
 	{
 		if ($newSimpleSearch == 'Y')
-			UnRegisterModuleDependences('search', 'BeforeIndex', 'catalog', '\Bitrix\Catalog\SearchHandlers', 'onBeforeIndex');
+			UnRegisterModuleDependences('search', 'BeforeIndex', 'catalog', '\Bitrix\Catalog\Product\Search', 'onBeforeIndex');
 		else
-			RegisterModuleDependences('search', 'BeforeIndex', 'catalog', '\Bitrix\Catalog\SearchHandlers', 'onBeforeIndex');
+			RegisterModuleDependences('search', 'BeforeIndex', 'catalog', '\Bitrix\Catalog\Product\Search', 'onBeforeIndex');
 	}
 	unset($oldSimpleSearch, $newSimpleSearch);
+
+	if ($oldProcessingEvents != $newProcessingEvents)
+	{
+		if ($newProcessingEvents == 'Y')
+			Catalog\Compatible\EventCompatibility::registerEvents();
+		else
+			Catalog\Compatible\EventCompatibility::unRegisterEvents();
+	}
+	unset($oldProcessingEvents, $newProcessingEvents);
 
 	$strUseStoreControlBeforeSubmit = (string)Option::get('catalog', 'default_use_store_control');
 	$strUseStoreControl = (isset($_POST['use_store_control']) && (string)$_POST['use_store_control'] === 'Y' ? 'Y' : 'N');
@@ -318,11 +360,18 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 		$strEnableReservation = 'Y';
 	else
 		$strEnableReservation = (isset($_POST['enable_reservation']) && (string)$_POST['enable_reservation'] === 'Y' ? 'Y' : 'N');
+
 	Option::set('catalog', 'enable_reservation', $strEnableReservation, '');
+
+	CAgent::RemoveAgent('CSaleOrder::ClearProductReservedQuantity();', 'sale');
+	if ($saleIsInstalled && $strEnableReservation == 'Y')
+	{
+		CAgent::AddAgent("CSaleOrder::ClearProductReservedQuantity();", "sale", "N", 86400, "", "Y");
+	}
 
 	if (!$useSaleDiscountOnly)
 	{
-		if (CBXFeatures::IsFeatureEnabled('CatDiscountSave'))
+		if (Catalog\Config\Feature::isCumulativeDiscountsEnabled())
 		{
 			$strDiscSaveApply = '';
 			if (isset($_REQUEST['discsave_apply']))
@@ -351,34 +400,35 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 	$arCurrentIBlocks = array();
 	$arNewIBlocksList = array();
 	$rsIBlocks = CIBlock::GetList(array());
-	while ($arOneIBlock = $rsIBlocks->Fetch())
+	while ($iblock = $rsIBlocks->Fetch())
 	{
 		// Current info
-		$arOneIBlock['ID'] = (int)$arOneIBlock['ID'];
+		$iblock['ID'] = (int)$iblock['ID'];
 		$arIBlockItem = array();
 		$arIBlockSitesList = array();
-		$rsIBlockSites = CIBlock::GetSite($arOneIBlock['ID']);
+		$rsIBlockSites = CIBlock::GetSite($iblock['ID']);
 		while ($arIBlockSite = $rsIBlockSites->Fetch())
 		{
 			$arIBlockSitesList[] = htmlspecialcharsbx($arIBlockSite['SITE_ID']);
 		}
 
-		$strInfo = '['.$arOneIBlock['IBLOCK_TYPE_ID'].'] '.htmlspecialcharsbx($arOneIBlock['NAME']).' ('.implode(' ',$arIBlockSitesList).')';
+		$strInfo = '['.$iblock['IBLOCK_TYPE_ID'].'] '.htmlspecialcharsbx($iblock['NAME']).' ('.implode(' ',$arIBlockSitesList).')';
 
 		$arIBlockItem = array(
 			'INFO' => $strInfo,
-			'ID' => $arOneIBlock['ID'],
-			'NAME' => $arOneIBlock['NAME'],
+			'ID' => $iblock['ID'],
+			'NAME' => $iblock['NAME'],
 			'SITE_ID' => $arIBlockSitesList,
-			'IBLOCK_TYPE_ID' => $arOneIBlock['IBLOCK_TYPE_ID'],
+			'IBLOCK_TYPE_ID' => $iblock['IBLOCK_TYPE_ID'],
 			'CATALOG' => 'N',
 			'PRODUCT_IBLOCK_ID' => 0,
 			'SKU_PROPERTY_ID' => 0,
 			'OFFERS_IBLOCK_ID' => 0,
 			'OFFERS_PROPERTY_ID' => 0,
 		);
-		$arCurrentIBlocks[$arOneIBlock['ID']] = $arIBlockItem;
+		$arCurrentIBlocks[$iblock['ID']] = $arIBlockItem;
 	}
+	unset($iblock, $rsIBlocks);
 	$arCatalogList = array();
 	$catalogIterator = Catalog\CatalogIblockTable::getList(array(
 		'select' => array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID', 'SKU_PROPERTY_ID', 'SUBSCRIPTION', 'YANDEX_EXPORT', 'VAT_ID')
@@ -386,6 +436,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 	while ($arCatalog = $catalogIterator->fetch())
 	{
 		$arCatalog['IBLOCK_ID'] = (int)$arCatalog['IBLOCK_ID'];
+		if (!isset($arCurrentIBlocks[$arCatalog['IBLOCK_ID']]))
+			continue;
 		$arCatalog['PRODUCT_IBLOCK_ID'] = (int)$arCatalog['PRODUCT_IBLOCK_ID'];
 		$arCatalog['SKU_PROPERTY_ID'] = (int)$arCatalog['SKU_PROPERTY_ID'];
 		$arCatalog['VAT_ID'] = (int)$arCatalog['VAT_ID'];
@@ -403,24 +455,68 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 	}
 	unset($arCatalog, $catalogIterator);
 
-	foreach ($arCurrentIBlocks as &$arOneIBlock)
+	foreach ($arCurrentIBlocks as $iblock)
 	{
+		$iblockId = $iblock['ID'];
 		// From form
-		$is_cat = ((${"IS_CATALOG_".$arOneIBlock["ID"]}=="Y") ? "Y" : "N" );
-		$is_cont = ((${"IS_CONTENT_".$arOneIBlock["ID"]}!="Y") ? "N" : "Y" );
-		$yan_exp = ((${"YANDEX_EXPORT_".$arOneIBlock["ID"]}!="Y") ? "N" : "Y" );
-		$cat_vat = (int)${"VAT_ID_".$arOneIBlock["ID"]};
+		$is_cat = (
+			isset($_POST['IS_CATALOG_'.$iblockId]) && $_POST['IS_CATALOG_'.$iblockId] === 'Y'
+			? 'Y'
+			: 'N'
+		);
+		$is_cont = (
+			isset($_POST['IS_CONTENT_'.$iblockId]) && $_POST['IS_CONTENT_'.$iblockId] === 'Y'
+			? 'Y'
+			: 'N'
+		);
+		$yan_exp = (
+			isset($_POST['YANDEX_EXPORT_'.$iblockId]) && $_POST['YANDEX_EXPORT_'.$iblockId] === 'Y'
+			? 'Y'
+			: 'N'
+		);
+		$cat_vat = (
+			isset($_POST['VAT_ID_'.$iblockId]) && is_string($_POST['VAT_ID_'.$iblockId])
+			? (int)$_POST['VAT_ID_'.$iblockId]
+			: 0
+		);
+		if ($cat_vat < 0)
+		{
+			$cat_vat = 0;
+		}
 
-		$offer_name = trim(${"OFFERS_NAME_".$arOneIBlock["ID"]});
-		$offer_type = trim(${"OFFERS_TYPE_".$arOneIBlock["ID"]});
-		$offer_new_type = '';
-		$offer_new_type = trim(${"OFFERS_NEWTYPE_".$arOneIBlock["ID"]});
-		$flag_new_type = ('Y' == ${'CREATE_OFFERS_TYPE_'.$arOneIBlock["ID"]} ? 'Y' : 'N');
+		$offer_name = (
+			isset($_POST['OFFERS_NAME_'.$iblockId]) && is_string($_POST['OFFERS_NAME_'.$iblockId])
+			? trim($_POST['OFFERS_NAME_'.$iblockId])
+			: ''
+		);
+		$offer_type = (
+			isset($_POST['OFFERS_TYPE_'.$iblockId]) && is_string($_POST['OFFERS_TYPE_'.$iblockId])
+			? trim($_POST['OFFERS_TYPE_'.$iblockId])
+			: ''
+		);
+		$offer_new_type = (
+			isset($_POST['OFFERS_NEWTYPE_'.$iblockId]) && is_string($_POST['OFFERS_NEWTYPE_'.$iblockId])
+			? trim($_POST['OFFERS_NEWTYPE_'.$iblockId])
+			: ''
+		);
+		$flag_new_type = (
+			isset($_POST['CREATE_OFFERS_TYPE_'.$iblockId]) && $_POST['CREATE_OFFERS_TYPE_'.$iblockId] === 'Y'
+			? 'Y'
+			: 'N'
+		);
 
-		$offers_iblock_id = intval(${"OFFERS_IBLOCK_ID_".$arOneIBlock["ID"]});
+		$offers_iblock_id = (
+			isset($_POST['OFFERS_IBLOCK_ID_'.$iblockId]) && is_string($_POST['OFFERS_IBLOCK_ID_'.$iblockId])
+			? (int)$_POST['OFFERS_IBLOCK_ID_'.$iblockId]
+			: 0
+		);
+		if ($offers_iblock_id < 0)
+		{
+			$offers_iblock_id = 0;
+		}
 
 		$arNewIBlockItem = array(
-			'ID' => $arOneIBlock['ID'],
+			'ID' => $iblock['ID'],
 			'CATALOG' => $is_cat,
 			'SUBSCRIPTION' => $is_cont,
 			'YANDEX_EXPORT' => $yan_exp,
@@ -435,10 +531,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 			'NEED_LINK' => 'N',
 			'OFFERS_PROP' => 0,
 		);
-		$arNewIBlocksList[$arOneIBlock['ID']] = $arNewIBlockItem;
+		$arNewIBlocksList[$iblock['ID']] = $arNewIBlockItem;
 	}
-	if (isset($arOneIBlock))
-		unset($arOneIBlock);
+	unset($iblockId, $iblock);
 
 	// check for offers is catalog
 	foreach ($arCurrentIBlocks as $intIBlockID => $arIBlockInfo)
@@ -705,7 +800,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 						);
 
 						$languageIterator = Main\Localization\LanguageTable::getList(array(
-							'select' => array('ID'),
+							'select' => array('ID', 'SORT'),
 							'filter' => array('=ACTIVE' => 'Y'),
 							'order' => array('SORT' => 'ASC')
 						));
@@ -1140,6 +1235,15 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 	{
 		CAgent::AddAgent('CCatalog::PreGenerateXML("yandex");', 'catalog', 'N', (int)Option::get('catalog', 'yandex_xml_period')*3600);
 	}
+
+	if(isset($_POST['catalog_subscribe_repeated_notify']))
+	{
+		$postValue = (string)$_POST['catalog_subscribe_repeated_notify'];
+		if($postValue === 'Y' || $postValue === 'N')
+		{
+			Option::set('catalog', 'subscribe_repeated_notify', $postValue);
+		}
+	}
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST['agent_start']) && !$bReadOnly && check_bitrix_sessid())
@@ -1149,11 +1253,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST['agent_start']) && !$b
 	if ($intCount > 0)
 	{
 		CAgent::AddAgent('CCatalog::PreGenerateXML("yandex");', 'catalog', 'N', (int)Option::get('catalog', 'yandex_xml_period') * 3600);
-		$strOK .= Loc::getMessage('CAT_AGENT_ADD_SUCCESS').'. ';
+		$strOK .= Loc::getMessage('CAT_YANDEX_AGENT_ADD_SUCCESS').'. ';
 	}
 	else
 	{
-		$strWarning .= Loc::getMessage('CAT_AGENT_ADD_NO_EXPORT').'. ';
+		$strWarning .= Loc::getMessage('CAT_YANDEX_AGENT_ADD_NO_EXPORT').'. ';
 	}
 }
 
@@ -1183,6 +1287,8 @@ $currentSettings['discsave_apply'] = (string)Option::get('catalog', 'discsave_ap
 $currentSettings['get_discount_percent_from_base_price'] = (string)Option::get(($saleIsInstalled ? 'sale' : 'catalog'), 'get_discount_percent_from_base_price');
 $currentSettings['save_product_with_empty_price_range'] = (string)Option::get('catalog', 'save_product_with_empty_price_range');
 $currentSettings['default_product_vat_included'] = (string)Option::get('catalog', 'default_product_vat_included');
+$currentSettings['enable_processing_deprecated_events'] = (string)Option::get('catalog', 'enable_processing_deprecated_events');
+$currentSettings['product_card_slider_enabled'] = (string)Option::get('catalog', 'product_card_slider_enabled');
 
 $strShowCatalogTab = Option::get('catalog', 'show_catalog_tab_with_offers');
 $strSaveProductWithoutPrice = Option::get('catalog', 'save_product_without_price');
@@ -1259,32 +1365,58 @@ function RestoreDefaults()
 	$tabControl->BeginNextTab();
 	?>
 <tr class="heading">
-	<td colspan="2"><? echo Loc::getMessage("CAT_PRODUCT_CARD") ?></td>
+	<td colspan="2"><?=Loc::getMessage("BX_CAT_SYSTEM_SETTINGS"); ?></td>
 </tr>
 <tr>
-	<td width="40%"><label for="save_product_without_price_y"><? echo Loc::getMessage("CAT_SAVE_PRODUCTS_WITHOUT_PRICE"); ?></label></td>
-	<td width="60%">
+	<td style="width: 40%;"><label for="enable_processing_deprecated_events_y"><?=Loc::getMessage("BX_CAT_ENABLE_PROCESSING_DEPRECATED_EVENTS"); ?></label></td>
+	<td>
+		<input type="hidden" name="enable_processing_deprecated_events" id="enable_processing_deprecated_events_n" value="N">
+		<input type="checkbox" name="enable_processing_deprecated_events" id="enable_processing_deprecated_events_y" value="Y"<?=($currentSettings['enable_processing_deprecated_events'] == 'Y' ? ' checked' : ''); ?>>
+	</td>
+</tr>
+<tr class="heading">
+	<td colspan="2"><? echo Loc::getMessage("CAT_PRODUCT_CARD") ?></td>
+</tr>
+<?php
+if ($enabledCommonCatalog)
+{
+	?>
+	<tr>
+		<td style="width: 40%;"><label for="product_card_slider_enabled"><? echo Loc::getMessage("CAT_PRODUCT_CARD_SLIDER_ENABLED"); ?></label></td>
+		<td>
+			<input type="hidden" name="product_card_slider_enabled" id="product_card_slider_enabled_n" value="N">
+			<input type="checkbox" name="product_card_slider_enabled" id="product_card_slider_enabled_y" value="Y"<?=($currentSettings['product_card_slider_enabled'] == 'Y') ? ' checked' : ''?>>
+		</td>
+	</tr>
+	<?
+}
+?>
+<tr>
+	<td style="width: 40%;"><label for="save_product_without_price_y"><? echo Loc::getMessage("CAT_SAVE_PRODUCTS_WITHOUT_PRICE"); ?></label></td>
+	<td>
 		<input type="hidden" name="save_product_without_price" id="save_product_without_price_n" value="N">
 		<input type="checkbox" name="save_product_without_price" id="save_product_without_price_y" value="Y"<?if ('Y' == $strSaveProductWithoutPrice) echo " checked";?>>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><label for="save_product_with_empty_price_range_y"><? echo Loc::getMessage("CAT_SAVE_PRODUCT_WITH_EMPTY_PRICE_RANGE"); ?></label></td>
-	<td width="60%">
+	<td style="width: 40%;"><label for="save_product_with_empty_price_range_y"><? echo Loc::getMessage("CAT_SAVE_PRODUCT_WITH_EMPTY_PRICE_RANGE"); ?></label></td>
+	<td>
 		<input type="hidden" name="save_product_with_empty_price_range" id="save_product_with_empty_price_range_n" value="N">
 		<input type="checkbox" name="save_product_with_empty_price_range" id="save_product_with_empty_price_range_y" value="Y"<?if ($currentSettings['save_product_with_empty_price_range'] == 'Y') echo ' checked';?>>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><label for="show_catalog_tab_with_offers"><? echo Loc::getMessage("CAT_SHOW_CATALOG_TAB"); ?></label></td>
-	<td width="60%">
+	<td style="width: 40%;">
+		<span id="hint_show_catalog_tab_with_offers"></span> <label for="show_catalog_tab_with_offers"><? echo Loc::getMessage("CAT_SHOW_CATALOG_TAB"); ?></label>
+	</td>
+	<td>
 		<input type="hidden" name="show_catalog_tab_with_offers" id="show_catalog_tab_with_offers_n" value="N">
 		<input type="checkbox" name="show_catalog_tab_with_offers" id="show_catalog_tab_with_offers_y" value="Y"<?if ('Y' == $strShowCatalogTab) echo " checked";?>>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><label for="default_product_vat_included"><? echo Loc::getMessage("CAT_PRODUCT_DEFAULT_VAT_INCLUDED"); ?></label></td>
-	<td width="60%">
+	<td style="width: 40%;"><label for="default_product_vat_included"><? echo Loc::getMessage("CAT_PRODUCT_DEFAULT_VAT_INCLUDED"); ?></label></td>
+	<td>
 		<input type="hidden" name="default_product_vat_included" id="default_product_vat_included_n" value="N">
 		<input type="checkbox" name="default_product_vat_included" id="default_product_vat_included_y" value="Y"<?if ($currentSettings['default_product_vat_included'] == 'Y') echo " checked";?>>
 	</td>
@@ -1293,40 +1425,50 @@ function RestoreDefaults()
 	<td colspan="2"><? echo Loc::getMessage('CAT_PRODUCT_CARD_DEFAULT_VALUES'); ?></td>
 </tr>
 <tr>
-	<td width="40%"><label for="default_quantity_trace_y"><? echo Loc::getMessage("CAT_ENABLE_QUANTITY_TRACE"); ?></label></td>
-	<td width="60%">
-		<input type="hidden" name="default_quantity_trace" id="default_quantity_trace_n" value="N">
-		<input type="checkbox" name="default_quantity_trace" id="default_quantity_trace_y" value="Y"<? echo ($strQuantityTrace === 'Y' ? ' checked' : ''); ?>>
+	<td style="width: 40%;"><? echo Loc::getMessage("CAT_ENABLE_QUANTITY_TRACE"); ?></td>
+	<td>
+		<span id="default_quantity_trace"><? echo ($strQuantityTrace === 'Y' ? Loc::getMessage('CAT_PRODUCT_SETTINGS_STATUS_YES') : Loc::getMessage('CAT_PRODUCT_SETTINGS_STATUS_NO')); ?></span>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><label for="default_can_buy_zero_y"><? echo Loc::getMessage("CAT_ALLOW_CAN_BUY_ZERO_EXT"); ?></label></td>
-	<td width="60%">
-		<input type="hidden" name="default_can_buy_zero" id="default_can_buy_zero_n" value="N">
-		<input type="checkbox" name="default_can_buy_zero" id="default_can_buy_zero_y" value="Y"<? echo ($strAllowCanBuyZero === 'Y' ? ' checked' : ''); ?>>
+	<td style="width: 40%;"><? echo Loc::getMessage("CAT_ALLOW_CAN_BUY_ZERO_EXT"); ?></td>
+	<td>
+		<span id="default_can_buy_zero"><? echo ($strAllowCanBuyZero === 'Y' ? Loc::getMessage('CAT_PRODUCT_SETTINGS_STATUS_YES') : Loc::getMessage('CAT_PRODUCT_SETTINGS_STATUS_NO')); ?></span>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><label for="default_subscribe"><? echo Loc::getMessage("CAT_PRODUCT_SUBSCRIBE"); ?></label></td>
-	<td width="60%">
-		<input type="hidden" name="default_subscribe" id="default_subscribe_n" value="N">
-		<input type="checkbox" name="default_subscribe" id="default_subscribe_y" value="Y"<?if ('Y' == $strSubscribe) echo " checked";?>>
+	<td style="width: 40%;"><? echo Loc::getMessage("CAT_PRODUCT_SUBSCRIBE"); ?></td>
+	<td>
+		<span id="default_subscribe"><? echo ($strSubscribe == 'Y' ? Loc::getMessage('CAT_PRODUCT_SETTINGS_STATUS_YES') : Loc::getMessage('CAT_PRODUCT_SETTINGS_STATUS_NO')); ?></span>
 	</td>
 </tr>
+<?
+if (!$readOnly)
+{
+?>
+<tr>
+	<td style="width: 40%;">&nbsp;</td>
+	<td>
+		<input class="adm-btn-save" type="button" id="product_settings" value="<? echo Loc::getMessage('CAT_PRODUCT_SETTINGS_CHANGE'); ?>">
+	</td>
+</tr>
+<?
+}
+?>
 <tr class="heading">
-	<td colspan="2" valign="top" align="center"><? echo Loc::getMessage("CAT_STORE") ?></td>
+	<td colspan="2"><? echo Loc::getMessage("CAT_STORE") ?></td>
 </tr>
 <tr id='cat_store_tr'>
-	<td width="40%"><label for="use_store_control_y"><? echo Loc::getMessage("CAT_USE_STORE_CONTROL"); ?></label></td>
-	<td width="60%">
+	<td style="width: 40%;"><label for="use_store_control_y"><? echo Loc::getMessage("CAT_USE_STORE_CONTROL"); ?></label></td>
+	<td>
 		<input type="hidden" name="use_store_control" id="use_store_control_n" value="N">
 		<input type="checkbox" onclick="onClickStoreControl(this);" name="use_store_control" id="use_store_control_y" value="Y"<?if($strUseStoreControl == "Y")echo " checked";?>>
 	</td>
 </tr>
 <tr>
-	<td width="40%">
+	<td style="width: 40%;">
 		<span id="hint_reservation"></span>&nbsp;<label for="enable_reservation"><? echo Loc::getMessage("CAT_ENABLE_RESERVATION"); ?></label></td>
-	<td width="60%">
+	<td>
 		<input type="hidden" name="enable_reservation" id="enable_reservation_n" value="N">
 		<input type="checkbox" onclick="onClickReservation(this);" name="enable_reservation" id="enable_reservation_y" value="Y" data-oldvalue="<? echo $strEnableReservation; ?>" <?if($strEnableReservation == "Y" || $strUseStoreControl == "Y")echo " checked";?> <?if($strUseStoreControl == "Y")echo " disabled";?>>
 	</td>
@@ -1363,15 +1505,15 @@ if ($saleIsInstalled && Loader::includeModule('sale'))
 }
 if (!$useSaleDiscountOnly)
 {
-	if (CBXFeatures::IsFeatureEnabled('CatDiscountSave'))
+	if (Catalog\Config\Feature::isCumulativeDiscountsEnabled())
 	{
 	?>
 <tr class="heading">
 	<td colspan="2"><? echo Loc::getMessage("CAT_DISCOUNT"); ?></td>
 </tr>
 <tr>
-	<td width="40%"><label for="discsave_apply"><? echo Loc::getMessage("CAT_DISCSAVE_APPLY"); ?></label></td>
-	<td width="60%">
+	<td style="width: 40%;"><label for="discsave_apply"><? echo Loc::getMessage("CAT_DISCSAVE_APPLY"); ?></label></td>
+	<td>
 		<select name="discsave_apply" id="discsave_apply"><?
 		foreach ($applyDiscSaveModeList as $applyMode => $applyTitle)
 		{
@@ -1385,8 +1527,8 @@ if (!$useSaleDiscountOnly)
 	}
 ?>
 <tr>
-	<td width="40%"><? echo Loc::getMessage('CAT_DISCOUNT_PERCENT_FROM_BASE_PRICE'); ?></td>
-	<td width="60%"><?
+	<td style="width: 40%;"><? echo Loc::getMessage('CAT_DISCOUNT_PERCENT_FROM_BASE_PRICE'); ?></td>
+	<td><?
 	if ($saleIsInstalled)
 	{
 		echo (
@@ -1416,53 +1558,73 @@ $strDiscountVat = Option::get('catalog', 'discount_vat');
 <?
 */
 }
+$enableViewedProducts = (string)Option::get('catalog', 'enable_viewed_products');
 $viewedTime = (int)Option::get('catalog', 'viewed_time');
 $viewedCount = (int)Option::get('catalog', 'viewed_count');
 $viewedPeriod = (int)Option::get('catalog', 'viewed_period');
+$styleViewed = ($enableViewedProducts == 'Y' ? 'table-row' : 'none');
 ?>
 <tr class="heading">
 	<td colspan="2"><? echo Loc::getMessage("CAT_VIEWED_PRODUCTS_TITLE") ?></td>
 </tr>
 <tr>
-	<td width="40%"><label for="viewed_time"><? echo Loc::getMessage("CAT_VIEWED_TIME"); ?></label></td>
-	<td width="60%">
-		<input type="text" name="viewed_time" id="viewed_time" value="<? echo $viewedTime; ?>" size="10">
+	<td style="width: 40%"><? echo Loc::getMessage('CAT_ENABLE_VIEWED_PRODUCTS'); ?></td>
+	<td>
+		<input type="hidden" name="enable_viewed_products" id="enable_viewed_products_n" value="N">
+		<input type="checkbox" name="enable_viewed_products" id="enable_viewed_products_y" value="Y" <? echo ($enableViewedProducts == "Y" ? ' checked' : '');?>>
 	</td>
 </tr>
-<tr>
-	<td width="40%"><label for="viewed_count"><? echo Loc::getMessage("CAT_VIEWED_COUNT"); ?></label></td>
-	<td width="60%">
-		<input type="text" name="viewed_count" id="viewed_count" value="<? echo $viewedCount; ?>" size="10">
+<tr id="tr_viewed_time" style="display: <?=$styleViewed; ?>;">
+	<td style="width: 40%;"><label for="viewed_time"><? echo Loc::getMessage("CAT_VIEWED_TIME"); ?></label></td>
+	<td>
+		<input type="text" name="viewed_time" id="viewed_time" value="<?=$viewedTime; ?>" size="10">
 	</td>
 </tr>
-<tr>
-	<td width="40%"><label for="viewed_period"><? echo Loc::getMessage("CAT_VIEWED_PERIOD"); ?></label></td>
-	<td width="60%">
-		<input type="text" name="viewed_period" id="viewed_period" value="<? echo $viewedPeriod; ?>" size="10">
+<tr id="tr_viewed_count" style="display: <?=$styleViewed; ?>;">
+	<td style="width: 40%;"><label for="viewed_count"><? echo Loc::getMessage("CAT_VIEWED_COUNT"); ?></label></td>
+	<td>
+		<input type="text" name="viewed_count" id="viewed_count" value="<?=$viewedCount; ?>" size="10">
+	</td>
+</tr>
+<tr id="tr_viewed_period" style="display: <?=$styleViewed; ?>;">
+	<td style="width: 40%;"><label for="viewed_period"><? echo Loc::getMessage("CAT_VIEWED_PERIOD"); ?></label></td>
+	<td>
+		<input type="text" name="viewed_period" id="viewed_period" value="<?=$viewedPeriod; ?>" size="10">
 	</td>
 </tr>
 <tr class="heading">
 	<td colspan="2"><? echo Loc::getMessage("CAT_PRODUCT_FORM_SETTINGS"); ?></td>
 </tr>
 <tr>
-	<td width="40%"><? echo Loc::getMessage('CAT_SHOW_OFFERS_IBLOCK'); ?></td>
-	<td width="60%">
+	<td style="width: 40%;"><? echo Loc::getMessage('CAT_SHOW_OFFERS_IBLOCK'); ?></td>
+	<td>
 		<input type="hidden" name="product_form_show_offers_iblock" id="product_form_show_offers_iblock_n" value="N">
 		<input type="checkbox" name="product_form_show_offers_iblock" id="product_form_show_offers_iblock_y" value="Y" <?if ($strShowOffersIBlock == "Y") echo " checked";?>>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><? echo Loc::getMessage('CAT_SIMPLE_SEARCH'); ?></td>
-	<td width="60%">
+	<td style="width: 40%;"><? echo Loc::getMessage('CAT_SIMPLE_SEARCH'); ?></td>
+	<td>
 		<input type="hidden" name="product_form_simple_search" id="product_form_simple_search_n" value="N">
 		<input type="checkbox" name="product_form_simple_search" id="product_form_simple_search_y" value="Y" <?if ($strSimpleSearch == "Y") echo " checked";?>>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><? echo Loc::getMessage('CAT_SHOW_OFFERS_NAME'); ?></td>
-	<td width="60%">
+	<td style="width: 40%;"><? echo Loc::getMessage('CAT_SHOW_OFFERS_NAME'); ?></td>
+	<td>
 		<input type="hidden" name="product_form_show_offer_name" id="product_form_show_offer_name_n" value="N">
 		<input type="checkbox" name="product_form_show_offer_name" id="product_form_show_offer_name_y" value="Y" <?if ($searchShowOfferName == 'Y') echo " checked";?>>
+	</td>
+</tr>
+<tr class="heading">
+	<td colspan="2"><? echo Loc::getMessage("CAT_PRODUCT_SUBSCRIBE_TITLE"); ?></td>
+</tr>
+<tr>
+	<td style="width: 40%;"><? echo Loc::getMessage('CAT_PRODUCT_SUBSCRIBE_LABLE_REPEATED_NOTIFY'); ?></td>
+	<td>
+		<input type="hidden" name="catalog_subscribe_repeated_notify" value="N">
+		<input type="checkbox" name="catalog_subscribe_repeated_notify" value="Y"
+			<?if (Option::get('catalog', 'subscribe_repeated_notify') == 'Y') echo " checked";?>>
 	</td>
 </tr>
 <?
@@ -1478,8 +1640,8 @@ for ($i = 0, $intCount = count($arAllOptions); $i < $intCount; $i++)
 	$type = $Option[3];
 	?>
 	<tr>
-		<td width="40%"><? echo ($type[0]=="checkbox" ? '<label for="'.htmlspecialcharsbx($Option[0]).'">'.$Option[1].'</label>' : $Option[1]); ?></td>
-		<td width="60%">
+		<td style="width: 40%;"><? echo ($type[0]=="checkbox" ? '<label for="'.htmlspecialcharsbx($Option[0]).'">'.$Option[1].'</label>' : $Option[1]); ?></td>
+		<td>
 			<?
 			if ($Option[0] == 'export_default_path')
 			{
@@ -1517,18 +1679,18 @@ for ($i = 0, $intCount = count($arAllOptions); $i < $intCount; $i++)
 }
 ?>
 <tr>
-	<td width="40%"><?=Loc::getMessage("CAT_DEF_OUTFILE")?></td>
-	<td width="60%">
+	<td style="width: 40%;"><?=Loc::getMessage("CAT_DEF_OUTFILE")?></td>
+	<td>
 		<?$default_outfile_action = Option::get('catalog', 'default_outfile_action');?>
 		<select name="default_outfile_action">
-			<option value="D" <?if ($default_outfile_action=="D" || strlen($default_outfile_action)<=0) echo "selected" ?>><?echo Loc::getMessage("CAT_DEF_OUTFILE_D") ?></option>
+			<option value="D" <?if ($default_outfile_action=="D" || $default_outfile_action == '') echo "selected" ?>><?echo Loc::getMessage("CAT_DEF_OUTFILE_D") ?></option>
 			<option value="H" <?if ($default_outfile_action=="H") echo "selected" ?>><?=Loc::getMessage("CAT_DEF_OUTFILE_H")?></option>
 			<option value="F" <?if ($default_outfile_action=="F") echo "selected" ?>><?=Loc::getMessage("CAT_DEF_OUTFILE_F")?></option>
 		</select>
 	</td>
 </tr>
 <tr>
-	<td width="40%">
+	<td style="width: 40%;">
 	<?
 	$yandex_agent_file = Option::get('catalog', 'yandex_agent_file');
 	CAdminFileDialog::ShowScript
@@ -1547,15 +1709,15 @@ for ($i = 0, $intCount = count($arAllOptions); $i < $intCount; $i++)
 		)
 	);
 	?>
-	<?echo Loc::getMessage("CAT_AGENT_FILE")?></td>
-	<td width="60%"><input type="text" name="yandex_agent_file" size="50" maxlength="255" value="<?echo $yandex_agent_file?>">&nbsp;<input type="button" name="browse" value="..." onClick="BtnClick()"></td>
+	<?echo Loc::getMessage("CAT_YANDEX_CUSTOM_AGENT_FILE")?></td>
+	<td><input type="text" name="yandex_agent_file" size="50" maxlength="255" value="<?echo $yandex_agent_file?>">&nbsp;<input type="button" name="browse" value="..." onClick="BtnClick()"></td>
 </tr>
 <tr class="heading">
 	<td colspan="2"><?echo Loc::getMessage("CO_PAR_IE_CSV") ?></td>
 </tr>
 <tr>
-	<td width="40%" valign="top"><?echo Loc::getMessage("CO_PAR_DPP_CSV") ?></td>
-	<td width="60%" valign="top">
+	<td style="width: 40%; vertical-align: top;"><?echo Loc::getMessage("CO_PAR_DPP_CSV") ?></td>
+	<td style="vertical-align: top;">
 <?
 $arVal = array();
 $strVal = (string)Option::get('catalog', 'allowed_product_fields');
@@ -1579,8 +1741,8 @@ unset($productFields);
 	</td>
 </tr>
 <tr>
-	<td width="40%" valign="top"><? echo Loc::getMessage("CO_AVAIL_PRICE_FIELDS"); ?></td>
-	<td width="60%" valign="top">
+	<td style="width: 40%; vertical-align: top;"><? echo Loc::getMessage("CO_AVAIL_PRICE_FIELDS"); ?></td>
+	<td style="vertical-align: top;">
 <?
 $arVal = array();
 $strVal = (string)Option::get('catalog', 'allowed_price_fields');
@@ -1588,28 +1750,31 @@ if ($strVal != '')
 {
 	$arVal = array_fill_keys(explode(',', $strVal), true);
 }
+?><select name="allowed_price_fields[]" multiple size="5"><?
 $priceFields = CCatalogCSVSettings::getSettingsFields(CCatalogCSVSettings::FIELDS_PRICE);
-?><select name="allowed_price_fields[]" multiple size="3"><?
-foreach ($priceFields as &$oneField)
+foreach ($priceFields as $oneField)
 {
-	?><option value="<? echo htmlspecialcharsbx($oneField['value']); ?>"<? echo (isset($arVal[$oneField['value']]) ? ' selected' : ''); ?>><? echo htmlspecialcharsex($oneField['name']); ?></option><?
+	?><option value="<?=htmlspecialcharsbx($oneField['value']); ?>"<?=(isset($arVal[$oneField['value']]) ? ' selected' : ''); ?>><?=htmlspecialcharsex($oneField['name']); ?></option><?
 }
-if (isset($oneField))
-	unset($oneField);
-unset($priceFields);
+$priceFields = CCatalogCSVSettings::getSettingsFields(CCatalogCSVSettings::FIELDS_PRICE_EXT);
+foreach ($priceFields as $oneField)
+{
+	?><option value="<?=htmlspecialcharsbx($oneField['value']); ?>"<?=(isset($arVal[$oneField['value']]) ? ' selected' : ''); ?>><?=htmlspecialcharsex($oneField['name']); ?></option><?
+}
+unset($oneField, $priceFields);
 ?></select>
 	</td>
 </tr>
 <tr>
-	<td width="40%"><?echo Loc::getMessage("CAT_NUM_CATALOG_LEVELS");?></td>
-	<td width="60%"><?
+	<td style="width: 40%;"><?echo Loc::getMessage("CAT_NUM_CATALOG_LEVELS");?></td>
+	<td><?
 		$strVal = (int)Option::get('catalog', 'num_catalog_levels');
 		?><input type="text" size="5" maxlength="5" value="<? echo $strVal; ?>" name="num_catalog_levels">
 	</td>
 </tr>
 <tr>
-	<td width="40%" valign="top"><?echo Loc::getMessage("CO_PAR_DPG_CSV") ?></td>
-	<td width="60%">
+	<td style="width: 40%; vertical-align: top;"><?echo Loc::getMessage("CO_PAR_DPG_CSV") ?></td>
+	<td>
 <?
 $arVal = array();
 $strVal = (string)Option::get('catalog', 'allowed_group_fields');
@@ -1630,8 +1795,8 @@ unset($sectionFields);
 	</td>
 </tr>
 <tr>
-	<td width="40%" valign="top"><?echo Loc::getMessage("CO_PAR_DV1_CSV")?></td>
-	<td width="60%" valign="top">
+	<td style="width: 40%; vertical-align: top;"><?echo Loc::getMessage("CO_PAR_DV1_CSV")?></td>
+	<td style="vertical-align: top;">
 <?
 $arVal = array();
 $strVal = (string)Option::get('catalog', 'allowed_currencies');
@@ -1640,28 +1805,12 @@ if ($strVal != '')
 	$arVal = array_fill_keys(explode(',', $strVal), true);
 }
 ?><select name="allowed_currencies[]" multiple size="5"><?
-$currencyIterator = Currency\CurrencyTable::getList(array(
-	'select' => array('CURRENCY', 'FULL_NAME' => 'RT_LANG.FULL_NAME'),
-	'order' => array('SORT' => 'ASC', 'CURRENCY' => 'ASC'),
-	'runtime' => array(
-		'RT_LANG' => array(
-			'data_type' => 'Bitrix\Currency\CurrencyLang',
-			'reference' => array(
-				'=this.CURRENCY' => 'ref.CURRENCY',
-				'=ref.LID' => new Main\DB\SqlExpression('?', LANGUAGE_ID)
-			)
-		)
-	)
-));
-while ($currency = $currencyIterator->fetch())
+foreach (Currency\CurrencyManager::getCurrencyList() as $currencyId => $currencyName)
 {
-	$currency['FULL_NAME'] = (string)$currency['FULL_NAME'];
-	?><option value="<? echo $currency["CURRENCY"]; ?>"<? echo (isset($arVal[$currency["CURRENCY"]]) ? ' selected' : ''); ?>><?
-	echo $currency['CURRENCY'];
-	if ($currency['FULL_NAME'] != '')
-		echo ' ('.htmlspecialcharsex($currency['FULL_NAME']).')'; ?></option><?
+	?><option value="<?=htmlspecialcharsbx($currencyId); ?>"<?=(isset($arVal[$currencyId]) ? ' selected' : ''); ?>><?
+	echo htmlspecialcharsbx($currencyName);
+	?></option><?
 }
-unset($currency, $currencyIterator);
 ?></select>
 	</td>
 </tr>
@@ -1725,6 +1874,9 @@ $catalogIterator = Catalog\CatalogIblockTable::getList(array(
 while ($arOneCatalog = $catalogIterator->fetch())
 {
 	$arOneCatalog['IBLOCK_ID'] = (int)$arOneCatalog['IBLOCK_ID'];
+	if (!isset($arIBlockFullInfo[$arOneCatalog['IBLOCK_ID']]))
+		continue;
+
 	$arOneCatalog['VAT_ID'] = (int)$arOneCatalog['VAT_ID'];
 	$arOneCatalog['PRODUCT_IBLOCK_ID'] = (int)$arOneCatalog['PRODUCT_IBLOCK_ID'];
 	$arOneCatalog['SKU_PROPERTY_ID'] = (int)$arOneCatalog['SKU_PROPERTY_ID'];
@@ -1842,12 +1994,12 @@ function show_add_offers(id, obj)
 function change_offers_ibtype(obj,ID)
 {
 	var value = obj.value;
-	if ('Y' == value)
+	if ('Y' === value)
 	{
 		document.forms.ara['OFFERS_TYPE_' + ID].disabled = true;
 		document.forms.ara['OFFERS_NEWTYPE_' + ID].disabled = false;
 	}
-	else if ('N' == value)
+	else if ('N' === value)
 	{
 		document.forms.ara['OFFERS_TYPE_' + ID].disabled = false;
 		document.forms.ara['OFFERS_NEWTYPE_' + ID].disabled = true;
@@ -1863,7 +2015,7 @@ function change_offers_ibtype(obj,ID)
 		{
 			?><td><?=Loc::getMessage("CO_SALE_CONTENT") ?></td><?
 		}
-		?><td><?=Loc::getMessage("CAT_IBLOCK_SELECT_YAND")?></td>
+		?><td><?=Loc::getMessage("CAT_IBLOCK_SELECT_YANDEX_EXPORT")?></td>
 		<td><?=Loc::getMessage("CAT_IBLOCK_SELECT_VAT")?></td>
 	</tr>
 	<?
@@ -1875,8 +2027,8 @@ function change_offers_ibtype(obj,ID)
 				&nbsp;[<? echo $res['ID']; ?>] <a title="<? echo Loc::getMessage("CO_IB_ELEM_ALT"); ?>" href="<? echo CIBlock::GetAdminElementListLink($res["ID"], array('find_section_section' => '0', 'admin' => 'Y')); ?>"><? echo $res["NAME"]; ?></a> (<? echo $arIBlockSitesList[$res['ID']]['WITH_LINKS']; ?>)
 				<input type="hidden" name="IS_OFFERS_<? echo $res["ID"]; ?>" value="<? echo $res['IS_OFFERS']; ?>" />
 			</td>
-			<td align="center" style="text-align: center;"><input type="hidden" name="IS_CATALOG_<?echo $res["ID"] ?>" id="IS_CATALOG_<?echo $res["ID"] ?>_N" value="N"><input type="checkbox" name="IS_CATALOG_<?echo $res["ID"] ?>" id="IS_CATALOG_<?echo $res["ID"] ?>_Y" onclick="ib_checkFldActivity('<?=$res['ID']?>', 0)" <?if ('Y' == $res['IS_CATALOG']) echo 'checked="checked"'?> <? if ('Y' == $res['IS_OFFERS']) echo 'disabled="disabled"'; ?>value="Y" /></td>
-			<td align="center"><select id="OFFERS_IBLOCK_ID_<? echo $res["ID"]; ?>" name="OFFERS_IBLOCK_ID_<? echo $res["ID"]; ?>" class="typeselect" <? echo ('Y' == $res['IS_OFFERS'] ? 'disabled="disabled"' : 'onchange="show_add_offers('.$res["ID"].',this);"'); ?> style="width: 100%;">
+			<td style="text-align: center;"><input type="hidden" name="IS_CATALOG_<?echo $res["ID"] ?>" id="IS_CATALOG_<?echo $res["ID"] ?>_N" value="N"><input type="checkbox" name="IS_CATALOG_<?echo $res["ID"] ?>" id="IS_CATALOG_<?echo $res["ID"] ?>_Y" onclick="ib_checkFldActivity('<?=$res['ID']?>', 0)" <?if ('Y' == $res['IS_CATALOG']) echo 'checked="checked"'?> <? if ('Y' == $res['IS_OFFERS']) echo 'disabled="disabled"'; ?>value="Y" /></td>
+			<td style="text-align: center;"><select id="OFFERS_IBLOCK_ID_<? echo $res["ID"]; ?>" name="OFFERS_IBLOCK_ID_<? echo $res["ID"]; ?>" class="typeselect" <? echo ('Y' == $res['IS_OFFERS'] ? 'disabled="disabled"' : 'onchange="show_add_offers('.$res["ID"].',this);"'); ?> style="width: 100%;">
 			<option value="0" <? echo (0 == $res['OFFERS_IBLOCK_ID'] ? 'selected' : '');?>><? echo Loc::getMessage('CAT_IBLOCK_OFFERS_EMPTY')?></option>
 			<?
 			if ('Y' != $res['IS_OFFERS'])
@@ -1919,7 +2071,7 @@ function change_offers_ibtype(obj,ID)
 			}
 			?>
 			</select>
-			<div id="offers_add_info_<? echo $res["ID"]; ?>" style="display: none; width: 98%; maring: 0 1%;"><table class="internal" style="width: 100%;"><tbody>
+			<div id="offers_add_info_<? echo $res["ID"]; ?>" style="display: none; width: 98%; margin: 0 1%;"><table class="internal" style="width: 100%;"><tbody>
 				<tr><td style="text-align: right; width: 25%;"><? echo Loc::getMessage('CAT_IBLOCK_OFFERS_TITLE'); ?>:</td><td style="text-align: left; width: 75%;"><input type="text" name="OFFERS_NAME_<? echo $res["ID"]; ?>" value="" style="width: 98%; margin: 0 1%;" /></td></tr>
 				<tr><td style="text-align: left; width: 100%;" colspan="2"><input type="radio" value="N" id="CREATE_OFFERS_TYPE_N_<? echo $res['ID']; ?>" name="CREATE_OFFERS_TYPE_<? echo $res['ID']; ?>" checked="checked" onclick="change_offers_ibtype(this,<? echo $res['ID']?>);"><label for="CREATE_OFFERS_TYPE_N_<? echo $res['ID']; ?>"><? echo Loc::getMessage('CAT_IBLOCK_OFFERS_OLD_IBTYPE');?></label></td></tr>
 				<tr><td style="text-align: right; width: 25%;"><? echo Loc::getMessage('CAT_IBLOCK_OFFERS_TYPE'); ?>:</td><td style="text-align: left; width: 75%;"><? echo SelectBoxFromArray('OFFERS_TYPE_'.$res["ID"],array('REFERENCE' => $arIBlockTypeNameList,'REFERENCE_ID' => $arIBlockTypeIDList),'','','style="width: 98%;  margin: 0 1%;"'); ?></td></tr>
@@ -1928,14 +2080,14 @@ function change_offers_ibtype(obj,ID)
 			</tbody></table></div></td><?
 			if (CBXFeatures::IsFeatureEnabled('SaleRecurring'))
 			{
-				?><td align="center" style="text-align: center;"><input type="hidden" name="IS_CONTENT_<?echo $res["ID"] ?>" id="IS_CONTENT_<?echo $res["ID"] ?>_N" value="N"><input type="checkbox" name="IS_CONTENT_<?echo $res["ID"] ?>" id="IS_CONTENT_<?echo $res["ID"] ?>_Y" onclick="ib_checkFldActivity('<?=$res['ID']?>', 1)" <?if ('Y' == $res["IS_CONTENT"]) echo "checked"?> value="Y" /></td><?
+				?><td style="text-align: center;"><input type="hidden" name="IS_CONTENT_<?echo $res["ID"] ?>" id="IS_CONTENT_<?echo $res["ID"] ?>_N" value="N"><input type="checkbox" name="IS_CONTENT_<?echo $res["ID"] ?>" id="IS_CONTENT_<?echo $res["ID"] ?>_Y" onclick="ib_checkFldActivity('<?=$res['ID']?>', 1)" <?if ('Y' == $res["IS_CONTENT"]) echo "checked"?> value="Y" /></td><?
 			}
 			else
 			{
 				?><input type="hidden" name="IS_CONTENT_<?echo $res["ID"] ?>" value="N" id="IS_CONTENT_<?echo $res["ID"] ?>_N"><?
 			}
-			?><td align="center" style="text-align: center;"><input type="hidden" name="YANDEX_EXPORT_<?echo $res["ID"] ?>" id="YANDEX_EXPORT_<?echo $res["ID"] ?>_N"><input type="checkbox" name="YANDEX_EXPORT_<?echo $res["ID"] ?>" id="YANDEX_EXPORT_<?echo $res["ID"] ?>_Y" <?if ('N' == $res['IS_CATALOG']) echo 'disabled="disabled"';?> <?if ('Y' == $res["YANDEX_EXPORT"]) echo "checked"?> value="Y" /></td>
-			<td align="center"><?=SelectBoxFromArray('VAT_ID_'.$res['ID'], $arVATRef, $res['VAT_ID'], '', ('N' == $res['IS_CATALOG'] ? 'disabled="disabled"' : ''))?></td>
+			?><td style="text-align: center;"><input type="hidden" name="YANDEX_EXPORT_<?echo $res["ID"] ?>" id="YANDEX_EXPORT_<?echo $res["ID"] ?>_N"><input type="checkbox" name="YANDEX_EXPORT_<?echo $res["ID"] ?>" id="YANDEX_EXPORT_<?echo $res["ID"] ?>_Y" <?if ('N' == $res['IS_CATALOG']) echo 'disabled="disabled"';?> <?if ('Y' == $res["YANDEX_EXPORT"]) echo "checked"?> value="Y" /></td>
+			<td style="text-align: center;"><?=SelectBoxFromArray('VAT_ID_'.$res['ID'], $arVATRef, $res['VAT_ID'], '', ('N' == $res['IS_CATALOG'] ? 'disabled="disabled"' : ''))?></td>
 		</tr>
 		<?
 	}
@@ -1957,19 +2109,22 @@ if ($USER->IsAdmin())
 		if ($strVal != '')
 			$arVal = explode(',', $strVal);
 
-		$dbUserGroups = CGroup::GetList(($b="c_sort"), ($o="asc"), array("ANONYMOUS" => "N"));
-		while ($arUserGroups = $dbUserGroups->Fetch())
+		$groupIterator = Main\GroupTable::getList([
+			'select' => ['ID', 'NAME', 'C_SORT'],
+			'filter' => ['!=ID' => 2, '=ANONYMOUS' => 'N'],
+			'order' => ['C_SORT' => 'ASC', 'NAME' => 'ASC']
+		]);
+		while ($arUserGroups = $groupIterator->fetch())
 		{
 			$arUserGroups["ID"] = (int)$arUserGroups["ID"];
-			if ($arUserGroups["ID"] == 2)
-				continue;
 		?>
 		<tr>
-			<td width="40%"><label for="user_group_<?=$arUserGroups["ID"]?>"><?= htmlspecialcharsEx($arUserGroups["NAME"])?></label> [<a href="group_edit.php?ID=<?=$arUserGroups["ID"]?>&lang=<?=LANGUAGE_ID?>" title="<?=Loc::getMessage("CO_USER_GROUP_ALT")?>"><?=$arUserGroups["ID"]?></a>]:</td>
-			<td width="60%"><input type="checkbox" id="user_group_<?=$arUserGroups["ID"]?>" name="AVAIL_CONTENT_GROUPS[]"<?if (in_array($arUserGroups["ID"], $arVal)) echo " checked"?> value="<?= $arUserGroups["ID"] ?>"></td>
+			<td style="width: 40%;"><label for="user_group_<?=$arUserGroups["ID"]?>"><?= htmlspecialcharsEx($arUserGroups["NAME"])?></label> [<a href="group_edit.php?ID=<?=$arUserGroups["ID"]?>&lang=<?=LANGUAGE_ID?>" title="<?=Loc::getMessage("CO_USER_GROUP_ALT")?>"><?=$arUserGroups["ID"]?></a>]:</td>
+			<td><input type="checkbox" id="user_group_<?=$arUserGroups["ID"]?>" name="AVAIL_CONTENT_GROUPS[]"<?if (in_array($arUserGroups["ID"], $arVal)) echo " checked"?> value="<?= $arUserGroups["ID"] ?>"></td>
 		</tr>
 		<?
 		}
+		unset($arUserGroups, $groupIterator);
 	}
 
 	$tabControl->BeginNextTab();
@@ -1986,22 +2141,49 @@ $tabControl->Buttons();
 <input type="button" <?if ($bReadOnly) echo "disabled" ?> title="<?echo Loc::getMessage("CAT_OPTIONS_BTN_HINT_RESTORE_DEFAULT")?>" onclick="RestoreDefaults();" value="<?echo Loc::getMessage("CAT_OPTIONS_BTN_RESTORE_DEFAULT")?>">
 </form>
 <script type="text/javascript">
-BX.hint_replace(BX('hint_reservation'), '<? echo Loc::getMessage('CAT_ENABLE_RESERVATION_HINT'); ?>');
+BX.hint_replace(BX('hint_reservation'), '<?=CUtil::JSEscape(Loc::getMessage('CAT_ENABLE_RESERVATION_HINT')); ?>');
+BX.hint_replace(BX('hint_show_catalog_tab_with_offers'), '<?=CUtil::JSEscape(Loc::getMessage('CAT_ENABLE_SHOW_CATALOG_TAB_WITH_OFFERS')); ?>');
 </script>
 <?
 $tabControl->End();
 
 if ($bReadOnly)
 	return;
+
+$catalogData = Catalog\CatalogIblockTable::getList(array(
+	'select' => array('CNT'),
+	'runtime' => array(
+		new Main\Entity\ExpressionField('CNT', 'COUNT(*)')
+	)
+))->fetch();
+$catalogCount = (isset($catalogData['CNT']) ? (int)$catalogData['CNT'] : 0);
+unset($catalogData);
 ?><h2><?=Loc::getMessage("COP_SYS_ROU"); ?></h2>
 <?
-$aTabs = array(
-	array("DIV" => "fedit2", "TAB" => Loc::getMessage("COP_TAB2_AGENT"), "ICON" => "catalog_settings", "TITLE" => Loc::getMessage("COP_TAB2_AGENT_TITLE")),
-	array("DIV" => "fedit4", "TAB" => Loc::getMessage("COP_TAB_RECALC"), "ICON" => "catalog_settings", "TITLE" => Loc::getMessage("COP_TAB_RECALC_TITLE")),
-);
-if ($strUseStoreControl === 'N' && !empty($arCatalogList))
+$aTabs = [];
+$aTabs[] = [
+	"DIV" => "fedit2",
+	"TAB" => Loc::getMessage("COP_TAB2_YANDEX_AGENT"),
+	"ICON" => "catalog_settings",
+	"TITLE" => Loc::getMessage("COP_TAB2_YANDEX_AGENT_TITLE")
+];
+if (!$useSaleDiscountOnly || $catalogCount > 0)
 {
-	$aTabs[] = array("DIV" => "fedit3", "TAB" => Loc::getMessage("CAT_QUANTITY_CONTROL_TAB"), "ICON" => "catalog_settings", "TITLE" => Loc::getMessage("CAT_QUANTITY_CONTROL"));
+	$aTabs[] = [
+		"DIV" => "fedit4",
+		"TAB" => Loc::getMessage("COP_TAB_RECALC"),
+		"ICON" => "catalog_settings",
+		"TITLE" => Loc::getMessage("COP_TAB_RECALC_TITLE")
+	];
+}
+if ($strUseStoreControl === 'N' && $catalogCount > 0)
+{
+	$aTabs[] = [
+		"DIV" => "fedit3",
+		"TAB" => Loc::getMessage("CAT_QUANTITY_CONTROL_TAB"),
+		"ICON" => "catalog_settings",
+		"TITLE" => Loc::getMessage("CAT_QUANTITY_CONTROL")
+	];
 ?>
 <script type="text/javascript">
 	function catClearQuantity(el, action)
@@ -2009,7 +2191,7 @@ if ($strUseStoreControl === 'N' && !empty($arCatalogList))
 		var waiter_parent = BX.findParent(el, BX.is_relative),
 			pos = BX.pos(el, !!waiter_parent);
 		var iblockId = BX("catalogs_id").value;
-		if(action == 'clearStore')
+		if (action === 'clearStore')
 		{
 			iblockId = BX("catalogs_store_id").value;
 		}
@@ -2070,7 +2252,7 @@ $systemTabControl = new CAdminTabControl("tabControl2", $aTabs, true, true);
 
 $systemTabControl->Begin();
 $systemTabControl->BeginNextTab();
-?><tr><td align="left"><?
+?><tr><td style="text-align: left;"><?
 $arAgentInfo = false;
 $rsAgents = CAgent::GetList(array(),array('MODULE_ID' => 'catalog','NAME' => 'CCatalog::PreGenerateXML("yandex");'));
 if ($arAgent = $rsAgents->Fetch())
@@ -2116,30 +2298,34 @@ else
 echo Loc::getMessage('CAT_AGENT_EVENT_LOG').':&nbsp;';
 
 ?><a href="/bitrix/admin/event_log.php?lang=<? echo LANGUAGE_ID; ?>&set_filter=Y<? echo CCatalogEvent::GetYandexAgentFilter(); ?>"><? echo Loc::getMessage('CAT_AGENT_EVENT_LOG_SHOW_ERROR')?></a>
-</td></tr>
-<?
-$systemTabControl->BeginNextTab();
-?><tr><td align="left"><?
-$firstTop = ' style="margin-top: 0;"';
-if (!$useSaleDiscountOnly)
-{
-	?><h4<? echo $firstTop; ?>><? echo Loc::getMessage('CAT_PROC_REINDEX_DISCOUNT'); ?></h4>
-	<input class="adm-btn-save" type="button" id="discount_reindex" value="<? echo Loc::getMessage('CAT_PROC_REINDEX_DISCOUNT_BTN'); ?>">
-	<p><? echo Loc::getMessage('CAT_PROC_REINDEX_DISCOUNT_ALERT'); ?></p><?
-	$firstTop = '';
-}
-?><h4<? echo $firstTop; ?>><?=Loc::getMessage('CAT_PROC_REINDEX_CATALOG'); ?></h4>
-<input class="adm-btn-save" type="button" id="catalog_reindex" value="<? echo Loc::getMessage('CAT_PROC_REINDEX_CATALOG_BTN'); ?>">
-<p><? echo Loc::getMessage('CAT_PROC_REINDEX_CATALOG_ALERT'); ?></p><?
-if (CBXFeatures::IsFeatureEnabled('CatCompleteSet') && CCatalogProductSetAvailable::getAllCounter() > 0)
-{
-	?><h4><? echo Loc::getMessage('CAT_PROC_REINDEX_SETS_AVAILABLE'); ?></h4>
-	<input class="adm-btn-save" type="button" id="sets_reindex" value="<? echo Loc::getMessage('CAT_PROC_REINDEX_SETS_AVAILABLE_BTN'); ?>">
-	<p><? echo Loc::getMessage('CAT_PROC_REINDEX_SETS_AVAILABLE_ALERT'); ?></p><?
-}
-?>
 </td></tr><?
-	if ($strUseStoreControl === 'N' && !empty($arCatalogList))
+if (!$useSaleDiscountOnly || $catalogCount > 0)
+{
+	$systemTabControl->BeginNextTab();
+	?><tr><td style="text-align: left;"><?
+	$firstTop = ' style="margin-top: 0;"';
+	if (!$useSaleDiscountOnly)
+	{
+		?><h4<?=$firstTop; ?>><?=Loc::getMessage('CAT_PROC_REINDEX_DISCOUNT'); ?></h4>
+		<input class="adm-btn-save" type="button" id="discount_reindex" value="<?=Loc::getMessage('CAT_PROC_REINDEX_DISCOUNT_BTN'); ?>">
+		<p><?=Loc::getMessage('CAT_PROC_REINDEX_DISCOUNT_ALERT'); ?></p><?
+		$firstTop = '';
+	}
+	if ($catalogCount > 0)
+	{
+		?><h4<?=$firstTop; ?>><?=Loc::getMessage('CAT_PROC_REINDEX_CATALOG'); ?></h4>
+		<input class="adm-btn-save" type="button" id="catalog_reindex" value="<?=Loc::getMessage('CAT_PROC_REINDEX_CATALOG_BTN'); ?>">
+		<p><?=Loc::getMessage('CAT_PROC_REINDEX_CATALOG_ALERT'); ?></p><?
+		if (Catalog\Config\Feature::isProductSetsEnabled() && CCatalogProductSetAvailable::getAllCounter() > 0)
+		{
+			?><h4><?=Loc::getMessage('CAT_PROC_REINDEX_SETS_AVAILABLE'); ?></h4>
+			<input class="adm-btn-save" type="button" id="sets_reindex" value="<?=Loc::getMessage('CAT_PROC_REINDEX_SETS_AVAILABLE_BTN'); ?>">
+			<p><?=Loc::getMessage('CAT_PROC_REINDEX_SETS_AVAILABLE_ALERT'); ?></p><?
+		}
+	}
+	?></td></tr><?
+}
+	if ($strUseStoreControl === 'N' && $catalogCount > 0)
 	{
 		$userListID = array();
 		$strQuantityUser = '';
@@ -2168,9 +2354,9 @@ if (CBXFeatures::IsFeatureEnabled('CatCompleteSet') && CCatalogProductSetAvailab
 			unset($userListID[0]);
 		if (!empty($userListID))
 		{
-			$strClearQuantityDate = Option::get('catalog', 'clear_quantity_date');
-			$strClearQuantityReservedDate = Option::get('catalog', 'clear_reserved_quantity_date');
-			$strClearStoreDate = Option::get('catalog', 'clear_store_date');
+			$strClearQuantityDate = (string)Option::get('catalog', 'clear_quantity_date');
+			$strClearQuantityReservedDate = (string)Option::get('catalog', 'clear_reserved_quantity_date');
+			$strClearStoreDate = (string)Option::get('catalog', 'clear_store_date');
 
 			$arUserList = array();
 			$strNameFormat = CSite::GetNameFormat(true);
@@ -2189,13 +2375,14 @@ if (CBXFeatures::IsFeatureEnabled('CatCompleteSet') && CCatalogProductSetAvailab
 			{
 				$arOneUser['ID'] = (int)$arOneUser['ID'];
 				if ($canViewUserList)
-					$arUserList[$arOneUser['ID']] = '<a href="/bitrix/admin/user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arOneUser['ID'].'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
+					$arUserList[$arOneUser['ID']] = '['.$arOneUser['ID'].'] <a href="/bitrix/admin/user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arOneUser['ID'].'">'.CUser::FormatName($strNameFormat, $arOneUser).'</a>';
 				else
-					$arUserList[$arOneUser['ID']] = CUser::FormatName($strNameFormat, $arOneUser);
+					$arUserList[$arOneUser['ID']] = '['.$arOneUser['ID'].'] '.CUser::FormatName($strNameFormat, $arOneUser);
 			}
 			unset($arOneUser, $userIterator, $canViewUserList);
 			if (isset($arUserList[$clearQuantityUser]))
 				$strQuantityUser = $arUserList[$clearQuantityUser];
+
 			if (isset($arUserList[$clearQuantityReservedUser]))
 				$strQuantityReservedUser = $arUserList[$clearQuantityReservedUser];
 			if (isset($arUserList[$clearStoreUser]))
@@ -2224,6 +2411,7 @@ if (CBXFeatures::IsFeatureEnabled('CatCompleteSet') && CCatalogProductSetAvailab
 		<td>
 			<select style="max-width: 300px" id="catalogs_id" name="catalogs_id" <?=($bReadOnly ? ' disabled' : ''); ?>>
 				<?
+				//TODO: need get catalog list
 				foreach($arCatalogList as &$arOneCatalog)
 				{
 					echo '<option value="'.$arOneCatalog['ID'].'">'.htmlspecialcharsex($arOneCatalog["NAME"]).' ('.$arIBlockSitesList[$arOneCatalog['ID']]['WITHOUT_LINKS'].')</option>';
@@ -2235,8 +2423,8 @@ if (CBXFeatures::IsFeatureEnabled('CatCompleteSet') && CCatalogProductSetAvailab
 	</tr>
 
 	<tr>
-		<td width="40%"><? echo Loc::getMessage("CAT_CLEAR_QUANTITY"); ?>:</td>
-		<td width="60%">
+		<td style="width: 40%;"><? echo Loc::getMessage("CAT_CLEAR_QUANTITY"); ?>:</td>
+		<td>
 			<input type="button" value="<? echo Loc::getMessage("CAT_CLEAR_ACTION"); ?>" id="cat_clear_quantity_btn" onclick="catClearQuantity(this, 'clearQuantity')">
 			<?
 			if (0 < $clearQuantityUser)
@@ -2247,11 +2435,11 @@ if (CBXFeatures::IsFeatureEnabled('CatCompleteSet') && CCatalogProductSetAvailab
 		</td>
 	</tr>
 	<tr>
-		<td width="40%"><? echo Loc::getMessage("CAT_CLEAR_RESERVED_QUANTITY"); ?></td>
+		<td style="width: 40%;"><? echo Loc::getMessage("CAT_CLEAR_RESERVED_QUANTITY"); ?></td>
 		<td>
 			<input type="button" value="<? echo Loc::getMessage("CAT_CLEAR_ACTION"); ?>" id="cat_clear_reserved_quantity_btn" onclick="catClearQuantity(this, 'clearReservedQuantity')">
 			<?
-			if (0 < $clearQuantityUser)
+			if (0 < $clearQuantityReservedUser)
 			{
 				?><span style="font-size: smaller;"><?=$strQuantityReservedUser;?>&nbsp;<?=$strClearQuantityReservedDate;?></span><?
 			}
@@ -2404,10 +2592,84 @@ function showCatalogReindex()
 	obWindow.Show();
 	return false;
 }
+
+function showProductSettings()
+{
+	var obWindow, params;
+
+	params = {
+		bxpublic: 'Y',
+		sessid: BX.bitrix_sessid()
+	};
+
+	var obBtn = {
+		title: '<? echo CUtil::JSEscape(Loc::getMessage('CAT_POPUP_WINDOW_CLOSE_BTN')) ?>',
+		id: 'close',
+		name: 'close',
+		action: function () {
+			this.parentWindow.Close();
+		}
+	};
+
+	obWindow = new BX.CAdminDialog({
+		'content_url': '/bitrix/tools/catalog/product_settings.php?lang=<? echo LANGUAGE_ID; ?>',
+		'content_post': params,
+		'draggable': true,
+		'resizable': true,
+		'buttons': [obBtn]
+	});
+	obWindow.Show();
+	return false;
+}
+
+function changeProductSettings(params)
+{
+	var i, ob;
+	if (!BX.type.isPlainObject(params))
+		return;
+	for (i in params)
+	{
+		ob = BX(i);
+		if (!!ob)
+			ob.innerHTML = BX.util.htmlspecialchars(params[i]);
+	}
+}
+
+function showViewed()
+{
+	var enableViewed = BX('enable_viewed_products_y'),
+		viewedTime = BX('tr_viewed_time'),
+		viewedCount = BX('tr_viewed_count'),
+		viewedPeriod = BX('tr_viewed_period'),
+		rowType;
+	if (BX.type.isElementNode(enableViewed))
+	{
+		rowType = (enableViewed.checked ? 'table-row' : 'none');
+		if (BX.type.isElementNode(viewedTime))
+		{
+			BX.style(viewedTime, 'display', rowType);
+		}
+		if (BX.type.isElementNode(viewedCount))
+		{
+			BX.style(viewedCount, 'display', rowType);
+		}
+		if (BX.type.isElementNode(viewedPeriod))
+		{
+			BX.style(viewedPeriod, 'display', rowType);
+		}
+	}
+	viewedPeriod = null;
+	viewedCount = null;
+	viewedTime = null;
+	enableViewed = null;
+}
+
 BX.ready(function(){
 	var discountReindex = BX('discount_reindex'),
 		setsReindex = BX('sets_reindex'),
-		catalogReindex = BX('catalog_reindex');
+		catalogReindex = BX('catalog_reindex'),
+		productSettings = BX('product_settings'),
+		enableViewed = BX('enable_viewed_products_y');
 
 	if (!!discountReindex)
 		BX.bind(discountReindex, 'click', showDiscountReindex);
@@ -2415,5 +2677,11 @@ BX.ready(function(){
 		BX.bind(setsReindex, 'click', showSetsAvailableReindex);
 	if (!!catalogReindex)
 		BX.bind(catalogReindex, 'click', showCatalogReindex);
+	if (!!productSettings)
+		BX.bind(productSettings, 'click', showProductSettings);
+	if (BX.type.isElementNode(enableViewed))
+	{
+		BX.bind(enableViewed, 'click', showViewed);
+	}
 });
 </script>

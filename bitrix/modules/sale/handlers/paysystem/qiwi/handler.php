@@ -2,8 +2,7 @@
 
 namespace Sale\Handlers\PaySystem;
 
-use Bitrix\Main\Entity\EntityError;
-use Bitrix\Main\Error;
+use Bitrix\Main;
 use Bitrix\Main\Request;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\Localization\Loc;
@@ -11,7 +10,7 @@ use Bitrix\Main\Web\HttpClient;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\Payment;
 use Bitrix\Main\Application;
-use Bitrix\Sale\Result;
+use Bitrix\Sale\PriceMaths;
 
 class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckable
 {
@@ -22,10 +21,62 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 	 */
 	public function initiatePay(Payment $payment, Request $request = null)
 	{
-		$params = array('URL' => $this->getUrl('pay'));
-		$this->setExtraParams($params);
+		if ($request === null)
+		{
+			$request = Main\Context::getCurrent()->getRequest();
+		}
 
-		return $this->showTemplate($payment, "template");
+		$phone = $this->normalizePhone($this->getPhone($payment, $request));
+		if (!preg_match('/^\+7\d{10}$/', $phone))
+		{
+			$params = [
+				'PAYMENT_ID' => $payment->getId(),
+				'PAYSYSTEM_ID' => $this->service->getField('ID'),
+				'BUYER_PERSON_PHONE' => $phone,
+				'RETURN_URL' => $this->getSuccessUrl($payment),
+			];
+			$this->setExtraParams($params);
+			return $this->showTemplate($payment, 'template_query');
+		}
+
+		$params = [
+			'URL' => $this->getUrl($payment, 'pay'),
+			'BUYER_PERSON_PHONE' => $phone,
+			'QIWI_SUCCESS_URL' => $this->getSuccessUrl($payment),
+			'QIWI_FAIL_URL' => $this->getFailUrl($payment),
+		];
+		$this->setExtraParams($params);
+		return $this->showTemplate($payment, 'template');
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @param Request $request
+	 * @return string
+	 */
+	private function getPhone(Payment $payment, Request $request): string
+	{
+		if (trim($_POST["NEW_PHONE"]))
+		{
+			return trim($_POST["NEW_PHONE"]);
+		}
+
+		return (string)$this->getBusinessValue($payment, 'BUYER_PERSON_PHONE');
+	}
+
+	/**
+	 * @param $number
+	 * @return bool|string|string[]|null
+	 */
+	private function normalizePhone($number)
+	{
+		$normalizedNumber = \NormalizePhone($number);
+		if ($normalizedNumber)
+		{
+			return '+'.$normalizedNumber;
+		}
+
+		return $number;
 	}
 
 	/**
@@ -119,8 +170,8 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 
 		$fields = array(
 			"PS_STATUS" 		=> $request->get('status') == "paid" ? "Y" : "N",
-			"PS_STATUS_CODE"	=> substr($request->get('status'), 0, 5),
-			"PS_STATUS_MESSAGE" => Loc::getMessage("SALE_QWH_STATUS_MESSAGE_" . strtoupper($_POST['status'])),
+			"PS_STATUS_CODE"	=> mb_substr($request->get('status'), 0, 5),
+			"PS_STATUS_MESSAGE" => Loc::getMessage("SALE_QWH_STATUS_MESSAGE_".mb_strtoupper($_POST['status'])),
 			"PS_RESPONSE_DATE"	=> new DateTime(),
 			"PS_SUM"			=> (double)$request->get('amount'),
 			"PS_CURRENCY"		=> $request->get('ccy'),
@@ -143,7 +194,7 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 
 		$changeStatusPay = $this->getBusinessValue($payment, 'PS_CHANGE_STATUS_PAY') == "Y";
 
-		if ($request->get('status') == "paid" && $this->getBusinessValue($payment, $changeStatusPay))
+		if ($request->get('status') == "paid" && $changeStatusPay)
 		{
 			$result->setOperationType(PaySystem\ServiceResult::MONEY_COMING);
 			$result->setData(array('CODE' => 'QIWI_WALLET_ERROR_CODE_NONE'));
@@ -153,9 +204,10 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 	}
 
 	/**
+	 * @param Payment $payment
 	 * @return bool
 	 */
-	protected function isTestMode()
+	protected function isTestMode(Payment $payment = null)
 	{
 		return false;
 	}
@@ -193,6 +245,7 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 		$siteCharset = $culture->getCharset();
 
 		echo  $charsetConverter->ConvertCharset($xml, $siteCharset, "utf-8");
+		die();
 	}
 
 	/**
@@ -234,7 +287,7 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 	 */
 	protected function checkAuth($login, $password)
 	{
-		if(strlen($password) == 0)
+		if($password == '')
 			return false;
 
 		$header = $this->getAuthHeader();
@@ -270,16 +323,16 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 
 	/**
 	 * @param Payment $payment
-	 * @return int
+	 * @return PaySystem\ServiceResult
 	 */
 	public function check(Payment $payment)
 	{
 		$result = new PaySystem\ServiceResult();
 
-		$url = $this->getUrl('check');
+		$url = $this->getUrl($payment, 'check');
 
 		$request = new HttpClient();
-		$request->setAuthorization($this->getBusinessValue($payment, 'QIWI_API_LOGIN'), $this->getBusinessValue($payment, 'QIWI_API_PASS'));
+		$request->setAuthorization($this->getBusinessValue($payment, 'QIWI_API_LOGIN'), $this->getBusinessValue($payment, 'QIWI_API_PASSWORD'));
 		$request->setHeader("Accept", "text/json");
 		$request->setCharset("utf-8");
 
@@ -321,8 +374,8 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 
 			$psData = array(
 				"PS_STATUS" => $bill['status'] == "paid" ? "Y" : "N",
-				"PS_STATUS_CODE" => substr($bill['status'], 0, 10),
-				"PS_STATUS_MESSAGE" => Loc::getMessage("SALE_QWH_STATUS_MESSAGE_" . strtoupper($bill['status'])),
+				"PS_STATUS_CODE" => mb_substr($bill['status'], 0, 10),
+				"PS_STATUS_MESSAGE" => Loc::getMessage("SALE_QWH_STATUS_MESSAGE_".mb_strtoupper($bill['status'])),
 				"PS_RESPONSE_DATE"	=> new DateTime(),
 				"PS_SUM" => (double)$bill['amount'],
 				"PS_CURRENCY" => $bill['ccy'],
@@ -332,12 +385,33 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 			foreach($bill as $key => $value)
 				$psData['PS_STATUS_DESCRIPTION'] .= "{$key}:{$value}, ";
 
-			if($bill['status'] == "paid" && (double)$bill['amount'] == (double)$payment->getSum() && $this->getBusinessValue($payment, 'PS_CHANGE_STATUS_PAY'))
+			$billAmount = PriceMaths::roundPrecision($bill['amount']);
+			$paymentSum = PriceMaths::roundPrecision($payment->getSum());
+
+			if($bill['status'] == "paid" && $billAmount == $paymentSum && $this->getBusinessValue($payment, 'PS_CHANGE_STATUS_PAY'))
 				$result->setOperationType(PaySystem\ServiceResult::MONEY_COMING);
 
 			$result->setPsData($psData);
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getSuccessUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'QIWI_SUCCESS_URL') ?: $this->service->getContext()->getUrl();
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getFailUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'QIWI_FAIL_URL') ?: $this->service->getContext()->getUrl();
 	}
 }

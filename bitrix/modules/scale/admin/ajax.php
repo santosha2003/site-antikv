@@ -22,7 +22,7 @@ if (!\Bitrix\Main\Loader::includeModule('scale'))
 
 $result = false;
 
-if(strlen($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
+if($arResult["ERROR"] == '' && $USER->IsAdmin() && check_bitrix_sessid())
 {
 	$operation = isset($_REQUEST['params']['operation']) ? trim($_REQUEST['params']['operation']): '';
 
@@ -49,6 +49,7 @@ if(strlen($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 			{
 				$result = $action->start();
 				$arResult["ACTION_RESULT"] = $action->getResult();
+				\CUserCounter::Increment($USER->GetID(),'SCALE_ACTIONS_EXECUTED', SITE_ID, false);
 			}
 			catch(\Bitrix\Scale\NeedMoreUserInfoException $e)
 			{
@@ -131,8 +132,8 @@ if(strlen($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 			break;
 
 		case "get_provider_configs":
-			$providerId = isset($_REQUEST['params']['providerId']) ? $_REQUEST['params']['providerId'] : "";
-			if(strlen($providerId) >= 0)
+			$providerId = isset($_REQUEST['params']['providerId']) ? trim($_REQUEST['params']['providerId']) : "";
+			if($providerId !== "")
 			{
 				$arResult["PROVIDER_CONFIGS"] = \Bitrix\Scale\Provider::getConfigs($providerId);
 				$result = true;
@@ -140,13 +141,39 @@ if(strlen($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 			break;
 
 		case "send_order_to_provider":
-			$providerId = isset($_REQUEST['params']['providerId']) ? $_REQUEST['params']['providerId'] : "";
-			$configId = isset($_REQUEST['params']['configId']) ? $_REQUEST['params']['configId'] : "";
+			$providerId = isset($_REQUEST['params']['providerId']) ? trim($_REQUEST['params']['providerId']) : "";
+			$configId = isset($_REQUEST['params']['configId']) ? trim($_REQUEST['params']['configId']) : "";
 
-			if(strlen($providerId) >= 0 && strlen($configId) >= 0)
+			if($providerId !== "" && $configId !== "")
 			{
-				$arResult["TASK_ID"] = \Bitrix\Scale\Provider::sendOrder($providerId,$configId);
+				$arResult["TASK_ID"] = \Bitrix\Scale\Provider::sendOrder($providerId, $configId);
 				$result = true;
+			}
+
+			break;
+
+		case "upload_files":
+			if(!empty($_FILES))
+			{
+				$tmpDir = \Bitrix\Scale\Helper::getTmpDir();
+				$uploadedFiles = array();
+
+				foreach($_FILES as $file)
+				{
+					if(!is_uploaded_file($file['tmp_name']))
+						continue;
+
+					if($file['size'] <= 0)
+						continue;
+
+					$uploadFile = $tmpDir.'/'.basename($file['name']);
+
+					if(move_uploaded_file($file['tmp_name'], $uploadFile))
+						$uploadedFiles[] = $uploadFile;
+				}
+
+				$arResult['FILES'] = $uploadedFiles;
+				$result = !empty($arResult['FILES']);
 			}
 
 			break;
@@ -154,7 +181,7 @@ if(strlen($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 }
 else
 {
-	if(strlen($arResult["ERROR"]) <= 0)
+	if($arResult["ERROR"] == '')
 		$arResult["ERROR"] = Loc::getMessage("SCALE_AJAX_ACCESS_DENIED");
 }
 
@@ -163,7 +190,8 @@ if(!$result)
 else
 	$arResult["RESULT"] = "OK";
 
-if(strtolower(SITE_CHARSET) != 'utf-8')
+if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 	$arResult = $APPLICATION->ConvertCharsetArray($arResult, SITE_CHARSET, 'utf-8');
 
+header('Content-Type: application/json');
 die(json_encode($arResult));

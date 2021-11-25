@@ -9,7 +9,7 @@ IncludeAJAX();
 				Input params
 ********************************************************************/
 /***************** BASE ********************************************/
-$arParams["WORD_WRAP_CUT"] = intVal($arParams["WORD_WRAP_CUT"]);
+$arParams["WORD_WRAP_CUT"] = intval($arParams["WORD_WRAP_CUT"]);
 $arParams["SHOW_RSS"] = ($arParams["SHOW_RSS"] == "N" ? "N" : "Y");
 $arParams["SHOW_RSS"] = ($arParams["SHOW_RSS"] == "Y" && !empty($arResult["FORUMS_FOR_GUEST"]) ? "Y" : "N");
 if ($arParams["SHOW_RSS"] == "Y"):
@@ -77,7 +77,7 @@ if (!function_exists("__PrintForumGroupsAndForums"))
 			return false;
 		
 
-		if (intVal($arGroup["ID"]) > 0 && $arGroup["ID"] != $arResult["GROUP"]["ID"])
+		if (intval($arGroup["ID"]) > 0 && $arGroup["ID"] != $arResult["GROUP"]["ID"])
 		{
 			if ($bInsertSeparator):
 ?>
@@ -112,10 +112,10 @@ if (!function_exists("__PrintForumGroupsAndForums"))
 			{
 				
 				if ($arParams["WORD_WRAP_CUT"] > 0):
-					$res["TITLE"] = (strLen($res["~TITLE"]) > $arParams["WORD_WRAP_CUT"] ? 
-						htmlspecialcharsEx(substr($res["~TITLE"], 0, $arParams["WORD_WRAP_CUT"]))."..." : $res["TITLE"]);
-					$res["LAST_POSTER_NAME"] = (strLen($res["~LAST_POSTER_NAME"]) > $arParams["WORD_WRAP_CUT"] ? 
-						htmlspecialcharsEx(substr($res["~LAST_POSTER_NAME"], 0, $arParams["WORD_WRAP_CUT"]))."..." : $res["LAST_POSTER_NAME"]);
+					$res["TITLE"] = (mb_strlen($res["~TITLE"]) > $arParams["WORD_WRAP_CUT"] ?
+						htmlspecialcharsbx(mb_substr($res["~TITLE"], 0, $arParams["WORD_WRAP_CUT"]))."..." : $res["TITLE"]);
+					$res["LAST_POSTER_NAME"] = (mb_strlen($res["~LAST_POSTER_NAME"]) > $arParams["WORD_WRAP_CUT"] ?
+						htmlspecialcharsbx(mb_substr($res["~LAST_POSTER_NAME"], 0, $arParams["WORD_WRAP_CUT"]))."..." : $res["LAST_POSTER_NAME"]);
 				endif;
 ?>
 			<tr class="<?=($iCountRows == 1 ? "forum-row-first " : "")?><?
@@ -147,7 +147,7 @@ if (!function_exists("__PrintForumGroupsAndForums"))
 						<div class="forum-item-info">
 							<div class="forum-item-name"><span class="forum-item-title"><a href="<?=$res["URL"]["TOPICS"]?>"><?
 								?><?=$res["~NAME"];?></a><?
-				if ($res["NewMessage"] == "Y" && strLen($arParams["TMPLT_SHOW_ADDITIONAL_MARKER"]) > 0):
+				if ($res["NewMessage"] == "Y" && $arParams["TMPLT_SHOW_ADDITIONAL_MARKER"] <> ''):
 								?><noindex><a rel="nofollow" href="<?=$res["URL"]["TOPICS"]?>" class="forum-new-message-marker"><?=$arParams["TMPLT_SHOW_ADDITIONAL_MARKER"]?></a></noindex><?
 				endif;
 								?></span></div>
@@ -171,11 +171,11 @@ if (!function_exists("__PrintForumGroupsAndForums"))
 					<td class="forum-column-replies"><span><?=$res["POSTS"]?></span></td>
 					<td class="forum-column-lastpost">
 <?
-					if (intVal($res["LAST_MESSAGE_ID"]) > 0):
+					if (intval($res["LAST_MESSAGE_ID"]) > 0):
 ?>
 						<div class="forum-lastpost-box">
 							<span class="forum-lastpost-title"><?
-								?><noindex><a rel="nofollow" href="<?=$res["URL"]["MESSAGE"]?>" title="<?=htmlspecialcharsEx($res["~TITLE"]." (".$res["~LAST_POSTER_NAME"].")")?>"><?
+								?><noindex><a rel="nofollow" href="<?=$res["URL"]["MESSAGE"]?>" title="<?=htmlspecialcharsbx($res["~TITLE"]." (".$res["~LAST_POSTER_NAME"].")")?>"><?
 									?><?=$res["TITLE"]?> <span class="forum-lastpost-author">(<?=$res["LAST_POSTER_NAME"]?>)</span></a></noindex></span>
 							<span class="forum-lastpost-date"><?=$res["LAST_POST_DATE"]?></span>
 						</div>
@@ -281,11 +281,11 @@ if (!function_exists("__PrintForumGroupsAndForums"))
 					<td class="forum-column-replies"><span><?=$res["POSTS"]?></span></td>
 					<td class="forum-column-lastpost">
 <?
-					if (intVal($res["LAST_MESSAGE_ID"]) > 0):
+					if (intval($res["LAST_MESSAGE_ID"]) > 0):
 ?>
 						<div class="forum-lastpost-box">
 							<span class="forum-lastpost-title"><?
-								?><noindex><a rel="nofollow" href="<?=$res["URL"]["MESSAGE"]?>" title="<?=htmlspecialcharsEx($res["~TITLE"]." (".$res["~LAST_POSTER_NAME"].")")?>"><?
+								?><noindex><a rel="nofollow" href="<?=$res["URL"]["MESSAGE"]?>" title="<?=htmlspecialcharsbx($res["~TITLE"]." (".$res["~LAST_POSTER_NAME"].")")?>"><?
 									?><?=$res["TITLE"]?> <span class="forum-lastpost-author">(<?=$res["LAST_POSTER_NAME"]?>)</span></a></noindex></span>
 							<span class="forum-lastpost-date"><?=$res["LAST_POST_DATE"]?></span>
 						</div>

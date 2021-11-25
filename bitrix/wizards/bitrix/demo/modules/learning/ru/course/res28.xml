@@ -1,2 +1,67 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE28"><presentation><material><mattext>��������� ������ � ���� (1) � ����������� ������� ������ (2) ���������</mattext></material><response_lid ident="LID28" rcardinality="Single"><render_choice><response_label ident="ANS933"><material><mattext>������� ��� �������� � ������</mattext></material></response_label><response_label ident="ANS934"><material><mattext>������� ��� �������� ������, ������������ �� ������� ��������</mattext></material></response_label><response_label ident="ANS935"><material><mattext>������� � �������� �������������� ��������� � ������</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID28">ANS933</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description><![CDATA[<img height="48" src="cid:resources/res28/LoOy6.for_all.png" width="504" />]]></description><description_type>html</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>898</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>600</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Горячие клавиши</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p>Пользователям проектов на <b>Bitrix Framework</b> доступен инструмент <a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=34&LESSON_ID=3567" target="_blank">Горячие клавиши</a>. Система допускает не только использование, но и задание новых клавиш.</p>
+
+<p>Управление <b>горячими клавишами</b> производится на странице <span class="path">Настройки > Настройки продукта > Интерфейс > Горячие клавиши</span>:</p>
+
+<p>Чтобы добавить своё действие необходимо нажать кнопку <b>Добавить</b> на контекстной панели. После этого заполнить форму создания для горячих клавиш:</p>
+
+<p><img height="592" border="0" width="645" src="cid:resources/res28/PX7cL.hDxR7.adm_hot_keys_1.png" /></p>
+
+<p>Для создания горячей клавиши необходимо заполнить как минимум два поля:</p>
+
+<ul>
+<li><b>Наименование</b> - выводится у пользователей в окне настроек горячих клавиш;</li>
+<li><b>Выполняемый JavaScript код</b> - код, вызывающий нужное действие.</li> 
+ </ul>
+
+<p><div class="hint"><b>Примечание</b>: Описание других полей смотрите в <a href="http://dev.1c-bitrix.ru/user_help/settings/settings/user_settings/hot_keys_list.php" target="_blank">документации</a>.</div></p>
+
+
+<p>Пустое поле <b>Адрес (URL) где будет работать</b> означает, что действие для привязки к горячим клавишам будет доступно везде, где есть административная панель. Если необходимо, чтобы действие выполнялось на какой-то конкретной странице, или в конкретном разделе, то их нужно указать в данном поле, например:</p>
+
+<code>http://127.0.0.1:84/bitrix/admin/hot_keys_list.php </code><br><br>
+или <br><br>
+<code>/bitrix/admin/</code> <br>
+
+
+<p>По умолчанию горячие клавиши можно назначать на действия, выполняемые через основные кнопки публичной части <b>Эрмитажа</b> и Административной панели.
+</p>
+
+<p><div class="hint"><b>Примечание</b>: Допускается назначение одинакового комплекта горячих клавиш на действия на разных страницах.</div></p>
+
+
+<h4>Пример</h4>
+
+<p>Можно назначить по горячей клавише переход в наиболее часто используемый раздел. Код JavaScript для открытия страницы <span class="path">Настройки > Настройки продукта > Интерфейсы > Горячие клавиши</span> Административного раздела будет выглядеть так:</p>
+
+<pre class="syntax">location.href='/bitrix/admin/hot_keys_list.php';</pre>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>600</edge_sort>
+<id>898</id>
+</content>

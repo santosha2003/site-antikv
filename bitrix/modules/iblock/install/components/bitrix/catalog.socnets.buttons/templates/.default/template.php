@@ -20,7 +20,7 @@ if ($arResult["FB_USE"])
 			var js, fjs = d.getElementsByTagName(s)[0];
 			if (d.getElementById(id)) return;
 			js = d.createElement(s); js.id = id;
-			js.src = "//connect.facebook.net/<?=(strtolower(LANGUAGE_ID)."_".strtoupper(LANGUAGE_ID))?>/all.js#xfbml=1";
+			js.src = "//connect.facebook.net/<?=(mb_strtolower(LANGUAGE_ID)."_".mb_strtoupper(LANGUAGE_ID))?>/all.js#xfbml=1";
 			fjs.parentNode.insertBefore(js, fjs);
 		}(document, 'script', 'facebook-jssdk'));
 	</script><div class="fb-like" data-href="<?=$arResult["URL_TO_LIKE"]?>" data-colorscheme="light" data-layout="button_count" data-action="like" data-show-faces="false" data-send="false" style="float:left;"></div></div><?
@@ -52,55 +52,37 @@ if ($arResult["TW_USE"])
 	</script></div><?
 }
 
-if ($arResult["GP_USE"])
-{
-	?> <div class="catalog-sb-item gp"><div class="g-plusone" data-size="medium" data-href="<?= $arResult["URL_TO_LIKE"] ?>"></div><script type="text/javascript">
-	window.___gcfg = {lang: '<?=$arResult["GP_LANG"]?>'};
-	(function ()
-	{
-		var po = document.createElement('script');
-		po.type = 'text/javascript';
-		po.async = true;
-		po.src = 'https://apis.google.com/js/plusone.js';
-		var s = document.getElementsByTagName('script')[0];
-		s.parentNode.insertBefore(po, s);
-	})();
-	</script></div><?
-}
-
 if ($arResult["VK_USE"])
 {
-	$APPLICATION->AddHeadString('<script type="text/javascript" src="//vk.com/js/api/share.js?86" charset="windows-1251"></script>');
-?> <div class="catalog-sb-item vk" id="vk-shared-button-<?$this->randString()?>"></div><script type="text/javascript">
-(function() {
-	var div = document.getElementById("vk-shared-button-<?$this->randString()?>");
-	var button = VK.Share.button({
-		url: "<?=$arResult["URL_TO_LIKE"]?>"<?
-		if(strlen($arResult["TITLE"]) > 0 )
-			echo ','.PHP_EOL.'title: "'.$arResult["TITLE"].'"';
+	$APPLICATION->AddHeadString('<script type="text/javascript" src="https://vk.com/js/api/share.js?93" charset="windows-1251"></script>');
+	?> <div class="catalog-sb-item vk" id="vk-shared-button-<?$this->randString()?>"></div><script type="text/javascript">
+	(function() {
+		var div = document.getElementById("vk-shared-button-<?$this->randString()?>");
+		var button = VK.Share.button({
+				url: "<?=$arResult["URL_TO_LIKE"]?>"<?
+				if($arResult["TITLE"] <> '' )
+					echo ','.PHP_EOL.'title: "'.$arResult["TITLE"].'"';
 
-		if(strlen($arResult["DESCRIPTION"]) > 0 )
-			echo ','.PHP_EOL.'description: "'.$arResult["DESCRIPTION"].'"';
+				if($arResult["IMAGE"] <> '' )
+					echo ','.PHP_EOL.'image: "'.$arResult["IMAGE"].'"';?>
+			},
+			{
+				type: "round",
+				text: "<?=GetMessage("CATALOG_SB_VK_SAVE")?>"
+			});
 
-		if(strlen($arResult["IMAGE"]) > 0 )
-			echo ','.PHP_EOL.'image: "'.$arResult["IMAGE"].'"';?>
-		},
+		if (div)
 		{
-			type: "round",
-			text: "<?=GetMessage("CATALOG_SB_VK_SAVE")?>"
-	});
-
-	if (div)
-	{
-		div.innerHTML = button;
-	}
-	else if (document.addEventListener)
-	{
-		document.addEventListener("DOMContentLoaded", function() {
 			div.innerHTML = button;
-		});
-	}
-})();
-	</script><?
+		}
+		else if (document.addEventListener)
+		{
+			document.addEventListener("DOMContentLoaded", function() {
+				div.innerHTML = button;
+			});
+		}
+	})();
+</script><?
 }
+
 ?></div>

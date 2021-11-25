@@ -35,8 +35,7 @@ if($arLocation = $dbLocation->Fetch())//if there are no data in module
 				"SETTINGS" => "8",
 				"PROFILES" => "",
 				"TAX_RATE" => 0,
-			),
-			"ALL"
+			)
 		);
 
 		CSaleDeliveryHandler::Set("russianpost", 
@@ -51,8 +50,7 @@ if($arLocation = $dbLocation->Fetch())//if there are no data in module
 				"SETTINGS" => "23",
 				"PROFILES" => "",
 				"TAX_RATE" => 0,
-			),
-			"ALL"
+			)
 		);
 	}
 
@@ -68,8 +66,7 @@ if($arLocation = $dbLocation->Fetch())//if there are no data in module
 			"SETTINGS" => "/bitrix/modules/sale/delivery/ups/ru_csv_zones.csv;/bitrix/modules/sale/delivery/ups/ru_csv_export.csv",
 			"PROFILES" => "",
 			"TAX_RATE" => 0,
-		),
-		"ALL"
+		)
 	);
 }
 ?>

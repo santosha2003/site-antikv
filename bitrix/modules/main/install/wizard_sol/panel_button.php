@@ -12,7 +12,7 @@ IncludeModuleLangFile(__FILE__);
 
 class CWizardSolPanel
 {
-	function ShowPanel()
+	public static function ShowPanel()
 	{
 		global $USER, $APPLICATION;
 
@@ -23,7 +23,7 @@ class CWizardSolPanel
 		{
 			if($_REQUEST['add_new_site_sol']=='sol' && check_bitrix_sessid())
 			{
-				$dbrSites = CSite::GetList($by, $ord);
+				$dbrSites = CSite::GetList();
 				$arSitesID = Array();
 				$arSitesPath = Array();
 				$siteCnt = 0;
@@ -32,8 +32,8 @@ class CWizardSolPanel
 					if($arSite["ACTIVE"]=="Y")
 						$siteCnt++;
 
-					$arSitesID[] = strtolower($arSite["ID"]);
-					$arSitesPath[] = strtolower($arSite["PATH"]);
+					$arSitesID[] = mb_strtolower($arSite["ID"]);
+					$arSitesPath[] = mb_strtolower($arSite["PATH"]);
 				}
 
 				$newSiteID = "";
@@ -118,7 +118,7 @@ class CWizardSolPanel
 			$arMenu = Array(
 				Array(		
 					"ACTION" => "jsUtils.Redirect([], '".CUtil::JSEscape(SITE_DIR)."?add_new_site_sol=sol&".bitrix_sessid_get()."')",
-					"TEXT" => "<b>".GetMessage("SOL_BUTTON_TEST_TEXT", Array("#BR#" => " "))."</b>",
+					"HTML" => "<b>".GetMessage("SOL_BUTTON_TEST_TEXT", Array("#BR#" => " "))."</b>",
 					"TITLE" => GetMessage("SOL_BUTTON_TEST_TITLE"),
 				),
 			);
@@ -131,7 +131,7 @@ class CWizardSolPanel
 
 			$protocol = (CMain::IsHTTPS()? 'https://' : 'http://');
 			$arSites = array();	
-			$dbrSites = CSite::GetList($by, $ord, Array("ACTIVE"=>"Y"));
+			$dbrSites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 			while($arSite = $dbrSites->GetNext())
 			{
 				$url = $arSite["DIR"];

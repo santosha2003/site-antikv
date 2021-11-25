@@ -1,21 +1,24 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
+
+use Bitrix\Main\Text\HtmlFilter;
 
 class CBlogMetaWeblog
 {
-	function Authorize($user, $password)
+	public static function Authorize($user, $password)
 	{
 		global $USER, $APPLICATION;
 
 		$arAuthResult = $USER->Login($user, $password, "Y");
 		$APPLICATION->arAuthResult = $arAuthResult;
-		if($USER->IsAuthorized() && strlen($arAuthResult["MESSAGE"])<=0)
+		if($USER->IsAuthorized() && $arAuthResult["MESSAGE"] == '')
 			return true;
 		else
 			return false;
 	}
 
-	function DecodeParams($value)
+	public static function DecodeParams($value)
 	{
 		foreach($value as $t => $v)
 		{
@@ -26,7 +29,7 @@ class CBlogMetaWeblog
 		}
 	}
 
-	function GetUsersBlogs($params, $arPath)
+	public static function GetUsersBlogs($params, $arPath)
 	{
 		global $USER;
 		$blog = CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]);
@@ -42,14 +45,15 @@ class CBlogMetaWeblog
 			while($arBlog = $dbBlog->GetNext())
 			{
 
-				if(strlen($arPath["PATH_TO_BLOG"]) > 0)
+				if($arPath["PATH_TO_BLOG"] <> '')
 				{
-					if (defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME)>0)
+					if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME <> '')
 						$serverName = SITE_SERVER_NAME;
 					else
 						$serverName = COption::GetOptionString("main", "server_name", "");
-					if (strlen($serverName) <=0)
+					if ($serverName == '')
 						$serverName = $_SERVER["SERVER_NAME"];
+					$serverName = HtmlFilter::encode($serverName);
 
 					$path2Blog = "http://".$serverName.CComponentEngine::MakePathFromTemplate($arPath["PATH_TO_BLOG"], array("blog" => $arBlog["URL"], "user_id" => $arBlog["OWNER_ID"]));
 				}
@@ -128,7 +132,7 @@ class CBlogMetaWeblog
 				}
 			}
 
-			if(strlen($result) > 0)
+			if($result <> '')
 			{
 				return '<params>
 							<param>
@@ -179,7 +183,7 @@ class CBlogMetaWeblog
 		}
 	}
 
-	function GetCategories($params)
+	public static function GetCategories($params)
 	{
 		global $USER;
 		$blog = CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]);
@@ -216,7 +220,7 @@ class CBlogMetaWeblog
 			}
 
 
-			if(strlen($result) > 0)
+			if($result <> '')
 			{
 				return '<params>
 							<param>
@@ -267,13 +271,14 @@ class CBlogMetaWeblog
 		}
 
 	}
-	function GetRecentPosts($params, $arPath)
+
+	public static function GetRecentPosts($params, $arPath)
 	{
 		global $USER;
-		$blogId = IntVal(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
+		$blogId = intval(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
 		$user = CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]);
 		$password = CBlogMetaWeblog::DecodeParams($params[2]["#"]["value"][0]["#"]);
-		$numPosts = IntVal(CBlogMetaWeblog::DecodeParams($params[3]["#"]["value"][0]["#"]));
+		$numPosts = intval(CBlogMetaWeblog::DecodeParams($params[3]["#"]["value"][0]["#"]));
 		if($numPosts <= 0)
 			$numPosts = 1;
 		elseif($numPosts > 20)
@@ -284,7 +289,7 @@ class CBlogMetaWeblog
 			$result = '';
 			$userId = $USER->GetID();
 
-			if(IntVal($blogId) > 0)
+			if(intval($blogId) > 0)
 			{
 				$dbBlog = CBlog::GetList(Array(), Array("GROUP_SITE_ID" => SITE_ID, "ACTIVE" => "Y", "ID" => $blogId), false, false, Array("ID", "URL", "NAME"));
 				if($arBlog = $dbBlog->GetNext())
@@ -294,6 +299,11 @@ class CBlogMetaWeblog
 					$dbPost = CBlogPost::GetList(Array("DATE_PUBLISH" => "DESC", "ID" => "DESC"), Array("BLOG_ID" => $blogId), false, Array("nTopCount" => $numPosts), $arSelectedFields);
 					while($arPost = $dbPost->GetNext())
 					{
+						if (!empty($arPost['DETAIL_TEXT']))
+						{
+							$arPost['DETAIL_TEXT'] = \Bitrix\Main\Text\Emoji::decode($arPost['DETAIL_TEXT']);
+						}
+
 						$dateISO = date("Y-m-d\TH:i:s", MakeTimeStamp($arPost["DATE_PUBLISH"]));
 						$title = htmlspecialcharsEx($arPost["TITLE"]);
 						$arImages = Array();
@@ -322,9 +332,9 @@ class CBlogMetaWeblog
 						}
 
 						$path2Post = "";
-						if(strlen($arPath["PATH_TO_POST"]) > 0)
+						if($arPath["PATH_TO_POST"] <> '')
 						{
-							if (defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME)>0)
+							if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME <> '')
 								$serverName = SITE_SERVER_NAME;
 							else
 								$serverName = COption::GetOptionString("main", "server_name", "www.bitrixsoft.com");
@@ -334,7 +344,7 @@ class CBlogMetaWeblog
 						$result .= '
 							<value>
 								<struct>';
-						if(strlen($category) > 0)
+						if($category <> '')
 							$result .= '<member>
 										<name>categories</name>
 										<value>
@@ -416,10 +426,10 @@ class CBlogMetaWeblog
 
 	}
 
-	function NewMediaObject($params)
+	public static function NewMediaObject($params)
 	{
 		global $USER, $DB;
-		$blogId = IntVal(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
+		$blogId = intval(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
 		$user = CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]);
 		$password = CBlogMetaWeblog::DecodeParams($params[2]["#"]["value"][0]["#"]);
 		$arImage = $params[3]["#"]["value"][0]["#"]["struct"][0]["#"]["member"];
@@ -435,25 +445,26 @@ class CBlogMetaWeblog
 			$result = '';
 			$userId = $USER->GetID();
 
-			if(IntVal($blogId) > 0)
+			if(intval($blogId) > 0)
 			{
 				$dbBlog = CBlog::GetList(Array(), Array("GROUP_SITE_ID" => SITE_ID, "ACTIVE" => "Y", "ID" => $blogId), false, false, Array("ID", "URL", "NAME"));
 				if($arBlog = $dbBlog->GetNext())
 				{
 					$filename = trim(str_replace("\\", "/", trim($arImageInfo["name"])), "/");
-					$DIR_NAME = CTempFile::GetDirectoryName(12);
-					$FILE_NAME = rel2abs($DIR_NAME, "/".$filename);
-					if((strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
-						$ABS_FILE_NAME = $DIR_NAME.$FILE_NAME;
+					if ($filename <> '')
+					{
+						$TEMP_FILE_NAME = CTempFile::GetFileName(md5($filename).'.'.GetFileExtension($filename));
+						CheckDirPath($TEMP_FILE_NAME);
+					}
 					else
-						$ABS_FILE_NAME = "";
+					{
+						$TEMP_FILE_NAME = '';
+					}
 
-					CheckDirPath($DIR_NAME);
-
-					if((strlen($ABS_FILE_NAME) > 0) && ($fp = fopen($ABS_FILE_NAME, "ab")))
+					if(($TEMP_FILE_NAME <> '') && ($fp = fopen($TEMP_FILE_NAME, "ab")))
 					{
 						$result = fwrite($fp, $arImageInfo["bits"]);
-						if($result !== (function_exists("mb_strlen")? mb_strlen($arImageInfo["bits"], 'latin1'): strlen($arImageInfo["bits"])))
+						if($result !== CUtil::BinStrlen($arImageInfo["bits"]))
 						{
 							return '<fault>
 									<value>
@@ -461,14 +472,14 @@ class CBlogMetaWeblog
 											<member>
 												<name>faultCode</name>
 												<value><int>3</int></value>
-												</member>
+											</member>
 											<member>
 												<name>faultString</name>
 												<value><string>Error on saving media object</string></value>
-												</member>
-											</struct>
-										</value>
-									</fault>';
+											</member>
+										</struct>
+									</value>
+								</fault>';
 						}
 						fclose($fp);
 					}
@@ -480,14 +491,14 @@ class CBlogMetaWeblog
 										<member>
 											<name>faultCode</name>
 											<value><int>3</int></value>
-											</member>
+										</member>
 										<member>
 											<name>faultString</name>
 											<value><string>Error on saving media object</string></value>
-											</member>
-										</struct>
-									</value>
-								</fault>';
+										</member>
+									</struct>
+								</value>
+							</fault>';
 					}
 
 					$arFields = array(
@@ -496,8 +507,7 @@ class CBlogMetaWeblog
 						"=TIMESTAMP_X"	=> $DB->GetNowFunction(),
 						"FILE_ID" => Array(
 							"name" => $arImageInfo["name"],
-							"tmp_name" => $ABS_FILE_NAME,
-							//"content" => $arImageInfo["bits"],
+							"tmp_name" => $TEMP_FILE_NAME,
 							"MODULE_ID" => "blog",
 							"type" => $arImageInfo["type"],
 						)
@@ -510,15 +520,15 @@ class CBlogMetaWeblog
 					$dbSite = CSite::GetByID(SITE_ID);
 					$arSite = $dbSite -> Fetch();
 					$serverName = htmlspecialcharsEx($arSite["SERVER_NAME"]);
-					if (strlen($serverName) <=0)
+					if ($serverName == '')
 					{
-						if (defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME)>0)
+						if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME <> '')
 							$serverName = SITE_SERVER_NAME;
 						else
 							$serverName = COption::GetOptionString("main", "server_name", "www.bitrixsoft.com");
 					}
 
-					if(strlen($path) > 0)
+					if($path <> '')
 					{
 						return '<params>
 							<param>
@@ -533,7 +543,7 @@ class CBlogMetaWeblog
 									</struct>
 								</value>
 							</param>
-						</params>';
+							</params>';
 					}
 				}
 			}
@@ -543,13 +553,13 @@ class CBlogMetaWeblog
 						<member>
 							<name>faultCode</name>
 							<value><int>3</int></value>
-							</member>
+						</member>
 						<member>
 							<name>faultString</name>
 							<value><string>Error on saving media object</string></value>
-							</member>
-						</struct>
-					</value>
+						</member>
+					</struct>
+				</value>
 				</fault>';
 		}
 		else
@@ -560,22 +570,22 @@ class CBlogMetaWeblog
 						<member>
 							<name>faultCode</name>
 							<value><int>3</int></value>
-							</member>
+						</member>
 						<member>
 							<name>faultString</name>
 							<value><string>'.$arAuthResult["MESSAGE"].'</string></value>
-							</member>
-						</struct>
-					</value>
+						</member>
+					</struct>
+				</value>
 				</fault>';
 		}
 
 	}
 
-	function NewPost($params)
+	public static function NewPost($params)
 	{
 		global $USER, $DB;
-		$blogId = IntVal(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
+		$blogId = intval(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
 		$user = CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]);
 		$password = CBlogMetaWeblog::DecodeParams($params[2]["#"]["value"][0]["#"]);
 		$arPostInfo = $params[3]["#"]["value"][0]["#"]["struct"][0]["#"]["member"];
@@ -585,6 +595,9 @@ class CBlogMetaWeblog
 		{
 			${$val["#"]["name"][0]["#"]} = CBlogMetaWeblog::DecodeParams($val["#"]["value"][0]["#"]);
 		}
+//		security
+		if(!empty($description))
+			$description = HtmlFilter::encode($description);
 
 		$arCategory = Array();
 		if(is_array($categories["data"][0]["#"]["value"]))
@@ -592,7 +605,7 @@ class CBlogMetaWeblog
 			foreach($categories["data"][0]["#"]["value"] as $val)
 			{
 				$catTmp = CBlogMetaWeblog::DecodeParams($val["#"]);
-				if(strlen($catTmp) > 0)
+				if($catTmp <> '')
 					$arCategory[] = $catTmp;
 			}
 		}
@@ -602,7 +615,7 @@ class CBlogMetaWeblog
 			$result = '';
 			$userId = $USER->GetID();
 
-			if(IntVal($blogId) > 0)
+			if(intval($blogId) > 0)
 			{
 				$dbBlog = CBlog::GetList(Array(), Array("GROUP_SITE_ID" => SITE_ID, "ACTIVE" => "Y", "ID" => $blogId), false, false, Array("ID", "URL", "NAME", "GROUP_ID", "SOCNET_GROUP_ID"));
 				if($arBlog = $dbBlog->GetNext())
@@ -629,7 +642,7 @@ class CBlogMetaWeblog
 						$tg = trim($tg);
 						if(!in_array($arCatBlog[ToLower($tg)], $CATEGORYtmp))
 						{
-							if(IntVal($arCatBlog[ToLower($tg)]) > 0)
+							if(intval($arCatBlog[ToLower($tg)]) > 0)
 								$CATEGORYtmp[] = $arCatBlog[ToLower($tg)];
 							else
 							{
@@ -644,9 +657,9 @@ class CBlogMetaWeblog
 					$dbSite = CSite::GetByID(SITE_ID);
 					$arSite = $dbSite -> Fetch();
 					$serverName = htmlspecialcharsEx($arSite["SERVER_NAME"]);
-					if (strlen($serverName) <=0)
+					if ($serverName == '')
 					{
-						if (defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME)>0)
+						if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME <> '')
 							$serverName = SITE_SERVER_NAME;
 						else
 							$serverName = COption::GetOptionString("main", "server_name", "www.bitrixsoft.com");
@@ -660,7 +673,7 @@ class CBlogMetaWeblog
 						$path = CFile::GetPath($arImage["FILE_ID"]);
 						$path = "http://".$serverName.$path;
 
-						if(strpos($description, $path) !== false)
+						if(mb_strpos($description, $path) !== false)
 						{
 							$description = str_replace(('<img src="'.$path.'" alt=""/>'), "[IMG ID=".$arImage["ID"]."]", $description);
 							$arImgRepl[] = $arImage["ID"];
@@ -670,7 +683,7 @@ class CBlogMetaWeblog
 					$arFields=array(
 							"BLOG_ID"			=> $blogId,
 							"AUTHOR_ID"			=> $userId,
-							"TITLE"			=> $title,
+							"TITLE"				=> $title,
 							"DETAIL_TEXT"		=> $description,
 							"DETAIL_TEXT_TYPE"	=> "html",
 							"=DATE_PUBLISH"		=> $DB->GetNowFunction(),
@@ -683,7 +696,7 @@ class CBlogMetaWeblog
 							"PERMS_COMMENT" => array(),
 						);
 					$postId = CBlogPost::Add($arFields);
-					if(IntVal($postId) > 0)
+					if(intval($postId) > 0)
 					{
 						foreach($CATEGORYtmp as $v)
 							CBlogPostCategory::Add(Array("BLOG_ID" => $arBlog["ID"], "POST_ID" => $postId, "CATEGORY_ID"=>$v));
@@ -754,10 +767,10 @@ class CBlogMetaWeblog
 		}
 	}
 
-	function EditPost($params)
+	public static function EditPost($params)
 	{
 		global $USER, $DB;
-		$postId = IntVal(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
+		$postId = intval(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
 		$user = CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]);
 		$password = CBlogMetaWeblog::DecodeParams($params[2]["#"]["value"][0]["#"]);
 		$arPostInfo = $params[3]["#"]["value"][0]["#"]["struct"][0]["#"]["member"];
@@ -767,14 +780,18 @@ class CBlogMetaWeblog
 		{
 			${$val["#"]["name"][0]["#"]} = CBlogMetaWeblog::DecodeParams($val["#"]["value"][0]["#"]);
 		}
-
+		
+//		security
+		if(!empty($description))
+			$description = HtmlFilter::encode($description);
+		
 		$arCategory = Array();
 		if(is_array($categories["data"][0]["#"]["value"]))
 		{
 			foreach($categories["data"][0]["#"]["value"] as $val)
 			{
 				$catTmp = CBlogMetaWeblog::DecodeParams($val["#"]);
-				if(strlen($catTmp) > 0)
+				if($catTmp <> '')
 					$arCategory[] = $catTmp;
 			}
 		}
@@ -784,12 +801,17 @@ class CBlogMetaWeblog
 			$result = '';
 			$userId = $USER->GetID();
 
-			if(IntVal($postId) > 0)
+			if(intval($postId) > 0)
 			{
 				$arSelectedFields = array("ID", "BLOG_ID", "TITLE", "DATE_PUBLISH", "AUTHOR_ID", "DETAIL_TEXT", "DETAIL_TEXT_TYPE");
 				$dbPost = CBlogPost::GetList(Array(), Array("AUTHOR_ID" => $userId, "ID" => $postId), false, Array("nTopCount" => 1), $arSelectedFields);
 				if($arPost = $dbPost->Fetch())
 				{
+					if (!empty($arPost['DETAIL_TEXT']))
+					{
+						$arPost['DETAIL_TEXT'] = \Bitrix\Main\Text\Emoji::decode($arPost['DETAIL_TEXT']);
+					}
+
 					$arBlog = CBlog::GetByID($arPost["BLOG_ID"]);
 
 					if (intval($arBlog["SOCNET_GROUP_ID"]) > 0 && CModule::IncludeModule("socialnetwork") && method_exists("CSocNetGroup", "GetSite"))
@@ -814,7 +836,7 @@ class CBlogMetaWeblog
 						$tg = trim($tg);
 						if(!in_array($arCatBlog[ToLower($tg)], $CATEGORYtmp))
 						{
-							if(IntVal($arCatBlog[ToLower($tg)]) > 0)
+							if(intval($arCatBlog[ToLower($tg)]) > 0)
 								$CATEGORYtmp[] = $arCatBlog[ToLower($tg)];
 							else
 							{
@@ -829,9 +851,9 @@ class CBlogMetaWeblog
 					$dbSite = CSite::GetByID(SITE_ID);
 					$arSite = $dbSite -> Fetch();
 					$serverName = htmlspecialcharsEx($arSite["SERVER_NAME"]);
-					if (strlen($serverName) <=0)
+					if ($serverName == '')
 					{
-						if (defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME)>0)
+						if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME <> '')
 							$serverName = SITE_SERVER_NAME;
 						else
 							$serverName = COption::GetOptionString("main", "server_name", "www.bitrixsoft.com");
@@ -844,7 +866,7 @@ class CBlogMetaWeblog
 						$path = CFile::GetPath($arImage["FILE_ID"]);
 						$path = "http://".$serverName.$path;
 
-						if(strpos($description, $path) !== false)
+						if(mb_strpos($description, $path) !== false)
 						{
 							$description = str_replace(('<img src="'.$path.'" alt=""/>'), "[IMG ID=".$arImage["ID"]."]", $description);
 							CBlogImage::Update($arImage["ID"], Array("POST_ID" => $arPost["ID"]));
@@ -853,7 +875,7 @@ class CBlogMetaWeblog
 
 
 					$arFields=array(
-							"TITLE"			=> $title,
+							"TITLE"				=> $title,
 							"DETAIL_TEXT"		=> $description,
 							"DETAIL_TEXT_TYPE"	=> "html",
 							"PUBLISH_STATUS"	=> (($publish == 1) ? "P" : "D"),
@@ -864,7 +886,7 @@ class CBlogMetaWeblog
 					CBlogPostCategory::DeleteByPostID($arPost["ID"]);
 					foreach($CATEGORYtmp as $v)
 						CBlogPostCategory::Add(Array("BLOG_ID" => $arPost["BLOG_ID"], "POST_ID" => $arPost["ID"], "CATEGORY_ID"=>$v));
-					if(IntVal($postId) > 0)
+					if(intval($postId) > 0)
 					{
 						foreach ($arSites as $site_id_tmp)
 						{
@@ -933,10 +955,10 @@ class CBlogMetaWeblog
 		}
 	}
 
-	function GetPost($params, $arPath)
+	public static function GetPost($params, $arPath)
 	{
 		global $USER;
-		$postId = IntVal(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
+		$postId = intval(CBlogMetaWeblog::DecodeParams($params[0]["#"]["value"][0]["#"]));
 		$user = CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]);
 		$password = CBlogMetaWeblog::DecodeParams($params[2]["#"]["value"][0]["#"]);
 
@@ -945,12 +967,17 @@ class CBlogMetaWeblog
 			$result = '';
 			$userId = $USER->GetID();
 
-			if(IntVal($postId) > 0)
+			if(intval($postId) > 0)
 			{
 				$arSelectedFields = array("ID", "BLOG_ID", "TITLE", "DATE_PUBLISH", "AUTHOR_ID", "DETAIL_TEXT", "DETAIL_TEXT_TYPE", "BLOG_URL", "BLOG_OWNER_ID");
 				$dbPost = CBlogPost::GetList(Array(), Array("AUTHOR_ID" => $userId, "ID" => $postId), false, Array("nTopCount" => 1), $arSelectedFields);
 				if($arPost = $dbPost->Fetch())
 				{
+					if (!empty($arPost['DETAIL_TEXT']))
+					{
+						$arPost['DETAIL_TEXT'] = \Bitrix\Main\Text\Emoji::decode($arPost['DETAIL_TEXT']);
+					}
+
 					$parser = new blogTextParser();
 					$dateISO = date("Y-m-d\TH:i:s", MakeTimeStamp($arPost["DATE_PUBLISH"]));
 					$title = htmlspecialcharsEx($arPost["TITLE"]);
@@ -980,9 +1007,9 @@ class CBlogMetaWeblog
 					}
 
 					$path2Post = "";
-					if(strlen($arPath["PATH_TO_POST"]) > 0)
+					if($arPath["PATH_TO_POST"] <> '')
 					{
-						if (defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME)>0)
+						if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME <> '')
 							$serverName = SITE_SERVER_NAME;
 						else
 							$serverName = COption::GetOptionString("main", "server_name", "www.bitrixsoft.com");
@@ -992,7 +1019,7 @@ class CBlogMetaWeblog
 					$result .= '
 						<value>
 							<struct>';
-					if(strlen($category) > 0)
+					if($category <> '')
 						$result .= '<member>
 									<name>categories</name>
 									<value>
@@ -1072,10 +1099,10 @@ class CBlogMetaWeblog
 		}
 	}
 
-	function DeletePost($params)
+	public static function DeletePost($params)
 	{
 		global $USER;
-		$postId = IntVal(CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]));
+		$postId = intval(CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]));
 		$user = CBlogMetaWeblog::DecodeParams($params[2]["#"]["value"][0]["#"]);
 		$password = CBlogMetaWeblog::DecodeParams($params[3]["#"]["value"][0]["#"]);
 
@@ -1084,7 +1111,7 @@ class CBlogMetaWeblog
 			$result = '';
 			$userId = $USER->GetID();
 
-			if(IntVal($postId) > 0)
+			if(intval($postId) > 0)
 			{
 				$dbPost = CBlogPost::GetList(Array(), Array("AUTHOR_ID" => $userId, "ID" => $postId), false, Array("nTopCount" => 1), Array("ID", "BLOG_ID", "AUTHOR_ID"));
 				if($arPost = $dbPost->Fetch())
@@ -1150,7 +1177,7 @@ class CBlogMetaWeblog
 		}
 	}
 
-	function GetUserInfo($params)
+	public static function GetUserInfo($params)
 	{
 		global $USER;
 		$user = CBlogMetaWeblog::DecodeParams($params[1]["#"]["value"][0]["#"]);
@@ -1165,7 +1192,7 @@ class CBlogMetaWeblog
 			if($arUser = $dbUser->Fetch())
 			{
 				$BlogUser = CBlogUser::GetByID($userId, BLOG_BY_USER_ID);
-				if(strlen($BlogUser["ALIAS"]) > 0)
+				if($BlogUser["ALIAS"] <> '')
 					$nick = htmlspecialcharsEx($BlogUser["ALIAS"]);
 				else
 					$nick = htmlspecialcharsEx($arUser["LOGIN"]);
@@ -1194,7 +1221,7 @@ class CBlogMetaWeblog
 			}
 
 
-			if(strlen($result) > 0)
+			if($result <> '')
 			{
 				return '<params>
 							<param>
@@ -1245,7 +1272,4 @@ class CBlogMetaWeblog
 		}
 
 	}
-
-
 }
-?>

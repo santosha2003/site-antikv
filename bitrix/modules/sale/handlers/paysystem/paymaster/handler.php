@@ -10,10 +10,13 @@ use Bitrix\Sale\PaySystem;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
 
-Loader::registerAutoLoadClasses('sale', array(PaySystem\Manager::getClassNameFromPath('WebMoney') => 'handlers/paysystem/webmoney/handler.php'));
-
+PaySystem\Manager::includeHandler('WebMoney');
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class PayMasterHandler
+ * @package Sale\Handlers\PaySystem
+ */
 class PayMasterHandler extends WebMoneyHandler
 {
 	/**
@@ -25,8 +28,10 @@ class PayMasterHandler extends WebMoneyHandler
 	{
 		$extraParams = array(
 			'PS_MODE' => $this->service->getField('PS_MODE'),
-			'URL' => $this->getUrl('pay'),
-			'BX_PAYSYSTEM_CODE' => $payment->getPaymentSystemId()
+			'URL' => $this->getUrl($payment, 'pay'),
+			'BX_PAYSYSTEM_CODE' => $this->service->getField('ID'),
+			'PAYMASTER_SUCCESS_URL' => $this->getSuccessUrl($payment),
+			'PAYMASTER_FAIL_URL' => $this->getFailUrl($payment),
 		);
 		$this->setExtraParams($extraParams);
 
@@ -60,6 +65,10 @@ class PayMasterHandler extends WebMoneyHandler
 			)
 			{
 				$serviceResult->addError(new Error(Loc::getMessage('SALE_HPS_PAYMASTER_ERROR_PARAMS_VALUE')));
+			}
+			else
+			{
+				$serviceResult->setData(array('CODE' => 'YES'));
 			}
 		}
 		else
@@ -126,10 +135,11 @@ class PayMasterHandler extends WebMoneyHandler
 			}
 		}
 
-		PaySystem\ErrorLog::add(array(
-			'ACTION' => $request->get('LMI_PREREQUEST'),
-			'MESSAGE' => join(' ', $serviceResult->getErrorMessages())
-		));
+		if (!$serviceResult->isSuccess())
+		{
+			$error = 'Paymaster: processRequest: '.join('\n', $serviceResult->getErrorMessages());
+			PaySystem\Logger::addError($error);
+		}
 
 		return $serviceResult;
 	}
@@ -154,10 +164,48 @@ class PayMasterHandler extends WebMoneyHandler
 	 */
 	protected function checkHash(Payment $payment, Request $request)
 	{
+		$algorithm = $this->getBusinessValue($payment, 'PAYMASTER_HASH_ALGO');
+
 		$string = $request->get("LMI_MERCHANT_ID").";".$request->get("LMI_PAYMENT_NO").";".$request->get("LMI_SYS_PAYMENT_ID").";".$request->get("LMI_SYS_PAYMENT_DATE").";".$request->get("LMI_PAYMENT_AMOUNT").";".$request->get("LMI_CURRENCY").";".$request->get("LMI_PAID_AMOUNT").";".$request->get("LMI_PAID_CURRENCY").";".$request->get("LMI_PAYMENT_SYSTEM").";".$request->get("LMI_SIM_MODE").";".$this->getBusinessValue($payment, 'PAYMASTER_CNST_SECRET_KEY');
 
-		$hash = base64_encode(pack('H*', md5($string)));
+		$hash = base64_encode(hash($algorithm, $string, true));
 
 		return ToUpper($hash) == ToUpper($request->get('LMI_HASH'));
+	}
+
+	/**
+	 * @param PaySystem\ServiceResult $result
+	 * @param Request $request
+	 * @return mixed
+	 */
+	public function sendResponse(PaySystem\ServiceResult $result, Request $request)
+	{
+		global $APPLICATION;
+		$APPLICATION->RestartBuffer();
+
+		$data = $result->getData();
+		if (array_key_exists('CODE', $data))
+		{
+			echo $data['CODE'];
+			die();
+		}
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getSuccessUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'PAYMASTER_SUCCESS_URL') ?: $this->service->getContext()->getUrl();
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getFailUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'PAYMASTER_FAIL_URL') ?: $this->service->getContext()->getUrl();
 	}
 }

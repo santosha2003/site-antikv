@@ -3,6 +3,8 @@ namespace Bitrix\Sale\Delivery\Restrictions;
 
 use Bitrix\Sale\Delivery\Restrictions;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Internals\Entity;
+use Bitrix\Sale\Shipment;
 
 Loc::loadMessages(__FILE__);
 
@@ -24,7 +26,7 @@ class ByDimensions extends Restrictions\Base
 	}
 
 	/**
-	 * @param array $dimensions keys:(LENGTH, WIDTH, HEIGHT)
+	 * @param array $dimensionsList keys:(LENGTH, WIDTH, HEIGHT)
 	 * @param array $restrictionParams
 	 * @param int $deliveryId
 	 * @return bool
@@ -56,28 +58,35 @@ class ByDimensions extends Restrictions\Base
 		return true;
 	}
 
-	protected static function extractParams(\Bitrix\Sale\Shipment $shipment)
+	protected static function extractParams(Entity $entity)
 	{
 		$paramsToCheck = array();
 
-		foreach($shipment->getShipmentItemCollection() as $shipmentItem)
+		if ($entity instanceof Shipment)
 		{
-			$basketItem = $shipmentItem->getBasketItem();
-			$dimensions = $basketItem->getField("DIMENSIONS");
+			foreach($entity->getShipmentItemCollection() as $shipmentItem)
+			{
+				$basketItem = $shipmentItem->getBasketItem();
 
-			if(is_string($dimensions))
-				$dimensions = unserialize($dimensions);
+				if(!$basketItem)
+					continue;
 
-			if(!is_array($dimensions) || empty($dimensions))
-				continue;
+				$dimensions = $basketItem->getField("DIMENSIONS");
 
-			$paramsToCheck[] = $dimensions;
+				if(is_string($dimensions))
+					$dimensions = unserialize($dimensions, ['allowed_classes' => false]);
+
+				if(!is_array($dimensions) || empty($dimensions))
+					continue;
+
+				$paramsToCheck[] = $dimensions;
+			}
 		}
 
 		return $paramsToCheck;
 	}
 
-	public static function getParamsStructure()
+	public static function getParamsStructure($entityId = 0)
 	{
 		return array(
 			"LENGTH" => array(

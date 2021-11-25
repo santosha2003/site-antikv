@@ -1,6 +1,6 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
-
+$this->setFrameMode(true);
 $arAllMapOptions = array_merge($arResult['ALL_MAP_OPTIONS'], $arResult['ALL_MAP_CONTROLS']);
 $arMapOptions = array_merge($arParams['OPTIONS'], $arParams['CONTROLS']);
 ?>
@@ -10,7 +10,7 @@ if (!window.GLOBAL_arMapObjects)
 
 function init_<?echo $arParams['MAP_ID']?>()
 {
-	if (!window.google && !window.google.maps)
+	if (!window.google || !window.google.maps)
 		return;
 
 	var opts = {
@@ -79,15 +79,16 @@ function BXMapLoader_<?echo $arParams['MAP_ID']?>(MAP_KEY)
 			window.bGoogleMapsScriptLoading = true;
 
 			<?$scheme = (CMain::IsHTTPS() ? "https" : "http");?>
+			var apiKey = '<?=CUtil::JSEscape($arParams['API_KEY'])?>';
 
 			BX.loadScript(
-				'<?=$scheme?>://www.google.com/jsapi?rnd=' + Math.random(),
+				'<?=$scheme?>://www.google.com/jsapi?key=' + apiKey + '&rnd=' + Math.random(),
 				function ()
 				{
 					if (BX.browser.IsIE())
-						setTimeout("window.google.load('maps', <?= intval($arParams['GOOGLE_VERSION'])?>, {callback: init_<?echo $arParams['MAP_ID']?>, other_params: 'sensor=false&language=<?= LANGUAGE_ID?>'})", 1000);
+						setTimeout("window.google.load('maps', <?= intval($arParams['GOOGLE_VERSION'])?>, {callback: init_<?echo $arParams['MAP_ID']?>, other_params: 'language=<?=LANGUAGE_ID?>&key=" + apiKey +"'})", 1000);
 					else
-						google.load('maps', <?echo intval($arParams['GOOGLE_VERSION'])?>, {callback: init_<?echo $arParams['MAP_ID']?>, other_params: 'sensor=false&language=<?=LANGUAGE_ID?>'});
+						google.load('maps', <?echo intval($arParams['GOOGLE_VERSION'])?>, {callback: init_<?echo $arParams['MAP_ID']?>, other_params: 'language=<?=LANGUAGE_ID?>&key=' + apiKey});
 				}
 			);
 		}

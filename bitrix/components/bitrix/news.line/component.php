@@ -10,12 +10,15 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
 
+use Bitrix\Main\Loader,
+	Bitrix\Main,
+	Bitrix\Iblock;
 
 if(!isset($arParams["CACHE_TIME"]))
 	$arParams["CACHE_TIME"] = 300;
 
 $arParams["IBLOCK_TYPE"] = trim($arParams["IBLOCK_TYPE"]);
-if(strlen($arParams["IBLOCK_TYPE"])<=0)
+if($arParams["IBLOCK_TYPE"] == '')
 	$arParams["IBLOCK_TYPE"] = "news";
 if($arParams["IBLOCK_TYPE"]=="-")
 	$arParams["IBLOCK_TYPE"] = "";
@@ -33,12 +36,12 @@ foreach($arParams["FIELD_CODE"] as $key=>$val)
 		unset($arParams["FIELD_CODE"][$key]);
 
 $arParams["SORT_BY1"] = trim($arParams["SORT_BY1"]);
-if(strlen($arParams["SORT_BY1"])<=0)
+if($arParams["SORT_BY1"] == '')
 	$arParams["SORT_BY1"] = "ACTIVE_FROM";
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER1"]))
 	$arParams["SORT_ORDER1"]="DESC";
 
-if(strlen($arParams["SORT_BY2"])<=0)
+if($arParams["SORT_BY2"] == '')
 	$arParams["SORT_BY2"] = "SORT";
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER2"]))
 	$arParams["SORT_ORDER2"]="ASC";
@@ -50,14 +53,14 @@ if($arParams["NEWS_COUNT"]<=0)
 $arParams["DETAIL_URL"]=trim($arParams["DETAIL_URL"]);
 
 $arParams["ACTIVE_DATE_FORMAT"] = trim($arParams["ACTIVE_DATE_FORMAT"]);
-if(strlen($arParams["ACTIVE_DATE_FORMAT"])<=0)
+if($arParams["ACTIVE_DATE_FORMAT"] == '')
 	$arParams["ACTIVE_DATE_FORMAT"] = $DB->DateFormatToPHP(CSite::GetDateFormat("SHORT"));
 
-if($this->StartResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER->GetGroups())))
+if($this->startResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER->GetGroups())))
 {
-	if(!CModule::IncludeModule("iblock"))
+	if(!Loader::includeModule("iblock"))
 	{
-		$this->AbortResultCache();
+		$this->abortResultCache();
 		ShowError(GetMessage("IBLOCK_MODULE_NOT_INSTALLED"));
 		return;
 	}
@@ -71,6 +74,7 @@ if($this->StartResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER
 	$arFilter = array (
 		"IBLOCK_TYPE" => $arParams["IBLOCK_TYPE"],
 		"IBLOCK_ID"=> $arParams["IBLOCKS"],
+		"IBLOCK_LID" => SITE_ID,
 		"ACTIVE" => "Y",
 		"ACTIVE_DATE" => "Y",
 		"CHECK_PERMISSIONS" => "Y",
@@ -97,48 +101,34 @@ if($this->StartResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER
 		$arItem["EDIT_LINK"] = $arButtons["edit"]["edit_element"]["ACTION_URL"];
 		$arItem["DELETE_LINK"] = $arButtons["edit"]["delete_element"]["ACTION_URL"];
 
-		if(strlen($arItem["ACTIVE_FROM"])>0)
+		if($arItem["ACTIVE_FROM"] <> '')
 			$arItem["DISPLAY_ACTIVE_FROM"] = CIBlockFormatProperties::DateFormat($arParams["ACTIVE_DATE_FORMAT"], MakeTimeStamp($arItem["ACTIVE_FROM"], CSite::GetDateFormat()));
 		else
 			$arItem["DISPLAY_ACTIVE_FROM"] = "";
 
-		$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
-		$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
-
-		if(isset($arItem["PREVIEW_PICTURE"]))
-		{
-			$arItem["PREVIEW_PICTURE"] = (0 < $arItem["PREVIEW_PICTURE"] ? CFile::GetFileArray($arItem["PREVIEW_PICTURE"]) : false);
-			if ($arItem["PREVIEW_PICTURE"])
-			{
-				$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_ALT"];
-				if ($arItem["PREVIEW_PICTURE"]["ALT"] == "")
-					$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["NAME"];
-				$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_TITLE"];
-				if ($arItem["PREVIEW_PICTURE"]["TITLE"] == "")
-					$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["NAME"];
-			}
-		}
-		if(isset($arItem["DETAIL_PICTURE"]))
-		{
-			$arItem["DETAIL_PICTURE"] = (0 < $arItem["DETAIL_PICTURE"] ? CFile::GetFileArray($arItem["DETAIL_PICTURE"]) : false);
-			if ($arItem["DETAIL_PICTURE"])
-			{
-				$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_ALT"];
-				if ($arItem["DETAIL_PICTURE"]["ALT"] == "")
-					$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["NAME"];
-				$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_TITLE"];
-				if ($arItem["DETAIL_PICTURE"]["TITLE"] == "")
-					$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["NAME"];
-			}
-		}
+		Iblock\InheritedProperty\ElementValues::queue($arItem["IBLOCK_ID"], $arItem["ID"]);
 
 		$arResult["ITEMS"][]=$arItem;
 		$arResult["LAST_ITEM_IBLOCK_ID"]=$arItem["IBLOCK_ID"];
 	}
-	$this->SetResultCacheKeys(array(
+
+	foreach ($arResult["ITEMS"] as &$arItem)
+	{
+		$ipropValues = new Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
+		$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
+		Iblock\Component\Tools::getFieldImageData(
+			$arItem,
+			array('PREVIEW_PICTURE', 'DETAIL_PICTURE'),
+			Iblock\Component\Tools::IPROPERTY_ENTITY_ELEMENT,
+			'IPROPERTY_VALUES'
+		);
+	}
+	unset($arItem);
+
+	$this->setResultCacheKeys(array(
 		"LAST_ITEM_IBLOCK_ID",
 	));
-	$this->IncludeComponentTemplate();
+	$this->includeComponentTemplate();
 }
 
 if(
@@ -149,6 +139,5 @@ if(
 )
 {
 	$arButtons = CIBlock::GetPanelButtons($arResult["LAST_ITEM_IBLOCK_ID"], 0, 0, array("SECTION_BUTTONS"=>false));
-	$this->AddIncludeAreaIcons(CIBlock::GetComponentMenu($APPLICATION->GetPublicShowMode(), $arButtons));
+	$this->addIncludeAreaIcons(CIBlock::GetComponentMenu($APPLICATION->GetPublicShowMode(), $arButtons));
 }
-?>

@@ -113,7 +113,22 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("030_articles_content-articles_".LANGUAGE_
 		if(CBPDocument::GetNumberOfWorkflowTemplatesForDocumentType(array("iblock", "CIBlockDocument", "iblock_".$IBLOCK_ID)) <= 0)
 			CBPDocument::AddDefaultWorkflowTemplates(array("iblock", "CIBlockDocument", "iblock_".$IBLOCK_ID));
 
-		$TEMPLATE_ID = 1;
+		$TEMPLATE_ID = 0;
+		
+		$dbWorkflowTemplate = CBPWorkflowTemplateLoader::GetList(
+			array(),
+			array(
+				"DOCUMENT_TYPE" => array("iblock", "CIBlockDocument", "iblock_".$IBLOCK_ID), 
+				"SYSTEM_CODE"=>"status.php", 
+				"ACTIVE"=>"Y"
+			),
+			false,
+			false,
+			array("ID")
+		);
+
+		if($arWorkflowTemplate = $dbWorkflowTemplate->Fetch())
+			$TEMPLATE_ID = $arWorkflowTemplate["ID"];
 
 		$arElement = array(
 			"IBLOCK_ID" => $IBLOCK_ID,
@@ -128,15 +143,15 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("030_articles_content-articles_".LANGUAGE_
 		);
 		$obElement = new CIBlockElement;
 		$element_id = $obElement->Add($arElement);
-		if($element_id)
+		if($element_id && $TEMPLATE_ID>0)
 		{
 			$arErrorsTmp = array();
 			$bpId = CBPDocument::StartWorkflow(
 				$TEMPLATE_ID,
 				array("iblock", "CIBlockDocument", $element_id),
 				array(
-					"Creators" => array(array("author")),
-					"Approvers" => array(array(1)),
+					"Creators" => array("author"),
+					"Approvers" => array(1),
 				),
 				$arErrorsTmp
 			);
@@ -144,14 +159,14 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("030_articles_content-articles_".LANGUAGE_
 			{
 				$arDocumentStates = CBPDocument::GetDocumentStates(
 					array("iblock", "CIBlockDocument", "iblock_".$IBLOCK_ID),
-					null
+					array("iblock", "CIBlockDocument", $element_id)
 				);
 				$arCurrentUserGroups = $GLOBALS["USER"]->GetUserGroupArray();
 				$arCurrentUserGroups[] = "Author";
 				$arEvents = CBPDocument::GetAllowableEvents(
 					$GLOBALS["USER"]->GetID(),
 					$arCurrentUserGroups,
-					$arDocumentStates[$TEMPLATE_ID]
+					array_pop($arDocumentStates)
 				);
 				CBPDocument::SendExternalEvent(
 					$bpId,
@@ -173,9 +188,10 @@ if($IBLOCK_ID = DEMO_IBlock_ImportXML("030_articles_content-articles_".LANGUAGE_
 		"#MODULE.INSTALLED(ID=forum)#",
 		"#FORUM.ID(NAME=content-articles)#",
 	);
+	$import = new CIBlockCMLImport();
 	$replace = array(
 		$IBLOCK_ID,
-		CIBlockCMLImport::GetIBlockByXML_ID("content-news"),
+		$import->GetIBlockByXML_ID("content-news"),
 		(IsModuleInstalled("forum")? "Y": "N"),
 		$arForum["ID"],
 	);

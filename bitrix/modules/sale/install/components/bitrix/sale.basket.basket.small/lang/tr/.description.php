@@ -1,5 +1,0 @@
-<?
-$MESS ['SBBS_DEFAULT_TEMPLATE_NAME'] = "Küçük sepet";
-$MESS ['SBBS_DEFAULT_TEMPLATE_DESCRIPTION'] = "Küçük sepet";
-$MESS ['SBBS_NAME'] = "Sepet";
-?>

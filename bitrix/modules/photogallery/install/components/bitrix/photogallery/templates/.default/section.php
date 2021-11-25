@@ -33,7 +33,7 @@
 	$component,
 	array("HIDE_ICONS" => "Y")
 );?><?
-if ($result && intVal($result["ELEMENTS_CNT"]) > 0)
+if ($result && intval($result["ELEMENTS_CNT"]) > 0)
 {
 if ($arParams["USE_RATING"] == "Y"):
 	$arParams["PROPERTY_CODE"][] = "PROPERTY_vote_count";
@@ -141,7 +141,7 @@ div.photo-page-section div.photo-info-box-photo-list {display: none;}
 <? endif;}
 
 // SECTIONS LIST
-if (intVal($result["SECTIONS_CNT"]) > 0)
+if (intval($result["SECTIONS_CNT"]) > 0)
 {
 ?>
 <div class="photo-info-box photo-info-box-section-list">
@@ -176,6 +176,7 @@ if (intVal($result["SECTIONS_CNT"]) > 0)
 
 		"ALBUM_PHOTO_THUMBS_SIZE"	=>	$arParams["ALBUM_PHOTO_THUMBS_SIZE"],
 		"ALBUM_PHOTO_SIZE"	=>	$arParams["ALBUM_PHOTO_SIZE"],
+		"SECTION_LIST_THUMBNAIL_SIZE" => $arParams["SECTION_LIST_THUMBNAIL_SIZE"],
 
 		"PAGE_ELEMENTS" => $arParams["SECTION_PAGE_ELEMENTS"],
 		"PAGE_NAVIGATION_TEMPLATE" => $arParams["PAGE_NAVIGATION_TEMPLATE"],

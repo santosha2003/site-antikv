@@ -38,6 +38,8 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 	 */
 	public function getPrice(Payment $payment)
 	{
+		$result = 0;
+
 		/** @var \Bitrix\Sale\PaymentCollection $collection */
 		$collection = $payment->getCollection();
 
@@ -50,6 +52,9 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 		/** @var \Bitrix\Sale\PropertyValue $delivery */
 		$delivery = $propertyCollection->getDeliveryLocation();
 
+		if (!$delivery)
+			return $result;
+
 		$location = \CSaleLocation::GetByID($delivery->getValue());
 
 		$regId = $location["REGION_ID"];
@@ -59,7 +64,6 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 		$tarifs = self::extractFromField($params);
 		$tarifs = isset($tarifs[$regId]) ? $tarifs[$regId] : $tarifs[0];
 
-		$result = 0;
 		$fullPrice = $payment->getSum();
 
 		if ($fullPrice <= 1000)
@@ -79,7 +83,7 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 			$result = floatval($tarifs["TARIFS"][$tariffNum]["FIX"]) + $percent;
 		}
 
-		return roundEx($result, SALE_VALUE_PRECISION);
+		return round($result, 2);
 	}
 
 	/**
@@ -89,7 +93,7 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 	private static function extractFromField($params)
 	{
 		$result = array();
-		$tarifs = unserialize($params);
+		$tarifs = unserialize($params, ['allowed_classes' => false]);
 
 		if (!is_array($tarifs))
 			$tarifs = array();
@@ -265,7 +269,7 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 	 */
 	public function getCMTarifsByRegionFromCsv($regionNameLang)
 	{
-		if(strlen(trim($regionNameLang)) <= 0)
+		if(trim($regionNameLang) == '')
 			return false;
 
 		$csvFile = \CSaleHelper::getCsvObject(__DIR__.'/lang/ru/cm_tarif.csv');
@@ -275,7 +279,7 @@ class CashOnDeliveryCalcHandler extends PaySystem\BaseServiceHandler implements 
 
 		while ($arRes = $csvFile->Fetch())
 		{
-			if(strtoupper(trim($regionNameLang)) === $arRes[$COL_REG_NAME])
+			if(mb_strtoupper(trim($regionNameLang)) === $arRes[$COL_REG_NAME])
 			{
 				$arTarifs = $arRes;
 				break;

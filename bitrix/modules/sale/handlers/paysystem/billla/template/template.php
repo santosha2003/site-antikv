@@ -4,12 +4,13 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
 
 use Bitrix\Main\Localization\Loc;
 
-Loc::loadMessages(__FILE__);
+$billLang = 'la';
+Loc::loadLanguageFile(__FILE__, $billLang);
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-<title><?=Loc::getMessage('SALE_HPS_BILLLA_TITLE')?></title>
+<title><?=Loc::getMessage('SALE_HPS_BILLLA_TITLE', null, $billLang)?></title>
 <meta http-equiv="Content-Type" content="text/html; charset=<?=LANG_CHARSET?>">
 <style>
 	table { border-collapse: collapse; }
@@ -81,82 +82,145 @@ $width = $pageWidth - $margin['left'] - $margin['right'];
 	<tr>
 		<? if ($params["BILLLA_PATH_TO_LOGO"]) { ?>
 		<td style="padding-right: 5pt; ">
-			<? $imgParams = CFile::_GetImgParams($params['BILLLA_PATH_TO_LOGO']); ?>
-			<? $imgWidth = $imgParams['WIDTH'] * 96 / (intval($params['BILLLA_LOGO_DPI']) ?: 96); ?>
+			<? $imgParams = CFile::_GetImgParams($params['BILLLA_PATH_TO_LOGO']);
+				$dpi = intval($params['BILLLA_LOGO_DPI']) ?: 96;
+				$imgWidth = $imgParams['WIDTH'] * 96 / $dpi;
+				if ($imgWidth > $pageWidth)
+					$imgWidth = $pageWidth * 0.6;
+			?>
 			<img src="<?=$imgParams['SRC']; ?>" width="<?=$imgWidth; ?>" />
 		</td>
 		<? } ?>
 		<td>
-			<b><?=$params["SELLER_COMPANY_NAME"]; ?></b><br>
-			<? if ($params["SELLER_COMPANY_ADDRESS"]) { ?>
-			<b><?=$params["SELLER_COMPANY_ADDRESS"]; ?></b><br>
-			<? } ?>
+			<b><?=htmlspecialcharsbx($params["SELLER_COMPANY_NAME"]); ?></b><br><?
+			if ($params["SELLER_COMPANY_ADDRESS"]) {
+				$sellerAddress = $params["SELLER_COMPANY_ADDRESS"];
+				if (is_array($sellerAddress))
+				{
+					if (!empty($sellerAddress))
+					{
+						foreach ($sellerAddress as $i => $address)
+						{
+							$sellerAddress[$i] = htmlspecialcharsbx($address);
+						}
+
+						$addrValue = implode('<br>', $sellerAddress)
+						?><div style="display: inline-block; vertical-align: top;"><b><?= $addrValue ?></b></div><?
+						unset($addrValue);
+					}
+				}
+				else
+				{
+					?><b><?= nl2br(htmlspecialcharsbx($sellerAddress)) ?></b><?
+				}
+				unset($sellerAddress);
+				?><br><?
+			} ?>
 			<? if ($params["SELLER_COMPANY_PHONE"]) { ?>
-			<b><?=sprintf(Loc::getMessage('SALE_HPS_BILLLA_COMPANY_PHONE').": %s", $params["SELLER_COMPANY_PHONE"]); ?></b><br>
+			<b><?=sprintf(Loc::getMessage('SALE_HPS_BILLLA_COMPANY_PHONE', null, $billLang).": %s", htmlspecialcharsbx($params["SELLER_COMPANY_PHONE"])); ?></b><br>
 			<? } ?>
 		</td>
 	</tr>
 </table>
 <br>
+<?if($params['BILLLA_HEADER']):?>
+	<div style="text-align: center; font-size: 2em"><b><?=htmlspecialcharsbx($params['BILLLA_HEADER']);?></b></div>
 
-<div style="text-align: center; font-size: 2em"><b><?=Loc::getMessage('SALE_HPS_BILLLA_TITLE')?></b></div>
-
-<br>
-<br>
-
+	<br>
+	<br>
+<?endif;?>
 <table width="100%">
 	<tr>
 		<? if ($params["BUYER_PERSON_COMPANY_NAME"]) { ?>
 		<td>
-			<b><?=Loc::getMessage('SALE_HPS_BILLLA_FOR')?></b><br>
-			<?=$params["BUYER_PERSON_COMPANY_NAME"]; ?><br>
-			<? if ($params["BUYER_PERSON_COMPANY_ADDRESS"]) { ?>
-			<?=$params["BUYER_PERSON_COMPANY_ADDRESS"]; ?>
-			<? } ?>
+			<b><?=Loc::getMessage('SALE_HPS_BILLLA_FOR', null, $billLang)?></b><br>
+			<?=htmlspecialcharsbx($params["BUYER_PERSON_COMPANY_NAME"]); ?><br><?
+			if ($params["BUYER_PERSON_COMPANY_ADDRESS"]) {
+				$buyerAddress = $params["BUYER_PERSON_COMPANY_ADDRESS"];
+				if (is_array($buyerAddress))
+				{
+					if (!empty($buyerAddress))
+					{
+						foreach ($buyerAddress as $i => $address)
+						{
+							$buyerAddress[$i] = htmlspecialcharsbx($address);
+						}
+
+						$addrValue = implode('<br>', $buyerAddress)
+						?><div style="display: inline-block; vertical-align: top;"><?= $addrValue ?></div><?
+						unset($addrValue);
+					}
+				}
+				else
+				{
+					?><?= nl2br(htmlspecialcharsbx($buyerAddress)) ?><?
+				}
+				unset($buyerAddress);
+			} ?>
 		</td>
 		<? } ?>
 		<td align="right">
-			<table class="inv">
-				<tr align="right">
-					<td><b><?=Loc::getMessage('SALE_HPS_BILLLA_TITLE')?> #&nbsp;</b></td>
-					<td><?=htmlspecialcharsbx($payment->getField("ACCOUNT_NUMBER")); ?></td>
-				</tr>
-				<tr align="right">
-					<td><b><?=Loc::getMessage('SALE_HPS_BILLLA_DATE_INSERT')?>:&nbsp;</b></td>
-					<td><?=$params["DATE_INSERT"]; ?></td>
-				</tr>
-				<? if ($params["DATE_PAY_BEFORE"]) { ?>
-				<tr align="right">
-					<td><b><?=Loc::getMessage('SALE_HPS_BILLLA_DATE_PAY_BEFORE')?>:&nbsp;</b></td>
-					<td><?=(
-						ConvertDateTime($params["DATE_PAY_BEFORE"], FORMAT_DATE)
-							?: $params["DATE_PAY_BEFORE"]
-					); ?></td>
-				</tr>
-				<? } ?>
-			</table>
+			<?if ($params['BILLLA_PAYER_SHOW'] === 'Y'):?>
+				<table class="inv">
+					<tr align="right">
+						<td><b><?=htmlspecialcharsbx($params['BILLLA_HEADER']);?> #&nbsp;</b></td>
+						<td><?=htmlspecialcharsbx($params["ACCOUNT_NUMBER"]); ?></td>
+					</tr>
+					<tr align="right">
+						<td><b><?=Loc::getMessage('SALE_HPS_BILLLA_DATE_INSERT', null, $billLang)?>:&nbsp;</b></td>
+						<td><?=htmlspecialcharsbx($params["DATE_INSERT"]); ?></td>
+					</tr>
+					<? if ($params["DATE_PAY_BEFORE"]) { ?>
+					<tr align="right">
+						<td><b><?=Loc::getMessage('SALE_HPS_BILLLA_DATE_PAY_BEFORE', null, $billLang)?>:&nbsp;</b></td>
+						<td><?=(
+							ConvertDateTime($params["DATE_PAY_BEFORE"], FORMAT_DATE)
+								?: htmlspecialcharsbx($params["DATE_PAY_BEFORE"])
+						); ?></td>
+					</tr>
+					<? } ?>
+				</table>
+			<?endif;?>
 		</td>
 	</tr>
 </table>
 
-<br>
-<br>
-<br>
-
+<?if ($params['BILLLA_PAYER_SHOW'] === 'Y' || $params["BUYER_PERSON_COMPANY_NAME"]):?>
+	<br>
+	<br>
+	<br>
+<?endif;?>
 <?
+$columnList = array('NUMBER', 'NAME', 'QUANTITY', 'MEASURE', 'PRICE', 'VAT_RATE', 'SUM');
+$arCols = array();
+foreach ($columnList as $column)
+{
+	if ($params['BILLLA_COLUMN_'.$column.'_SHOW'] == 'Y')
+	{
+		$arCols[$column] = array(
+			'NAME' => htmlspecialcharsbx($params['BILLLA_COLUMN_'.$column.'_TITLE']),
+			'SORT' => $params['BILLLA_COLUMN_'.$column.'_SORT']
+		);
+	}
+}
+if ($params['USER_COLUMNS'])
+{
+	$columnList = array_merge($columnList, array_keys($params['USER_COLUMNS']));
+	foreach ($params['USER_COLUMNS'] as $id => $val)
+	{
+		$arCols[$id] = array(
+			'NAME' => htmlspecialcharsbx($val['NAME']),
+			'SORT' => $val['SORT']
+		);
+	}
+}
 
-$basketItems = array();
+uasort($arCols, function ($a, $b) {return ($a['SORT'] < $b['SORT']) ? -1 : 1;});
 
-/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
-$paymentCollection = $payment->getCollection();
+$arColumnKeys = array_keys($arCols);
+$columnCount = count($arColumnKeys);
 
-/** @var \Bitrix\Sale\Order $order */
-$order = $paymentCollection->getOrder();
-
-/** @var \Bitrix\Sale\Basket $basket */
-$basket = $order->getBasket();
-
-if (count($basket->getBasketItems()) > 0)
+if ($params['BASKET_ITEMS'])
 {
 	$arCells = array();
 	$arProps = array();
@@ -166,258 +230,247 @@ if (count($basket->getBasketItems()) > 0)
 	$vat = 0;
 	$vats = array();
 
-	/** @var \Bitrix\Sale\BasketItem $basketItem */
-	foreach ($basket->getBasketItems() as $basketItem)
+	foreach ($params['BASKET_ITEMS'] as $basketItem)
 	{
 		// @TODO: replace with real vatless price
-		if ($basketItem->isVatInPrice())
-			$vatLessPrice = roundEx($basketItem->getPrice() / (1 + $basketItem->getVatRate()), SALE_VALUE_PRECISION);
+		if ($basketItem['IS_VAT_IN_PRICE'])
+			$vatLessPrice = roundEx($basketItem['PRICE'] / (1 + $basketItem['VAT_RATE']), SALE_VALUE_PRECISION);
 		else
-			$vatLessPrice = $basketItem->getPrice();
+			$vatLessPrice = $basketItem['PRICE'];
 
-		$productName = $basketItem->getField("NAME");
+		$productName = $basketItem["NAME"];
 		if ($productName == "OrderDelivery")
-			$productName = Loc::getMessage('SALE_HPS_BILLLA_DELIVERY');
+			$productName = Loc::getMessage('SALE_HPS_BILLLA_DELIVERY', null, $billLang);
 		else if ($productName == "OrderDiscount")
-			$productName = Loc::getMessage('SALE_HPS_BILLLA_DISCOUNT');
+			$productName = Loc::getMessage('SALE_HPS_BILLLA_DISCOUNT', null, $billLang);
 
-		$arCells[++$n] = array(
-			1 => $n,
-			htmlspecialcharsbx($productName),
-			roundEx($basketItem->getQuantity(), SALE_VALUE_PRECISION),
-			$basketItem->getField("MEASURE_NAME") ? htmlspecialcharsbx($basketItem->getField("MEASURE_NAME")) : Loc::getMessage('SALE_HPS_BILLLA_MEASURE'),
-			SaleFormatCurrency($v, $basketItem->getCurrency(), false),
-			roundEx($basketItem->getVatRate()*100, SALE_VALUE_PRECISION) . "%",
-			SaleFormatCurrency(
-				$vatLessPrice * $basketItem->getQuantity(),
-				$basketItem->getCurrency(),
-				false
-			)
-		);
-
-		$arProps[$n] = array();
-
-		/** @var \Bitrix\Sale\BasketPropertyItem $basketPropertyItem */
-		foreach ($basketItem->getPropertyCollection() as $basketPropertyItem)
+		$arCells[++$n] = array();
+		foreach ($arCols as $columnId => $col)
 		{
-			if ($basketPropertyItem->getField('CODE') == 'CATALOG.XML_ID' || $basketPropertyItem->getField('CODE') == 'PRODUCT.XML_ID')
-				continue;
-			$arProps[$n][] = htmlspecialcharsbx(sprintf("%s: %s", $basketPropertyItem->getField("NAME"), $basketPropertyItem->getField("VALUE")));
+			$data = null;
+
+			switch ($columnId)
+			{
+				case 'NUMBER':
+					$data = $n;
+					break;
+				case 'NAME':
+					$data = htmlspecialcharsbx($productName);
+					break;
+				case 'QUANTITY':
+					$data = roundEx($basketItem['QUANTITY'], SALE_VALUE_PRECISION);
+					break;
+				case 'MEASURE':
+					$data = $basketItem["MEASURE_NAME"] ? htmlspecialcharsbx($basketItem["MEASURE_NAME"]) : Loc::getMessage('SALE_HPS_BILLLA_MEASURE', null, $billLang);
+					break;
+				case 'PRICE':
+					$data = SaleFormatCurrency($vatLessPrice, $basketItem['CURRENCY'], false);
+					break;
+				case 'VAT_RATE':
+					$data = roundEx($basketItem['VAT_RATE']*100, SALE_VALUE_PRECISION) . "%";
+					break;
+				case 'SUM':
+					$data = SaleFormatCurrency($vatLessPrice * $basketItem['QUANTITY'], $basketItem['CURRENCY'], false);
+					break;
+				default :
+					$data = ($basketItem[$columnId]) ?: '';
+			}
+			if ($data !== null)
+				$arCells[$n][$columnId] = $data;
 		}
 
-		$sum += doubleval($vatLessPrice * $basketItem->getQuantity());
-		$vat = max($vat, $basketItem->getVatRate());
-		if ($basketItem->getVatRate() > 0)
+		if ($basketItem['PROPS'])
 		{
-			if (!isset($vats[$basketItem->getVatRate()]))
-				$vats[$basketItem->getVatRate()] = 0;
-			$vats[$basketItem->getVatRate()] += ($basketItem->getPrice() - $vatLessPrice) * $basketItem->getQuantity();
+			$arProps[$n] = array();
+
+			foreach ($basketItem['PROPS'] as $basketPropertyItem)
+			{
+				if ($basketPropertyItem['CODE'] == 'CATALOG.XML_ID' || $basketPropertyItem['CODE'] == 'PRODUCT.XML_ID')
+					continue;
+				$arProps[$n][] = htmlspecialcharsbx(sprintf("%s: %s", $basketPropertyItem["NAME"], $basketPropertyItem["VALUE"]));
+			}
+		}
+		$sum += doubleval($vatLessPrice * $basketItem['QUANTITY']);
+		$vat = max($vat, $basketItem['VAT_RATE']);
+		if ($basketItem['VAT_RATE'] > 0)
+		{
+			$vatRate = (string)$basketItem['VAT_RATE'];
+			if (!isset($vats[$vatRate]))
+				$vats[$vatRate] = 0;
+
+			if ($basketItem['IS_VAT_IN_PRICE'])
+				$vats[$vatRate] += ($basketItem['PRICE'] - $vatLessPrice) * $basketItem['QUANTITY'];
+			else
+				$vats[$vatRate] += ($basketItem['PRICE']*(1 + $basketItem['VAT_RATE']) - $vatLessPrice) * $basketItem['QUANTITY'];
 		}
 	}
 
-	/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
-	$shipmentCollection = $order->getShipmentCollection();
-
-	$shipment = null;
-
-	/** @var \Bitrix\Sale\Shipment $shipmentItem */
-	foreach ($shipmentCollection as $shipmentItem)
+	if ($vat <= 0)
 	{
-		if (!$shipmentItem->isSystem())
-		{
-			$shipment = $shipmentItem;
-			break;
-		}
+		unset($arCols['VAT_RATE']);
+		$columnCount = count($arCols);
+		$arColumnKeys = array_keys($arCols);
+		foreach ($arCells as $i => $cell)
+			unset($arCells[$i]['VAT_RATE']);
 	}
 
-	if ($shipment && (float)$shipment->getPrice() > 0)
+	if ($params['DELIVERY_PRICE'] > 0)
 	{
-		$sDeliveryItem = Loc::getMessage('SALE_HPS_BILLLA_DELIVERY');
-		if ($shipment->getDeliveryName())
-			$sDeliveryItem .= sprintf(" (%s)", $shipment->getDeliveryName());
-		$arCells[++$n] = array(
-			1 => $n,
-			htmlspecialcharsbx($sDeliveryItem),
-			1,
-			'',
-			SaleFormatCurrency(
-				$shipment->getPrice() / (1 + $vat),
-				$shipment->getCurrency(),
-				false
-			),
-			roundEx($vat*100, SALE_VALUE_PRECISION) . "%",
-			SaleFormatCurrency(
-				$shipment->getPrice() / (1 + $vat),
-				$shipment->getCurrency(),
-				false
-			)
-		);
+		$sDeliveryItem = Loc::getMessage('SALE_HPS_BILLLA_DELIVERY', null, $billLang);
+		if ($params['DELIVERY_NAME'])
+			$sDeliveryItem .= sprintf(" (%s)", $params['DELIVERY_NAME']);
+		$arCells[++$n] = array();
+		foreach ($arCols as $columnId => $col)
+		{
+			$data = null;
+
+			switch ($columnId)
+			{
+				case 'NUMBER':
+					$data = $n;
+					break;
+				case 'NAME':
+					$data = htmlspecialcharsbx($sDeliveryItem);
+					break;
+				case 'QUANTITY':
+					$data = 1;
+					break;
+				case 'MEASURE':
+					$data = '';
+					break;
+				case 'PRICE':
+					$data = SaleFormatCurrency($params['DELIVERY_PRICE'] / (1 + $vat), $params['CURRENCY'], false);
+					break;
+				case 'VAT_RATE':
+					$data = roundEx($vat*100, SALE_VALUE_PRECISION) . "%";
+					break;
+				case 'SUM':
+					$data = SaleFormatCurrency($params['DELIVERY_PRICE'] / (1 + $vat), $params['CURRENCY'], false);
+					break;
+				default:
+					$data = '';
+			}
+			if ($data !== null)
+				$arCells[$n][$columnId] = $data;
+		}
 
 		$sum += roundEx(
-			$shipment->getPrice() / (1 + $vat),
+			$params['DELIVERY_PRICE'] / (1 + $vat),
 			SALE_VALUE_PRECISION
 		);
 
 		if ($vat > 0)
-			$vats[$vat] += roundEx(
-				$shipment->getPrice() * $vat / (1 + $vat),
+			$vats[(string)$vat] += roundEx(
+				$params['DELIVERY_PRICE'] * $vat / (1 + $vat),
 				SALE_VALUE_PRECISION
 			);
 	}
 
 	$items = $n;
-
-	if ($sum < $order->getPrice())
+	if ($params['BILLLA_TOTAL_SHOW'] == 'Y')
 	{
-		$arCells[++$n] = array(
-			1 => null,
-			null,
-			null,
-			null,
-			null,
-			Loc::getMessage('SALE_HPS_BILLLA_SUB_TOTAL').":",
-			SaleFormatCurrency($sum, $order->getCurrency(), false)
-		);
-	}
-
-	if (!empty($vats))
-	{
-		// @TODO: remove on real vatless price implemented
-		$delta = intval(roundEx(
-			$payment->getSum() - $sum - array_sum($vats),
-			SALE_VALUE_PRECISION
-		) * pow(10, SALE_VALUE_PRECISION));
-		if ($delta)
+		$eps = 0.0001;
+		if ($params['SUM'] - $sum > $eps)
 		{
-			$vatRates = array_keys($vats);
-			rsort($vatRates);
+			$arCells[++$n] = array();
+			for ($i = 0; $i < $columnCount; $i++)
+				$arCells[$n][$arColumnKeys[$i]] = null;
 
-			while (abs($delta) > 0)
+			$arCells[$n][$arColumnKeys[$columnCount-2]] = Loc::getMessage('SALE_HPS_BILLLA_SUB_TOTAL', null, $billLang).":";
+			$arCells[$n][$arColumnKeys[$columnCount-1]] = SaleFormatCurrency($sum, $params['CURRENCY'], false);
+		}
+
+		if (!empty($vats))
+		{
+			// @TODO: remove on real vatless price implemented
+			$delta = intval(roundEx(
+				$params['SUM'] - $sum - array_sum($vats),
+				SALE_VALUE_PRECISION
+			) * pow(10, SALE_VALUE_PRECISION));
+
+			if ($delta)
 			{
+				$vatRates = array_keys($vats);
+				rsort($vatRates);
+
+				$ful = intval($delta / count($vatRates));
+				$ost = $delta % count($vatRates);
+
 				foreach ($vatRates as $vatRate)
 				{
-					$vats[$vatRate] += abs($delta)/$delta / pow(10, SALE_VALUE_PRECISION);
-					$delta -= abs($delta)/$delta;
+					$vats[$vatRate] += ($ful + $ost) / pow(10, SALE_VALUE_PRECISION);
 
-					if ($delta == 0)
-						break 2;
+					if ($ost > 0)
+						$ost--;
+				}
+			}
+
+			foreach ($vats as $vatRate => $vatSum)
+			{
+				$arCells[++$n] = array();
+				for ($i = 0; $i < $columnCount; $i++)
+					$arCells[$n][$i] = null;
+
+				$arCells[$n][$arColumnKeys[$columnCount-2]] = sprintf(Loc::getMessage('SALE_HPS_BILLLA_TAX', null, $billLang)." (%s%%):", roundEx($vatRate * 100, SALE_VALUE_PRECISION));
+				$arCells[$n][$arColumnKeys[$columnCount-1]] = SaleFormatCurrency($vatSum, $params['CURRENCY'], false);
+			}
+		}
+		else
+		{
+			if ($params['TAXES'])
+			{
+				foreach ($params['TAXES'] as $tax)
+				{
+					$arCells[++$n] = array();
+					for ($i = 0; $i < $columnCount; $i++)
+						$arCells[$n][$arColumnKeys[$i]] = null;
+
+					$arCells[$n][$arColumnKeys[$columnCount-2]] = htmlspecialcharsbx(sprintf(
+						"%s%s%s:",
+						($tax["IS_IN_PRICE"] == "Y") ? Loc::getMessage('SALE_HPS_BILLLA_TAX_IN', null, $billLang) : "",
+						$tax["TAX_NAME"],
+						sprintf(' (%s%%)', roundEx($tax["VALUE"], SALE_VALUE_PRECISION))
+					));
+					$arCells[$n][$arColumnKeys[$columnCount-1]] = SaleFormatCurrency($tax["VALUE_MONEY"], $params['CURRENCY'], false);
 				}
 			}
 		}
 
-		foreach ($vats as $vatRate => $vatSum)
+		if ($params['SUM_PAID'])
 		{
-			$arCells[++$n] = array(
-				1 => null,
-				null,
-				null,
-				null,
-				null,
-				sprintf(
-					Loc::getMessage('SALE_HPS_BILLLA_TAX')." (%s%%):",
-					roundEx($vatRate * 100, SALE_VALUE_PRECISION)
-				),
-				SaleFormatCurrency(
-					$vatSum,
-					$payment->getField('CURRENCY'),
-					false
-				)
-			);
-		}
-	}
-	else
-	{
-		$taxes = $order->getTax();
+			$arCells[++$n] = array();
+			for ($i = 0; $i < $columnCount; $i++)
+				$arCells[$n][$arColumnKeys[$i]] = null;
 
-		$taxesList = $taxes->getTaxList();
-		if ($taxesList)
+			$arCells[$n][$arColumnKeys[$columnCount-2]] = Loc::getMessage('SALE_HPS_BILLLA_SUM_PAID', null, $billLang).":";
+			$arCells[$n][$arColumnKeys[$columnCount-1]] = SaleFormatCurrency($params['SUM_PAID'], $params['CURRENCY'], false);
+		}
+
+		if ($params['DISCOUNT_PRICE'])
 		{
-			foreach ($taxesList as $tax)
-			{
-				$arCells[++$n] = array(
-						1 => null,
-						null,
-						null,
-						null,
-						null,
-						htmlspecialcharsbx(sprintf(
-								"%s%s%s:",
-								($tax["IS_IN_PRICE"] == "Y") ? Loc::getMessage('SALE_HPS_BILLLA_TAX_IN') : "",
-								$tax["TAX_NAME"],
-								sprintf(' (%s%%)', roundEx($tax["VALUE"], SALE_VALUE_PRECISION))
-						)),
-						SaleFormatCurrency(
-								$tax["VALUE_MONEY"],
-								$payment->getField('CURRENCY'),
-								false
-						)
-				);
-			}
+			$arCells[++$n] = array();
+			for ($i = 0; $i < $columnCount; $i++)
+				$arCells[$n][$arColumnKeys[$i]] = null;
+
+			$arCells[$n][$arColumnKeys[$columnCount-2]] = Loc::getMessage('SALE_HPS_BILLLA_DISCOUNT', null, $billLang).":";
+			$arCells[$n][$arColumnKeys[$columnCount-1]] = SaleFormatCurrency($params['DISCOUNT_PRICE'], $params['CURRENCY'], false);
 		}
-	}
 
-	$sumPaid = $paymentCollection->getPaidSum();
-	if (DoubleVal($sumPaid) > 0)
-	{
-		$arCells[++$n] = array(
-			1 => null,
-			null,
-			null,
-			null,
-			null,
-			Loc::getMessage('SALE_HPS_BILLLA_SUM_PAID').":",
-			SaleFormatCurrency(
-				$sumPaid,
-				$order->getCurrency(),
-				false
-			)
-		);
-	}
+		$arCells[++$n] = array();
+		for ($i = 0; $i < $columnCount; $i++)
+			$arCells[$n][$arColumnKeys[$i]] = null;
 
-	if (DoubleVal($order->getDiscountPrice()) > 0)
-	{
-		$arCells[++$n] = array(
-			1 => null,
-			null,
-			null,
-			null,
-			null,
-			Loc::getMessage('SALE_HPS_BILLLA_DISCOUNT').":",
-			SaleFormatCurrency(
-				$order->getDiscountPrice(),
-				$order->getCurrency(),
-				false
-			)
-		);
+		$arCells[$n][$arColumnKeys[$columnCount-2]] = Loc::getMessage('SALE_HPS_BILLLA_TOTAL', null, $billLang).":";
+		$arCells[$n][$arColumnKeys[$columnCount-1]] = SaleFormatCurrency($params['SUM'], $params['CURRENCY'], false);
 	}
-
-	$arCells[++$n] = array(
-		1 => null,
-		null,
-		null,
-		null,
-		null,
-		Loc::getMessage('SALE_HPS_BILLLA_TOTAL').":",
-		SaleFormatCurrency(
-			$payment->getSum(),
-			$order->getCurrency(),
-			false
-		)
-	);
 }
 
 ?>
 <table class="it" width="100%">
 	<tr>
-		<td><nobr>#</nobr></td>
-		<td><nobr><?=Loc::getMessage('SALE_HPS_BILLLA_BASKET_ITEM')?></nobr></td>
-		<td><nobr><?=Loc::getMessage('SALE_HPS_BILLLA_BASKET_ITEM_QUANTITY')?></nobr></td>
-		<td><nobr><?=Loc::getMessage('SALE_HPS_BILLLA_BASKET_ITEM_MEASURE')?></nobr></td>
-		<td><nobr><?=Loc::getMessage('SALE_HPS_BILLLA_BASKET_ITEM_PRICE')?></nobr></td>
-		<? if ($vat > 0) { ?>
-		<td><nobr><?=Loc::getMessage('SALE_HPS_BILLLA_BASKET_ITEM_TAX')?></nobr></td>
-		<? } ?>
-		<td><nobr><?=Loc::getMessage('SALE_HPS_BILLLA_BASKET_ITEM_TOTAL')?></nobr></td>
+		<?foreach ($arCols as $columnId => $col):?>
+			<td><?=$col['NAME'];?></td>
+		<?endforeach;?>
 	</tr>
 <?
 
@@ -428,41 +481,60 @@ for ($n = 1; $n <= $rowsCnt; $n++)
 
 ?>
 	<tr valign="top">
-		<? if (!is_null($arCells[$n][1])) { ?>
-		<td align="center"><?=$arCells[$n][1]; ?></td>
-		<? } else {
-			$accumulated++;
-		} ?>
-		<? if (!is_null($arCells[$n][2])) { ?>
-		<td align="left"
-			style="word-break: break-word; word-wrap: break-word; <? if ($accumulated) {?>border-width: 0pt 1pt 0pt 0pt; <? } ?>"
-			<? if ($accumulated) { ?>colspan="<?=($accumulated+1); ?>"<? $accumulated = 0; } ?>>
-			<?=$arCells[$n][2]; ?>
-			<? if (isset($arProps[$n]) && is_array($arProps[$n])) { ?>
-			<? foreach ($arProps[$n] as $property) { ?>
-			<br>
-			<small><?=$property; ?></small>
-			<? } ?>
-			<? } ?>
-		</td>
-		<? } else {
-			$accumulated++;
-		} ?>
-		<? for ($i = 3; $i <= 7; $i++) { ?>
-			<? if (!is_null($arCells[$n][$i])) { ?>
-				<? if ($i != 6 || $vat > 0 || is_null($arCells[$n][2])) { ?>
-				<td align="right"
-					<? if ($accumulated) { ?>
-					style="border-width: 0pt 1pt 0pt 0pt"
-					colspan="<?=(($i == 6 && $vat <= 0) ? $accumulated : $accumulated+1); ?>"
-					<? $accumulated = 0; } ?>>
-					<nobr><?=$arCells[$n][$i]; ?></nobr>
-				</td>
-				<? }
-			} else {
-				$accumulated++;
-			}
-		} ?>
+		<?foreach ($arCols as $columnId => $col):?>
+			<?
+				if (!is_null($arCells[$n][$columnId]))
+				{
+					if ($columnId === 'NUMBER')
+					{?>
+						<td align="center"><?=$arCells[$n][$columnId];?></td>
+					<?}
+					elseif ($columnId === 'NAME')
+					{
+					?>
+						<td align="<?=($n > $items) ? 'right' : 'left';?>"
+							style="word-break: break-word; word-wrap: break-word; <? if ($accumulated) {?>border-width: 0pt 1pt 0pt 0pt; <? } ?>"
+							<? if ($accumulated) { ?>colspan="<?=($accumulated+1); ?>"<? $accumulated = 0; } ?>>
+							<?=$arCells[$n][$columnId]; ?>
+							<? if (isset($props[$n]) && is_array($props[$n])) { ?>
+							<? foreach ($props[$n] as $property) { ?>
+							<br>
+							<small><?=$property; ?></small>
+							<? } ?>
+							<? } ?>
+						</td>
+					<?}
+					else
+					{
+						if (!is_null($arCells[$n][$columnId]))
+						{
+							if ($columnId != 'VAT_RATE' || $vat > 0 || is_null($arCells[$n][$columnId]) || $n > $items)
+							{ ?>
+								<td align="right"
+									<? if ($accumulated) { ?>
+									style="border-width: 0pt 1pt 0pt 0pt"
+									colspan="<?=(($columnId == 'VAT_RATE' && $vat <= 0) ? $accumulated : $accumulated+1); ?>"
+									<? $accumulated = 0; } ?>>
+									<?if ($columnId == 'SUM' || $columnId == 'PRICE'):?>
+										<nobr><?=$arCells[$n][$columnId];?></nobr>
+									<?else:?>
+										<?=$arCells[$n][$columnId]; ?>
+									<?endif;?>
+								</td>
+							<? }
+						}
+						else
+						{
+							$accumulated++;
+						}
+					}
+				}
+				else
+				{
+					$accumulated++;
+				}
+			?>
+		<?endforeach;?>
 	</tr>
 <?
 
@@ -476,7 +548,7 @@ for ($n = 1; $n <= $rowsCnt; $n++)
 <br>
 
 <? if ($params["BILLLA_COMMENT1"] || $params["BILLLA_COMMENT2"]) { ?>
-<b><?=Loc::getMessage('SALE_HPS_BILLLA_COMMENT')?></b>
+<b><?=Loc::getMessage('SALE_HPS_BILLLA_COMMENT', null, $billLang)?></b>
 <br>
 	<? if ($params["BILLLA_COMMENT1"]) { ?>
 	<?=nl2br(HTMLToTxt(preg_replace(
@@ -500,8 +572,8 @@ for ($n = 1; $n <= $rowsCnt; $n++)
 <br>
 <br>
 
-<? $bankAccNo = $params["SELLER_COMPANY_BANK_ACCNO"]; ?>
-<? $bankRouteNo = $params["SELLER_COMPANY_BANK_ROUTENO"]; ?>
+<? $bankAccNo = $params["SELLER_COMPANY_BANK_ACCOUNT"]; ?>
+<? $bankRouteNo = $params["SELLER_COMPANY_BANK_ACCOUNT_CORR"]; ?>
 <? $bankSwift = $params["SELLER_COMPANY_BANK_SWIFT"]; ?>
 
 <table class="sign" style="width: 100%; ">
@@ -510,40 +582,40 @@ for ($n = 1; $n <= $rowsCnt; $n++)
 
 		<? if ($bankAccNo && $bankRouteNo && $bankSwift) { ?>
 
-			<b><?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_DETAIL')?></b>
+			<b><?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_DETAIL', null, $billLang)?></b>
 			<br>
 
 			<? if ($params["SELLER_COMPANY_NAME"]) { ?>
-				<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_NAME')?>: <?=$params["SELLER_COMPANY_NAME"]; ?>
+				<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_NAME', null, $billLang)?>: <?=htmlspecialcharsbx($params["SELLER_COMPANY_NAME"]); ?>
 				<br>
 			<? } ?>
 
-			# <?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK')?>: <?=$bankAccNo; ?>
+			# <?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK', null, $billLang)?>: <?=htmlspecialcharsbx($bankAccNo); ?>
 			<br>
 
-			<? $bank = $params["SELLER_COMPANY_BANK"]; ?>
+			<? $bank = $params["SELLER_COMPANY_BANK_NAME"]; ?>
 			<? $bankAddr = $params["SELLER_COMPANY_BANK_ADDR"]; ?>
 			<? $bankPhone = $params["SELLER_COMPANY_BANK_PHONE"]; ?>
 
 			<? if ($bank || $bankAddr || $bankPhone) { ?>
-				<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_2')?>: <? if ($bank) { ?><?=$bank; ?><? } ?>
+				<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_2', null, $billLang)?>: <? if ($bank) { ?><?=htmlspecialcharsbx($bank); ?><? } ?>
 				<br>
 
 				<? if ($bankAddr) { ?>
-					<?=$bankAddr; ?>
+					<?= nl2br(htmlspecialcharsbx($bankAddr)) ?>
 					<br>
 				<? } ?>
 
 				<? if ($bankPhone) { ?>
-					<?=$bankPhone; ?>
+					<?=htmlspecialcharsbx($bankPhone); ?>
 					<br>
 				<? } ?>
 			<? } ?>
 
-			<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_ROUTE_NO')?>: <?=$bankRouteNo; ?>
+			<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_ROUTE_NO', null, $billLang)?>: <?=htmlspecialcharsbx($bankRouteNo); ?>
 			<br>
 
-			<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_SWIFT')?>: <?=$bankSwift; ?>
+			<?=Loc::getMessage('SALE_HPS_BILLLA_COMPANY_BANK_SWIFT', null, $billLang)?>: <?=htmlspecialcharsbx($bankSwift); ?>
 			<br>
 		<? } ?>
 
@@ -568,12 +640,12 @@ for ($n = 1; $n <= $rowsCnt; $n++)
 				<? if ($params["SELLER_COMPANY_DIRECTOR_NAME"]) { ?>
 				<tr><td>&nbsp;</td></tr>
 				<tr>
-					<td colspan="2"><?=$params["SELLER_COMPANY_DIRECTOR_NAME"]; ?></td>
+					<td colspan="2"><?=htmlspecialcharsbx($params["SELLER_COMPANY_DIRECTOR_NAME"]); ?></td>
 				</tr>
 				<? } ?>
 				<tr><td>&nbsp;</td></tr>
 				<tr>
-					<td><nobr><?=$params["SELLER_COMPANY_DIRECTOR_POSITION"]; ?></nobr></td>
+					<td><nobr><?=htmlspecialcharsbx($params["SELLER_COMPANY_DIRECTOR_POSITION"]); ?></nobr></td>
 					<td style="border-bottom: 1pt solid #000000; text-align: center; ">
 						<? if (!$blank && $params["SELLER_COMPANY_DIR_SIGN"]) { ?>
 						<span style="position: relative; ">&nbsp;<?=CFile::ShowImage(
@@ -591,12 +663,12 @@ for ($n = 1; $n <= $rowsCnt; $n++)
 				<? if ($params["SELLER_COMPANY_ACCOUNTANT_NAME"]) { ?>
 				<tr><td>&nbsp;</td></tr>
 				<tr>
-					<td colspan="2"><?=$params["SELLER_COMPANY_ACCOUNTANT_NAME"]; ?></td>
+					<td colspan="2"><?=htmlspecialcharsbx($params["SELLER_COMPANY_ACCOUNTANT_NAME"]); ?></td>
 				</tr>
 				<? } ?>
 				<tr><td>&nbsp;</td></tr>
 				<tr>
-					<td><nobr><?=$params["SELLER_COMPANY_ACCOUNTANT_POSITION"]; ?></nobr></td>
+					<td><nobr><?=htmlspecialcharsbx($params["SELLER_COMPANY_ACCOUNTANT_POSITION"]); ?></nobr></td>
 					<td style="border-bottom: 1pt solid #000000; text-align: center; ">
 						<? if (!$blank && $params["SELLER_COMPANY_ACC_SIGN"]) { ?>
 						<span style="position: relative; ">&nbsp;<?=CFile::ShowImage(

@@ -1,5 +1,0 @@
-<?
-$MESS["BB_DEFAULT_TEMPLATE_NAME"] = "Pokalbiø juodraðèiai";
-$MESS["BB_DEFAULT_TEMPLATE_DESCRIPTION"] = "Komponentas pokalbio juodraðèiø atvaizdavimui";
-$MESS["SONET_NAME"] = "Socialinis tinklas";
-?>

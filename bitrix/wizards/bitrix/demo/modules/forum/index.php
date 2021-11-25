@@ -25,7 +25,7 @@ if (!function_exists("__CopyForumFiles"))
 	{
 		$source_base = dirname(__FILE__);
 		$source_base = str_replace(array("\\", "//"), "/", $source_base."/");
-		
+
 		$source_abs = str_replace(array("\\", "//"), "/", $source_abs."/");
 		$target_abs = str_replace(array("\\", "//"), "/", $target_abs."/");
 		$source = substr($source_abs, strLen($source_base));
@@ -45,7 +45,7 @@ if (!function_exists("__CopyForumFiles"))
 				{
 					__CopyForumFiles($source_abs.$file, $target_abs.$file, $bReWriteAdditionalFiles);
 				}
-				else 
+				else
 				{
 					$target_file = $target_abs.$file;
 					if($bReWriteAdditionalFiles || !file_exists($target_file))
@@ -55,12 +55,12 @@ if (!function_exists("__CopyForumFiles"))
 						$fh = fopen($source_file, "rb");
 						$php_source = fread($fh, filesize($source_file));
 						fclose($fh);
-						
+
 						$arParamsForReplace = array();
 						foreach ($arParams as $key => $val)
 							$arParamsForReplace["#".$key."#"] = $val;
 						$php_source = str_replace(array_keys($arParamsForReplace), $arParamsForReplace, $php_source);
-						
+
 						//Parse localization
 						if(preg_match_all('/GetMessage\("(.*?)"\)/', $php_source, $matches))
 						{
@@ -81,7 +81,7 @@ if (!function_exists("__CopyForumFiles"))
 						$fh = fopen($target_file, "wb");
 						fwrite($fh, $php_source);
 						fclose($fh);
-						@chmod($target_file, BX_FILE_PERMISSIONS); 
+						@chmod($target_file, BX_FILE_PERMISSIONS);
 					}
 				}
 			}
@@ -97,7 +97,7 @@ __IncludeLang(GetLangFileName(dirname(__FILE__)."/lang/", "/".basename(__FILE__)
 $db_res = CLangAdmin::GetList(($b="sort"), ($o="asc"));
 while ($res = $db_res->Fetch())
 	$arLangs[] = $res["LID"];
-// PointS 
+// PointS
 $db_res = CForumPoints::GetListEx();
 if (!$db_res)
 {
@@ -159,7 +159,7 @@ $arGroup = array(
 	"PUBLIC" => 0,
 	"PARTNER" => 0,
 	"COMMENTS" => 0);
-	
+
 $db_res = CForumGroup::GetListEx(array(), array("LID" => LANGUAGE_ID));
 if ($db_res && $res = $db_res->Fetch())
 {
@@ -172,7 +172,7 @@ if ($db_res && $res = $db_res->Fetch())
 		elseif (GetMessage("F_GROUP_COMMENTS") == $res["NAME"]):
 			$arGroup["COMMENTS"] = intVal($res["ID"]);
 		endif;
-	} while ($res = $db_res->Fetch()); 
+	} while ($res = $db_res->Fetch());
 }
 
 if (array_sum($arGroup) <= 0)
@@ -186,7 +186,7 @@ if (array_sum($arGroup) <= 0)
 		foreach ($arLangs as $lang)
 		{
 			$name = GetMessage("F_GROUP_".$key);
-			$description = GetMessage("F_GROUP_".$key."_DESCRIPTION");
+//			$description = GetMessage("F_GROUP_".$key."_DESCRIPTION");
 
 			if ($lang != LANGUAGE_ID)
 			{
@@ -194,10 +194,10 @@ if (array_sum($arGroup) <= 0)
 				if (!empty($arMess[$lang]["F_GROUP_".$key]))
 				{
 					$name = $arMess[$lang]["F_GROUP_".$key];
-					$description = $arMess[$lang]["F_GROUP_".$key."_DESCRIPTION"];
+//					$description = $arMess[$lang]["F_GROUP_".$key."_DESCRIPTION"];
 				}
 			}
-			
+
 			$arFields["LANG"][] = array(
 				"LID" => $lang,
 				"NAME" => $name,
@@ -207,39 +207,39 @@ if (array_sum($arGroup) <= 0)
 	}
 }
 $arFieldsParams = array(
-	"SHOW_VOTE" => "N", 
-	"VOTE_CHANNEL_ID" => 0, 
-	"VOTE_GROUP_ID" => 0, 
-	"VOTE_ID" => 0, 
+	"SHOW_VOTE" => "N",
+	"VOTE_CHANNEL_ID" => 0,
+	"VOTE_GROUP_ID" => 0,
+	"VOTE_ID" => 0,
 	"FORUMS_ID" => "");
 if (CModule::IncludeModule("vote"))
 {
 	$db_res = CVoteChannel::GetList($by, $order, array('SYMBOLIC_NAME' => 'FORUM', 'SYMBOLIC_NAME_EXACT_MATCH' => 'Y'), $is_filtered);
 	if ($db_res && $res = $db_res->Fetch()):
 		$arFieldsParams = array(
-			"SHOW_VOTE" => "Y", 
-			"VOTE_CHANNEL_ID" => $res["ID"], 
+			"SHOW_VOTE" => "Y",
+			"VOTE_CHANNEL_ID" => $res["ID"],
 			"VOTE_GROUP_ID" => 0);
 		//Registered users group
 		$dbResult = CGroup::GetList($by, $order, array("STRING_ID" => "REGISTERED_USERS"));
 		if ($dbResult && $res = $dbResult->Fetch()):
 			$arFieldsParams["VOTE_GROUP_ID"] = $res["ID"];
 		endif;
-		$db_res = CVote::GetList($by, $order, array("CHANNEL_ID" => $arFieldsParams["VOTE_CHANNEL_ID"]));
+		$db_res = CVote::GetList($by, $order, array("CHANNEL_ID" => $arFieldsParams["VOTE_CHANNEL_ID"]), $is_filtered);
 		if ($db_res && $res = $db_res->Fetch()):
 			$arFieldsParams["VOTE_ID"] = intVal($res["ID"]);
 		endif;
 	endif;
 }
 
-// Forums 
+// Forums
 $arForums = array();
 $arReplaceForums = array();
 
 $db_res = CForumNew::GetList(array(), array("SITE_ID" => $SITE_ID));
 if ($db_res && $res = $db_res->Fetch())
 {
-	do 
+	do
 	{
 		$arForums[$res["ID"]] = $res["NAME"];
 	}while ($res = $db_res->Fetch());
@@ -258,7 +258,7 @@ else:
 		"SORT" => 100,
 		"ACTIVE" => "Y",
 		"ALLOW_HTML" => "N",
-		"ALLOW_ANCHOR" => "N",
+		"ALLOW_ANCHOR" => "Y",
 		"ALLOW_BIU" => "Y",
 		"ALLOW_IMG" => "Y",
 		"ALLOW_LIST" => "Y",
@@ -279,8 +279,8 @@ else:
 		"ASK_GUEST_EMAIL" => "N",
 		"USE_CAPTCHA" => "Y",
 		"SITES" => array(
-			$SITE_ID => "/communication/forum/messages/forum#FORUM_ID#/topic#TOPIC_ID#/message#MESSAGE_ID#/"),
-		"EVENT1" => "forum", 
+			$SITE_ID => "/communication/forum/messages/forum#FID#/message#MID#/#TITLE_SEO#"),
+		"EVENT1" => "forum",
 		"EVENT2" => "message",
 		"EVENT3" => "",
 		"GROUP_ID" => array(
@@ -355,8 +355,8 @@ else:
 					"AUTHOR_IP"	=> "SWAMP",
 					"AUTHOR_REAL_IP"=> "SWAMP",
 					"NEW_TOPIC"		=> "Y",
-					"GUEST_ID"		=> 58, 
-					"PARAM1" 		=> "VT", 
+					"GUEST_ID"		=> 58,
+					"PARAM1" 		=> "VT",
 					"PARAM2" 		=> $arFieldsParams["VOTE_ID"]);
 				$MID = CForumMessage::Add($arFields, false);
 				if (IntVal($MID)<=0)
@@ -401,8 +401,8 @@ else:
 		"ASK_GUEST_EMAIL" => "N",
 		"USE_CAPTCHA" => "Y",
 		"SITES" => array(
-			$SITE_ID => "/communication/forum/messages/forum#FORUM_ID#/topic#TOPIC_ID#/message#MESSAGE_ID#/"),
-		"EVENT1" => "forum", 
+			$SITE_ID => "/communication/forum/messages/forum#FID#/message#MID#/#TITLE_SEO#"),
+		"EVENT1" => "forum",
 		"EVENT2" => "message",
 		"EVENT3" => "",
 		"GROUP_ID" => array(
@@ -488,8 +488,8 @@ else:
 		"ASK_GUEST_EMAIL" => "N",
 		"USE_CAPTCHA" => "Y",
 		"SITES" => array(
-			$SITE_ID => "/communication/forum/messages/forum#FORUM_ID#/topic#TOPIC_ID#/message#MESSAGE_ID#/"),
-		"EVENT1" => "forum", 
+			$SITE_ID => "/communication/forum/messages/forum#FID#/message#MID#/#TITLE_SEO#"),
+		"EVENT1" => "forum",
 		"EVENT2" => "message",
 		"EVENT3" => "",
 		"GROUP_ID" => array(

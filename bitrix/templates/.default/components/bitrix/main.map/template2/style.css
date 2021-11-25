@@ -1,0 +1,12 @@
+li{
+	font-weight:bold;
+	color="navy";
+}
+a{
+	color: #333;
+}
+
+.catalog-section-list ul {
+    list-style-type: decimal;
+}
+

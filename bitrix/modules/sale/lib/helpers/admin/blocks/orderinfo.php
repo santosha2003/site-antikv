@@ -2,9 +2,12 @@
 
 namespace Bitrix\Sale\Helpers\Admin\Blocks;
 
-use Bitrix\Main\Localization\Loc;
-use Bitrix\Sale\Helpers\Admin\OrderEdit;
+use Bitrix\Main\Event;
 use Bitrix\Sale\Order;
+use Bitrix\Main\EventResult;
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ArgumentNullException;
+use Bitrix\Sale\Helpers\Admin\OrderEdit;
 
 Loc::loadMessages(__FILE__);
 
@@ -101,24 +104,73 @@ class OrderInfo
 			$email = $email->getViewHtml();
 
 		if($phone = $orderProps->getPhone())
-			$phone = $phone->getViewHtml();
+		{
+			$phoneVal = $phone->getValue();
+
+			if($phoneVal != '')
+			{
+				if(!is_array($phoneVal))
+					$phoneVal = array($phoneVal);
+
+				$phone = '';
+
+				foreach($phoneVal as $number)
+				{
+					$number = str_replace("'", "", htmlspecialcharsbx($number));
+
+					if($phone <> '')
+						$phone .= ', ';
+
+					$phone .= '<a href="javascript:void(0)" onclick="BX.Sale.Admin.OrderEditPage.desktopMakeCall(\''.$number.'\');">'.
+						$number.
+						'</a>';
+				}
+			}
+			else
+			{
+				$phone = '';
+			}
+		}
 
 		if($name = $orderProps->getPayerName())
 			$name = $name->getViewHtml();
 
 		$totalPrices = OrderEdit::getTotalPrices($order,  $orderBasket, false);
 
+		//Here we can receive custom data
+		$event = new Event('sale', 'onSaleAdminOrderInfoBlockShow', array('ORDER' => $order, 'ORDER_BASKET' => $orderBasket));
+		$event->send();
+		$resultList = $event->getResults();
+		$customData = array();
+
+		if (is_array($resultList) && !empty($resultList))
+		{
+			foreach ($resultList as $eventResult)
+			{
+				/** @var  EventResult $eventResult*/
+				if ($eventResult->getType() != EventResult::SUCCESS)
+					continue;
+
+				$params = $eventResult->getParameters();
+
+				if(!empty($params) && is_array($params))
+					$customData = array_merge($customData, $params);
+			}
+		}
+		///
+
 		$result = '
 			<div class="adm-bus-orderinfoblock adm-detail-tabs-block-pin" id="sale-order-edit-block-order-info">
 				<div class="adm-bus-orderinfoblock-container">
-				<div class="adm-bus-orderinfoblock-title">'.
-				Loc::getMessage("SALE_ORDER_INFO", array(
+				<div class="adm-bus-orderinfoblock-title">
+					<div class="adm-bus-orderinfoblock-title-text">'.Loc::getMessage("SALE_ORDER_INFO", array(
 					"#ID#" => $order->getId(),
-					"#NUM#" => strlen($order->getField("ACCOUNT_NUMBER")) > 0 ? $order->getField("ACCOUNT_NUMBER") : $order->getId(),
+					"#NUM#" => $order->getField("ACCOUNT_NUMBER") <> '' ? $order->getField("ACCOUNT_NUMBER") : $order->getId(),
 					"#DATE#" => $order->getDateInsert()->toString())
-				)." [".$order->getSiteId()."]".
-				'<div class="adm-bus-orderinfoblock-status success" id="order_info_order_status_name">'.$order->getField('STATUS_ID').'</div> <!-- TODO -->
+				)." [".$order->getSiteId()."]".'</div>
+					<div class="adm-bus-orderinfoblock-status success" id="order_info_order_status_name">'.$order->getField('STATUS_ID').'</div> <!-- TODO -->
 				</div>
+				'.static::getOrderInfoBlock($order).'
 				<div class="adm-bus-orderinfoblock-content">
 					<div class="adm-bus-orderinfoblock-content-block-customer">
 						<ul class="adm-bus-orderinfoblock-content-customer-info">
@@ -132,8 +184,30 @@ class OrderInfo
 							</li>
 							<li>
 								<span class="adm-bus-orderinfoblock-content-customer-info-param">'.Loc::getMessage("SALE_ORDER_INFO_PHONE").':</span>
-								<span class="adm-bus-orderinfoblock-content-customer-info-value" id="order_info_buyer_phone">'.$phone.'</span>
-							</li>
+								<span class="adm-bus-orderinfoblock-content-customer-info-value" id="order_info_buyer_phone">
+									'.$phone.'									
+								</span>
+							</li>';
+
+		if(!empty($customData))
+		{
+			foreach($customData as $custom)
+			{
+				if(empty($custom['TITLE']))
+					throw new ArgumentNullException("customData['TITLE']");
+
+				if(empty($custom['VALUE']))
+					throw new ArgumentNullException("customData['VALUE']");
+
+				$result .='
+					<li>
+						<span class="adm-bus-orderinfoblock-content-customer-info-param">'.$custom['TITLE'].'</span>
+						<span class="adm-bus-orderinfoblock-content-customer-info-value"'.(!empty($custom['ID']) ? ' id="'.$custom['ID'].'"' : '' ).'>'.$custom['VALUE'].'</span>
+					</li>';
+			}
+		}
+
+		$result .= '
 						</ul>
 					</div>
 					<div class="adm-bus-orderinfoblock-content-block-order">
@@ -187,7 +261,7 @@ class OrderInfo
 			$result .= 'title="'.htmlspecialcharsbx($payment["NAME"]).'"'.
 				'><span></span></li></a>';
 
-			if(strlen($updatersContent) > 0)
+			if($updatersContent <> '')
 				$updatersContent .=",\n";
 
 			$updatersContent .= "\tPAYMENT_PAID_".$payment["ID"].": function(paid) { BX.Sale.Admin.OrderInfo.setIconLamp('payment', '".$payment["ID"]."', (paid == 'Y' ? 'green' : 'red')); }";
@@ -209,7 +283,7 @@ class OrderInfo
 			$result .= 'title="'.htmlspecialcharsbx($shipment["NAME"]).'"'.
 				'><span></span></li></a>';
 
-			if(strlen($updatersContent) > 0)
+			if($updatersContent <> '')
 				$updatersContent .=",\n";
 
 			$updatersContent .= "\tSHIPMENT_STATUS_".$shipment["ID"].": function(shipmentStatus) { BX.Sale.Admin.OrderInfo.setIconLamp('shipment', '".$shipment["ID"]."', (shipmentStatus == 'DF' ? 'green' : 'red')); }";
@@ -218,7 +292,7 @@ class OrderInfo
 		$result .=      '</ul>
 					</div>
 				</div>
-				<div id="sale-order-edit-block-order-info-pin" onclick="BX.Sale.Admin.OrderEditPage.toggleFix(this.id, \'sale-order-edit-block-order-info\');" class="adm-detail-pin-btn-tabs" style="top: 9px;right: 5px;"></div>
+				<div id="sale-order-edit-block-order-info-pin" onclick="BX.Sale.Admin.OrderEditPage.toggleFix(this.id, \'sale-order-edit-block-order-info\');" class="adm-detail-pin-btn-tabs" style="top: 9px;right: 0;"></div>
 				</div>
 			</div>';
 
@@ -234,7 +308,7 @@ class OrderInfo
 				</script>';
 		}
 
-		if(strlen($updatersContent) > 0)
+		if($updatersContent <> '')
 		{
 			$result .= '
 					<script type="text/javascript">
@@ -247,5 +321,10 @@ class OrderInfo
 
 		}
 		return $result;
+	}
+	
+	protected static function getOrderInfoBlock(Order $order)
+	{
+		return '';
 	}
 }

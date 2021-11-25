@@ -10,8 +10,8 @@ use Bitrix\Main\Type;
 use Bitrix\Main\Security\Sign\BadSignatureException;
 use Bitrix\Main\Security\Sign\TimeSigner;
 use Bitrix\Main\Security\Random;
-use Bitrix\Security\Codec\Base32;
-
+use Bitrix\Main\Text\Base32;
+use Bitrix\Main\Security\Mfa\OtpAlgorithm;
 
 Loc::loadMessages(__FILE__);
 
@@ -32,8 +32,8 @@ class Otp
 
 	protected static $availableTypes = array(self::TYPE_HOTP, self::TYPE_TOTP);
 	protected static $typeMap = array(
-		self::TYPE_HOTP => '\Bitrix\Security\Mfa\HotpAlgorithm',
-		self::TYPE_TOTP => '\Bitrix\Security\Mfa\TotpAlgorithm',
+		self::TYPE_HOTP => '\Bitrix\Main\Security\Mfa\HotpAlgorithm',
+		self::TYPE_TOTP => '\Bitrix\Main\Security\Mfa\TotpAlgorithm',
 	);
 	protected $algorithmClass = null;
 	protected $regenerated = false;
@@ -44,6 +44,7 @@ class Otp
 	protected $userLogin = null;
 	protected $userGroupPolicy = array();
 	protected $active = null;
+	protected $userActive = null;
 	protected $secret = null;
 	protected $issuer = null;
 	protected $label = null;
@@ -88,7 +89,7 @@ class Otp
 
 		$userInfo = UserTable::getList(array(
 			'filter' => array('=USER_ID' => $userId),
-			'select' => array('ACTIVE', 'USER_ID', 'SECRET', 'PARAMS', 'TYPE', 'ATTEMPTS', 'INITIAL_DATE', 'SKIP_MANDATORY', 'DEACTIVATE_UNTIL')
+			'select' => array('ACTIVE', 'USER_ID', 'SECRET', 'PARAMS', 'TYPE', 'ATTEMPTS', 'INITIAL_DATE', 'SKIP_MANDATORY', 'DEACTIVATE_UNTIL', 'USER_ACTIVE' => 'USER.ACTIVE')
 		));
 
 		$userInfo = $userInfo->fetch();
@@ -104,7 +105,8 @@ class Otp
 		{
 			$type = $userInfo['TYPE']?: self::TYPE_DEFAULT;
 			$userInfo['SECRET'] = pack('H*', $userInfo['SECRET']);
-			$userInfo['ACTIVE'] = $userInfo['ACTIVE'] === 'Y';
+			$userInfo['ACTIVE'] = ($userInfo['ACTIVE'] === 'Y');
+			$userInfo['USER_ACTIVE'] = ($userInfo['USER_ACTIVE'] === 'Y');
 			$userInfo['SKIP_MANDATORY'] = $userInfo['SKIP_MANDATORY'] === 'Y';
 
 			$instance = static::getByType($type);
@@ -264,6 +266,7 @@ class Otp
 	 *
 	 * @param string $inputA First code.
 	 * @param string $inputB Second code.
+	 * @throws \Bitrix\Main\Security\OtpException
 	 * @return string
 	 */
 	public function getSyncParameters($inputA, $inputB)
@@ -300,7 +303,7 @@ class Otp
 		{
 			$params = $this->getSyncParameters($inputA, $inputB);
 		}
-		catch (OtpException $e)
+		catch (\Bitrix\Main\Security\OtpException $e)
 		{
 			throw new OtpException(Loc::getMessage('SECURITY_OTP_ERROR_SYNC_ERROR'));
 		}
@@ -463,6 +466,7 @@ class Otp
 	public function setUserInfo(array $userInfo)
 	{
 		$this->setActive($userInfo['ACTIVE']);
+		$this->setUserActive($userInfo['USER_ACTIVE']);
 		$this->setUserId($userInfo['USER_ID']);
 		$this->setAttempts($userInfo['ATTEMPTS']);
 		$this->setSecret($userInfo['SECRET']);
@@ -605,6 +609,18 @@ class Otp
 	public function isActivated()
 	{
 		return (bool) $this->active;
+	}
+
+	public function setUserActive($isActive)
+	{
+		$this->userActive = $isActive;
+
+		return $this;
+	}
+
+	public function isUserActive()
+	{
+		return (bool) $this->userActive;
 	}
 
 	/**
@@ -812,7 +828,7 @@ class Otp
 	 * Set context of the current request.
 	 *
 	 * @param \Bitrix\Main\Context $context Application context.
-	 * @return \Bitrix\Main\Context
+	 * @return $this
 	 */
 	public function setContext(\Bitrix\Main\Context $context)
 	{
@@ -1091,13 +1107,11 @@ class Otp
 	 * Most complex method, can check everything:-)
 	 * ToDo: describe after refactoring
 	 *
-	 * @param array $params
-	 * @throws ArgumentTypeException
+	 * @param array $params Event parameters.
 	 * @return bool
 	 */
 	public static function verifyUser(array $params)
 	{
-		/** @global \CMain $APPLICATION */
 		global $APPLICATION;
 
 		if (!static::isOtpEnabled()) // OTP disabled in settings
@@ -1135,6 +1149,15 @@ class Otp
 				return false;
 			}
 		}
+		else
+		{
+			if (!$otp->isUserActive())
+			{
+				//non-active user can't login by OTP
+				return false;
+			}
+		}
+
 
 		if (!$isSuccess)
 		{
@@ -1153,10 +1176,10 @@ class Otp
 				&& Option::get('security', 'otp_allow_remember') === 'Y'
 			);
 
-			if (!$isCaptchaChecked && !$_SESSION['BX_LOGIN_NEED_CAPTCHA'])
+			if (!$isCaptchaChecked && !$APPLICATION->NeedCAPTHA())
 			{
 				// Backward compatibility with old login page
-				$_SESSION['BX_LOGIN_NEED_CAPTCHA'] = true;
+				$APPLICATION->SetNeedCAPTHA(true);
 			}
 
 			$isOtpPassword = (bool) preg_match('/^\d{6}$/D', $params['OTP']);
@@ -1200,7 +1223,6 @@ class Otp
 			}
 		}
 
-
 		if ($isSuccess)
 		{
 			static::setDeferredParams(null);
@@ -1210,9 +1232,40 @@ class Otp
 			// Save a flag which indicates that a form for OTP is required
 			$params[static::REJECTED_KEY] = static::REJECT_BY_CODE;
 			static::setDeferredParams($params);
+
+			//the OTP form will be shown on the next hit, send the event
+			static::sendEvent($otp);
+
+			//write to the log ("on" by default)
+			if(Option::get("security", "otp_log") <> "N")
+			{
+				\CSecurityEvent::getInstance()->doLog("SECURITY", "SECURITY_OTP", $otp->getUserId(), "");
+			}
 		}
 
 		return $isSuccess;
+	}
+
+	protected static function sendEvent(Otp $otp)
+	{
+		$code = null;
+		$algo = $otp->getAlgorithm();
+
+		//code value only for TOTP
+		if($algo instanceof \Bitrix\Main\Security\Mfa\TotpAlgorithm)
+		{
+			//value based on the current time
+			$timeCode = $algo->timecode(time());
+			$code = $algo->generateOTP($timeCode);
+		}
+
+		$eventParams = [
+			"userId" => $otp->getUserId(),
+			"code" => $code,
+		];
+
+		$event = new \Bitrix\Main\Event("security", "onOtpRequired", $eventParams);
+		$event->send();
 	}
 
 	/**
@@ -1267,9 +1320,10 @@ class Otp
 	 */
 	public static function getDeferredParams()
 	{
-		if (isset($_SESSION['BX_SECURITY_OTP']) && is_array($_SESSION['BX_SECURITY_OTP']))
+		$kernelSession = Application::getInstance()->getKernelSession();
+		if (isset($kernelSession['BX_SECURITY_OTP']) && is_array($kernelSession['BX_SECURITY_OTP']))
 		{
-			return $_SESSION['BX_SECURITY_OTP'];
+			return $kernelSession['BX_SECURITY_OTP'];
 		}
 
 		return null;
@@ -1283,9 +1337,10 @@ class Otp
 	 */
 	public static function setDeferredParams($params)
 	{
+		$kernelSession = Application::getInstance()->getKernelSession();
 		if ($params === null)
 		{
-			unset($_SESSION['BX_SECURITY_OTP']);
+			unset($kernelSession['BX_SECURITY_OTP']);
 		}
 		else
 		{
@@ -1294,7 +1349,7 @@ class Otp
 			if (isset($params['PASSWORD']))
 				unset($params['PASSWORD']);
 
-			$_SESSION['BX_SECURITY_OTP'] = $params;
+			$kernelSession['BX_SECURITY_OTP'] = $params;
 		}
 	}
 
@@ -1359,7 +1414,7 @@ class Otp
 	public static function getMandatoryRights()
 	{
 		$targetRights = Option::get('security', 'otp_mandatory_rights');
-		$targetRights = unserialize($targetRights);
+		$targetRights = unserialize($targetRights, ['allowed_classes' => false]);
 		if (!is_array($targetRights))
 			$targetRights = array();
 
@@ -1409,13 +1464,18 @@ class Otp
 	 */
 	public static function getTypesDescription()
 	{
-		$result = array();
-		foreach(static::getAvailableTypes() as $type)
-		{
-			$result[$type] = call_user_func(array(static::$typeMap[$type], 'getDescription'));
-		}
-
-		return $result;
+		return array(
+			self::TYPE_HOTP => array(
+				'type' => self::TYPE_HOTP,
+				'title' => Loc::getMessage('SECURITY_HOTP_TITLE'),
+				'required_two_code' => true,
+			),
+			self::TYPE_TOTP => array(
+				'type' => self::TYPE_TOTP,
+				'title' => Loc::getMessage('SECURITY_TOTP_TITLE'),
+				'required_two_code' => false,
+			)
+		);
 	}
 
 	/**

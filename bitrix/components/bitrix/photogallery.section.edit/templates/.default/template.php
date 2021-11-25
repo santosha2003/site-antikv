@@ -1,7 +1,7 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
 
 <?
-if (!$this->__component->__parent || strpos($this->__component->__parent->__name, "photogallery") === false)
+if (!$this->__component->__parent || mb_strpos($this->__component->__parent->__name, "photogallery") === false)
 {
 	$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/components/bitrix/photogallery/templates/.default/style.css');
 	$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/components/bitrix/photogallery/templates/.default/themes/gray/style.css');
@@ -161,7 +161,7 @@ BX.ready(function(){
 						<div class="photo-item-cover-block-outer">
 							<div class="photo-item-cover-block-inner">
 								<div class="photo-item-cover-block-inside">
-									<div id="photo_album_cover_<?= intVal($arResult["SECTION"]['ID'])?>" class="photo-item-cover photo-album-thumbs-avatar <?= (empty($arResult["SECTION"]["PICTURE"]["SRC"])? "photo-album-avatar-empty" : "")?>"
+									<div id="photo_album_cover_<?= intval($arResult["SECTION"]['ID'])?>" class="photo-item-cover photo-album-thumbs-avatar <?= (empty($arResult["SECTION"]["PICTURE"]["SRC"])? "photo-album-avatar-empty" : "")?>"
 										<?if (!empty($arResult["SECTION"]["PICTURE"]["SRC"])):?>
 											style="background-image: url('<?= $arResult["SECTION"]["PICTURE"]["SRC"]?>');"
 										<?endif;?>
@@ -239,7 +239,7 @@ BX.ready(function(){
 			<ul class="photo-items-list photo-album-thumbs-list">
 
 			<?foreach($arResult["SECTIONS"] as $res):?>
-					<li class="photo-item photo-album-item photo-album-<?=($res["ACTIVE"] != "Y" ? "nonactive" : "active")?> <?= (!empty($res["PASSWORD"]) ? " photo-album-password " : "")?>" id="photo_album_info_<?=$res["ID"]?>" title="<?= trim("&laquo;".$res["~NAME"]."&raquo;  ".(!empty($res["DATE"]) ? " ".$res["DATE"] : ""))?>">
+					<li class="photo-item photo-album-item photo-album-<?=($res["ACTIVE"] != "Y" ? "nonactive" : "active")?> <?= (!empty($res["PASSWORD"]) ? " photo-album-password " : "")?>" id="photo_album_info_<?=$res["ID"]?>">
 					<div class="photo-item-cover-block-outside">
 						<div class="photo-item-cover-block-container">
 							<div class="photo-item-cover-block-outer">
@@ -275,7 +275,7 @@ BX.ready(function(){
 								<div class="photo-item-info-block-inner">
 									<div class="photo-album-photos-top"><?=$res["ELEMENTS_CNT"]?> <?=GetMessage("P_PHOTOS")?></div>
 									<div class="photo-album-name">
-										<a href="<?=$res["LINK"]?>" id="photo_album_name_<?=$res["ID"]?>" title="<?=htmlspecialcharsbx($res["~NAME"])?>"><?=$res["NAME"]?></a>
+										<a href="<?=$res["LINK"]?>" id="photo_album_name_<?=$res["ID"]?>"><?=$res["NAME"]?></a>
 									</div>
 									<div class="photo-album-description" id="photo_album_description_<?=$res["ID"]?>"><?=$res["DESCRIPTION"]?></div>
 									<div class="photo-album-date"><span id="photo_album_date_<?=$res["ID"]?>"><?=$res["DATE"]?></span></div>
@@ -335,9 +335,9 @@ BX.ready(function(){
 			<input type="submit" name="name_submit" value="<?=GetMessage("P_SUBMIT");?>" />
 
 			<div id="bxph_elements_actions<?= $arResult["JSID"]?>" class="photo-ed-al-group-actions">
-				<span  id="bxph_multi_del<?= $arResult["JSID"]?>" class="photo-ed-al-gract-del"><?= strtolower(GetMessage("P_SECTION_DELETE"))?></span>
+				<span  id="bxph_multi_del<?= $arResult["JSID"]?>" class="photo-ed-al-gract-del"><?= mb_strtolower(GetMessage("P_SECTION_DELETE"))?></span>
 				<span class="photo-ed-al-move-cnt">
-					<span id="bxph_multi_move<?= $arResult["JSID"]?>" class="photo-ed-al-gract-move"><?= strtolower(GetMessage("P_MOVE"))?></span>
+					<span id="bxph_multi_move<?= $arResult["JSID"]?>" class="photo-ed-al-gract-move"><?= mb_strtolower(GetMessage("P_MOVE"))?></span>
 					<div id="bxph_multi_move_popup<?= $arResult["JSID"]?>" class="" style="display: none;">
 					<?foreach($arResult["SECTIONS_LIST"] as $sect):?>
 						<a href="javascript: void(0);" id="bxph_sect<?= $sect['ID']?>" style="padding-left: <?= (6 + $sect['DEPTH'] * 20)?>px" title="<?= $sect['NAME']?>"><?= $sect['NAME']?></a>
@@ -365,9 +365,9 @@ BX.ready(function(){
 BX.ready(function(){
 	window.oBXPhotoList = new window.BXPhotoList({
 		id: '<?= $arResult["JSID"]?>',
-		navPageCount: '<?= intVal($arResult["NAV_PAGE_COUNT"])?>',
-		navPageSize: '<?= intVal($arResult["NAV_PAGE_SIZE"])?>',
-		itemsCount: '<?= intVal($arResult["NAV_SELECTED_COUNT"])?>',
+		navPageCount: '<?= intval($arResult["NAV_PAGE_COUNT"])?>',
+		navPageSize: '<?= intval($arResult["NAV_PAGE_SIZE"])?>',
+		itemsCount: '<?= intval($arResult["NAV_SELECTED_COUNT"])?>',
 		actionUrl: '<?= CUtil::JSEscape($arParams['ACTION_URL'])?>',
 		thumbSize: '<?= $arParams['THUMBNAIL_SIZE']?>',
 		showTitle: <?= ($arParams['USE_PHOTO_TITLE'] != "N" ? 'true' : 'false')?>,
@@ -379,8 +379,8 @@ BX.ready(function(){
 			albumTitle: '<?=GetMessage("P_ALBUM_NAME")?>',
 			albumDesc: '<?=GetMessage("P_ALBUM_DESCRIPTION")?>',
 			addTags: '<?=GetMessage("P_EDIT_ADD_TAGS")?>',
-			del: '<?= strtolower(GetMessage("P_SECTION_DELETE"))?>',
-			restore: '<?= strtolower(GetMessage("P_RESTORE"))?>',
+			del: '<?= mb_strtolower(GetMessage("P_SECTION_DELETE"))?>',
+			restore: '<?= mb_strtolower(GetMessage("P_RESTORE"))?>',
 			rotateLeft: '<?=GetMessage("P_ROTATE_LEFT")?>',
 			rotateRight: '<?= GetMessage("P_ROTATE_RIGHT")?>',
 			nFromM: '<?= GetMessage("P_ALBUM_PHOTOS_1")?>',

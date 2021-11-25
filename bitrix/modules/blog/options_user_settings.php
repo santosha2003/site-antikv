@@ -2,7 +2,7 @@
 IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/options_user_settings.php");
 
 if (CModule::IncludeModule("blog")):
-	$ID = IntVal($ID);
+	$ID = intval($ID);
 	$str_blog_AVATAR = "";
 	ClearVars("str_blog_");
 	$db_res = CBlogUser::GetList(array(), array("USER_ID" => $ID));
@@ -15,13 +15,12 @@ if (CModule::IncludeModule("blog")):
 	if($COPY_ID > 0)
 		$str_blog_AVATAR = "";
 
-	if (strlen($strError)>0)
+	if ($strError <> '')
 	{
 		$str_blog_ALLOW_POST = htmlspecialcharsbx($_POST["blog_ALLOW_POST"]);
 		$str_blog_ALIAS = htmlspecialcharsbx($_POST["blog_ALIAS"]);
 		$str_blog_DESCRIPTION = htmlspecialcharsbx($_POST["blog_DESCRIPTION"]);
 		$str_blog_INTERESTS = htmlspecialcharsbx($_POST["blog_INTERESTS"]);
-		$str_blog_ALLOW_POST = htmlspecialcharsbx($_POST["blog_ALLOW_POST"]);
 	}
 	?>
 	<input type="hidden" name="profile_module_id[]" value="blog">
@@ -47,7 +46,7 @@ if (CModule::IncludeModule("blog")):
 		<td><?=GetMessage("blog_AVATAR")?></td>
 		<td><?
 			echo CFile::InputFile("blog_AVATAR", 20, $str_blog_AVATAR);
-			if (IntVal($str_blog_AVATAR)>0):
+			if (intval($str_blog_AVATAR)>0):
 				?><div class="adm-detail-file-image"><?
 				echo CFile::ShowImage($str_blog_AVATAR, 150, 150, "border=0", "", true);?></div><?
 			endif;

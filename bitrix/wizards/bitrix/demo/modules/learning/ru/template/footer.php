@@ -1,8 +1,11 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();?>
 
-<?IncludeTemplateLangFile(__FILE__);?>
-
-<div id="copyright"><?=GetMessage("LEARNING_TEMPLATE_COPYRIGHT")?></div>
+		</td>
+	</tr>
+	<tr>
+		<td id="footer"><div id="learning-copyright">&nbsp;</div></td>
+	</tr>
+</table>
 </div>
 </body>
 </html>

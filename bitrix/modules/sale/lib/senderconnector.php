@@ -9,14 +9,22 @@
 namespace Bitrix\Sale;
 
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Loader;
+
+if (!Loader::includeModule('sender'))
+{
+	return;
+}
 
 Loc::loadMessages(__FILE__);
 
 class SenderEventHandler
 {
 	/**
-	 * @param $data
-	 * @return mixed
+	 * Event handler.
+	 *
+	 * @param array $data Event data.
+	 * @return array
 	 */
 	public static function onConnectorListBuyer($data)
 	{
@@ -30,6 +38,8 @@ class SenderEventHandler
 class SenderConnectorBuyer extends \Bitrix\Sender\Connector
 {
 	/**
+	 * Get name.
+	 *
 	 * @return string
 	 */
 	public function getName()
@@ -38,6 +48,8 @@ class SenderConnectorBuyer extends \Bitrix\Sender\Connector
 	}
 
 	/**
+	 * Get code.
+	 *
 	 * @return string
 	 */
 	public function getCode()
@@ -45,7 +57,11 @@ class SenderConnectorBuyer extends \Bitrix\Sender\Connector
 		return "buyer";
 	}
 
-	/** @return \CDBResult */
+	/**
+	 * Get data.
+	 *
+	 * @return \Bitrix\Main\DB\Result
+	 */
 	public function getData()
 	{
 		$lid = $this->getFieldValue('LID', null);
@@ -60,37 +76,34 @@ class SenderConnectorBuyer extends \Bitrix\Sender\Connector
 		if($lid)
 			$filter['LID'] = $lid;
 		if($orderCountFrom)
-			$filter['>=ORDER_COUNT'] = $orderCountFrom;
+			$filter['>=COUNT_FULL_PAID_ORDER'] = $orderCountFrom;
 		if($orderCountTo)
-			$filter['<ORDER_COUNT'] = $orderCountTo;
+			$filter['<COUNT_FULL_PAID_ORDER'] = $orderCountTo;
 		if($orderSumFrom)
-			$filter['>=ORDER_SUM'] = $orderSumFrom;
+			$filter['>=SUM_PAID'] = $orderSumFrom;
 		if($orderSumTo)
-			$filter['<ORDER_SUM'] = $orderSumTo;
+			$filter['<SUM_PAID'] = $orderSumTo;
 		if($orderLastDateFrom)
 			$filter['>=LAST_ORDER_DATE'] = $orderLastDateFrom;
 		if($orderLastDateTo)
 			$filter['<LAST_ORDER_DATE'] = $orderLastDateTo;
 
-
-		$dbBuyerList = \CSaleUser::GetBuyersList(
-			array('ID' => 'ASC'),
-			$filter,
-			false,
-			false,
-			array("EMAIL", "NAME", "USER_ID", "ID")
-		);
-
-		return $dbBuyerList;
+		return BuyerStatistic::getList(array(
+			'select' => array("EMAIL" => 'USER.EMAIL', "NAME" => 'USER.NAME', "USER_ID", "ID"),
+			'filter' => $filter,
+			'order' => array('ID' => 'ASC'),
+		));
 	}
 
 	/**
+	 * Get form html.
+	 *
 	 * @return string
 	 */
 	public function getForm()
 	{
 		$siteInput = '<select name="'.$this->getFieldName('LID').'">';
-		$siteDb = \CSite::GetList($by="sort", $order="asc", array("ACTIVE" => "Y"));
+		$siteDb = \CSite::GetList("sort", "asc", array("ACTIVE" => "Y"));
 		while ($site = $siteDb->Fetch())
 		{
 			$inputSelected = ($site['LID'] == $this->getFieldValue('LID') ? 'selected' : '');

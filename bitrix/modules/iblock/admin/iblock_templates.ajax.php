@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-<?
-=======
 <?php
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 define('STOP_STATISTICS', true);
 define('NO_AGENT_CHECK', true);
 define('DisableEventsCheck', true);
@@ -43,7 +39,7 @@ if (check_bitrix_sessid())
 		);
 		foreach ($_POST as $key => $value)
 		{
-			if (substr($key, 0, 3) === "UF_")
+			if (mb_substr($key, 0, 3) === "UF_")
 				$arFields[$key] = $value;
 		}
 	}
@@ -51,12 +47,18 @@ if (check_bitrix_sessid())
 	{
 		$ipropTemplates = new \Bitrix\Iblock\InheritedProperty\ElementTemplates($_REQUEST["IBLOCK_ID"], $_REQUEST["ENTITY_ID"]);
 
-		if ($_POST["IBLOCK_ELEMENT_SECTION_ID"] > 0)
-			$section_id = intval($_POST["IBLOCK_ELEMENT_SECTION_ID"]);
-		elseif (is_array($_POST["IBLOCK_SECTION"]))
-			$section_id = min(array_filter($_POST["IBLOCK_SECTION"], "strlen"));
-		else
-			$section_id = 0;
+		$section_id = 0;
+		if (isset($_POST["IBLOCK_ELEMENT_SECTION_ID"]) && (int)$_POST["IBLOCK_ELEMENT_SECTION_ID"] > 0)
+		{
+			$section_id = (int)$_POST["IBLOCK_ELEMENT_SECTION_ID"];
+		}
+		elseif (!empty($_POST["IBLOCK_SECTION"]) && is_array($_POST["IBLOCK_SECTION"]))
+		{
+			$postSections = array_filter($_POST["IBLOCK_SECTION"], "strlen");
+			if (!empty($postSections))
+				$section_id = min($postSections);
+			unset($postSections);
+		}
 
 		$arFields = array(
 			"IBLOCK_ID" => $_REQUEST["IBLOCK_ID"],
@@ -95,11 +97,7 @@ if (check_bitrix_sessid())
 		{
 			$result[] = array(
 				"id" => $TEMPLATE_NAME,
-<<<<<<< HEAD
-				"value" => \Bitrix\Main\Text\String::htmlEncode(
-=======
-				"value" => \Bitrix\Main\Text\TString::htmlEncode(
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+				"value" => \Bitrix\Main\Text\HtmlFilter::encode(
 					\Bitrix\Iblock\Template\Engine::process($entity, $templateInfo["TEMPLATE"])
 				),
 			);
@@ -110,7 +108,7 @@ if (check_bitrix_sessid())
 			$html = ' ';
 			$firstSection = 0;
 			$inSelect = false;
-			$sections = array_filter($_POST["IBLOCK_SECTION"], "strlen");
+			$sections = $_POST["IBLOCK_SECTION"]? array_filter($_POST["IBLOCK_SECTION"], "strlen"): array();
 			$html .= '<select name="IBLOCK_ELEMENT_SECTION_ID" id="IBLOCK_ELEMENT_SECTION_ID" onchange="InheritedPropertiesTemplates.updateInheritedPropertiesValues(false, true)">';
 			if ($sections)
 			{
@@ -169,6 +167,8 @@ if (check_bitrix_sessid())
 			$result[] = array(
 				"htmlId" => "RESULT_IBLOCK_ELEMENT_SECTION_ID",
 				"value" => $html,
+				"hiddenId" => "IBLOCK_ELEMENT_SECTION_ID",
+				"hiddenValue" => $arFields["IBLOCK_SECTION_ID"],
 			);
 		}
 

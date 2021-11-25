@@ -15,7 +15,7 @@ endif;
 				Input params
 ********************************************************************/
 /***************** BASE ********************************************/
-$arParams["IMAGE_SIZE"] = (intVal($arParams["IMAGE_SIZE"]) > 0 ? $arParams["IMAGE_SIZE"] : 500);
+$arParams["IMAGE_SIZE"] = (intval($arParams["IMAGE_SIZE"]) > 0 ? $arParams["IMAGE_SIZE"] : 500);
 $arParams["SHOW_VOTE"] = ($arParams["SHOW_VOTE"] == "Y" && IsModuleInstalled("vote") ? "Y" : "N");
 /********************************************************************
 				/Input params
@@ -62,7 +62,7 @@ elseif ($arResult["SHOW_MESSAGE_FOR_AJAX"] == "Y"):
 				array_walk($item, "__ConvertData");
 			else
 			{
-				$item = htmlspecialcharsEx($item);
+				$item = htmlspecialcharsbx($item);
 				$item = str_replace($search, $replace, $item);
 			}
 		}

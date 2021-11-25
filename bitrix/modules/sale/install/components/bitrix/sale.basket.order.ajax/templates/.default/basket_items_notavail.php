@@ -49,11 +49,11 @@
 			<tr>
 				<?if (in_array("NAME", $arParams["COLUMNS_LIST"])):?>
 					<td class="cart-item-name"><?
-					if (strlen($arBasketItems["DETAIL_PAGE_URL"])>0):
+					if ($arBasketItems["DETAIL_PAGE_URL"] <> ''):
 						?><a href="<?=$arBasketItems["DETAIL_PAGE_URL"] ?>"><?
 					endif;
 					?><b><?=$arBasketItems["NAME"] ?></b><?
-					if (strlen($arBasketItems["DETAIL_PAGE_URL"])>0):
+					if ($arBasketItems["DETAIL_PAGE_URL"] <> ''):
 						?></a><?
 					endif;?>
 					<?if (in_array("PROPS", $arParams["COLUMNS_LIST"]))

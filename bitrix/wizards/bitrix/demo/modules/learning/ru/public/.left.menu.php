@@ -2,7 +2,7 @@
 $aMenuLinks = Array(
   Array(
     "Каталог курсов", 
-    "/communication/learning/",
+    "index.php",
     Array(), 
     Array(), 
     "" 
@@ -10,7 +10,7 @@ $aMenuLinks = Array(
 
   Array(
     "Мои курсы",
-    "/communication/learning/mycourses.php",
+    "mycourses.php",
     Array(), 
     Array(), 
     "\$GLOBALS['USER']->IsAuthorized()" 
@@ -19,7 +19,7 @@ $aMenuLinks = Array(
 
   Array(
     "Журнал обучения",
-    "/communication/learning/gradebook.php",
+    "gradebook.php",
     Array(), 
     Array(), 
     "\$GLOBALS['USER']->IsAuthorized()"  
@@ -27,7 +27,7 @@ $aMenuLinks = Array(
 
   Array(
     "Анкета специалиста",
-    "/communication/learning/profile.php",
+    "profile.php",
     Array(), 
     Array(), 
     "\$GLOBALS['USER']->IsAuthorized()"  

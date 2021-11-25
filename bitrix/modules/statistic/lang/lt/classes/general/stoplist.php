@@ -1,5 +1,0 @@
-<?
-$MESS['STAT_WRONG_END_DATE'] = 'Áveskyte teisingà \"Pabaigos datà\" nurodytame formate';
-$MESS['STAT_WRONG_START_DATE'] = 'Áveskyte teisingà \"Pradþios datà\" nurodytame formate';
-$MESS['STAT_WRONG_STOPLIST_PARAMS'] = 'Negalima pridëti save á stop-sàraðà';
-?>

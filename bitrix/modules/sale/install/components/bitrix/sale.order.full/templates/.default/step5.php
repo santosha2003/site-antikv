@@ -31,7 +31,7 @@
 						</tr>
 						<?
 					}
-					if(strLen($arProperties["VALUE_FORMATED"])>0)
+					if($arProperties["VALUE_FORMATED"] <> '')
 					{
 						?>
 						<tr>
@@ -157,7 +157,7 @@
 				<tr>
 					<td align="right"><b><?echo GetMessage("SALE_CONTENT_DISCOUNT")?>:</b></td>
 					<td align="right" colspan="6"><?echo $arResult["DISCOUNT_PRICE_FORMATED"]?>
-						<?if (strLen($arResult["DISCOUNT_PERCENT_FORMATED"])>0):?>
+						<?if ($arResult["DISCOUNT_PERCENT_FORMATED"] <> ''):?>
 							(<?echo $arResult["DISCOUNT_PERCENT_FORMATED"];?>)
 						<?endif;?>
 					</td>

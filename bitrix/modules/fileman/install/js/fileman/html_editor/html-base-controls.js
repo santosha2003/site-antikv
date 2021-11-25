@@ -565,6 +565,11 @@
 		{
 			var _this = this;
 			this.editor.skipPasteHandler = true;
+			this.editor.skipPasteControl = true;
+
+			if (this.editor.iframeView.pasteHandlerTimeout)
+				this.editor.iframeView.pasteHandlerTimeout = clearTimeout(this.editor.iframeView.pasteHandlerTimeout);
+
 			setTimeout(function()
 			{
 				var dd = _this.editor.GetIframeElement(node.id);
@@ -577,8 +582,10 @@
 					}
 				}
 				_this.editor.synchro.FullSyncFromIframe();
+
 				_this.editor.skipPasteHandler = false;
-			}, 10);
+				_this.editor.skipPasteControl = false;
+			}, 20);
 		},
 
 		OnElementMouseDownEx: function(e)
@@ -892,8 +899,7 @@
 				this.dialogShownTimeout = clearTimeout(this.dialogShownTimeout);
 			}
 			this.oDialog.Show();
-			this.oDialog.DIV.style.zIndex = this.zIndex;
-			this.oDialog.OVERLAY.style.zIndex = this.zIndex - 2;
+
 			var
 				top = parseInt(this.oDialog.DIV.style.top) - 180,
 				scrollPos = BX.GetWindowScrollPos(document),
@@ -1742,7 +1748,7 @@
 			};
 		},
 
-		Show: function(e, target)
+		Show: function(e, target, collapsedSelection)
 		{
 			this.savedRange = this.editor.selection.GetBookmark();
 			this.Hide();
@@ -1861,7 +1867,7 @@
 
 			if (arItems.length == 0 && (!this.editor.bbCode || this.items['DEFAULT'].bbMode))
 			{
-				if (!this.savedRange || !this.savedRange.collapsed)
+				if (!this.savedRange || (!this.savedRange.collapsed && !collapsedSelection))
 				{
 					for (j = 0; j < this.items['DEFAULT'].length; j++)
 					{
@@ -1894,7 +1900,6 @@
 				});
 				this.OPENER.Open();
 				var popupDiv = this.OPENER.GetMenu().DIV;
-				popupDiv.style.zIndex = '3005';
 				popupDiv.id = 'bx-admin-prefix';
 				BX.addClass(popupDiv, 'bx-core-popup-menu-editor');
 
@@ -2551,7 +2556,7 @@
 	{
 		this.editor = editor;
 		this.id = 'bxeditor_overlay' + this.editor.id;
-		this.zIndex = params && params.zIndex ? params.zIndex : 3001;
+		this.zIndex = params && params.zIndex ? params.zIndex : 1001;
 	}
 
 	Overlay.prototype =
@@ -2561,7 +2566,7 @@
 			this.bCreated = true;
 			this.bShown = false;
 			var ws = BX.GetWindowScrollSize();
-			this.pWnd = document.body.appendChild(BX.create("DIV", {props: {id: this.id, className: "bxhtmled-overlay"}, style: {zIndex: this.zIndex, width: ws.scrollWidth + "px", height: ws.scrollHeight + "px"}}));
+			this.pWnd = document.body.appendChild(BX.create("DIV", {props: {id: this.id, className: "bxhtmled-overlay"}, style: { width: ws.scrollWidth + "px", height: ws.scrollHeight + "px"}}));
 			this.pWnd.ondrag = BX.False;
 			this.pWnd.onselectstart = BX.False;
 		},
@@ -2927,11 +2932,22 @@
 			{
 				this.popupShownTimeout = clearTimeout(this.popupShownTimeout);
 			}
+
+			var firstOpen = this.pValuesCont.parentNode === null;
 			document.body.appendChild(this.pValuesCont);
+
+			if (firstOpen)
+			{
+				BX.ZIndexManager.register(this.pValuesCont);
+			}
+
+			var component = BX.ZIndexManager.bringToFront(this.pValuesCont);
+			var zIndex = component.getZIndex();
+
 			this.pValuesCont.style.display = 'block';
 			BX.addClass(this.pCont, this.activeClassName);
 			var
-				pOverlay = this.editor.overlay.Show({zIndex: this.zIndex - 1}),
+				pOverlay = this.editor.overlay.Show({ zIndex: zIndex - 1 }),
 				bindCont = this.GetPopupBindCont(),
 				pos = BX.pos(bindCont),
 				left = Math.round(pos.left - this.pValuesCont.offsetWidth / 2 + bindCont.offsetWidth / 2 + this.posOffset.left),
@@ -2991,6 +3007,10 @@
 		},
 
 		GetValue: function()
+		{
+		},
+
+		OnPopupClose: function()
 		{
 		}
 	};
@@ -3532,7 +3552,16 @@
 				this.popupShownTimeout = clearTimeout(this.popupShownTimeout);
 			}
 
+			var firstShow = this.pValuesCont.parentNode === null;
 			document.body.appendChild(this.pValuesCont);
+
+			if (firstShow)
+			{
+				BX.ZIndexManager.register(this.pValuesCont);
+			}
+
+			BX.ZIndexManager.bringToFront(this.pValuesCont);
+
 			this.pValuesCont.style.display = 'block';
 
 			var
@@ -3708,18 +3737,62 @@
 			CHECKED: this.mode == 'rich',
 			_MODE: 'rich'
 		});
+
+		// mantis: 71968
+		BX.addCustomEvent('OnComponentParamsDisplay', BX.proxy(this.Hide, this));
 	}
 
 	PasteControl.prototype = {
+		CheckAndShow: function ()
+		{
+			var
+				isOpened = this.isOpened,
+				_this = this;
+
+			this.savedRange = this.editor.selection.GetBookmark();
+			this.isOpened = true;
+			this.lastPreviewMode = false;
+			if (this.checkTimeout)
+				this.checkTimeout = clearTimeout(this.checkTimeout);
+
+			this.checkTimeout = setTimeout(function()
+			{
+				var skipPasteHandler = _this.editor.skipPasteHandler;
+				_this.editor.skipPasteHandler = true;
+				_this.PreviewContent({mode: 'rich', doTimeout: false, skipColors: true});
+				var richContent = _this.editor.iframeView.GetValue();
+				// Clear images before comparision
+				richContent = richContent.replace(/<img((?:\s|\S)*?)>/ig, '');
+				richContent = richContent.replace(/id="(\s|\S)*?"/ig, '');
+				richContent = richContent.replace(/\s+/ig, ' ');
+
+				_this.PreviewContent({mode: 'text', doTimeout: false});
+				var textContent = _this.editor.iframeView.GetValue();
+				// Clear images before comparision
+				textContent = textContent.replace(/<img((?:\s|\S)*?)>/ig, '');
+				textContent = textContent.replace(/id="(\s|\S)*?"/ig, '');
+				textContent = textContent.replace(/\s+/ig, ' ');
+
+				if (richContent != textContent)
+				{
+					_this.isOpened = isOpened;
+					_this.editor.SetCursorNode(_this.savedRange);
+					_this.Show();
+				}
+
+				_this.editor.skipPasteHandler = skipPasteHandler;
+			}, 200);
+		},
+
 		Show: function ()
 		{
+			var _this = this;
 			this.lastPreviewMode = false;
-			this.savedRange = this.editor.selection.GetBookmark();
 			this.Hide();
 
-			this.pOverlay = this.editor.overlay.Show();
+			this.pOverlay = this.editor.overlay.Show({zIndex: 1040});
 			BX.bind(this.pOverlay, 'click', BX.proxy(this.Hide, this));
-			BX.bind(this.pOverlay, 'mousemove', BX.proxy(this.PreviewContent, this));
+			BX.bind(this.pOverlay, 'mousemove', BX.proxy(function(){this.PreviewContent({mode: 'default'});}, this));
 
 			if (!this.dummyTarget)
 			{
@@ -3727,7 +3800,6 @@
 			}
 
 			var
-				_this = this,
 				cursorNode = this.editor.GetIframeElement('bx-cursor-node'),
 				top = 0, left = 0, node;
 
@@ -3776,7 +3848,6 @@
 			this.OPENER.Open();
 
 			var popupDiv = this.OPENER.GetMenu().DIV;
-			popupDiv.style.zIndex = '3005';
 			BX.addClass(popupDiv, 'bxhtmled-paste-control bx-core-popup-menu-editor');
 
 			BX.addCustomEvent(this.OPENER.GetMenu(), 'onMenuClose', BX.proxy(this.Hide, this));
@@ -3854,7 +3925,7 @@
 
 					if (params.mode == 'rich')
 					{
-						this.editor.config.pasteSetColors = false;
+						this.editor.config.pasteSetColors = !!params.skipColors;
 						this.editor.config.pasteSetBorders = false;
 						this.editor.config.pasteSetDecor = false;
 					}
@@ -3873,9 +3944,9 @@
 
 					this.editor.pasteHandleMode = true;
 					this.editor.bbParseContentMode = true;
+					this.editor.synchro.lastIframeValue = false;
 
 					this.editor.iframeView.SetValue(this.pastedContent, false);
-
 					this.editor.synchro.FromIframeToTextarea(true, true);
 
 					this.editor.pasteHandleMode = false;
@@ -3909,7 +3980,7 @@
 
 			this.pastedContent = content;
 		}
-	}
+	};
 
 	function __run()
 	{

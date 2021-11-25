@@ -1,11 +1,17 @@
 <?php
-use Bitrix\Main\Localization\Loc;
-use Bitrix\Main\SystemException;
+use Bitrix\Main,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Main\SystemException;
 
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 
 CBitrixComponent::includeComponentClass("bitrix:catalog.viewed.products");
 
+/**
+ * Class CSaleGiftBasketComponent
+ * @deprecated No longer used by internal code and not recommended.
+ * Use "sale.products.gift.basket" instead.
+ */
 class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 {
 	/** @var \Bitrix\Sale\Discount\Gift\Manager */
@@ -79,7 +85,8 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 	{
 		if($this->basket === null)
 		{
-			$this->basket = \Bitrix\Sale\Basket::loadItemsForFUser(\Bitrix\Sale\Fuser::getId(), SITE_ID);
+			$basketStorage = \Bitrix\Sale\Basket\Storage::getInstance(\Bitrix\Sale\Fuser::getId(), SITE_ID);
+			$this->basket = $basketStorage->getBasket();
 		}
 
 		return $this->basket;
@@ -90,14 +97,7 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 		/** @var \Bitrix\Sale\BasketItem $item */
 		foreach($this->getBasket() as $item)
 		{
-			//todo we should get iblock data from item by provider
-			if(
-				$item->getField('MODULE') === 'catalog' &&
-				(
-					$item->getProvider() instanceof \CCatalogProductProvider ||
-					$item->getProvider() === 'CCatalogProductProvider'
-				)
-			)
+			if($this->isExtendedCatalogProvider($item))
 			{
 				$element = \Bitrix\Iblock\ElementTable::getRow(array(
 					'select' => array('IBLOCK_ID'),
@@ -148,28 +148,6 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 		return array($catalogIblockId, $offersIblockId);
 	}
 
-	private function fetchProductPriceId()
-	{
-		/** @var \Bitrix\Sale\BasketItem $item */
-		foreach($this->getBasket() as $item)
-		{
-			//todo we should get iblock data from item by provider
-			if(
-				$item->getField('MODULE') === 'catalog' &&
-				(
-					$item->getProvider() instanceof \CCatalogProductProvider ||
-					$item->getProvider() === 'CCatalogProductProvider'
-				)
-			)
-			{
-				return $item->getField('PRODUCT_PRICE_ID');
-			}
-		}
-		unset($item);
-
-		return null;
-	}
-
 	private function buildIblockDependedParameters()
 	{
 		list($catalogIblockId, $offersIblockId) = $this->guessIblocks();
@@ -200,35 +178,30 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 			$catalogIblockId => 'Y',
 		);
 
-		$this->arParams['PRICE_CODE'] = array(
-			$this->getPriceCode($this->fetchProductPriceId()),
-		);
-	}
-
-	private function getPriceCode($productPriceId)
-	{
-		if(!$productPriceId)
+		//TODO: change price types selection to api
+		$this->arParams['PRICE_CODE'] = [];
+		$fullPriceTypeList = \CCatalogGroup::GetListArray();
+		if (!empty($fullPriceTypeList))
 		{
-			return null;
+			$iterator = \Bitrix\Catalog\GroupAccessTable::getList([
+				'select' => ['CATALOG_GROUP_ID'],
+				'filter' => [
+					'@GROUP_ID' => Main\UserTable::getUserGroupIds($this->getUserId()),
+					'=ACCESS' => \Bitrix\Catalog\GroupAccessTable::ACCESS_BUY
+				],
+			]);
+			while ($row = $iterator->fetch())
+			{
+				$id = (int)$row['CATALOG_GROUP_ID'];
+				if (!isset($fullPriceTypeList[$id]))
+					continue;
+				$this->arParams['PRICE_CODE'][$id] = $fullPriceTypeList[$id]['NAME'];
+			}
+			unset($id, $row, $iterator);
+			if (!empty($this->arParams['PRICE_CODE']))
+				$this->arParams['PRICE_CODE'] = array_values($this->arParams['PRICE_CODE']);
 		}
-
-		$rsPrices = CPrice::GetListEx(
-			array(),
-			array('ID' => $productPriceId),
-			false,
-			false,
-			array(
-				'ID',
-				'CATALOG_GROUP_CODE',
-			)
-		);
-		if(!$rsPrices)
-		{
-			return null;
-		}
-		$price = $rsPrices->fetch();
-
-		return $price['CATALOG_GROUP_CODE']?: null;
+		unset($fullPriceTypeList);
 	}
 
 	private function hasProperty($catalogIblockId, $propertyName)
@@ -430,7 +403,7 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 			if(!$parentElementId)
 			{
 				$parentElementId = $pureOffer['LINK_ELEMENT_ID'];
-				$this->items[$pureOffer['ID']]['OFFERS'] = $pureOffers;
+				$this->items[$parentElementId]['OFFERS'] = $pureOffers;
 			}
 			else
 			{
@@ -484,6 +457,21 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 		}
 	}
 
+	protected function setItemsPrices()
+	{
+		parent::setItemsPrices();
+
+		foreach ($this->items as &$item)
+		{
+			if (!empty($item['OFFERS']))
+			{
+				continue;
+			}
+
+			$this->setGiftDiscountToMinPrice($item);
+		}
+	}
+
 	protected function formatResult()
 	{
 		$this->items = array_slice($this->items, 0, $this->arParams['PAGE_ELEMENT_COUNT']);
@@ -526,5 +514,25 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 		$offer['MIN_PRICE']['DISCOUNT_VALUE_NOVAT'] = 0;
 		$offer['MIN_PRICE']['DISCOUNT_VALUE_VAT'] = 0;
 		$offer['MIN_PRICE']['DISCOUNT_VALUE'] = 0;
+	}
+
+	/**
+	 * @param $item
+	 *
+	 * @return bool
+	 */
+	private function isExtendedCatalogProvider(\Bitrix\Sale\BasketItem $item)
+	{
+		return
+			$item->getField('MODULE') === 'catalog' &&
+			(
+				$item->getProvider() &&
+				(
+					$item->getProvider() === "CCatalogProductProvider"
+					|| $item->getProvider() === "\Bitrix\Catalog\Product\CatalogProvider"
+					|| array_key_exists("CCatalogProductProvider", class_parents($item->getProvider()))
+					|| array_key_exists("\Bitrix\Catalog\Product\CatalogProvider", class_parents($item->getProvider()))
+				)
+			);
 	}
 }

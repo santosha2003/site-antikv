@@ -1,11 +1,13 @@
 <?
+use Bitrix\Main\Loader;
+
 define("ADMIN_MODULE_NAME", "perfmon");
 define("PERFMON_STOP", true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 /** @global CMain $APPLICATION */
 /** @global CDatabase $DB */
 /** @global CUser $USER */
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/perfmon/include.php");
+Loader::includeModule('perfmon');
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/perfmon/prolog.php");
 
 IncludeModuleLangFile(__FILE__);
@@ -36,13 +38,13 @@ if (
 		<table class="list"><?
 		?>
 		<tr>
-		<td align="left" colspan="2"><b><? echo htmlspecialcharsex($table_name) ?></b></td></tr><?
+		<td align="left" colspan="2"><b><? echo htmlspecialcharsEx($table_name) ?></b></td></tr><?
 		foreach ($arData as $key => $value)
 		{
 			?>
 			<tr>
-			<td align="left"><? echo htmlspecialcharsex($key) ?></td>
-			<td align="left">&nbsp;<? echo htmlspecialcharsex($value) ?></td></tr><?
+			<td align="left"><? echo htmlspecialcharsEx($key) ?></td>
+			<td align="left">&nbsp;<? echo htmlspecialcharsEx($value) ?></td></tr><?
 		}
 		?></table><?
 	}
@@ -80,10 +82,14 @@ if ($lAdmin->GroupAction() && $RIGHT >= "W")
 					$strSql = "delete from ".$table_name." WHERE 1=1 ";
 					foreach ($arRowPK as $column => $value)
 					{
-						if (strlen($value))
+						if($value <> '')
+						{
 							$strSql .= " AND ".$column."='".$DB->ForSQL($value)."'";
+						}
 						else
+						{
 							$strSql .= " AND (".$column."='".$DB->ForSQL($value)."' or ".$column." is null)";
+						}
 					}
 					$DB->Query($strSql);
 					break;
@@ -109,17 +115,44 @@ $lAdmin->InitFilter($FilterArr);
 $arFilter = array();
 foreach ($arFields as $FIELD_NAME => $FIELD_TYPE)
 {
+	$filterValue = null;
 	if ($FIELD_TYPE != "unknown")
 	{
 		if (
 			isset($find_type) && $find_type == $FIELD_NAME
-			&& isset($find) && strlen($find)
+			&& isset($find) && mb_strlen($find)
 		)
-			$arFilter["=%".$FIELD_NAME] = $find;
+		{
+			$filterValue = $find;
+		}
 		elseif (
-			isset($GLOBALS["find_".$FIELD_NAME]) && strlen($GLOBALS["find_".$FIELD_NAME])
+			isset($GLOBALS["find_".$FIELD_NAME]) && mb_strlen($GLOBALS["find_".$FIELD_NAME])
 		)
-			$arFilter["=%".$FIELD_NAME] = $GLOBALS["find_".$FIELD_NAME];
+		{
+			$filterValue = $GLOBALS["find_".$FIELD_NAME];
+		}
+		else
+		{
+		}
+	}
+
+	if (isset($filterValue))
+	{
+		$where = new CSQLWhere();
+
+		$op = $where->MakeOperation($filterValue);
+
+		if ($filterValue === $op["FIELD"])
+			$op["OPERATOR"] = "%=";
+		else
+			$op["OPERATOR"] = mb_substr($filterValue, 0, mb_strlen($filterValue) - mb_strlen($op["FIELD"]));
+
+		if ($op["OPERATION"] === "B" || $op["OPERATION"] === "NB")
+			$op["FIELD"] = array_map('trim', explode(",", $op["FIELD"], 2));
+		elseif ($op["OPERATION"] === "IN" || $op["OPERATION"] === "NIN")
+			$op["FIELD"] = array_map('trim', explode(",", $op["FIELD"]));
+
+		$arFilter[$op["OPERATOR"].$FIELD_NAME] = $op["FIELD"] === "NULL"? false: $op["FIELD"];
 	}
 }
 
@@ -187,7 +220,7 @@ function TableExists($tableName)
 $rsData = new CAdminResult($rsData, $sTableID);
 $rsData->NavStart();
 $lAdmin->NavText($rsData->GetNavPrint(GetMessage("PERFMON_TABLE_PAGE")));
-
+$precision = ini_get('precision') >= 0? ini_get('precision'): 2;
 $max_display_url = COption::GetOptionInt("perfmon", "max_display_url");
 while ($arRes = $rsData->Fetch()):
 
@@ -196,7 +229,7 @@ while ($arRes = $rsData->Fetch()):
 	$arRowPK = array();
 	foreach ($arFields as $FIELD_NAME => $FIELD_TYPE)
 	{
-		if (strlen($arRes[$FIELD_NAME]) > 0)
+		if ($arRes[$FIELD_NAME] <> '')
 		{
 			if ($FIELD_TYPE == "int")
 			{
@@ -204,7 +237,7 @@ while ($arRes = $rsData->Fetch()):
 			}
 			elseif ($FIELD_TYPE == "double")
 			{
-				$val = perfmon_NumberFormat($arRes[$FIELD_NAME], 2);
+				$val = htmlspecialcharsEx($arRes[$FIELD_NAME]);
 			}
 			elseif ($FIELD_TYPE == "datetime")
 			{
@@ -282,12 +315,12 @@ $lAdmin->AddFooter(
 $aContext = array();
 
 $sLastTables = CUserOptions::GetOption("perfmon", "last_tables", "");
-if (strlen($sLastTables) > 0)
+if ($sLastTables <> '')
 	$arLastTables = array_flip(explode(",", $sLastTables));
 else
 	$arLastTables = array();
-unset($arLastTables[strtolower($table_name)]);
-$arLastTables[strtolower($table_name)] = true;
+unset($arLastTables[mb_strtolower($table_name)]);
+$arLastTables[mb_strtolower($table_name)] = true;
 if (count($arLastTables) > 10)
 	array_shift($arLastTables);
 CUserOptions::SetOption("perfmon", "last_tables", implode(",", array_keys($arLastTables)));
@@ -400,7 +433,7 @@ CJSCore::Init(array("ajax", "popup"));
 		}
 	}
 </script>
-<form name="find_form" method="get" action="<? echo $APPLICATION->GetCurPage(); ?>">
+<form name="find_form" id="find_form" method="get" action="<? echo $APPLICATION->GetCurPage(); ?>">
 	<input type="hidden" value="<? echo htmlspecialcharsbx($table_name) ?>" name="table_name">
 	<? $oFilter->Begin(); ?>
 	<tr>
@@ -436,6 +469,23 @@ CJSCore::Init(array("ajax", "popup"));
 	?>
 </form>
 
-<? $lAdmin->DisplayList(); ?>
-
-<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php"); ?>
+<?
+$lAdmin->DisplayList();
+echo BeginNote();
+echo '
+	<ul>
+	<li>= Identical</li>
+	<li>&gt; Greater</li>
+	<li>&gt;= Greater or Equal</li>
+	<li>&lt; Less</li>
+	<li>&lt;= Less or Equal</li>
+	<li>% Substring</li>
+	<li>? Logic</li>
+	<li>&gt;lt;MIN,MAX Between</li>
+	<li>#64;N1,N2,...,NN IN</li>
+	<li>NULL Empty</li>
+	<li>! Negate any of above</li>
+	</ul>
+';
+echo EndNote();
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

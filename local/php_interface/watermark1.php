@@ -7,7 +7,9 @@ class CWatermark {
    function ImageAdd(&$arFields) {
      CWatermark::log_array($arFields); // убрать после отладки 
       //Указываем нужные ИБ, допустим ваш каталог имеет ID 1 + секция ордена медали  (529)
-      if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529) {
+
+      if ($arFields["IBLOCK_ID"] == 4 ) {
+ //# or $arFields["IBLOCK_SECTION"][0]== 531 or $arFields["IBLOCK_SECTION"][0]== 279)
 //       CWatermark::log_array($arFields); // убрать после отладки 
          if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])) {
             //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
@@ -48,11 +50,89 @@ class CWatermark {
          }
      }
   if(isset($arFields["PROPERTY_VALUES"]["73"])) {
+ //  ["PROPERTY_VALUES"]["73"][n0][VALUE][tmp_name]   ! no .jpg or .png
     foreach ($arFields["PROPERTY_VALUES"]["73"] as $key=>$moreimg)
          {
     CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["73"][$key]['VALUE']['tmp_name']);
          }
      }
+
+
+             //REAL_PICTURE  //Оригинал
+        //CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["54"]["n0"]["VALUE"]["tmp_name"]);
+         //CWatermark::PostWaterMark($arFields[PROPERTY_VALUES][2]["xkey0"][VALUE][tmp_name]); //bx16 no extension for temp picture!!!
+
+/* [n0] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] =>
+                                    [type] =>
+                                    [tmp_name] =>
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+*/
+
+//    foreach($arFields["PROPERTY_VALUES"]["2"] as &$file):
+//       CAllFile::ResizeImage(
+//         $file, 
+//         array("width" => "200", "height" => "200"), 
+//         BX_RESIZE_IMAGE_PROPORTIONAL);
+//    endforeach;
+
+      }
+// разделы Сов знаки и Аммуниция + Award ордена медали
+   // Отключил для этого инфоблока, т.к. для него добавил другой watermark
+  if (FALSE && $arFields["IBLOCK_ID"] == 1) {
+            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc4.txt","w");
+            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
+            fclose($f);
+      if ($arFields["IBLOCK_SECTION"][0] == 531 or $arFields["IBLOCK_SECTION"][0] == 279  or $arFields["IBLOCK_SECTION"][0]== 529) {
+// #529 ok medali Foto + Detail
+// #279 ok Soviet Union InSignia
+// BX 16+ ["DETAIL_PICTURE"]["name"]
+
+
+ //# or $arFields["IBLOCK_SECTION"][0]== 531 or $arFields["IBLOCK_SECTION"][0]== 279)
+//       CWatermark::log_array($arFields); // убрать после отладки 
+         if (!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])) {
+            //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
+         }
+         //Если заполнено детальное изображение
+         if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
+//            //foreach($arFields[PROPERTY_VALUES][28] as &$file):
+//             foreach($arFields["DETAIL_PICTURE"] as &$file):
+//       CAllFile::ResizeImage(
+//         $file, 
+//         array("width" => "200", "height" => "200"), 
+//         BX_RESIZE_IMAGE_PROPORTIONAL);
+//	     endforeach;
+            CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
+          }
+         if (!empty($arFields["DETAIL_PICTURE"]["name"])) {
+            CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["name"]);
+          }
+ //        $tok="bbb";
+            //$arFields[NAME] = $tok;  //имя присваиваем из свойства
+            //if ($arFields[PROPERTY_VALUES][69][0] == "") {$arFields[ACTIVE] = "N";} //aктивность также в зависимости от свойства
+//
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["name"]=$arFields[DETAIL_PICTURE]["name"];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["type"]=$arFields[DETAIL_PICTURE]["type"];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["tmp_name"]=$arFields[DETAIL_PICTURE]["tmp_name"];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE][error]=$arFields[DETAIL_PICTURE][error];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE][size]=$arFields[DETAIL_PICTURE][size];
+//        $arFields[PROPERTY_VALUES][2][n0][VALUE]["COPY_FILE"] = "Y";
+//            $arFields[TAGS] = trim($tok, " ;:\/*.,");
+            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc1.txt","w");
+            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
+            fclose($f);
+
+     CWatermark::log_array($arFields); // убрать после отладки.
+//Тут наносим на дополнительное фото, 2 это ID свойства ИБ       //for jcarusel  72 73, 56 61 (Awards)
+
   if(isset($arFields["PROPERTY_VALUES"]["56"])) {
 
     foreach ($arFields["PROPERTY_VALUES"]["56"] as $key=>$moreimg)
@@ -94,6 +174,8 @@ class CWatermark {
 //    endforeach;
 
       }
+    // iblock 1 shop
+     }
    }
 
    //Срабатываем при изменение элемента
@@ -105,23 +187,36 @@ class CWatermark {
 */
 
    function ImageUpdate(&$arFields) {
+
+            $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc5.txt","w");
+            fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
+            fclose($f);
+
+        // Для этого инфоблока другой прозрачный watermark
+        if ($arFields["IBLOCK_ID"] == 1) {
+            return;
+        }
+
       //То же самое, указываем ID ИБ
-	   if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529) {
+	   if ($arFields["IBLOCK_ID"] == 4 or $arFields["IBLOCK_SECTION"][0]== 529 or  $arFields["IBLOCK_SECTION"][0] == 531 or $arFields["IBLOCK_SECTION"][0] == 279) {
          //Если заполнено изображение анонса
-        // if(!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])){
+         if(!empty($arFields["PREVIEW_PICTURE"]["tmp_name"])){
             //CWatermark::PostWaterMark($arFields["PREVIEW_PICTURE"]["tmp_name"]);
-        // }
+         }
          //Если заполнено детальное изображение
-        // if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
-        //    CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
-         //}
+         if (!empty($arFields["DETAIL_PICTURE"]["tmp_name"])) {
+            CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["tmp_name"]);
+         }
+         if (!empty($arFields["DETAIL_PICTURE"]["name"])) {
+            CWatermark::PostWaterMark($arFields["DETAIL_PICTURE"]["name"]);
+         }
+
 //Тут наносим на дополнительное фото, 2 это ID свойства ИБ       //for jcarusel
             $f=fopen($_SERVER["DOCUMENT_ROOT"]."/logc2.txt","w");
             fwrite($f, print_r($arFields,true));//печатаем в файл результирующий массив для проверки
             fclose($f);
      CWatermark::log_array($arFields); // убрать после отладки.
   if(isset($arFields["PROPERTY_VALUES"]["72"])) {
-
     foreach ($arFields["PROPERTY_VALUES"]["72"] as $key=>$moreimg)
          {
     CWatermark::PostWaterMark($arFields["PROPERTY_VALUES"]["72"][$key]['VALUE']['tmp_name']);
@@ -165,7 +260,7 @@ class CWatermark {
    AddMessage2Log($sResult, 'log_array -> ');
    }
 
-   function PostWaterMark(&$image) {
+function PostWaterMark(&$image) {
 //echo ("<pre>");
 //print_r ($key);
 //print_r ($arFields);
@@ -211,22 +306,23 @@ class CWatermark {
 
       //Открываем картинку для наложения
       //Но сначала масштабируем водяной знак, т.к. размеры картинок у нас разные
-    //Узнаем размер будущего водяного знака (27%//8% //35%//46% от ширины картинки)
+    //Узнаем размер будущего водяного знака (27%//8% //35%//46% от ширины картинки)  //18%  //28%
 // if ($imagesizeW = 0) { $imagesizeW=$wight; $imagesizeH=$height; } imagesx imagesy do not work!
-      $watermarkSize = ceil(18 * $imagesizeW / 100);
-      $watermarkSizeH = ceil(18 * $imagesizeH / 100);
+      $watermarkSize = ceil(28 * $imagesizeW / 100);
+      $watermarkSizeH = ceil(28 * $imagesizeH / 100);
 #imagecopyresampled($dst,$src,0,0,0,0,$width,$height,$watermarkSize,$watermarkSizeH);
  // ну опять хрень - прозрачный png эта ф-ция не масштабирует!!!
  //fuck.. png with transparent (at white 255,255,255 color) do not resize with ResizeImageGet
  //see manual Bitrix! to prevent black pictures w/o transparency
       $wmTargetArray = CFile::ResizeImageGet(
-         13689,
+         13741,
          array("width" => $watermarkSize, "height" => $watermarkSize),
          BX_RESIZE_IMAGE_PROPORTIONAL,
          true,
          array()
       );
-    //13689 //2181 //63 - это ID watermark.png, который лежит в файловой системе Битрикса b_file ID SUBDIR FILE_NAME (закинуть в медиабиблиотеку)
+
+    //13741 //13689 //2181 //63 - это ID watermark.png, который лежит в файловой системе Битрикса b_file ID SUBDIR FILE_NAME (закинуть в медиабиблиотеку)
      //select * from b_file where module_id!="iblock"  легче найти в админке если в medialibrary не 40000 картинок
 
       //$wmTarget = $_SERVER['DOCUMENT_ROOT'] . "/bitrix/php_interface/watermark.png";
@@ -239,7 +335,7 @@ class CWatermark {
       $srcWidth = imagesx($src); //if png work correctly
       $srcHeight = imagesy($src);
        $finalWaterMarkImage = imagecreatetruecolor($watermarkSize,$watermarkSizeH);
-    imagecolortransparent($finalWaterMarkImage, imagecolorallocatealpha($finalWaterMarkImage, 0, 0, 0, 112));  //127 full transparency color black
+    imagecolortransparent($finalWaterMarkImage, imagecolorallocatealpha($finalWaterMarkImage, 0, 0, 0, 119));  //127 full transparency color black
     imagealphablending($finalWaterMarkImage, false);
     imagesavealpha($finalWaterMarkImage, true);
  //setTransparency($new_image,$image_source);  function get from src image - gif
@@ -272,7 +368,7 @@ class CWatermark {
       //Пихаем водяной знак в нижний правый угол картинки
       //Узнаем какой ставить отступ с краев (4% от ширины картинки)
 
-      $watermarkMargin = ceil(7 * $imagesizeW / 100); //15%
+      $watermarkMargin = ceil(9 * $imagesizeW / 100); //15%  //9%
 $im_prop1= array("fw" => $finalWaterMarkWidth, "fh" => $finalWaterMarkHeight, "w" => $imagesizeW, "h" => $imagesizeH, "m" => $watermarkMargin, "width" => $width, "height" => $height, "ww" => $watermarkSize , "wh" => $watermarkSizeH );
 
    AddMessage2Log($image, 'nameofimage -> ');

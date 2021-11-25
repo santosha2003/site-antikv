@@ -17,9 +17,7 @@ class ABTest extends CModule
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace('\\', '/', __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen('/index.php'));
-		include($path.'/version.php');
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists('VERSION', $arModuleVersion))
 		{
@@ -50,7 +48,10 @@ class ABTest extends CModule
 
 		$this->errors = false;
 		if (!$DB->query("SELECT 'x' FROM b_abtest", true))
-			$this->errors = $DB->runSQLBatch($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/abtest/install/db/'.strtolower($DB->type).'/install.sql');
+		{
+			$createTestTemplates = true;
+			$this->errors = $DB->runSQLBatch($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/abtest/install/db/'.mb_strtolower($DB->type).'/install.sql');
+		}
 
 		if ($this->errors !== false)
 		{
@@ -75,7 +76,7 @@ class ABTest extends CModule
 			'order'  => array('ACTIVE' => 'DESC', 'DEF' => 'DESC', 'SORT' => 'ASC'),
 			'select' => array('LID')
 		))->fetch();
-		if (CModule::includeModule('abtest') && !empty($defSite))
+		if (!empty($createTestTemplates) && CModule::includeModule('abtest') && !empty($defSite))
 		{
 			$arTestTemplates = array(
 				100 => array(
@@ -207,7 +208,7 @@ class ABTest extends CModule
 		if (!$arParams['savedata'])
 		{
 			$this->errors = $DB->runSQLBatch(
-				$_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/abtest/install/db/'.strtolower($DB->type).'/uninstall.sql'
+				$_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/abtest/install/db/'.mb_strtolower($DB->type).'/uninstall.sql'
 			);
 		}
 

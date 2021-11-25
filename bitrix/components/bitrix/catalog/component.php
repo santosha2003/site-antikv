@@ -1,5 +1,5 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
-
+/** @global CMain $APPLICATION */
 if (isset($arParams["USE_FILTER"]) && $arParams["USE_FILTER"]=="Y")
 {
 	$arParams["FILTER_NAME"] = trim($arParams["FILTER_NAME"]);
@@ -20,13 +20,16 @@ if(empty($arParams['GIFTS_SECTION_LIST_PAGE_ELEMENT_COUNT']))
 }
 if(empty($arParams['GIFTS_MAIN_PRODUCT_DETAIL_PAGE_ELEMENT_COUNT']))
 {
-	$arParams['GIFTS_MAIN_PRODUCT_DETAIL_PAGE_ELEMENT_COUNT'] = 3;
+	$arParams['GIFTS_MAIN_PRODUCT_DETAIL_PAGE_ELEMENT_COUNT'] = 4;
 }
 if(empty($arParams['GIFTS_DETAIL_PAGE_ELEMENT_COUNT']))
 {
-	$arParams['GIFTS_DETAIL_PAGE_ELEMENT_COUNT'] = 3;
+	$arParams['GIFTS_DETAIL_PAGE_ELEMENT_COUNT'] = 4;
 }
 
+$arParams['ACTION_VARIABLE'] = (isset($arParams['ACTION_VARIABLE']) ? trim($arParams['ACTION_VARIABLE']) : 'action');
+if ($arParams["ACTION_VARIABLE"] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["ACTION_VARIABLE"]))
+	$arParams["ACTION_VARIABLE"] = "action";
 
 $smartBase = ($arParams["SEF_URL_TEMPLATES"]["section"]? $arParams["SEF_URL_TEMPLATES"]["section"]: "#SECTION_ID#/");
 $arDefaultUrlTemplates404 = array(
@@ -60,8 +63,8 @@ if($arParams["SEF_MODE"] == "Y")
 		$engine->addGreedyPart("#SMART_FILTER_PATH#");
 		$engine->setResolveCallback(array("CIBlockFindTools", "resolveComponentEngine"));
 	}
-	$arUrlTemplates = CComponentEngine::MakeComponentUrlTemplates($arDefaultUrlTemplates404, $arParams["SEF_URL_TEMPLATES"]);
-	$arVariableAliases = CComponentEngine::MakeComponentVariableAliases($arDefaultVariableAliases404, $arParams["VARIABLE_ALIASES"]);
+	$arUrlTemplates = CComponentEngine::makeComponentUrlTemplates($arDefaultUrlTemplates404, $arParams["SEF_URL_TEMPLATES"]);
+	$arVariableAliases = CComponentEngine::makeComponentVariableAliases($arDefaultVariableAliases404, $arParams["VARIABLE_ALIASES"]);
 
 	$componentPage = $engine->guessComponentPath(
 		$arParams["SEF_FOLDER"],
@@ -95,7 +98,7 @@ if($arParams["SEF_MODE"] == "Y")
 		$folder404 = str_replace("\\", "/", $arParams["SEF_FOLDER"]);
 		if ($folder404 != "/")
 			$folder404 = "/".trim($folder404, "/ \t\n\r\0\x0B")."/";
-		if (substr($folder404, -1) == "/")
+		if (mb_substr($folder404, -1) == "/")
 			$folder404 .= "index.php";
 
 		if ($folder404 != $APPLICATION->GetCurPage(true))
@@ -110,7 +113,7 @@ if($arParams["SEF_MODE"] == "Y")
 		}
 	}
 
-	CComponentEngine::InitComponentVariables($componentPage, $arComponentVariables, $arVariableAliases, $arVariables);
+	CComponentEngine::initComponentVariables($componentPage, $arComponentVariables, $arVariableAliases, $arVariables);
 	$arResult = array(
 		"FOLDER" => $arParams["SEF_FOLDER"],
 		"URL_TEMPLATES" => $arUrlTemplates,
@@ -122,8 +125,8 @@ else
 {
 	$arVariables = array();
 
-	$arVariableAliases = CComponentEngine::MakeComponentVariableAliases($arDefaultVariableAliases, $arParams["VARIABLE_ALIASES"]);
-	CComponentEngine::InitComponentVariables(false, $arComponentVariables, $arVariableAliases, $arVariables);
+	$arVariableAliases = CComponentEngine::makeComponentVariableAliases($arDefaultVariableAliases, $arParams["VARIABLE_ALIASES"]);
+	CComponentEngine::initComponentVariables(false, $arComponentVariables, $arVariableAliases, $arVariables);
 
 	$componentPage = "";
 
@@ -134,30 +137,31 @@ else
 		"DELETE_FROM_COMPARE_RESULT",
 		"ADD_TO_COMPARE_RESULT",
 		"COMPARE_BUY",
-		"COMPARE_ADD2BASKET",
+		"COMPARE_ADD2BASKET"
 	);
 
 	if(isset($arVariables["action"]) && in_array($arVariables["action"], $arCompareCommands))
 		$componentPage = "compare";
 	elseif(isset($arVariables["ELEMENT_ID"]) && intval($arVariables["ELEMENT_ID"]) > 0)
 		$componentPage = "element";
-	elseif(isset($arVariables["ELEMENT_CODE"]) && strlen($arVariables["ELEMENT_CODE"]) > 0)
+	elseif(isset($arVariables["ELEMENT_CODE"]) && $arVariables["ELEMENT_CODE"] <> '')
 		$componentPage = "element";
 	elseif(isset($arVariables["SECTION_ID"]) && intval($arVariables["SECTION_ID"]) > 0)
 		$componentPage = "section";
-	elseif(isset($arVariables["SECTION_CODE"]) && strlen($arVariables["SECTION_CODE"]) > 0)
+	elseif(isset($arVariables["SECTION_CODE"]) && $arVariables["SECTION_CODE"] <> '')
 		$componentPage = "section";
 	elseif(isset($_REQUEST["q"]))
 		$componentPage = "search";
 	else
 		$componentPage = "sections";
 
+	$currentPage = htmlspecialcharsbx($APPLICATION->GetCurPage())."?";
 	$arResult = array(
 		"FOLDER" => "",
-		"URL_TEMPLATES" => Array(
-			"section" => htmlspecialcharsbx($APPLICATION->GetCurPage())."?".$arVariableAliases["SECTION_ID"]."=#SECTION_ID#",
-			"element" => htmlspecialcharsbx($APPLICATION->GetCurPage())."?".$arVariableAliases["SECTION_ID"]."=#SECTION_ID#"."&".$arVariableAliases["ELEMENT_ID"]."=#ELEMENT_ID#",
-			"compare" => htmlspecialcharsbx($APPLICATION->GetCurPage())."?".$arVariableAliases["action"]."=COMPARE",
+		"URL_TEMPLATES" => array(
+			"section" => $currentPage.$arVariableAliases["SECTION_ID"]."=#SECTION_ID#",
+			"element" => $currentPage.$arVariableAliases["SECTION_ID"]."=#SECTION_ID#"."&".$arVariableAliases["ELEMENT_ID"]."=#ELEMENT_ID#",
+			"compare" => $currentPage."action=COMPARE",
 		),
 		"VARIABLES" => $arVariables,
 		"ALIASES" => $arVariableAliases
@@ -165,4 +169,3 @@ else
 }
 
 $this->IncludeComponentTemplate($componentPage);
-?>

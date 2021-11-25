@@ -5,7 +5,9 @@ $arWizardDescription = Array(
 	"NAME" => GetMessage("DEMO_SITE_WIZARD_NAME"), 
 	"DESCRIPTION" => GetMessage("DEMO_SITE_WIZARD_DESC"), 
 	"VERSION" => "1.0.0",
+	"WIZARD_TYPE" => "INSTALL_ONCE",
 	"START_TYPE" => "WINDOW",
+	"IMAGE" => "images/".LANGUAGE_ID."/demo.gif",
 	"TEMPLATES" => Array(
 		Array("SCRIPT" => "scripts/template.php", "CLASS" => "DemoSiteTemplate")
 	),

@@ -19,24 +19,27 @@ if (CModule::IncludeModule('catalog'))
 			'USER_GROUP' => array(1),
 			'USER_GROUP_BUY' => array(1),
 			'USER_LANG' => array(),
-		),
-		'WHOLESALE' => array(
+		)
+	);
+	if (\Bitrix\Catalog\Config\Feature::isMultiPriceTypesEnabled())
+	{
+		$arPriceTypes['WHOLESALE'] = array(
 			'NAME' => 'WHOLESALE',
 			'BASE' => 'N',
 			'SORT' => 200,
 			'USER_GROUP' => $defaultGroup,
 			'USER_GROUP_BUY' => $defaultGroup,
 			'USER_LANG' => array(),
-		),
-		'RETAIL' => array(
+		);
+		$arPriceTypes['RETAIL'] = array(
 			'NAME' => 'RETAIL',
 			'BASE' => 'N',
 			'SORT' => 300,
 			'USER_GROUP' => array(2),
 			'USER_GROUP_BUY' => array(2),
 			'USER_LANG' => array(),
-		),
-	);
+		);
+	}
 
 	$arVAT = array(
 		array(

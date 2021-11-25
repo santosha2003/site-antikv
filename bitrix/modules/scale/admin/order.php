@@ -34,12 +34,12 @@ if(($orderIds = $adminList->GroupAction()))
 {
 	foreach($orderIds as $orderId)
 	{
-		if(strlen($orderId) <= 0)
+		if($orderId == '')
 			continue;
 
 		$ids = explode("::", $orderId);
 
-		if(!isset($ids[0]) || !isset($ids[1]) || strlen($ids[0]) <= 0 || strlen($ids[1]) <= 0)
+		if(!isset($ids[0]) || !isset($ids[1]) || $ids[0] == '' || $ids[1] == '')
 			continue;
 
 		$providerId = $ids[0];
@@ -149,6 +149,8 @@ while($order = $data->Fetch())
 }
 
 $adminList->CheckListMode();
+
+\CUserCounter::Increment($USER->GetID(),'SCALE_ORDER_VISITS', SITE_ID, false);
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 

@@ -37,9 +37,9 @@ class Engine
 		}
 		else
 		{
-			if(strlen($this->engine['SETTINGS']) > 0)
+			if($this->engine['SETTINGS'] <> '')
 			{
-				$this->engineSettings = unserialize($this->engine['SETTINGS']);
+				$this->engineSettings = unserialize($this->engine['SETTINGS'], ['allowed_classes' => false]);
 			}
 		}
 	}
@@ -64,9 +64,14 @@ class Engine
 		return $this->engine['CLIENT_ID'];
 	}
 
+	public function getClientSecret()
+	{
+		return $this->engine['CLIENT_SECRET'];
+	}
+
 	public function getAuthSettings()
 	{
-		return $this->engineSettings['AUTH'];
+		return ($this->engineSettings['AUTH'] ?? false);
 	}
 
 	public function clearAuthSettings()

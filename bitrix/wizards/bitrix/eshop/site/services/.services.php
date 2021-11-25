@@ -13,6 +13,12 @@ $arServices = Array(
 			"settings.php",
 		),
 	),
+	"catalog" => Array(
+		"NAME" => GetMessage("SERVICE_CATALOG_SETTINGS"),
+		"STAGES" => Array(
+			"index.php"
+		),
+	),
 	"iblock" => Array(
 		"NAME" => GetMessage("SERVICE_IBLOCK_DEMO_DATA"),
 		"STAGES" => Array(
@@ -23,6 +29,8 @@ $arServices = Array(
 			"catalog.php",//catalog iblock import
 			"catalog2.php",//offers iblock import
 			"catalog3.php",
+			"catalog4.php",
+			"eshopapp.php"
 		),
 	),
 	"sale" => Array(
@@ -33,16 +41,6 @@ $arServices = Array(
 			"step2.php",
 			"step3.php"
 		),
-	),
-	"catalog" => Array(
-		"NAME" => GetMessage("SERVICE_CATALOG_SETTINGS"),
-		"STAGES" => Array(
-			"index.php",
-			"eshopapp.php",
-		),
-	),
-	"forum" => Array(
-		"NAME" => GetMessage("SERVICE_FORUM")
 	),
 	"advertising" => Array(
 		"NAME" => GetMessage("SERVICE_ADVERTISING"),

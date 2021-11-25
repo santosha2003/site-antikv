@@ -1,5 +1,0 @@
-<?
-$MESS ['IBLOCK_INSTALL_PUBLIC_TITLE'] = "Wiadomo¶ci firmy";
-$MESS ['IBLOCK_INSTALL_PUBLIC_DETAIL_PAGER'] = "Strona";
-$MESS ['IBLOCK_INSTALL_PUBLIC_PAGER'] = "Wiadomo¶ci";
-?>

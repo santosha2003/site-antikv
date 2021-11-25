@@ -1,3 +1,0 @@
-<?
-$MESS ['P_ELEMENT_ID'] = "Etkin öðe ID";
-?>

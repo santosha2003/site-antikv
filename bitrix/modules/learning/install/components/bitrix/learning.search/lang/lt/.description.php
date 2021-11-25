@@ -1,6 +1,0 @@
-<?
-$MESS["LEARNING_SEARCH_COMPLEX_NAME"]="Ieðkoti kursuose";
-$MESS["LEARNING_SEARCH_COMPLEX_DESC"]="Ieðkoti kursuose";
-$MESS["LEARNING_SERVICE"]="E. mokymasis";
-$MESS["LEARNING_SEARCH_SERVICE"]="Paieðka";
-?>

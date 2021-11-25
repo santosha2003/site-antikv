@@ -4,6 +4,9 @@
  * @package bitrix
  * @subpackage sale
  * @copyright 2001-2012 Bitrix
+ * 
+ * @ignore
+ * @see \Bitrix\Catalog\ProductTable
  */
 namespace Bitrix\Sale\Internals;
 
@@ -11,6 +14,11 @@ use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
+
+if (!Main\Loader::includeModule('iblock'))
+{
+	return;
+}
 
 class ProductTable extends Main\Entity\DataManager
 {
@@ -128,7 +136,8 @@ class ProductTable extends Main\Entity\DataManager
 						AND
 						( b_catalog_price.quantity_from <= 1 OR b_catalog_price.quantity_from IS NULL )
 						AND
-						( b_catalog_price.quantity_to >= 1 OR b_catalog_price.quantity_to IS NULL))', 'ID'
+						( b_catalog_price.quantity_to >= 1 OR b_catalog_price.quantity_to IS NULL)
+					LIMIT 1)', 'ID'
 				)
 			),
 			'CURRENCY' => array(
@@ -143,7 +152,8 @@ class ProductTable extends Main\Entity\DataManager
 						AND
 						( b_catalog_price.quantity_from <= 1 OR b_catalog_price.quantity_from IS NULL )
 						AND
-						( b_catalog_price.quantity_to >= 1 OR b_catalog_price.quantity_to IS NULL))', 'ID'
+						( b_catalog_price.quantity_to >= 1 OR b_catalog_price.quantity_to IS NULL)
+					LIMIT 1)', 'ID'
 				)
 			),
 			'SUMMARY_PRICE' => array(

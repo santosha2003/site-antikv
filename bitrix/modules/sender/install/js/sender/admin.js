@@ -3,10 +3,11 @@
 		var groupExists = BX($controlName+'_EXISTS');
 		var groupSelected = BX($controlName);
 		var groupSelectedHidden = BX($controlName+'_HIDDEN');
-		var groupSelectedOptions = BX.findChildren(groupSelected, {"tag" : "option"});;
+		var groupSelectedOptions = BX.findChildren(groupSelected, {"tag" : "option"}, true);
+
 		if(isAdd)
 		{
-			var groupExistsOptions = BX.findChildren(groupExists, {"tag" : "option"});
+			var groupExistsOptions = BX.findChildren(groupExists, {"tag" : "option"}, true);
 			if(groupExistsOptions && groupExistsOptions.length > 0)
 			{
 				var arSelectedValues = [];
@@ -60,7 +61,7 @@
 		var element;
 		var selectedGroupId = '';
 		var arSelectedGroupId = [];
-		groupSelectedOptions = BX.findChildren(groupSelected, {"tag" : "option"});
+		groupSelectedOptions = BX.findChildren(groupSelected, {"tag" : "option"}, true);
 		for(var i in groupSelectedOptions)
 		{
 			element = groupSelectedOptions[i];
@@ -75,7 +76,7 @@
 		}
 		groupSelectedHidden.value = selectedGroupId;
 	}
-	
+
 
 	function ConnectorGetHtmlForm(data)
 	{
@@ -136,8 +137,6 @@
 
 	function ConnectorSettingGetCount(element, form)
 	{
-		var arAjaxQueryFields = {};
-		var currentParent;
 		var elementParent;
 		if(form)
 		{
@@ -148,16 +147,108 @@
 			elementParent = BX.findParent(element, {"tag" : "div", "className": "connector_form"}, true);
 		}
 
-        var arConForms = document.getElementsByName('post_form');
-        var controls = arConForms[arConForms.length - 1].elements;
+		var arConForms = document.getElementsByName('post_form');
+		var controls = arConForms[arConForms.length - 1].elements;
 		var ctrl;
-		for(var i in controls){
+		var filteredControls = [];
+		var currentParent;
+		for(var i in controls)
+		{
 			ctrl = controls[i];
-			if(ctrl && ctrl.name && BX.type.isString(ctrl.name) && ctrl.name.substring(0,11)=='CONNECTOR_S'){
-				currentParent = BX.findParent(ctrl, {"tag" : "div", "className": "connector_form"}, true);
-				if(currentParent == elementParent){
-					arAjaxQueryFields[ctrl.name] = ctrl.value;
+
+			if(!ctrl || !ctrl.name || !BX.type.isString(ctrl.name))
+			{
+				continue;
+			}
+
+			if(ctrl.name.substring(0,11) != 'CONNECTOR_S')
+			{
+				continue;
+			}
+
+			currentParent = BX.findParent(ctrl, {"tag" : "div", "className": "connector_form"}, true);
+			if(currentParent != elementParent)
+			{
+				continue;
+			}
+
+			if (ctrl.disabled)
+			{
+				continue;
+			}
+
+			var found = filteredControls.filter(function (filteredCtrl) {
+				return filteredCtrl == ctrl;
+			});
+			if (found.length == 0)
+			{
+				filteredControls.push(ctrl);
+			}
+		}
+
+		var arAjaxQueryFieldsData = [];
+		for(var i = 0; i < filteredControls.length; i++)
+		{
+			ctrl = filteredControls[i];
+			switch(ctrl.type.toLowerCase())
+			{
+				case 'text':
+				case 'textarea':
+				case 'password':
+				case 'number':
+				case 'hidden':
+				case 'select-one':
+					arAjaxQueryFieldsData.push({name: ctrl.name, value: ctrl.value});
+					break;
+				case 'file':
+					break;
+				case 'radio':
+				case 'checkbox':
+					if(ctrl.checked)
+					{
+						arAjaxQueryFieldsData.push({name: ctrl.name, value: ctrl.value});
+					}
+					break;
+				case 'select-multiple':
+					var multipleValues = [];
+					for (var j = 0; j < ctrl.options.length; j++)
+					{
+						if (ctrl.options[j].selected)
+						{
+							multipleValues.push(ctrl.options[j].value);
+						}
+					}
+					if (multipleValues.length > 0)
+					{
+						arAjaxQueryFieldsData.push({name : ctrl.name, value : multipleValues});
+					}
+
+					break;
+				default:
+					break;
+			}
+		}
+
+		var arAjaxQueryFields = {};
+		for(var k = 0; k < arAjaxQueryFieldsData.length; k++)
+		{
+
+			var _data = arAjaxQueryFieldsData[k];
+			if(BX.type.isString(arAjaxQueryFields[_data.name]))
+			{
+				arAjaxQueryFields[_data.name] = [arAjaxQueryFields[_data.name]];
+			}
+
+			if(BX.type.isArray(arAjaxQueryFields[_data.name]))
+			{
+				if(!BX.util.in_array(_data.value, arAjaxQueryFields[_data.name]))
+				{
+					arAjaxQueryFields[_data.name].push(_data.value);
 				}
+			}
+			else
+			{
+				arAjaxQueryFields[_data.name] = _data.value;
 			}
 		}
 
@@ -272,8 +363,8 @@
 
 		BX('sender_group_address_counter').innerHTML = cntSummary;
 	}
-	
-	
+
+
 	function SetAddressToControl(controlName, address, bAdd)
 	{
 		var control = BX(controlName);
@@ -490,7 +581,7 @@
 				this.setContent(this.textareaId, param.version, param.type, param.num, param.lang);
 
 				var containerTemplateCaption = BX.findChild(this.container, {'className': 'sender-template-message-caption-container'}, true);
-				if (containerTemplateCaption) containerTemplateCaption.innerHTML = param.name;
+				if (containerTemplateCaption) containerTemplateCaption.innerText = param.name;
 
 				return true;
 			}
@@ -512,7 +603,7 @@
 				tmplTypeContList[i].style.display = 'none';
 
 			var typeContainer = BX.findChild(container, {'className': 'sender-template-list-type-container-'+type}, true);
-			typeContainer.style.display = 'table-row';
+			typeContainer.style.display = 'block';
 
 			var buttonList = BX.findChildren(container, {'className': 'sender-template-type-selector-button'}, true);
 			for(var j in buttonList)
@@ -655,85 +746,54 @@
 		}
 
 		this.list = {};
-		this.templateListByType = {};
-		this.mailBlockList = {};
 		this.placeHolderList = {};
 
-		_this = this;
-
-		BX.addCustomEvent('OnEditorInitedBefore', function(editor)
+		this.onPlaceHolderSelectorListCreate = function (placeHolderSelectorList)
 		{
-			BX.addCustomEvent(editor, "PlaceHolderSelectorListCreate", function(placeHolderSelectorList)
-			{
-				placeHolderSelectorList.placeHolderList = _this.getPlaceHolderList();
+			placeHolderSelectorList.placeHolderList = this.getPlaceHolderList();
+		};
+		this.onGetControlsMap = function(controlsMap)
+		{
+			controlsMap.push({
+				id: 'placeholder_selector',
+				compact: true,
+				hidden: false,
+				sort: 1,
+				checkWidth: false,
+				offsetWidth: 32
 			});
-			BX.addCustomEvent(editor, "GetControlsMap", function(controlsMap)
-			{
-				controlsMap.push({
-					id: 'placeholder_selector',
-					compact: true,
-					hidden: false,
-					sort: 1,
-					checkWidth: false,
-					offsetWidth: 32
-				});
-			});
-		});
-		BX.addCustomEvent('OnEditorInitedAfter', function(editor)
+		};
+		this.onEditorInitedBefore = function(editor)
+		{
+			BX.addCustomEvent(
+				editor,
+				"PlaceHolderSelectorListCreate",
+				this.onPlaceHolderSelectorListCreate.bind(this)
+			);
+			BX.addCustomEvent(
+				editor,
+				"GetControlsMap",
+				this.onGetControlsMap.bind(this)
+			);
+		};
+
+		this.onEditorParse = function(mode)
+		{
+			//if (!mode) this.content = 'test';
+		};
+
+		this.onEditorAfterParse = function(editor, mode)
+		{
+			//if (!mode) editor.content = 'test';
+		};
+
+		this.onEditorInitedAfter = function(editor)
 		{
 			editor.components.SetComponentIcludeMethod('EventMessageThemeCompiler::includeComponent');
 
-			editor.config.mailblocks = _this.getMailBlockList();
-			editor.mailblocks = new BXHtmlEditor.BXEditorMailBlocks(editor);
-			editor.mailblocksTaskbar = new BXHtmlEditor.MailBlocksControl(editor, editor.taskbarManager);
-			editor.taskbarManager.AddTaskbar(editor.mailblocksTaskbar);
-			editor.taskbarManager.ShowTaskbar(editor.mailblocksTaskbar.GetId());
-
-			editor.mailContentParsed = {'header': '', 'footer': ''};
-			BX.addCustomEvent(editor, "OnParse", BX.delegate(function(mode)
-			{
-				if (!mode)
-				{
-					var content = this.content;
-
-					content.replace(/(^[\s\S]*?)(<body.*?>)/i, BX.delegate(function(str){
-							this.mailContentParsed.header = str;
-							return '';
-						}, this)
-					);
-
-					content = content.replace(/(<\/body>[\s\S]*?$)/i,  BX.delegate(function(str){
-							this.mailContentParsed.footer = str;
-							return '';
-						}, this)
-					);
-
-					this.content = content;
-				}
-			}), this);
-
-			BX.addCustomEvent(editor, "OnAfterParse", BX.delegate(function(mode)
-			{
-				if (mode)
-				{
-					var content = this.content;
-
-					content = content.replace(/^[\s\S]*?<body.*?>/i, "");
-					content = content.replace(/<\/body>[\s\S]*?$/i, "");
-
-					if(this.mailContentParsed.header != "" && this.mailContentParsed.footer != "")
-					{
-						content = this.mailContentParsed.header + content + this.mailContentParsed.footer;
-					}
-					else
-					{
-						content = editor.content;
-					}
-
-					this.content = content;
-				}
-			}), this);
-		});
+			//BX.addCustomEvent(editor, "OnParse", this.onEditorParse.bind(editor));
+			//BX.addCustomEvent(editor, "OnAfterParse", this.onEditorAfterParse.bind(editor, editor));
+		};
 
 		this.add = function(id, params)
 		{
@@ -768,18 +828,15 @@
 			BX.addCustomEvent('onSenderMailingTemplateListHide', func);
 		};
 
-		this.setMailBlockList = function(mailBlockList){
-			this.mailBlockList = mailBlockList;
-		};
-		this.getMailBlockList = function(){
-			return this.mailBlockList;
-		};
 		this.setPlaceHolderList = function(placeHolderList){
 			this.placeHolderList = placeHolderList;
 		};
 		this.getPlaceHolderList = function(){
 			return this.placeHolderList;
 		};
+
+		BX.addCustomEvent('OnEditorInitedBefore', this.onEditorInitedBefore.bind(this));
+		BX.addCustomEvent('OnEditorInitedAfter', this.onEditorInitedAfter.bind(this));
 
 		SenderLetterManager.instance = this;
 	}
@@ -938,10 +995,10 @@
 			if(subject && caption)
 			{
 				BX.bind(subject, 'input', function(){
-					caption.innerHTML = subject.value;
+					caption.textContent = subject.value;
 				});
 				BX.bind(subject, 'change', function(){
-					caption.innerHTML = subject.value;
+					caption.textContent = subject.value;
 				});
 			}
 

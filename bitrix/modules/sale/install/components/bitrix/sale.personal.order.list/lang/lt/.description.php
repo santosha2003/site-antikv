@@ -1,5 +1,0 @@
-<?
-$MESS['SPOL_DEFAULT_TEMPLATE_NAME'] = 'Uþsakymø sàraðas';
-$MESS['SPOL_DEFAULT_TEMPLATE_DESCRIPTION'] = 'Rodo vartotojo uþsakymø sàraðà ir filtro formà';
-$MESS['SPOL_NAME'] = 'Uþsakymø sàraðas';
-?>

@@ -87,44 +87,44 @@ if(empty($arParams))
 	$arUser = $db_user->Fetch();
 	echo htmlspecialcharsbx($arUser["NAME"])." ".htmlspecialcharsbx($arUser["LAST_NAME"]);
 
-	if (strlen($arOrderProps["F_INN"])>0) echo "<br>ИНН: ".$arOrderProps["F_INN"];?>
+	if ($arOrderProps["F_INN"] <> '') echo "<br>ИНН: ".$arOrderProps["F_INN"];?>
 	<br>Адрес:
 	<?
-	if (strlen($arOrderProps["F_INDEX"])>0) echo $arOrderProps["F_INDEX"].",";
+	if ($arOrderProps["F_INDEX"] <> '') echo $arOrderProps["F_INDEX"].",";
 
 	$arVal = CSaleLocation::GetByID($arOrderProps["F_LOCATION"], "ru");
-	if(strlen($arVal["COUNTRY_NAME"])>0 && strlen($arVal["CITY_NAME"])>0)
+	if($arVal["COUNTRY_NAME"] <> '' && $arVal["CITY_NAME"] <> '')
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"]." - ".$arVal["CITY_NAME"]);
-	elseif(strlen($arVal["COUNTRY_NAME"])>0 || strlen($arVal["CITY_NAME"])>0)
+	elseif($arVal["COUNTRY_NAME"] <> '' || $arVal["CITY_NAME"] <> '')
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"].$arVal["CITY_NAME"]);
 
-	if (strlen($arOrderProps["F_CITY"])>0) echo ", г. ".$arOrderProps["F_CITY"];
-	if (strlen($arOrderProps["F_ADDRESS"])>0 && strlen($arOrderProps["F_CITY"])>0)
+	if ($arOrderProps["F_CITY"] <> '') echo ", г. ".$arOrderProps["F_CITY"];
+	if ($arOrderProps["F_ADDRESS"] <> '' && $arOrderProps["F_CITY"] <> '')
 		echo ", ".$arOrderProps["F_ADDRESS"];
-	elseif(strlen($arOrderProps["F_ADDRESS"])>0)
+	elseif($arOrderProps["F_ADDRESS"] <> '')
 		echo $arOrderProps["F_ADDRESS"];
 
-	if (strlen($arOrderProps["F_EMAIL"])>0) echo "<br>E-Mail: ".$arOrderProps["F_EMAIL"];?>
+	if ($arOrderProps["F_EMAIL"] <> '') echo "<br>E-Mail: ".$arOrderProps["F_EMAIL"];?>
 	<br>Контактное лицо: <?echo $arOrderProps["F_NAME"];?>
 	<?
-	if (strlen($arOrderProps["F_PHONE"])>0)
+	if ($arOrderProps["F_PHONE"] <> '')
 		echo "<br>Телефон: ".$arOrderProps["F_PHONE"];
 
 }
 else
 {
-	if(strlen($arParams["BUYER_COMPANY_NAME"]) > 0)
+	if($arParams["BUYER_COMPANY_NAME"] <> '')
 		echo $arParams["BUYER_COMPANY_NAME"];
 	else
 		echo $arParams["BUYER_LAST_NAME"]." ".$arParams["BUYER_FIRST_NAME"]." ".$arParams["BUYER_SECOND_NAME"];
 
-	if (strlen($arParams["BUYER_INN"])>0) echo "<br>ИНН/КПП: ".$arParams["BUYER_INN"]." / ".$arParams["BUYER_KPP"];
+	if ($arParams["BUYER_INN"] <> '') echo "<br>ИНН/КПП: ".$arParams["BUYER_INN"]." / ".$arParams["BUYER_KPP"];
 
 	echo "<br>Адрес: ".$arParams["BUYER_COUNTRY"].", ".$arParams["BUYER_INDEX"].", г. ".$arParams["BUYER_CITY"].", ".$arParams["BUYER_ADDRESS"];
 
-	if (strlen($arParams["BUYER_CONTACT"])>0) echo "<br>Контактное лицо: ".$arParams["BUYER_CONTACT"];
+	if ($arParams["BUYER_CONTACT"] <> '') echo "<br>Контактное лицо: ".$arParams["BUYER_CONTACT"];
 
-	if (strlen($arParams["BUYER_PHONE"])>0)
+	if ($arParams["BUYER_PHONE"] <> '')
 		echo "<br>Телефон: ".$arParams["BUYER_PHONE"];
 
 }
@@ -142,7 +142,7 @@ echo htmlspecialcharsbx($arPaySys["NAME"]);
 $priceTotal = 0;
 $bUseVat = false;
 $arBasketOrder = array();
-for ($i = 0; $i < count($arBasketIDs); $i++)
+for ($i = 0, $max = count($arBasketIDs); $i < $max; $i++)
 {
 	$arBasketTmp = CSaleBasket::GetByID($arBasketIDs[$i]);
 
@@ -166,6 +166,11 @@ for ($i = 0; $i < count($arBasketIDs); $i++)
 	}
 
 	$arBasketOrder[] = $arBasketTmp;
+}
+
+if ($arOrder['DELIVERY_VAT_RATE'] > 0)
+{
+	$bUseVat = true;
 }
 
 //разбрасываем скидку на заказ по товарам
@@ -196,14 +201,16 @@ while ($ar_tax_list = $db_tax_list->Fetch())
 ClearVars("b_");
 //$db_basket = CSaleBasket::GetList(($b="NAME"), ($o="ASC"), array("ORDER_ID"=>$ORDER_ID));
 //if ($db_basket->ExtractFields("b_")):
+$arCurFormat = CCurrencyLang::GetCurrencyFormat($arOrder["CURRENCY"]);
+$currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 	?>
 	<table border="0" cellspacing="0" cellpadding="2" width="100%">
 		<tr bgcolor="#E2E2E2">
 			<td align="center" style="border: 1pt solid #000000; border-right:none;">№</td>
 			<td align="center" style="border: 1pt solid #000000; border-right:none;">Предмет счета</td>
 			<td nowrap align="center" style="border: 1pt solid #000000; border-right:none;">Кол-во</td>
-			<td nowrap align="center" style="border: 1pt solid #000000; border-right:none;">Цена, руб</td>
-			<td nowrap align="center" style="border: 1pt solid #000000;">Сумма, руб</td>
+			<td nowrap align="center" style="border: 1pt solid #000000; border-right:none;">Цена,<?=$currency;?></td>
+			<td nowrap align="center" style="border: 1pt solid #000000;">Сумма,<?=$currency;?></td>
 		</tr>
 		<?
 		$n = 1;
@@ -234,9 +241,8 @@ ClearVars("b_");
 			}
 			elseif(!$bUseVat)
 			{
-				$basket_tax = CSaleOrderTax::CountTaxes($b_AMOUNT*$arQuantities[$mi], $arTaxList, $arOrder["CURRENCY"]);
-
-				for ($i = 0; $i < count($arTaxList); $i++)
+				$basket_tax = CSaleOrderTax::CountTaxes($b_AMOUNT, $arTaxList, $arOrder["CURRENCY"]);
+				for ($i = 0, $max = count($arTaxList); $i < $max; $i++)
 				{
 					if ($arTaxList[$i]["IS_IN_PRICE"] == "Y")
 					{
@@ -246,7 +252,11 @@ ClearVars("b_");
 					$taxRate += ($arTaxList[$i]["VALUE"]);
 				}
 			}
-			$total_nds += $nds_val*$arQuantities[$mi];
+			if (empty($arBasket['SET_PARENT_ID']))
+			{
+				$total_nds += $nds_val*$arQuantities[$mi];
+			}
+
 			?>
 			<tr valign="top">
 				<td bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
@@ -259,24 +269,30 @@ ClearVars("b_");
 					{
 						foreach($arBasket["PROPS"] as $vv)
 						{
-							if(strlen($vv["VALUE"]) > 0 && $vv["CODE"] != "CATALOG.XML_ID" && $vv["CODE"] != "PRODUCT.XML_ID")
+							if($vv["VALUE"] <> '' && $vv["CODE"] != "CATALOG.XML_ID" && $vv["CODE"] != "PRODUCT.XML_ID")
 								echo "<div style=\"font-size:8pt\">".$vv["NAME"].": ".$vv["VALUE"]."</div>";
 						}
 					}
 					?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo $arQuantities[$mi]; ?>
+					<?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]); ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo number_format($arBasket["PRICE"], 2, ',', ' ') ?>
+					<?echo CCurrencyLang::CurrencyFormat($arBasket["PRICE"], $arOrder["CURRENCY"], false) ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo number_format(($arBasket["PRICE"])*$arQuantities[$mi], 2, ',', ' ') ?>
+					<?
+						$sum = $arBasket["PRICE"] * $arQuantities[$mi];
+						echo CCurrencyLang::CurrencyFormat($sum, $arOrder["CURRENCY"], false);
+					?>
 				</td>
 			</tr>
 			<?
-			$total_sum += $arBasket["PRICE"]*$arQuantities[$mi];
+			if (empty($arBasket['SET_PARENT_ID']))
+			{
+				$total_sum += $arBasket["PRICE"]*$arQuantities[$mi];
+			}
 			$mi++;
 		}//endforeach
 		?>
@@ -291,54 +307,45 @@ ClearVars("b_");
 				</td>
 				<td valign="top" align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">1 </td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo number_format($arOrder["DISCOUNT_VALUE"], 2, ',', ' ') ?>
+					<?echo CCurrencyLang::CurrencyFormat($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false);?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo number_format($arOrder["DISCOUNT_VALUE"], 2, ',', ' ') ?>
+					<?echo CCurrencyLang::CurrencyFormat($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false);?>
 				</td>
 			</tr>
 		<?endif?>
 
 
 
-		<?if (DoubleVal($arOrder["PRICE_DELIVERY"])>0):?>
+		<?if ($arOrder["DELIVERY_ID"]):?>
 			<tr>
 				<td bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
 					<?echo $n?>
 				</td>
 				<td bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
 					Доставка <?
-					$res = \Bitrix\Sale\Delivery\Services\Table::getList(array(
-						'filter' => array(
-							'=CODE' => $arOrder["DELIVERY_ID"]
-						)
-					));
+					$deliveryId = \CSaleDelivery::getIdByCode($arOrder['DELIVERY_ID']);
 
-					if ($deliveryService = $res->fetch())
-						if(strlen($deliveryService["NAME"]) > 0)
-							echo "(".$deliveryService["NAME"].")";
-
-					$basket_tax = CSaleOrderTax::CountTaxes(DoubleVal($arOrder["PRICE_DELIVERY"]), $arTaxList, $arOrder["CURRENCY"]);
-					$nds_val = 0;
-					$item_price = DoubleVal($arOrder["PRICE_DELIVERY"]);
-					for ($i = 0; $i < count($arTaxList); $i++)
+					if($deliveryId > 0)
 					{
-						if ($arTaxList[$i]["IS_IN_PRICE"] == "Y")
+						if($delivery = \Bitrix\Sale\Delivery\Services\Manager::getObjectById($deliveryId))
 						{
-							$item_price -= $arTaxList[$i]["TAX_VAL"];
+							echo "[".htmlspecialcharsbx($delivery->getNameWithParent())."]";
 						}
-						$nds_val += ($arTaxList[$i]["TAX_VAL"]);
-						$total_nds += $nds_val;
 					}
-					$total_sum += $nds_val+$item_price
+
+					$total_nds += $arOrder["DELIVERY_VAT_SUM"];
+					$total_sum += $arOrder["PRICE_DELIVERY"];
 					?>
 				</td>
 				<td valign="top" align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">1 </td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo number_format($arOrder["PRICE_DELIVERY"], 2, ',', ' ') ?>
+					<?
+                    echo CCurrencyLang::CurrencyFormat($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false);
+                    ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo number_format($arOrder["PRICE_DELIVERY"], 2, ',', ' ') ?>
+					<?echo CCurrencyLang::CurrencyFormat($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false);?>
 				</td>
 			</tr>
 		<?endif?>
@@ -358,12 +365,12 @@ ClearVars("b_");
 					echo htmlspecialcharsbx($ar_tax_list["TAX_NAME"]);
 					if ($ar_tax_list["IS_PERCENT"]=="Y")
 					{
-						echo " (".$ar_tax_list["VALUE"]."%)";
+						echo " (".(int)$ar_tax_list["VALUE"]."%)";
 					}
 					?>:
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?=number_format($total_nds, 2, ',', ' ')?>
+					<?echo CCurrencyLang::CurrencyFormat($total_nds, $arOrder["CURRENCY"], false);?>
 				</td>
 			</tr>
 			<?
@@ -371,7 +378,9 @@ ClearVars("b_");
 		?>
 		<tr>
 			<td align="right" bgcolor="#ffffff" colspan="4" style="border: 1pt solid #000000; border-right:none; border-top:none;">Итого:</td>
-			<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;"><?echo number_format($total_sum, 2, ',', ' ') ?></td>
+			<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
+				<?=CCurrencyLang::CurrencyFormat($total_sum, $arOrder["CURRENCY"], false);?>
+			</td>
 		</tr>
 	</table>
 <?//endif?>
@@ -386,10 +395,15 @@ ClearVars("b_");
 		echo SaleFormatCurrency($arOrder["PRICE"], $arOrder["CURRENCY"]);
 	}
 	?>.</p>
-
+<?
+	if ($arOrder['CURRENCY'] === 'UAH')
+		$contextCurrency = 'гривнах';
+	else
+		$contextCurrency = 'рублях';
+?>
 <p><font size="2">В случае непоступления средств на расчетный счет продавца в течение пяти
 банковских дней со дня выписки счета, продавец оставляет за собой право
-пересмотреть отпускную цену товара в рублях пропорционально изменению курса доллара
+пересмотреть отпускную цену товара в <?=$contextCurrency;?> пропорционально изменению курса доллара
 и выставить счет на доплату.<br><br>
 В платежном поручении обязательно указать - "Оплата по счету № <?echo $arOrder["ACCOUNT_NUMBER"]?> от <?echo $arOrder["DATE_INSERT_FORMAT"] ?>".<br><br>
 Получение товара только после прихода денег на расчетный счет компании.
@@ -403,7 +417,7 @@ ClearVars("b_");
 <p class=MsoNormal>Руководитель организации:</p>
 </td>
 <td width="80%">
-<p class=MsoNormal>_______________ <input size="55" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo ((strlen($arParams["DIRECTOR"]) > 0) ? $arParams["DIRECTOR"] : "______________________________")?> /"></p>
+<p class=MsoNormal>_______________ <input size="55" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo (($arParams["DIRECTOR"] <> '') ? $arParams["DIRECTOR"] : "______________________________")?> /"></p>
 </td>
 </tr>
 <tr>
@@ -427,7 +441,7 @@ ClearVars("b_");
 <p class=MsoNormal>Гл. бухгалтер:</p>
 </td>
 <td>
-<p class=MsoNormal>_______________ <input size="45" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo ((strlen($arParams["BUHG"]) > 0) ? $arParams["BUHG"] : "______________________________")?> /"></p>
+<p class=MsoNormal>_______________ <input size="45" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo (($arParams["BUHG"] <> '') ? $arParams["BUHG"] : "______________________________")?> /"></p>
 </td>
 </tr>
 </table>

@@ -38,17 +38,51 @@ class Network
 	/** @var  ErrorCollection */
 	public $errorCollection = null;
 
+	protected static $lastUserStatus = null;
+
 	function __construct()
 	{
 		$this->errorCollection = new ErrorCollection();
 	}
 
 	/**
+	 * Returns if option is turned on
+	 *
+	 * @return bool
+	 */
+	public function isOptionEnabled()
+	{
+		return Option::get('socialservices', 'network_enable', 'N') == 'Y';
+	}
+
+	/**
+	 * Returns if network communication is avalable for current user
+	 *
 	 * @return boolean
 	 */
 	public function isEnabled()
 	{
-		return Option::get('socialservices', 'network_enable', 'N') == 'Y';
+		if(Loader::includeModule('bitrix24'))
+		{
+			if(method_exists('CBitrix24', 'isEmailConfirmed') && !\CBitrix24::isEmailConfirmed())
+			{
+				return false;
+			}
+		}
+
+		if(Loader::includeModule('socialservices'))
+		{
+			if(\CSocServAuthManager::GetAuthorizedServiceId() !== \CSocServBitrix24Net::ID)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+
+		return $this->isOptionEnabled();
 	}
 
 	/**
@@ -60,10 +94,10 @@ class Network
 	 */
 	public function setEnable($enable = true)
 	{
-		if ($this->isEnabled() && $enable)
+		if ($this->isOptionEnabled() && $enable)
 			return true;
 
-		if (!$this->isEnabled() && !$enable)
+		if (!$this->isOptionEnabled() && !$enable)
 			return true;
 
 		$query = \CBitrix24NetPortalTransport::init();
@@ -78,7 +112,7 @@ class Network
 			'STATUS' => (bool)$enable,
 		));
 
-		Option::set('socialservices', 'network_enable', $enable? 'Y': 'N');
+		Option::set('socialservices', 'network_enable', $enable ? 'Y': 'N');
 
 		return true;
 	}
@@ -100,7 +134,7 @@ class Network
 		}
 
 		$search = trim($search);
-		if (strlen($search) < 3)
+		if (mb_strlen($search) < 3)
 		{
 			$this->errorCollection[] = new Error(Loc::getMessage('B24NET_SEARCH_STRING_TO_SHORT'), self::ERROR_SEARCH_STRING_TO_SHORT);
 			return null;
@@ -128,6 +162,19 @@ class Network
 		}
 
 		return $result;
+	}
+
+	public static function sendMobileApplicationLink($phone, $language_id)
+	{
+		$query = \CBitrix24NetPortalTransport::init();
+		if ($query)
+		{
+			$query->call('profile.send', array(
+				'TYPE' => 'mobile_application_link',
+				'PHONE' => $phone,
+				'LANGUAGE_ID' => $language_id,
+			));
+		}
 	}
 
 	/**
@@ -174,7 +221,7 @@ class Network
 			'ID' => array_values($networkIds),
 			'QUERY' => trim($lastSearch)
 		));
-		
+
 		$result = null;
 		foreach ($queryResult['result'] as $user)
 		{
@@ -267,12 +314,6 @@ class Network
 	 */
 	public function addUser($params)
 	{
-		if (!$this->isEnabled())
-		{
-			$this->errorCollection[] = new Error(Loc::getMessage('B24NET_NETWORK_IN_NOT_ENABLED'), self::ERROR_NETWORK_IN_NOT_ENABLED);
-			return false;
-		}
-
 		$password = md5($params['XML_ID'].'|'.$params['CLIENT_DOMAIN'].'|'.rand(1000,9999).'|'.time().'|'.uniqid());
 		$photo = \CFile::MakeFileArray($params['PERSONAL_PHOTO_ORIGINAL']);
 		$groups = Array();
@@ -361,7 +402,7 @@ class Network
 		$searchArray = Array();
 		foreach ($networkIds as $networkId)
 		{
-			$searchArray[] = substr($networkId, 0, 1).intval(substr($networkId, 1))."|%";
+			$searchArray[] = mb_substr($networkId, 0, 1).intval(mb_substr($networkId, 1))."|%";
 		}
 
 		$result = \Bitrix\Main\UserTable::getList(Array(
@@ -530,6 +571,63 @@ class Network
 		return $result;
 	}
 
+	public static function setRegisterSettings($settings = array())
+	{
+		if(isset($settings["REGISTER"]))
+		{
+			Option::set("socialservices", "new_user_registration_network", $settings["REGISTER"] == "Y" ? "Y" : "N");
+		}
+
+		if(isset($settings["REGISTER_CONFIRM"]))
+		{
+			Option::set("socialservices", "new_user_registration_confirm", $settings["REGISTER_CONFIRM"] == "Y" ? "Y" : "N");
+		}
+
+		if(isset($settings["REGISTER_WHITELIST"]))
+		{
+			$value = preg_split("/[^a-z0-9\-\.]+/", ToLower($settings["REGISTER_WHITELIST"]));
+			Option::set("socialservices", "new_user_registration_whitelist", serialize($value));
+		}
+
+		if(isset($settings["REGISTER_TEXT"]))
+		{
+			Option::set("socialservices", "new_user_registration_text", trim($settings["REGISTER_TEXT"]));
+		}
+
+		if(isset($settings["REGISTER_SECRET"]))
+		{
+			Option::set("socialservices", "new_user_registration_secret", trim($settings["REGISTER_SECRET"]));
+		}
+
+		static::updateRegisterSettings();
+	}
+
+	public static function getRegisterSettings()
+	{
+		return array(
+			"REGISTER" => Option::get("socialservices", "new_user_registration_network", "N"),
+			"REGISTER_CONFIRM" => Option::get("socialservices", "new_user_registration_confirm", "N"),
+			"REGISTER_WHITELIST" => implode(';', unserialize(Option::get("socialservices", "new_user_registration_whitelist", serialize(array())))),
+			"REGISTER_TEXT" => Option::get("socialservices", "new_user_registration_text", ""),
+			"REGISTER_SECRET" => Option::get("socialservices", "new_user_registration_secret", ""),
+		);
+	}
+
+	protected static function updateRegisterSettings()
+	{
+		$query = \CBitrix24NetPortalTransport::init();
+		if($query)
+		{
+			$options = static::getRegisterSettings();
+
+			$query->call("portal.option.set", array('options' => array(
+				'REGISTER' => $options["REGISTER"] === "Y",
+				'REGISTER_TEXT' => $options["REGISTER_TEXT"],
+				"REGISTER_SECRET" => $options["REGISTER_SECRET"],
+			)));
+		}
+	}
+
 	public static function getLastBroadcastCheck()
 	{
 		return Option::get("socialservices", "network_last_update_check", 0);
@@ -566,4 +664,13 @@ class Network
 		static::setLastBroadcastCheck();
 	}
 
+	public static function setLastUserStatus($status)
+	{
+		static::$lastUserStatus = $status;
+	}
+
+	public static function getLastUserStatus()
+	{
+		return static::$lastUserStatus;
+	}
 }

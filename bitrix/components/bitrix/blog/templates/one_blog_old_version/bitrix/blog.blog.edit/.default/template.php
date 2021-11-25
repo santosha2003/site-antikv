@@ -68,7 +68,7 @@ else
 		</table>
 		<br />
 
-		<input type="submit" name="save" value="<?= (IntVal($arResult["BLOG"]["ID"])>0 ? GetMessage('BLOG_SAVE') : GetMessage('BLOG_CREATE')) ?>">
+		<input type="submit" name="save" value="<?= (intval($arResult["BLOG"]["ID"])>0 ? GetMessage('BLOG_SAVE') : GetMessage('BLOG_CREATE')) ?>">
 		<?
 		if ($arResult["CAN_UPDATE"]=="Y")
 		{

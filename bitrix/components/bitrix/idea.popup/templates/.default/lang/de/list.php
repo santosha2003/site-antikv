@@ -1,5 +1,0 @@
-<?
-$MESS["IDEA_PATH_IDEA_INDEX"] = "Mehr";
-$MESS["IDEA_INPUT_TITLE_IDEA"] = "Ihre Idee...";
-$MESS["IDEA_POPUP_CATEGORY_ALL"] = "Alle";
-?>

@@ -1,14 +1,19 @@
 <?
+use Bitrix\Main\Loader;
+
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 	die();
 
-if(!CModule::IncludeModule('sale'))
+if(!Loader::includeModule('sale'))
 	return;
 
 use	Bitrix\Sale\BusinessValue,
 	Bitrix\Sale\OrderStatus,
 	Bitrix\Sale\DeliveryStatus,
-	Bitrix\Main\Localization\Loc;
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Main,
+	Bitrix\Catalog,
+	Bitrix\Sale;
 
 $saleConverted15 = COption::GetOptionString("main", "~sale_converted_15", "") == "Y";
 if ($saleConverted15)
@@ -30,7 +35,7 @@ $arGeneralInfo = Array();
 $dbSite = CSite::GetByID(WIZARD_SITE_ID);
 if($arSite = $dbSite -> Fetch())
 	$lang = $arSite["LANGUAGE_ID"];
-if(strlen($lang) <= 0)
+if($lang == '')
 	$lang = "ru";
 $bRus = false;
 if($lang == "ru")
@@ -39,7 +44,7 @@ if($lang == "ru")
 $shopLocalization = $wizard->GetVar("shopLocalization");
 
 COption::SetOptionString("eshop", "shopLocalization", $shopLocalization, "ru", WIZARD_SITE_ID);
-if ($shopLocalization == "kz" || $shopLocalization == "bl")
+if ($shopLocalization == "kz")
 	$shopLocalization = "ru";
 
 $defCurrency = "EUR";
@@ -58,7 +63,7 @@ elseif($lang == "en")
 }
 
 $arLanguages = Array();
-$rsLanguage = CLanguage::GetList($by, $order, array());
+$rsLanguage = CLanguage::GetList();
 while($arLanguage = $rsLanguage->Fetch())
 	$arLanguages[] = $arLanguage["LID"];
 
@@ -147,9 +152,9 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 			"SERVER_NAME" => $_SERVER["SERVER_NAME"],
 		));
 
-	if(strlen($siteStamp)>0)
+	if($siteStamp <> '')
 	{
-		if(IntVal($siteStamp) > 0)
+		if(intval($siteStamp) > 0)
 		{
 			$ff = CFile::GetByID($siteStamp);
 			if($zr = $ff->Fetch())
@@ -191,7 +196,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 	$personTypeUr = (isset($personType["ur"]) && $personType["ur"] == "Y" ? "Y" : "N");
 	COption::SetOptionString("eshop", "personTypeUr", $personTypeUr, false, WIZARD_SITE_ID);
 
-	if (in_array(GetMessage("SALE_WIZARD_PERSON_1"), $arPersonTypeNames))
+	if (!defined("ADDITIONAL_INSTALL") && in_array(GetMessage("SALE_WIZARD_PERSON_1"), $arPersonTypeNames))
 	{
 		$arGeneralInfo["personType"]["fiz"] = array_search(GetMessage("SALE_WIZARD_PERSON_1"), $arPersonTypeNames);
 		CSalePersonType::Update(array_search(GetMessage("SALE_WIZARD_PERSON_1"), $arPersonTypeNames), Array(
@@ -209,7 +214,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				);
 	}
 
-	if (in_array(GetMessage("SALE_WIZARD_PERSON_2"), $arPersonTypeNames))
+	if (!defined("ADDITIONAL_INSTALL") && in_array(GetMessage("SALE_WIZARD_PERSON_2"), $arPersonTypeNames))
 	{
 		$arGeneralInfo["personType"]["ur"] = array_search(GetMessage("SALE_WIZARD_PERSON_2"), $arPersonTypeNames);
 		CSalePersonType::Update(array_search(GetMessage("SALE_WIZARD_PERSON_2"), $arPersonTypeNames), Array(
@@ -232,7 +237,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 		$personTypeFizUa = (isset($personType["fiz_ua"]) && $personType["fiz_ua"] == "Y" ? "Y" : "N");
 		COption::SetOptionString("eshop", "personTypeFizUa", $personTypeFizUa, false, WIZARD_SITE_ID);
 
-		if (in_array(GetMessage("SALE_WIZARD_PERSON_3"), $arPersonTypeNames))
+		if (!defined("ADDITIONAL_INSTALL") && in_array(GetMessage("SALE_WIZARD_PERSON_3"), $arPersonTypeNames))
 		{
 			$arGeneralInfo["personType"]["fiz_ua"] = array_search(GetMessage("SALE_WIZARD_PERSON_3"), $arPersonTypeNames);
 			CSalePersonType::Update(array_search(GetMessage("SALE_WIZARD_PERSON_3"), $arPersonTypeNames), Array(
@@ -253,6 +258,30 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 
 	if (COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) != "Y" || WIZARD_INSTALL_DEMO_DATA)
 	{
+		$dbCurrency = Bitrix\Sale\Internals\SiteCurrencyTable::getList(array(
+			"filter" => array(
+				"LID" => WIZARD_SITE_ID
+			)
+		));
+		if ($curCurrency = $dbCurrency->fetch())
+		{
+			if ($curCurrency["CURRENCY"] != $defCurrency)
+			{
+				Bitrix\Sale\Internals\SiteCurrencyTable::update(WIZARD_SITE_ID, array(
+					"CURRENCY" => $defCurrency
+				));
+			}
+		}
+		else
+		{
+			Bitrix\Sale\Internals\SiteCurrencyTable::add(array(
+				"LID" => WIZARD_SITE_ID,
+				"CURRENCY" => $defCurrency
+			));
+		}
+
+		if (!defined("ADDITIONAL_INSTALL"))
+		{
 			//Set options
 			COption::SetOptionString('sale','default_currency',$defCurrency);
 			COption::SetOptionString('sale','delete_after','30');
@@ -292,6 +321,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 			COption::SetOptionString('sale','recalc_product_list_period','4');
 			COption::SetOptionString('sale', 'order_email', $shopEmail);
 			COption::SetOptionString('sale', 'encode_fuser_id', 'Y');
+		}
 
 			if(!$bRus)
 				$shopLocation = GetMessage("WIZ_CITY");
@@ -300,7 +330,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 			{
 				$location = '';
 
-				if(strlen($shopLocation))
+				if($shopLocation <> '')
 				{
 					// get city with name equal to $shopLocation
 					$item = \Bitrix\Sale\Location\LocationTable::getList(array(
@@ -315,7 +345,9 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 					))->fetch();
 
 					if($item)
-						$location = $item['CODE']; // city found, simply take it`s code an proceed with it
+					{
+						$location = $item['CODE'];
+					} // city found, simply take it`s code an proceed with it
 					else
 					{
 						// city were not found, create it
@@ -329,7 +361,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 						$countryCode = $LOCALIZATION_COUNTRY_CODE_MAP[$shopCountry];
 						$countryId = false;
 
-						if(strlen($countryCode))
+						if($countryCode <> '')
 						{
 							// get country which matches the current localization
 							$countryId = 0;
@@ -345,14 +377,18 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 
 							// country found
 							if($item)
+							{
 								$countryId = $item['ID'];
+							}
 						}
 
 						// at this point types must exist
 						$types = array();
 						$res = \Bitrix\Sale\Location\TypeTable::getList();
 						while($item = $res->fetch())
+						{
 							$types[$item['CODE']] = $item['ID'];
+						}
 
 						if(isset($types['COUNTRY']) && isset($types['CITY']))
 						{
@@ -374,7 +410,9 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 
 								$res = \Bitrix\Sale\Location\LocationTable::add($data);
 								if($res->isSuccess())
+								{
 									$countryId = $res->getId();
+								}
 							}
 
 							if($countryId)
@@ -396,7 +434,9 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 
 								$res = \Bitrix\Sale\Location\LocationTable::add($data);
 								if($res->isSuccess())
+								{
 									$location = 'demo_city_'.WIZARD_SITE_ID;
+								}
 							}
 
 						}
@@ -411,7 +451,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				{
 					$location = $arLocation["ID"];
 				}
-				if(IntVal($location) <= 0)
+				if(intval($location) <= 0)
 				{
 					$CurCountryID = 0;
 					$db_contList = CSaleLocation::GetList(
@@ -423,11 +463,11 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 					);
 					if ($arContList = $db_contList->Fetch())
 					{
-						$LLL = IntVal($arContList["ID"]);
-						$CurCountryID = IntVal($arContList["COUNTRY_ID"]);
+						$LLL = intval($arContList["ID"]);
+						$CurCountryID = intval($arContList["COUNTRY_ID"]);
 					}
 
-					if(IntVal($CurCountryID) <= 0)
+					if(intval($CurCountryID) <= 0)
 					{
 						$arArrayTmp = Array();
 						$arArrayTmp["NAME"] = GetMessage("WIZ_COUNTRY_".ToUpper($shopLocalization));
@@ -692,6 +732,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"IS_LOCATION4TAX" => "N",
 				"CODE" => "ADDRESS",
 				"IS_FILTERED" => "N",
+				"IS_ADDRESS" => "Y"
 			);
 	}
 
@@ -743,6 +784,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 					"IS_LOCATION4TAX" => "N",
 					"CODE" => "COMPANY_ADR",
 					"IS_FILTERED" => "N",
+					"IS_ADDRESS" => "Y"
 				);
 
 			$businessValueCodes['COMPANY_INN'] = array('GROUP' => 'COMPANY', 'SORT' =>  220, 'DOMAIN' => $BIZVAL_ENTITY_DOMAIN);
@@ -965,6 +1007,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 					"IS_LOCATION4TAX" => "N",
 					"CODE" => "ADDRESS",
 					"IS_FILTERED" => "N",
+					"IS_ADDRESS" => "Y"
 				);
 		}
 		else
@@ -1056,6 +1099,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"IS_LOCATION4TAX" => "N",
 				"CODE" => "COMPANY_ADR",
 				"IS_FILTERED" => "N",
+				"IS_ADDRESS" => "Y"
 			);
 
 			$businessValueCodes['COMPANY_EGRPU'] = array('GROUP' => 'COMPANY', 'SORT' =>  150, 'DOMAIN' => $BIZVAL_ENTITY_DOMAIN);
@@ -1189,6 +1233,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"IS_LOCATION4TAX" => "N",
 				"CODE" => "ADDRESS",
 				"IS_FILTERED" => "N",
+				"IS_ADDRESS" => "Y"
 			);
 
 			$businessValueCodes['COMPANY_PHONE'] = array('GROUP' => 'COMPANY', 'SORT' =>  210, 'DOMAIN' => $BIZVAL_ENTITY_DOMAIN);
@@ -1442,6 +1487,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 			"IS_LOCATION4TAX" => "N",
 			"CODE" => "ADDRESS",
 			"IS_FILTERED" => "N",
+			"IS_ADDRESS" => "Y"
 		);
 
 		$businessValueCodes['CLIENT_PHONE'] = array('GROUP' => 'CLIENT', 'SORT' =>  210, 'DOMAIN' => $BIZVAL_INDIVIDUAL_DOMAIN);
@@ -1496,7 +1542,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 		{
 			$propCityId = $id;
 		}
-		if(strlen($prop["CODE"]) > 0)
+		if($prop["CODE"] <> '')
 		{
 			//$arGeneralInfo["propCode"][$prop["CODE"]] = $prop["CODE"];
 			$arGeneralInfo["propCodeID"][$prop["CODE"]] = $id;
@@ -1516,6 +1562,11 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 		// add business value mapping to property
 		$businessValueCodes[key($businessValueCodes)]['MAP'] = array($prop['PERSON_TYPE_ID'] => array('PROPERTY', $id));
 		next($businessValueCodes);
+	}
+
+	if (defined("ADDITIONAL_INSTALL"))
+	{
+		return;
 	}
 
 /*
@@ -1541,9 +1592,28 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"CITY" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz"]]["LOCATION"]["ID"]."_CITY"),
 				"STREET" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz"]]["ADDRESS"]["ID"]),
 				"EMAIL" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz"]]["EMAIL"]["ID"]),
+				"PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz"]]["PHONE"]["ID"]),
 				"CONTACT_PERSON" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz"]]["CONTACT_PERSON"]["ID"]),
 				"IS_FIZ" => "Y",
 			));
+
+		$allPersonTypes = BusinessValue::getPersonTypes(true);
+		$personTypeId = $arGeneralInfo["personType"]["fiz"];
+		$domain = BusinessValue::INDIVIDUAL_DOMAIN;
+
+		if(!isset($allPersonTypes[$personTypeId]['DOMAIN']))
+		{
+			$r = Bitrix\Sale\Internals\BusinessValuePersonDomainTable::add(array(
+					'PERSON_TYPE_ID' => $personTypeId,
+					'DOMAIN'         => $domain,
+			));
+			if ($r->isSuccess())
+			{
+				$allPersonTypes[$personTypeId]['DOMAIN'] = $domain;
+				BusinessValue::getPersonTypes(true, $allPersonTypes);
+			}
+		}
+
 		CSaleExport::Add(Array("PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"], "VARS" => $val));
 	}
 	if($personType["ur"] == "Y" && !$urExist)
@@ -1567,6 +1637,24 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"F_STREET" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["ur"]]["ADDRESS"]["ID"]),
 				"IS_FIZ" =>  "N",
 			));
+
+		$allPersonTypes = BusinessValue::getPersonTypes(true);
+		$personTypeId = $arGeneralInfo["personType"]["ur"];
+		$domain = BusinessValue::ENTITY_DOMAIN;
+
+		if(!isset($allPersonTypes[$personTypeId]['DOMAIN']))
+		{
+			$r = Bitrix\Sale\Internals\BusinessValuePersonDomainTable::add(array(
+					'PERSON_TYPE_ID' => $personTypeId,
+					'DOMAIN'         => $domain,
+			));
+			if ($r->isSuccess())
+			{
+				$allPersonTypes[$personTypeId]['DOMAIN'] = $domain;
+				BusinessValue::getPersonTypes(true, $allPersonTypes);
+			}
+		}
+
 		CSaleExport::Add(Array("PERSON_TYPE_ID" => $arGeneralInfo["personType"]["ur"], "VARS" => $val));
 	}
 	if ($shopLocalization == "ua" && !$fizUaExist)
@@ -1582,27 +1670,25 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 			"CITY" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz_ua"]]["LOCATION"]["ID"]."_CITY"),
 			"STREET" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz_ua"]]["ADDRESS"]["ID"]),
 			"EMAIL" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz_ua"]]["EMAIL"]["ID"]),
+			"PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz_ua"]]["PHONE"]["ID"]),
 			"CONTACT_PERSON" => Array("TYPE" => "PROPERTY", "VALUE" => $arGeneralInfo["properies"][$arGeneralInfo["personType"]["fiz_ua"]]["CONTACT_PERSON"]["ID"]),
 			"IS_FIZ" => "Y",
 		));
 		CSaleExport::Add(Array("PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"], "VARS" => $val));
 	}
 	//PaySystem
-	$arPaySystems = Array();
+	$arPaySystems = array();
 	if($paysystem["cash"] == "Y")
 	{
-		$arPaySystemTmp = Array(
-			"NAME" => GetMessage("SALE_WIZARD_PS_CASH"),
-			"SORT" => 80,
-			"ACTIVE" => "Y",
-			"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_CASH_DESCR"),
-			"CODE_TEMP" => "cash");
-		if($personType["fiz"] == "Y")
-		{
-			$arPaySystemTmp["ACTION"][] = Array(
-				"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+		$arPaySystems[] = array(
+			'PAYSYSTEM' => array(
 				"NAME" => GetMessage("SALE_WIZARD_PS_CASH"),
-				"ACTION_FILE" => "/bitrix/modules/sale/payment/cash",
+				"PSA_NAME" => GetMessage("SALE_WIZARD_PS_CASH"),
+				"SORT" => 80,
+				"ACTIVE" => "Y",
+				"IS_CASH" => "Y",
+				"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_CASH_DESCR"),
+				"ACTION_FILE" => "cash",
 				"RESULT_FILE" => "",
 				"NEW_WINDOW" => "N",
 				"PARAMS" => "",
@@ -1611,173 +1697,139 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"HAVE_RESULT" => "N",
 				"HAVE_PREPAY" => "N",
 				"HAVE_RESULT_RECEIVE" => "N",
-			);
-		}
-		/*if($personType["ur"] == "Y")
-		{
-			$arPaySystemTmp["ACTION"][] = Array(
-				"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["ur"],
-				"NAME" => GetMessage("SALE_WIZARD_PS_CASH"),
-				"ACTION_FILE" => "/bitrix/modules/sale/payment/cash",
-				"RESULT_FILE" => "",
-				"NEW_WINDOW" => "N",
-				"PARAMS" => "",
-				"HAVE_PAYMENT" => "Y",
-				"HAVE_ACTION" => "N",
-				"HAVE_RESULT" => "N",
-				"HAVE_PREPAY" => "N",
-				"HAVE_RESULT_RECEIVE" => "N",
-			);
-		}   */
-		$arPaySystems[] = $arPaySystemTmp;
+				'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+			),
+			'PERSON_TYPE' => array($arGeneralInfo["personType"]["fiz"])
+		);
 	}
+
 	if($paysystem["collect"] == "Y")
 	{
-		$arPaySystems[] = Array(
-			"NAME" => GetMessage("SALE_WIZARD_PS_COLLECT"),
-			"SORT" => 110,
-			"ACTIVE" => "Y",
-			"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_COLLECT_DESCR"),
-			"CODE_TEMP" => "collect",
-			"ACTION" => Array(
-				Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
-					"NAME" => GetMessage("SALE_WIZARD_PS_COLLECT"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/payment_forward_calc",
-					"RESULT_FILE" => "",
-					"NEW_WINDOW" => "N",
-					"HAVE_PAYMENT" => "Y",
-					"HAVE_ACTION" => "N",
-					"HAVE_RESULT" => "N",
-					"HAVE_PREPAY" => "N",
-					"HAVE_RESULT_RECEIVE" => "N",
-				),
-				Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["ur"],
-					"NAME" => GetMessage("SALE_WIZARD_PS_COLLECT"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/payment_forward_calc",
-					"RESULT_FILE" => "",
-					"NEW_WINDOW" => "N",
-					"HAVE_PAYMENT" => "Y",
-					"HAVE_ACTION" => "N",
-					"HAVE_RESULT" => "N",
-					"HAVE_PREPAY" => "N",
-					"HAVE_RESULT_RECEIVE" => "N",
-				)
-			)
+		$arPaySystems[] = array(
+			'PAYSYSTEM' => array(
+				"NAME" => GetMessage("SALE_WIZARD_PS_COLLECT"),
+				"SORT" => 110,
+				"ACTIVE" => "Y",
+				"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_COLLECT_DESCR"),
+				"PSA_NAME" => GetMessage("SALE_WIZARD_PS_COLLECT"),
+				"ACTION_FILE" => "cashondeliverycalc",
+				"RESULT_FILE" => "",
+				"NEW_WINDOW" => "N",
+				"HAVE_PAYMENT" => "Y",
+				"HAVE_ACTION" => "N",
+				"HAVE_RESULT" => "N",
+				"HAVE_PREPAY" => "N",
+				"HAVE_RESULT_RECEIVE" => "N",
+				'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+			),
+			'PERSON_TYPE' => array($arGeneralInfo["personType"]["fiz"], $arGeneralInfo["personType"]["ur"])
 		);
 	}
 	if($personType["fiz"] == "Y" && $shopLocalization != "ua")
 	{
 		if($bRus)
 		{
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_YMoney"),
-				"SORT" => 50,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "yandex_3x",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_YMoney"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/yandex_3x",
+					"SORT" => 50,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_YMoney_DESC"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_YMoney"),
+					"ACTION_FILE" => "yandex",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"USER_ID" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"ORDER_DATE" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						"PAYMENT_VALUE" => Array("VALUE" => "PC"),
-						"IS_TEST" => Array("VALUE" => "Y"),
-						"CHANGE_STATUS_PAY" => Array("VALUE" => "Y"),
-						"SHOP_ID" => Array("TYPE" => "", "VALUE" => ""),
-						"SCID" => Array("TYPE" => "", "VALUE" => ""),
-						"SHOP_KEY" => Array("TYPE" => "", "VALUE" => ""),
-					)),
+					"PS_MODE" => "PC",
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-				))
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				'PERSON_TYPE' => array($arGeneralInfo["personType"]["fiz"]),
+				"BIZVAL" => array('' => array(
+					"PAYMENT_ID" => array("TYPE" => "PAYMENT", "VALUE" => "ID"),
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL"),
+					"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					"PS_IS_TEST" => array("VALUE" => "Y"),
+					"PS_CHANGE_STATUS_PAY" => array("VALUE" => "Y"),
+					"YANDEX_SHOP_ID" => array("TYPE" => "", "VALUE" => ""),
+					"YANDEX_SCID" => array("TYPE" => "", "VALUE" => ""),
+					"YANDEX_SHOP_KEY" => array("TYPE" => "", "VALUE" => ""),
+				)),
 			);
 
-			$logo = $_SERVER["DOCUMENT_ROOT"].WIZARD_SERVICE_RELATIVE_PATH ."/images/yandex_cards.gif";
+			$logo = $_SERVER["DOCUMENT_ROOT"].WIZARD_SERVICE_RELATIVE_PATH ."/images/yandex_cards.png";
 			$arPicture = CFile::MakeFileArray($logo);
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_YCards"),
-				"SORT" => 60,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "yandex_3x",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_YCards"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/yandex_3x",
+					"SORT" => 60,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_YCards_DESC"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_YCards"),
+					"ACTION_FILE" => "yandex",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"USER_ID" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"ORDER_DATE" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						"PAYMENT_VALUE" => Array("VALUE" => "AC"),
-						"IS_TEST" => Array("VALUE" => "Y"),
-						"CHANGE_STATUS_PAY" => Array("VALUE" => "Y"),
-						"SHOP_ID" => Array("TYPE" => "", "VALUE" => ""),
-						"SCID" => Array("TYPE" => "", "VALUE" => ""),
-						"SHOP_KEY" => Array("TYPE" => "", "VALUE" => ""),
-					)),
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-					"LOGOTIP" => $arPicture
-				))
+					"PS_MODE" => "AC",
+					"LOGOTIP" => $arPicture,
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"BIZVAL" => array('' => array(
+					"PAYMENT_ID" => array("TYPE" => "ORDER", "VALUE" => "ID"),
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL"),
+					"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					"PS_IS_TEST" => array("VALUE" => "Y"),
+					"PS_CHANGE_STATUS_PAY" => array("VALUE" => "Y"),
+					"YANDEX_SHOP_ID" => array("TYPE" => "", "VALUE" => ""),
+					"YANDEX_SCID" => array("TYPE" => "", "VALUE" => ""),
+					"YANDEX_SHOP_KEY" => array("TYPE" => "", "VALUE" => ""),
+				)),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
 			);
-			$logo = $_SERVER["DOCUMENT_ROOT"].WIZARD_SERVICE_RELATIVE_PATH ."/images/yandex_terminals.gif";
+			$logo = $_SERVER["DOCUMENT_ROOT"].WIZARD_SERVICE_RELATIVE_PATH ."/images/yandex_terminals.png";
 			$arPicture = CFile::MakeFileArray($logo);
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_YTerminals"),
-				"SORT" => 70,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "yandex_3x",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_YTerminals"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/yandex_3x",
+					"SORT" => 70,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_YTerminals_DESC"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_YTerminals"),
+					"ACTION_FILE" => "yandex",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"USER_ID" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"ORDER_DATE" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						"PAYMENT_VALUE" => Array("VALUE" => "GP"),
-						"IS_TEST" => Array("VALUE" => "Y"),
-						"CHANGE_STATUS_PAY" => Array("VALUE" => "Y"),
-						"SHOP_ID" => Array("TYPE" => "", "VALUE" => ""),
-						"SCID" => Array("TYPE" => "", "VALUE" => ""),
-						"SHOP_KEY" => Array("TYPE" => "", "VALUE" => ""),
-					)),
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-					"LOGOTIP" => $arPicture
-				))
+					"LOGOTIP" => $arPicture,
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"BIZVAL" => array('' => array(
+					"PAYMENT_ID" => array("TYPE" => "ORDER", "VALUE" => "ID"),
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL"),
+					"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					"PS_IS_TEST" => array("VALUE" => "Y"),
+					"PS_CHANGE_STATUS_PAY" => array("VALUE" => "Y"),
+					"YANDEX_SHOP_ID" => array("TYPE" => "", "VALUE" => ""),
+					"YANDEX_SCID" => array("TYPE" => "", "VALUE" => ""),
+					"YANDEX_SHOP_KEY" => array("TYPE" => "", "VALUE" => ""),
+				)),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
 			);
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_PS_WM"),
-				"SORT" => 90,
-				"ACTIVE" => "N",
-				"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_WM_DESCR"),
-				"CODE_TEMP" => "webmoney",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_PS_WM"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/webmoney_web",
+					"SORT" => 90,
+					"ACTIVE" => "N",
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_WM_DESCR"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_PS_WM"),
+					"ACTION_FILE" => "webmoney",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "Y",
 					"PARAMS" => "",
@@ -1786,117 +1838,116 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 					"HAVE_RESULT" => "Y",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "N",
-				))
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
 			);
 
 			if($paysystem["sber"] == "Y")
 			{
-				$arPaySystems[] = Array(
-					"NAME" => GetMessage("SALE_WIZARD_PS_SB"),
-					"SORT" => 110,
-					"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_SB_DESCR"),
-					"CODE_TEMP" => "sberbank",
-					"ACTION" => Array(Array(
-						"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+				$arPaySystems[] = array(
+					'PAYSYSTEM' => array(
 						"NAME" => GetMessage("SALE_WIZARD_PS_SB"),
-						"ACTION_FILE" => "/bitrix/modules/sale/payment/sberbank_new",
+						"SORT" => 110,
+						"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_SB_DESCR"),
+						"PSA_NAME" => GetMessage("SALE_WIZARD_PS_SB"),
+						"ACTION_FILE" => "sberbank",
 						"RESULT_FILE" => "",
 						"NEW_WINDOW" => "Y",
-						"PARAMS" => serialize(Array(
-							"COMPANY_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-							"INN" => Array("TYPE" => "", "VALUE" => $shopINN),
-							"KPP" => Array("TYPE" => "", "VALUE" => $shopKPP),
-							"SETTLEMENT_ACCOUNT" => Array("TYPE" => "", "VALUE" => $shopNS),
-							"BANK_NAME" => Array("TYPE" => "", "VALUE" => $shopBANK),
-							"BANK_BIC" => Array("TYPE" => "", "VALUE" => $shopBANKREKV),
-							"BANK_COR_ACCOUNT" => Array("TYPE" => "", "VALUE" => $shopKS),
-							"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ACCOUNT_NUMBER"),
-							"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-							"PAYER_CONTACT_PERSON" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-							"PAYER_ZIP_CODE" => Array("TYPE" => "PROPERTY", "VALUE" => "ZIP"),
-							"PAYER_COUNTRY" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_COUNTRY"),
-							"PAYER_REGION" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_REGION"),
-							"PAYER_CITY" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_CITY"),
-							"PAYER_ADDRESS_FACT" => Array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
-							"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						)),
 						"HAVE_PAYMENT" => "Y",
 						"HAVE_ACTION" => "N",
 						"HAVE_RESULT" => "N",
 						"HAVE_PREPAY" => "N",
 						"HAVE_RESULT_RECEIVE" => "N",
-					))
-
+						'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+					),
+					"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
+					"BIZVAL" => array('' => array(
+						"SELLER_COMPANY_NAME" => array("TYPE" => "", "VALUE" => $shopOfName),
+						"SELLER_COMPANY_INN" => array("TYPE" => "", "VALUE" => $shopINN),
+						"SELLER_COMPANY_KPP" => array("TYPE" => "", "VALUE" => $shopKPP),
+						"SELLER_COMPANY_BANK_ACCOUNT" => array("TYPE" => "", "VALUE" => $shopNS),
+						"SELLER_COMPANY_BANK_NAME" => array("TYPE" => "", "VALUE" => $shopBANK),
+						"SELLER_COMPANY_BANK_BIC" => array("TYPE" => "", "VALUE" => $shopBANKREKV),
+						"SELLER_COMPANY_BANK_ACCOUNT_CORR" => array("TYPE" => "", "VALUE" => $shopKS),
+						"PAYMENT_ID" => array("TYPE" => "PAYMENT", "VALUE" => "ACCOUNT_NUMBER"),
+						"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_INSERT_DATE"),
+						"BUYER_PERSON_FIO" => array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
+						"BUYER_PERSON_ZIP" => array("TYPE" => "PROPERTY", "VALUE" => "ZIP"),
+						"BUYER_PERSON_COUNTRY" => array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_COUNTRY"),
+						"BUYER_PERSON_REGION" => array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_REGION"),
+						"BUYER_PERSON_CITY" => array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_CITY"),
+						"BUYER_PERSON_ADDRESS_FACT" => array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
+						"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					)),
 				);
 			}
 		}
 		else
 		{
-			$arPaySystems[] = Array(
-				"NAME" => "PayPal",
-				"SORT" => 90,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "paypal",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => "PayPal",
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/paypal",
+					"SORT" => 90,
+					"DESCRIPTION" => "",
+					"PSA_NAME" => "PayPal",
+					"ACTION_FILE" => "paypal",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "SHOULD_PAY"),
-						"CURRENCY" => Array("TYPE" => "ORDER", "VALUE" => "CURRENCY"),
-					)),
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-				))
-
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"BIZVAL" => array('' => array(
+					"PAYMENT_ID" => array("TYPE" => "PAYMENT", "VALUE" => "ID"),
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL_DATE"),
+					"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					"PAYMENT_CURRENCY" => array("TYPE" => "PAYMENT", "VALUE" => "CURRENCY"),
+				)),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
 			);
 		}
 	}
 	if($personType["ur"] == "Y" && $paysystem["bill"] == "Y" && $shopLocalization != "ua")
 	{
-		$arPaySystems[] = Array(
-			"NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
-			"SORT" => 100,
-			"DESCRIPTION" => "",
-			"CODE_TEMP" => "bill",
-			"ACTION" => Array(Array(
-				"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["ur"],
+		$arPaySystems[] = array(
+			'PAYSYSTEM' => array(
 				"NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
-				"ACTION_FILE" => "/bitrix/modules/sale/payment/bill",
+				"SORT" => 100,
+				"DESCRIPTION" => "",
+				"PSA_NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
+				"ACTION_FILE" => "bill",
 				"RESULT_FILE" => "",
 				"NEW_WINDOW" => "Y",
-				"PARAMS" => serialize(Array(
-					"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-					"SELLER_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-					"SELLER_ADDRESS" => Array("TYPE" => "", "VALUE" => $shopAdr),
-					"SELLER_PHONE" => Array("TYPE" => "", "VALUE" => $siteTelephone),
-					"SELLER_INN" => Array("TYPE" => "", "VALUE" => $shopINN),
-					"SELLER_KPP" => Array("TYPE" => "", "VALUE" => $shopKPP),
-					"SELLER_RS" => Array("TYPE" => "", "VALUE" => $shopNS),
-					"SELLER_KS" => Array("TYPE" => "", "VALUE" => $shopKS),
-					"SELLER_BIK" => Array("TYPE" => "", "VALUE" => $shopBANKREKV),
-					"BUYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_NAME"),
-					"BUYER_INN" => Array("TYPE" => "PROPERTY", "VALUE" => "INN"),
-					"BUYER_ADDRESS" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_ADR"),
-					"BUYER_PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
-					"BUYER_FAX" => Array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
-					"BUYER_PAYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "CONTACT_PERSON"),
-					"PATH_TO_STAMP" => Array("TYPE" => "", "VALUE" => $siteStamp),
-				)),
 				"HAVE_PAYMENT" => "Y",
 				"HAVE_ACTION" => "N",
 				"HAVE_RESULT" => "N",
 				"HAVE_PREPAY" => "N",
 				"HAVE_RESULT_RECEIVE" => "N",
-			))
-
+				'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+			),
+			"PERSON_TYPE" => array($arGeneralInfo["personType"]["ur"]),
+			"BIZVAL" => array('' => array(
+				"PAYMENT_DATE_INSERT" => Array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL_DATE"),
+				"SELLER_COMPANY_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
+				"SELLER_COMPANY_ADDRESS" => Array("TYPE" => "", "VALUE" => $shopAdr),
+				"SELLER_COMPANY_PHONE" => Array("TYPE" => "", "VALUE" => $siteTelephone),
+				"SELLER_COMPANY_INN" => Array("TYPE" => "", "VALUE" => $shopINN),
+				"SELLER_COMPANY_KPP" => Array("TYPE" => "", "VALUE" => $shopKPP),
+				"SELLER_COMPANY_BANK_ACCOUNT" => Array("TYPE" => "", "VALUE" => $shopNS),
+				"SELLER_COMPANY_BANK_ACCOUNT_CORR" => Array("TYPE" => "", "VALUE" => $shopKS),
+				"SELLER_COMPANY_BANK_BIC" => Array("TYPE" => "", "VALUE" => $shopBANKREKV),
+				"BUYER_PERSON_COMPANY_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_NAME"),
+				"BUYER_PERSON_COMPANY_INN" => Array("TYPE" => "PROPERTY", "VALUE" => "INN"),
+				"BUYER_PERSON_COMPANY_ADDRESS" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_ADR"),
+				"BUYER_PERSON_COMPANY_PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
+				"BUYER_PERSON_COMPANY_FAX" => Array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
+				"BUYER_PERSON_COMPANY_NAME_CONTACT" => Array("TYPE" => "PROPERTY", "VALUE" => "CONTACT_PERSON"),
+				"BILL_PATH_TO_STAMP" => Array("TYPE" => "", "VALUE" => $siteStamp),
+			)),
 		);
 	}
 //Ukraine
@@ -1905,342 +1956,343 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 		//oshadbank
 		if (($personType["fiz"] == "Y" || $personType["fiz_ua"] == "Y") && $paysystem["oshad"] == "Y")
 		{
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_PS_OS"),
-				"SORT" => 90,
-				"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_OS_DESCR"),
-				"CODE_TEMP" => "oshadbank",
-				"ACTION" => Array(
-					Array(
-						"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
-						"NAME" => GetMessage("SALE_WIZARD_PS_OS"),
-						"ACTION_FILE" => "/bitrix/modules/sale/payment/oshadbank",
-						"RESULT_FILE" => "",
-						"NEW_WINDOW" => "Y",
-						"PARAMS" => serialize(Array(
-							"RECIPIENT_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-							//"INN" => Array("TYPE" => "", "VALUE" => $shopINN_ua),
-							"RECIPIENT_ID" => Array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
-							"RECIPIENT_NUMBER" => Array("TYPE" => "", "VALUE" => $shopNS_ua),
-							//"RECIPIENT_BANK" => Array("TYPE" => "", "VALUE" => $shopBANK),
-							"RECIPIENT_BANK" => Array("TYPE" => "", "VALUE" => $shopBank_ua),
-							"RECIPIENT_CODE_BANK" => Array("TYPE" => "", "VALUE" => $shopMFO_ua),
-							//"NDS" => Array("TYPE" => "", "VALUE" => $shopNDS_ua),
-							"PAYER_FIO" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-							"PAYER_ADRES" => Array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
-							"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-							"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-							"PAYER_CONTACT_PERSON" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-							"PAYER_INDEX" => Array("TYPE" => "PROPERTY", "VALUE" => "ZIP"),
-							"PAYER_COUNTRY" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_COUNTRY"),
-							"PAYER_TOWN" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_CITY"),
-							//"PAYER_ADDRESS_FACT" => Array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
-							"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						)),
-						"HAVE_PAYMENT" => "Y",
-						"HAVE_ACTION" => "N",
-						"HAVE_RESULT" => "N",
-						"HAVE_PREPAY" => "N",
-						"HAVE_RESULT_RECEIVE" => "N",
-					),
-					Array(
-						"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz_ua"],
-						"NAME" => GetMessage("SALE_WIZARD_PS_OS"),
-						"ACTION_FILE" => "/bitrix/modules/sale/payment/oshadbank",
-						"RESULT_FILE" => "",
-						"NEW_WINDOW" => "Y",
-						"PARAMS" => serialize(Array(
-							"RECIPIENT_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-							//"INN" => Array("TYPE" => "", "VALUE" => $shopINN_ua),
-							"RECIPIENT_ID" => Array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
-							"RECIPIENT_NUMBER" => Array("TYPE" => "", "VALUE" => $shopNS_ua),
-							//"RECIPIENT_BANK" => Array("TYPE" => "", "VALUE" => $shopBANK),
-							"RECIPIENT_BANK" => Array("TYPE" => "", "VALUE" => $shopBank_ua),
-							"RECIPIENT_CODE_BANK" => Array("TYPE" => "", "VALUE" => $shopMFO_ua),
-							//"NDS" => Array("TYPE" => "", "VALUE" => $shopNDS_ua),
-							"PAYER_FIO" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-							"PAYER_ADRES" => Array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
-							"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-							"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-							"PAYER_CONTACT_PERSON" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-							"PAYER_INDEX" => Array("TYPE" => "PROPERTY", "VALUE" => "ZIP"),
-							"PAYER_COUNTRY" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_COUNTRY"),
-							"PAYER_TOWN" => Array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_CITY"),
-							//"PAYER_ADDRESS_FACT" => Array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
-							"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						)),
-						"HAVE_PAYMENT" => "Y",
-						"HAVE_ACTION" => "N",
-						"HAVE_RESULT" => "N",
-						"HAVE_PREPAY" => "N",
-						"HAVE_RESULT_RECEIVE" => "N",
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
+					"NAME" => GetMessage("SALE_WIZARD_PS_OS"),
+					"SORT" => 90,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_PS_OS_DESCR"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_PS_OS"),
+					"ACTION_FILE" => "/bitrix/modules/sale/payment/oshadbank",
+					"RESULT_FILE" => "",
+					"NEW_WINDOW" => "Y",
+					"HAVE_PAYMENT" => "Y",
+					"HAVE_ACTION" => "N",
+					"HAVE_RESULT" => "N",
+					"HAVE_PREPAY" => "N",
+					"HAVE_RESULT_RECEIVE" => "N",
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"], $arGeneralInfo["personType"]["fiz_ua"]),
+				"BIZVAL" => array(
+					'' => array(
+						"RECIPIENT_NAME" => array("TYPE" => "", "VALUE" => $shopOfName),
+						"RECIPIENT_ID" => array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
+						"RECIPIENT_NUMBER" => array("TYPE" => "", "VALUE" => $shopNS_ua),
+						"RECIPIENT_BANK" => array("TYPE" => "", "VALUE" => $shopBank_ua),
+						"RECIPIENT_CODE_BANK" => array("TYPE" => "", "VALUE" => $shopMFO_ua),
+						"PAYER_FIO" => array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
+						"PAYER_ADRES" => array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
+						"ORDER_ID" => array("TYPE" => "ORDER", "VALUE" => "ID"),
+						"DATE_INSERT" => array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
+						"PAYER_CONTACT_PERSON" => array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
+						"PAYER_INDEX" => array("TYPE" => "PROPERTY", "VALUE" => "ZIP"),
+						"PAYER_COUNTRY" => array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_COUNTRY"),
+						"PAYER_TOWN" => array("TYPE" => "PROPERTY", "VALUE" => "LOCATION_CITY"),
+						"SHOULD_PAY" => array("TYPE" => "ORDER", "VALUE" => "PRICE"),
 					)
-				)
+				),
 			);
 		}
 		if ($personType["fiz"] == "Y")
 		{
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_YMoney"),
-				"SORT" => 60,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "yandex_3x",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_YMoney"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/yandex_3x",
+					"SORT" => 60,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_YMoney_DESC"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_YMoney"),
+					"ACTION_FILE" => "yandex",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"USER_ID" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"ORDER_DATE" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						"PAYMENT_VALUE" => Array("VALUE" => "PC")
-					)),
+					"PS_MODE" => "PC",
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-				))
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
+				"PARAMS" => array(
+					'' => array(
+						"PAYMENT_ID" => array("TYPE" => "PAYMENT", "VALUE" => "ID"),
+						"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL"),
+						"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					)
+				),
 			);
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_YCards"),
-				"SORT" => 70,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "yandex_3x",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_YCards"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/yandex_3x",
+					"SORT" => 70,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_YCards_DESC"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_YCards"),
+					"ACTION_FILE" => "yandex",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"USER_ID" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"ORDER_DATE" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						"PAYMENT_VALUE" => Array("VALUE" => "AC")
-					)),
+					"PS_MODE" => "AC",
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-				))
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
+				"BIZVAL" => array(
+					'' => array(
+						"PAYMENT_ID" => array("TYPE" => "PAYMENT", "VALUE" => "ID"),
+						"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL"),
+						"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM")
+					)
+				),
 			);
-			$arPaySystems[] = Array(
-				"NAME" => GetMessage("SALE_WIZARD_YTerminals"),
-				"SORT" => 80,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "yandex_3x",
-				"ACTION" => Array(Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
+			$arPaySystems[] = array(
+				'PAYSYSTEM' => array(
 					"NAME" => GetMessage("SALE_WIZARD_YTerminals"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/yandex_3x",
+					"SORT" => 80,
+					"DESCRIPTION" => GetMessage("SALE_WIZARD_YTerminals_DESC"),
+					"PSA_NAME" => GetMessage("SALE_WIZARD_YTerminals"),
+					"ACTION_FILE" => "yandex",
 					"RESULT_FILE" => "",
 					"NEW_WINDOW" => "N",
-					"PARAMS" => serialize(Array(
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						"USER_ID" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"ORDER_DATE" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT"),
-						"SHOULD_PAY" => Array("TYPE" => "ORDER", "VALUE" => "PRICE"),
-						"PAYMENT_VALUE" => Array("VALUE" => "GP")
-					)),
 					"HAVE_PAYMENT" => "Y",
 					"HAVE_ACTION" => "N",
 					"HAVE_RESULT" => "N",
 					"HAVE_PREPAY" => "N",
 					"HAVE_RESULT_RECEIVE" => "Y",
-				))
+					"PS_MODE" => "GP",
+					'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
+				),
+				"PERSON_TYPE" => array($arGeneralInfo["personType"]["fiz"]),
+				"BIZVAL" => array(
+					'' => array(
+						"PAYMENT_ID" => array("TYPE" => "PAYMENT", "VALUE" => "ID"),
+						"PAYMENT_DATE_INSERT" => array("TYPE" => "PAYMENT", "VALUE" => "DATE_BILL"),
+						"PAYMENT_SHOULD_PAY" => array("TYPE" => "PAYMENT", "VALUE" => "SUM"),
+					)
+				),
 			);
 		}
 		//bill
-		if (/*($personType["fiz"] == "Y" || $personType["fiz_ua"] == "Y") && */$paysystem["bill"] == "Y")
+		if ($paysystem["bill"] == "Y")
 		{
-			$arPaySystemTmp = Array(
+			$arPaySystem['PAYSYSTEM'] = array(
 				"NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
-				"SORT" => 100,
-				"DESCRIPTION" => "",
-				"CODE_TEMP" => "bill_ua"
+				"PSA_NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
+				"ACTION_FILE" => "billua",
+				"RESULT_FILE" => "",
+				"NEW_WINDOW" => "Y",
+				"HAVE_PAYMENT" => "Y",
+				"HAVE_ACTION" => "N",
+				"HAVE_RESULT" => "N",
+				"HAVE_PREPAY" => "N",
+				"HAVE_RESULT_RECEIVE" => "N",
+				'ENTITY_REGISTRY_TYPE' => Sale\Registry::REGISTRY_TYPE_ORDER,
 			);
 
+			$arPaySystem['PERSON_TYPE'] = array();
+			$arPaySystem['BIZVAL'] = array();
+
 			if ($personType["ur"] == "Y")
-				$arPaySystemTmp["ACTION"][] =  Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["ur"],
-					"NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/bill_ua",
-					"RESULT_FILE" => "",
-					"NEW_WINDOW" => "Y",
-					"PARAMS" => serialize(Array(
-						"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-						"SELLER_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-						"SELLER_ADDRESS" => Array("TYPE" => "", "VALUE" => $shopAdr),
-						"SELLER_PHONE" => Array("TYPE" => "", "VALUE" => $siteTelephone),
-						"SELLER_IPN" => Array("TYPE" => "", "VALUE" => $shopINN_ua),
-						"SELLER_EDRPOY" => Array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
-						"SELLER_RS" => Array("TYPE" => "", "VALUE" => $shopNS_ua),
-						//"BANK_NAME" => Array("TYPE" => "", "VALUE" => $shopBANK),
-						"SELLER_BANK" => Array("TYPE" => "", "VALUE" => $shopBank_ua),
-						"SELLER_MFO" => Array("TYPE" => "", "VALUE" => $shopMFO_ua),
-						"SELLER_PDV" => Array("TYPE" => "", "VALUE" => $shopNDS_ua),
-						"ORDER_ID" => Array("TYPE" => "ORDER", "VALUE" => "ID"),
-						//"Place" => Array("TYPE" => "", "VALUE" => $shopPlace_ua),
-						//"FIO" => Array("TYPE" => "", "VALUE" => $shopFIO_ua),
-						"SELLER_SYS" => Array("TYPE" => "", "VALUE" => $shopTax_ua),
-						"BUYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_NAME"),
-						"BUYER_INN" => Array("TYPE" => "PROPERTY", "VALUE" => "INN"),
-						"BUYER_ADDRESS" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_ADR"),
-						"BUYER_PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
-						"BUYER_FAX" => Array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
-						//"BUYER_PAYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "CONTACT_PERSON"),
-						"PATH_TO_STAMP" => Array("TYPE" => "", "VALUE" => $siteStamp),
-					)),
-					"HAVE_PAYMENT" => "Y",
-					"HAVE_ACTION" => "N",
-					"HAVE_RESULT" => "N",
-					"HAVE_PREPAY" => "N",
-					"HAVE_RESULT_RECEIVE" => "N",
+			{
+				$arPaySystem['PERSON_TYPE'][] = $arGeneralInfo["personType"]["ur"];
+				$arPaySystem['BIZVAL'][$arGeneralInfo["personType"]["ur"]] = array(
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
+					"SELLER_COMPANY_NAME" => array("TYPE" => "", "VALUE" => $shopOfName),
+					"SELLER_COMPANY_ADDRESS" => array("TYPE" => "", "VALUE" => $shopAdr),
+					"SELLER_COMPANY_PHONE" => array("TYPE" => "", "VALUE" => $siteTelephone),
+					"SELLER_COMPANY_IPN" => array("TYPE" => "", "VALUE" => $shopINN_ua),
+					"SELLER_COMPANY_EDRPOY" => array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
+					"SELLER_COMPANY_BANK_ACCOUNT" => array("TYPE" => "", "VALUE" => $shopNS_ua),
+					"SELLER_COMPANY_BANK_NAME" => array("TYPE" => "", "VALUE" => $shopBank_ua),
+					"SELLER_COMPANY_MFO" => array("TYPE" => "", "VALUE" => $shopMFO_ua),
+					"SELLER_COMPANY_PDV" => array("TYPE" => "", "VALUE" => $shopNDS_ua),
+					"PAYMENT_ID" => array("TYPE" => "ORDER", "VALUE" => "ID"),
+					"SELLER_COMPANY_SYS" => array("TYPE" => "", "VALUE" => $shopTax_ua),
+					"BUYER_PERSON_COMPANY_NAME" => array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_NAME"),
+					"BUYER_PERSON_COMPANY_ADDRESS" => array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_ADR"),
+					"BUYER_PERSON_COMPANY_PHONE" => array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
+					"BUYER_PERSON_COMPANY_FAX" => array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
+					"BILLUA_PATH_TO_STAMP" => array("TYPE" => "", "VALUE" => $siteStamp),
 				);
+			}
+
 			if ($personType["fiz"] == "Y")
-				$arPaySystemTmp["ACTION"][] =  Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz"],
-					"NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/bill_ua",
-					"RESULT_FILE" => "",
-					"NEW_WINDOW" => "Y",
-					"PARAMS" => serialize(Array(
-						"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-						"SELLER_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-						"SELLER_ADDRESS" => Array("TYPE" => "", "VALUE" => $shopAdr),
-						"SELLER_PHONE" => Array("TYPE" => "", "VALUE" => $siteTelephone),
-						"SELLER_IPN" => Array("TYPE" => "", "VALUE" => $shopINN_ua),
-						"SELLER_EDRPOY" => Array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
-						"SELLER_RS" => Array("TYPE" => "", "VALUE" => $shopNS_ua),
-						//"BANK_NAME" => Array("TYPE" => "", "VALUE" => $shopBANK),
-						"SELLER_BANK" => Array("TYPE" => "", "VALUE" => $shopBank_ua),
-						"SELLER_MFO" => Array("TYPE" => "", "VALUE" => $shopMFO_ua),
-						"SELLER_PDV" => Array("TYPE" => "", "VALUE" => $shopNDS_ua),
-						//"Place" => Array("TYPE" => "", "VALUE" => $shopPlace_ua),
-						//"FIO" => Array("TYPE" => "", "VALUE" => $shopFIO_ua),
-						"BUYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"BUYER_INN" => Array("TYPE" => "PROPERTY", "VALUE" => "INN"),
-						"BUYER_ADDRESS" => Array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
-						"BUYER_PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
-						"BUYER_FAX" => Array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
-						//"BUYER_PAYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "CONTACT_PERSON"),
-						"PATH_TO_STAMP" => Array("TYPE" => "", "VALUE" => $siteStamp),
-					)),
-					"HAVE_PAYMENT" => "Y",
-					"HAVE_ACTION" => "N",
-					"HAVE_RESULT" => "N",
-					"HAVE_PREPAY" => "N",
-					"HAVE_RESULT_RECEIVE" => "N",
+			{
+				$arPaySystem['PERSON_TYPE'][] = $arGeneralInfo["personType"]["fiz"];
+				$arPaySystem['BIZVAL'][$arGeneralInfo["personType"]["fiz"]] = array(
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
+					"SELLER_COMPANY_NAME" => array("TYPE" => "", "VALUE" => $shopOfName),
+					"SELLER_COMPANY_ADDRESS" => array("TYPE" => "", "VALUE" => $shopAdr),
+					"SELLER_COMPANY_PHONE" => array("TYPE" => "", "VALUE" => $siteTelephone),
+					"SELLER_COMPANY_IPN" => array("TYPE" => "", "VALUE" => $shopINN_ua),
+					"SELLER_COMPANY_EDRPOY" => array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
+					"SELLER_COMPANY_BANK_ACCOUNT" => array("TYPE" => "", "VALUE" => $shopNS_ua),
+					"SELLER_COMPANY_BANK_NAME" => array("TYPE" => "", "VALUE" => $shopBank_ua),
+					"SELLER_COMPANY_MFO" => array("TYPE" => "", "VALUE" => $shopMFO_ua),
+					"SELLER_COMPANY_PDV" => array("TYPE" => "", "VALUE" => $shopNDS_ua),
+					"PAYMENT_ID" => array("TYPE" => "ORDER", "VALUE" => "ID"),
+					"SELLER_COMPANY_SYS" => array("TYPE" => "", "VALUE" => $shopTax_ua),
+					"BUYER_PERSON_COMPANY_NAME" => array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
+					"BUYER_PERSON_COMPANY_ADDRESS" => array("TYPE" => "PROPERTY", "VALUE" => "ADDRESS"),
+					"BUYER_PERSON_COMPANY_PHONE" => array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
+					"BUYER_PERSON_COMPANY_FAX" => array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
+					"BILLUA_PATH_TO_STAMP" => array("TYPE" => "", "VALUE" => $siteStamp),
 				);
+			}
+
 			if ($personType["fiz_ua"] == "Y")
-				$arPaySystemTmp["ACTION"][] =  Array(
-					"PERSON_TYPE_ID" => $arGeneralInfo["personType"]["fiz_ua"],
-					"NAME" => GetMessage("SALE_WIZARD_PS_BILL"),
-					"ACTION_FILE" => "/bitrix/modules/sale/payment/bill_ua",
-					"RESULT_FILE" => "",
-					"NEW_WINDOW" => "Y",
-					"PARAMS" => serialize(Array(
-						"DATE_INSERT" => Array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
-						"SELLER_NAME" => Array("TYPE" => "", "VALUE" => $shopOfName),
-						"SELLER_ADDRESS" => Array("TYPE" => "", "VALUE" => $shopAdr),
-						"SELLER_PHONE" => Array("TYPE" => "", "VALUE" => $siteTelephone),
-						"SELLER_IPN" => Array("TYPE" => "", "VALUE" => $shopINN_ua),
-						"SELLER_EDRPOY" => Array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
-						"SELLER_RS" => Array("TYPE" => "", "VALUE" => $shopNS_ua),
-						//"BANK_NAME" => Array("TYPE" => "", "VALUE" => $shopBANK),
-						"SELLER_BANK" => Array("TYPE" => "", "VALUE" => $shopBank_ua),
-						"SELLER_MFO" => Array("TYPE" => "", "VALUE" => $shopMFO_ua),
-						"SELLER_PDV" => Array("TYPE" => "", "VALUE" => $shopNDS_ua),
-						//"Place" => Array("TYPE" => "", "VALUE" => $shopPlace_ua),
-						//"FIO" => Array("TYPE" => "", "VALUE" => $shopFIO_ua),
-						//"Tax" => Array("TYPE" => "", "VALUE" => $shopTax_ua),
-						"BUYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
-						"BUYER_INN" => Array("TYPE" => "PROPERTY", "VALUE" => "EGRPU"),
-						"BUYER_ADDRESS" => Array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_ADR"),
-						"BUYER_PHONE" => Array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
-						"BUYER_FAX" => Array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
-						//"BUYER_PAYER_NAME" => Array("TYPE" => "PROPERTY", "VALUE" => "CONTACT_PERSON"),
-						"PATH_TO_STAMP" => Array("TYPE" => "", "VALUE" => $siteStamp),
-					)),
-					"HAVE_PAYMENT" => "Y",
-					"HAVE_ACTION" => "N",
-					"HAVE_RESULT" => "N",
-					"HAVE_PREPAY" => "N",
-					"HAVE_RESULT_RECEIVE" => "N",
+			{
+				$arPaySystem['PERSON_TYPE'][] = $arGeneralInfo["personType"]["fiz_ua"];
+				$arPaySystem['BIZVAL'][$arGeneralInfo["personType"]["fiz_ua"]] = array(
+					"PAYMENT_DATE_INSERT" => array("TYPE" => "ORDER", "VALUE" => "DATE_INSERT_DATE"),
+					"SELLER_COMPANY_NAME" => array("TYPE" => "", "VALUE" => $shopOfName),
+					"SELLER_COMPANY_ADDRESS" => array("TYPE" => "", "VALUE" => $shopAdr),
+					"SELLER_COMPANY_PHONE" => array("TYPE" => "", "VALUE" => $siteTelephone),
+					"SELLER_COMPANY_IPN" => array("TYPE" => "", "VALUE" => $shopINN_ua),
+					"SELLER_COMPANY_EDRPOY" => array("TYPE" => "", "VALUE" => $shopEGRPU_ua),
+					"SELLER_COMPANY_BANK_ACCOUNT" => array("TYPE" => "", "VALUE" => $shopNS_ua),
+					"SELLER_COMPANY_BANK_NAME" => array("TYPE" => "", "VALUE" => $shopBank_ua),
+					"SELLER_COMPANY_MFO" => array("TYPE" => "", "VALUE" => $shopMFO_ua),
+					"SELLER_COMPANY_PDV" => array("TYPE" => "", "VALUE" => $shopNDS_ua),
+					"PAYMENT_ID" => array("TYPE" => "ORDER", "VALUE" => "ID"),
+					"SELLER_COMPANY_SYS" => array("TYPE" => "", "VALUE" => $shopTax_ua),
+					"BUYER_PERSON_COMPANY_NAME" => array("TYPE" => "PROPERTY", "VALUE" => "FIO"),
+					"BUYER_PERSON_COMPANY_ADDRESS" => array("TYPE" => "PROPERTY", "VALUE" => "COMPANY_ADR"),
+					"BUYER_PERSON_COMPANY_PHONE" => array("TYPE" => "PROPERTY", "VALUE" => "PHONE"),
+					"BUYER_PERSON_COMPANY_FAX" => array("TYPE" => "PROPERTY", "VALUE" => "FAX"),
+					"BILLUA_PATH_TO_STAMP" => array("TYPE" => "", "VALUE" => $siteStamp),
 				);
-			$arPaySystems[] = $arPaySystemTmp;
+			}
+
+			$arPaySystems[] = $arPaySystem;
 		}
 	}
 	//}
 
-	foreach($arPaySystems as $val)
+	foreach($arPaySystems as $arPaySystem)
 	{
-		$dbSalePaySystem = CSalePaySystem::GetList(array(), array("LID" => WIZARD_SITE_ID, "NAME" => $val["NAME"]), false, false, array("ID", "NAME"));
-		if ($arSalePaySystem = $dbSalePaySystem->GetNext())
-		{
-			if ($arSalePaySystem["NAME"] == GetMessage("SALE_WIZARD_PS_SB") || $arSalePaySystem["NAME"] == GetMessage("SALE_WIZARD_PS_BILL") || $arSalePaySystem["NAME"] == GetMessage("SALE_WIZARD_PS_OS"))
-			{
-				foreach($val["ACTION"] as $action)
-				{
-					$arGeneralInfo["paySystem"][$val["CODE_TEMP"]][$action["PERSON_TYPE_ID"]] = $arSalePaySystem["ID"];
-					$action["PAY_SYSTEM_ID"] = $arSalePaySystem["ID"];
-					$dbSalePaySystemAction = CSalePaySystemAction::GetList(array(), array("PAY_SYSTEM_ID" =>  $arSalePaySystem["ID"], "PERSON_TYPE_ID" => $action["PERSON_TYPE_ID"]), false, false, array("ID"));
-					if ($arSalePaySystemAction = $dbSalePaySystemAction->GetNext())
-					{
-						CSalePaySystemAction::Update($arSalePaySystemAction["ID"], $action);
-					}
-					else
-					{
-						if (strlen($action["ACTION_FILE"]) > 0
-							&& file_exists($_SERVER["DOCUMENT_ROOT"].$action["ACTION_FILE"]."/logo.gif"))
-						{
-							$action["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"].$action["ACTION_FILE"]."/logo.gif");
-						}
+		$updateFields = array();
 
-						CSalePaySystemAction::Add($action);
+		$val = $arPaySystem['PAYSYSTEM'];
+		if (array_key_exists('LOGOTIP', $val) && is_array($val['LOGOTIP']))
+		{
+			$updateFields['LOGOTIP'] = $val['LOGOTIP'];
+			unset($val['LOGOTIP']);
+		}
+
+		$dbRes = \Bitrix\Sale\PaySystem\Manager::getList(array('select' => array("ID", "NAME"), 'filter' => array("NAME" => $val["NAME"])));
+		$tmpPaySystem = $dbRes->fetch();
+		if (!$tmpPaySystem)
+		{
+			$resultAdd = \Bitrix\Sale\Internals\PaySystemActionTable::add($val);
+			if ($resultAdd->isSuccess())
+			{
+				$id = $resultAdd->getId();
+
+				if (array_key_exists('BIZVAL', $arPaySystem) && $arPaySystem['BIZVAL'])
+				{
+					$arGeneralInfo["paySystem"][$arPaySystem["ACTION_FILE"]] = $id;
+					foreach ($arPaySystem['BIZVAL'] as $personType => $codes)
+					{
+						foreach ($codes as $code => $map)
+						{
+							\Bitrix\Sale\BusinessValue::setMapping($code, 'PAYSYSTEM_'.$id, $personType, array('PROVIDER_KEY' => $map['TYPE'] ?: 'VALUE', 'PROVIDER_VALUE' => $map['VALUE']), true);
+						}
 					}
 				}
+
+				if ($arPaySystem['PERSON_TYPE'])
+				{
+					$params = array(
+						'filter' => array(
+							"SERVICE_ID" => $id,
+							"SERVICE_TYPE" => Sale\Services\PaySystem\Restrictions\Manager::SERVICE_TYPE_PAYMENT,
+							"=CLASS_NAME" => '\\'.Sale\Services\PaySystem\Restrictions\PersonType::class
+						)
+					);
+
+					$dbRes = \Bitrix\Sale\Internals\ServiceRestrictionTable::getList($params);
+					if (!$dbRes->fetch())
+					{
+						$fields = array(
+							"SERVICE_ID" => $id,
+							"SERVICE_TYPE" => \Bitrix\Sale\Services\PaySystem\Restrictions\Manager::SERVICE_TYPE_PAYMENT,
+							"SORT" => 100,
+							"PARAMS" => array(
+								'PERSON_TYPE_ID' => $arPaySystem['PERSON_TYPE']
+							)
+						);
+						\Bitrix\Sale\Services\PaySystem\Restrictions\PersonType::save($fields);
+					}
+				}
+
+				$updateFields['PARAMS'] = serialize(array('BX_PAY_SYSTEM_ID' => $id));
+				$updateFields['PAY_SYSTEM_ID'] = $id;
+
+				$image = '/bitrix/modules/sale/install/images/sale_payments/'.$val['ACTION_FILE'].'.png';
+				if ((!array_key_exists('LOGOTIP', $updateFields) || !is_array($updateFields['LOGOTIP'])) &&
+					\Bitrix\Main\IO\File::isFileExists($_SERVER['DOCUMENT_ROOT'].$image)
+				)
+				{
+					$updateFields['LOGOTIP'] = CFile::MakeFileArray($image);
+					$updateFields['LOGOTIP']['MODULE_ID'] = "sale";
+				}
+
+				CFile::SaveForDB($updateFields, 'LOGOTIP', 'sale/paysystem/logotip');
+				\Bitrix\Sale\Internals\PaySystemActionTable::update($id, $updateFields);
 			}
 		}
 		else
 		{
-			$id = CSalePaySystem::Add(
-				Array(
-					"LID" => WIZARD_SITE_ID,
-					"CURRENCY" => $defCurrency,
-					"NAME" => $val["NAME"],
-					"ACTIVE" => ($val["ACTIVE"] == "N") ? "N" : "Y",
-					"SORT" => $val["SORT"],
-					"DESCRIPTION" => $val["DESCRIPTION"]
+			$flag = false;
+
+			$params = array(
+				'filter' => array(
+					"SERVICE_ID" => $tmpPaySystem['ID'],
+					"SERVICE_TYPE" => Sale\Services\PaySystem\Restrictions\Manager::SERVICE_TYPE_PAYMENT,
+					"=CLASS_NAME" => '\\'.Sale\Services\PaySystem\Restrictions\PersonType::class
 				)
 			);
 
-			foreach($val["ACTION"] as &$action)
+			$dbRes = \Bitrix\Sale\Internals\ServiceRestrictionTable::getList($params);
+			$restriction = $dbRes->fetch();
+
+			if ($restriction)
 			{
-				$arGeneralInfo["paySystem"][$val["CODE_TEMP"]][$action["PERSON_TYPE_ID"]] = $id;
-				$action["PAY_SYSTEM_ID"] = $id;
-				if (
-					strlen($action["ACTION_FILE"]) > 0
-					&& file_exists($_SERVER["DOCUMENT_ROOT"].$action["ACTION_FILE"]."/logo.gif")
-					&& !is_array($action["LOGOTIP"])
-				)
+				foreach ($restriction['PARAMS']['PERSON_TYPE_ID'] as $personTypeId)
 				{
-					$action["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"].$action["ACTION_FILE"]."/logo.gif");
+					if (array_search($personTypeId, $arPaySystem['PERSON_TYPE']) === false)
+					{
+						$arPaySystem['PERSON_TYPE'][] = $personTypeId;
+						$flag = true;
+					}
 				}
 
-				CSalePaySystemAction::Add($action);
+				$restrictionId = $restriction['ID'];
+			}
+
+			if ($flag)
+			{
+				$fields = array(
+					"SERVICE_ID" => $restrictionId,
+					"SERVICE_TYPE" => \Bitrix\Sale\Services\PaySystem\Restrictions\Manager::SERVICE_TYPE_PAYMENT,
+					"SORT" => 100,
+					"PARAMS" => array(
+						'PERSON_TYPE_ID' => $arPaySystem['PERSON_TYPE']
+					)
+				);
+
+				\Bitrix\Sale\Services\PaySystem\Restrictions\PersonType::save($fields, $restrictionId);
 			}
 		}
 	}
 
 	if (COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) != "Y" || WIZARD_INSTALL_DEMO_DATA)
 	{
+		Sale\Notify::setNotifyDisable(true);
+
 		if ($saleConverted15)
 		{
 			$orderPaidStatus    = 'P';
@@ -2342,20 +2394,9 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 			}
 		}
 
-		if(CModule::IncludeModule("currency"))
-		{
-			$dbCur = CCurrency::GetList($by="currency", $o = "asc");
-			while($arCur = $dbCur->Fetch())
-			{
-				if($lang == "ru")
-					CCurrencyLang::Update($arCur["CURRENCY"], $lang, array("DECIMALS" => 2, "HIDE_ZERO" => "Y"));
-				elseif($arCur["CURRENCY"] == "EUR")
-					CCurrencyLang::Update($arCur["CURRENCY"], $lang, array("DECIMALS" => 2, "FORMAT_STRING" => "&euro;#"));
-			}
-		}
 		WizardServices::IncludeServiceLang("step1.php", $lang);
 
-		if (CModule::IncludeModule("catalog"))
+		if (Loader::includeModule("catalog"))
 		{
 			$dbVat = CCatalogVat::GetListEx(
 				array(),
@@ -2407,131 +2448,163 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 		}
 
 		//making orders
-		function __MakeOrder($prdCnt=1, $arData = Array())
+		function __MakeOrder(array $arData, array $productFilter, $prdCnt = 1)
 		{
-			global $APPLICATION, $USER, $DB;
-			CModule::IncludeModule("iblock");
-			CModule::IncludeModule("sale");
-			CModule::IncludeModule("catalog");
-			$arPrd = Array();
-			$dbItem = CIBlockElement::GetList(Array(), Array("IBLOCK_TYPE" => "offers", "IBLOCK_SITE_ID" => WIZARD_SITE_ID, "PROPERTY_NEWPRODUCT" => false), false, Array("nTopCount" => 100), Array("ID", "IBLOCK_ID", "XML_ID", "NAME", "DETAIL_PAGE_URL", "IBLOCK_XML_ID"));
-			while($arItem = $dbItem->GetNext())
+			static $catalogIncluded = null;
+			static $saleIncluded = null;
+
+			if (empty($arData) || empty($productFilter))
+				return false;
+
+			$prdCnt = (int)$prdCnt;
+			if ($prdCnt < 1 || $prdCnt > 20)
+				$prdCnt = 1;
+
+			if ($catalogIncluded === null)
+				$catalogIncluded = Main\Loader::includeModule('catalog');
+			if (!$catalogIncluded)
+				return false;
+			if ($saleIncluded === null)
+				$saleIncluded = Main\Loader::includeModule('sale');
+			if (!$saleIncluded)
+				return false;
+
+			$arPrd = array();
+			$dbItem = CIBlockElement::GetList(
+				array(),
+				$productFilter,
+				false,
+				array("nTopCount" => 100),
+				array("ID", "IBLOCK_ID", "NAME")
+			);
+			while ($arItem = $dbItem->Fetch())
 				$arPrd[] = $arItem;
+			unset($arItem, $dbItem);
 
-			if(!empty($arPrd))
+			if (empty($arPrd))
+				return false;
+
+			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+			/** @var Sale\Order $orderClass */
+			$orderClass = $registry->getOrderClassName();
+
+			$order = $orderClass::create($arData['SITE_ID'], $arData['USER_ID'], $arData['CURRENCY']);
+			$order->setPersonTypeId($arData['PERSON_TYPE_ID']);
+			if (!empty($arData['PROPS']))
 			{
-				$arOrder = Array(
-					"LID" => $arData["SITE_ID"],
-					"PERSON_TYPE_ID" => $arData["PERSON_TYPE_ID"],
-					"PAYED" => "N",
-					"CANCELED" => "N",
-					"STATUS_ID" => "N",
-					"PRICE" => 1,
-					"CURRENCY" => $arData["CURRENCY"],
-					"USER_ID" => $arData["USER_ID"],
-					"PAY_SYSTEM_ID" => $arData["PAY_SYSTEM_ID"],
-					//"PRICE_DELIVERY" => $arData["PRICE_DELIVERY"],
-					//"DELIVERY_ID" => $arData["DELIVERY_ID"],
-				);
-
-				$fuserID = 0;
-				$dbFUserListTmp = CSaleUser::GetList(array("USER_ID" => $arData["USER_ID"]));
-				if(empty($dbFUserListTmp))
+				$propertyValues = array();
+				$propertyCollection = $order->getPropertyCollection();
+				/** @var Sale\PropertyValue $property */
+				foreach ($propertyCollection as $property)
 				{
-					$arFields = array(
-						"=DATE_INSERT" => $DB->GetNowFunction(),
-						"=DATE_UPDATE" => $DB->GetNowFunction(),
-						"USER_ID" => $arData["USER_ID"]
+					if ($property->isUtil())
+						continue;
+
+					$propertyId = $property->getPropertyId();
+					if (!isset($arData['PROPS'][$propertyId]) && $property->isRequired())
+						return false;
+
+					$propertyValues[$propertyId] = $arData['PROPS'][$propertyId];
+					unset($propertyId);
+				}
+				unset($property);
+				if (!empty($propertyValues))
+				{
+					$result = $propertyCollection->setValuesFromPost(
+						array('PROPERTIES' => $propertyValues),
+						array()
 					);
-
-					$fuserID = CSaleUser::_Add($arFields);
+					if (!$result->isSuccess())
+						return false;
+					unset($result);
 				}
-				else
-				{
-					$fuserID = $dbFUserListTmp['ID'];
-				}
-
-				$orderID = CSaleOrder::Add($arOrder);
-
-				CCatalogProduct::setPriceVatIncludeMode(true);
-				CCatalogProduct::setUsedCurrency(CSaleLang::GetLangCurrency(WIZARD_SITE_ID));
-				CCatalogProduct::setUseDiscount(true);
-				for($i=0; $i<$prdCnt;$i++)
-				{
-					$prdID = $arPrd[mt_rand(20, 99)];
-					$arProduct = CCatalogProduct::GetByID($prdID["ID"]);
-					$arPrice = CCatalogProduct::GetOptimalPrice($prdID["ID"], 1, array(2), 'N', array(), WIZARD_SITE_ID, array());
-
-					$arFields = array(
-						"IGNORE_CALLBACK_FUNC" => "Y",
-						"PRODUCT_ID" => $prdID["ID"],
-						"PRODUCT_PRICE_ID" => $arPrice['PRICE']['ID'],
-						"BASE_PRICE" => $arPrice['RESULT_PRICE']['BASE_PRICE'],
-						"PRICE" => $arPrice['RESULT_PRICE']['DISCOUNT_PRICE'],
-						"VAT_RATE" => $arPrice['PRICE']['VAT_RATE'],
-						"CURRENCY" => $arPrice['RESULT_PRICE']['CURRENCY'],
-						"WEIGHT" => $arProduct["WEIGHT"],
-						"DIMENSIONS" => serialize(array(
-							"WIDTH" => $arProduct["WIDTH"],
-							"HEIGHT" => $arProduct["HEIGHT"],
-							"LENGTH" => $arProduct["LENGTH"]
-						)),
-						"QUANTITY" => 1,
-						"LID" => WIZARD_SITE_ID,
-						"DELAY" => "N",
-						"CAN_BUY" => "Y",
-						"NAME" => $prdID["NAME"],
-						"CALLBACK_FUNC" => "",
-						"MODULE" => "catalog",
-						"PRODUCT_PROVIDER_CLASS" => "CCatalogProductProvider",
-						"ORDER_CALLBACK_FUNC" => "",
-						"CANCEL_CALLBACK_FUNC" => "",
-						"PAY_CALLBACK_FUNC" => "",
-						"DETAIL_PAGE_URL" => $prdID["DETAIL_PAGE_URL"],
-						"CATALOG_XML_ID" => $prdID["IBLOCK_XML_ID"],
-						"PRODUCT_XML_ID" => $prdID["XML_ID"],
-						"NOTES" => $arPrice["PRICE"]["CATALOG_GROUP_NAME"],
-						"FUSER_ID" => $fuserID,
-						"ORDER_ID" => $orderID
-					);
-					$addres = CSaleBasket::Add($arFields);
-				}
-				$dbBasketItems = CSaleBasket::GetList(
-						array(),
-						array(
-								"ORDER_ID" => $orderID
-							),
-						false,
-						false,
-						array("ID", "QUANTITY", "PRICE")
-					);
-				$ORDER_PRICE = 0;
-				while ($arBasketItems = $dbBasketItems->GetNext())
-				{
-					$ORDER_PRICE += roundEx($arBasketItems["PRICE"], SALE_VALUE_PRECISION) * DoubleVal($arBasketItems["QUANTITY"]);
-				}
-
-				$totalOrderPrice = $ORDER_PRICE + $arData["PRICE_DELIVERY"];
-				CSaleOrder::Update($orderID, Array("PRICE" => $totalOrderPrice));
-				foreach($arData["PROPS"] as $val)
-				{
-					$arFields = Array(
-							"ORDER_ID" => $orderID,
-							"ORDER_PROPS_ID" => $val["ID"],
-							"NAME" => $val["NAME"],
-							"CODE" => $val["CODE"],
-							"VALUE" => $val["VALUE"],
-						);
-					CSaleOrderPropsValue::Add($arFields);
-				}
-				return $orderID;
+				unset($propertyValues);
 			}
+
+			/** @var Sale\Basket $basketClass */
+			$basketClass = $registry->getBasketClassName();
+
+			$basket = $basketClass::create($arData['SITE_ID']);
+			$basket->setFUserId($arData['FUSER_ID']);
+
+			while ($prdCnt > 0)
+			{
+				$product = $arPrd[mt_rand(0, 99)];
+				$item = $basket->createItem('catalog', $product['ID']);
+
+				$result = $item->setFields(array(
+					'NAME' => $product['NAME'],
+					'QUANTITY' => 1,
+					'PRODUCT_PROVIDER_CLASS' => 'CCatalogProductProvider'
+				));
+
+				if (!$result->isSuccess())
+					return false;
+
+				$prdCnt--;
+				unset($result, $product);
+			}
+
+			$result = $order->setBasket($basket);
+			if (!$result->isSuccess())
+				return false;
+			unset($result);
+
+			$shipmentCollection = $order->getShipmentCollection();
+			$shipment = $shipmentCollection->createItem();
+			$shipmentItemCollection = $shipment->getShipmentItemCollection();
+
+			/** @var Sale\BasketItem $basketItem */
+			foreach ($order->getBasket() as $basketItem)
+			{
+				/** @var Sale\ShipmentItem $shipmentItem */
+				$shipmentItem = $shipmentItemCollection->createItem($basketItem);
+				$result = $shipmentItem->setQuantity($basketItem->getQuantity());
+				if (!$result->isSuccess())
+					return false;
+				unset($result);
+			}
+			unset($basketItem);
+
+			$emptyDeliveryServiceId = Sale\Delivery\Services\EmptyDeliveryService::getEmptyDeliveryServiceId();
+			$result = $shipment->setField('DELIVERY_ID', $emptyDeliveryServiceId);
+			if (!$result->isSuccess())
+				return false;
+			unset($result);
+
+			$paySystemObject = Sale\PaySystem\Manager::getObjectById($arData['PAY_SYSTEM_ID']);
+			if ($paySystemObject === null)
+				return false;
+			$paymentCollection = $order->getPaymentCollection();
+			/** @var \Bitrix\Sale\Payment $payment */
+			$payment = $paymentCollection->createItem($paySystemObject);
+
+			$discounts = $order->getDiscount();
+			$result = $discounts->calculate();
+			if (!$result->isSuccess())
+				return false;
+			unset($result);
+
+			$result = $payment->setFields(array(
+				'SUM' => $order->getPrice(),
+				'CURRENCY'=> $order->getCurrency(),
+			));
+			if (!$result->isSuccess())
+				return false;
+			unset($result);
+
+			$result = $order->save();
+			if (!$result->isSuccess())
+				return false;
+			unset($result);
+
+			return $order->getId();
 		}
 
 		$personType = $arGeneralInfo["personType"]["ur"];
-		if(IntVal($arGeneralInfo["personType"]["fiz"]) > 0)
+		if(intval($arGeneralInfo["personType"]["fiz"]) > 0)
 			$personType = $arGeneralInfo["personType"]["fiz"];
-		if(IntVal($personType) <= 0)
+		if(intval($personType) <= 0)
 		{
 			$dbPerson = CSalePersonType::GetList(array(), Array("LID" => WIZARD_SITE_ID));
 			if($arPerson = $dbPerson->Fetch())
@@ -2539,24 +2612,25 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				$personType = $arPerson["ID"];
 			}
 		}
-		if(IntVal($arGeneralInfo["paySystem"]["cash"][$personType]) > 0 )
-			$paySystem = $arGeneralInfo["paySystem"]["cash"][$personType];
-		elseif(IntVal($arGeneralInfo["paySystem"]["bill"][$personType]) > 0 )
-			$paySystem = $arGeneralInfo["paySystem"]["bill"][$personType];
-		elseif(IntVal($arGeneralInfo["paySystem"]["bill"][$personType]) > 0 )
-			$paySystem = $arGeneralInfo["paySystem"]["sber"][$personType];
-		elseif(IntVal($arGeneralInfo["paySystem"]["paypal"][$personType]) > 0 )
-			$paySystem = $arGeneralInfo["paySystem"]["paypal"][$personType];
+		$paySystem = 0;
+		if(intval($arGeneralInfo["paySystem"]["cash"]) > 0 )
+			$paySystem = $arGeneralInfo["paySystem"]["cash"];
+		elseif(intval($arGeneralInfo["paySystem"]["bill"]) > 0 )
+			$paySystem = $arGeneralInfo["paySystem"]["bill"];
+		elseif(intval($arGeneralInfo["paySystem"]["sberbank"]) > 0 )
+			$paySystem = $arGeneralInfo["paySystem"]["sberbank"];
+		elseif(intval($arGeneralInfo["paySystem"]["paypal"]) > 0 )
+			$paySystem = $arGeneralInfo["paySystem"]["paypal"];
 		else
 		{
-			$dbPS = CSalePaySystem::GetList(Array(), Array("LID" => WIZARD_SITE_ID));
-			if($arPS = $dbPS->Fetch())
+			$dbPS = \Bitrix\Sale\PaySystem\Manager::getList(array());
+			if($arPS = $dbPS->fetch())
 				$paySystem = $arPS["ID"];
 		}
 
 		if(\Bitrix\Main\Config\Option::get('sale', 'sale_locationpro_migrated', '') == 'Y')
 		{
-			if(!strlen($location))
+			if($location == '')
 			{
 				// get first found
 				$item = \Bitrix\Sale\Location\LocationTable::getList(array('limit' => 1, 'select' => array('CODE')))->fetch();
@@ -2566,7 +2640,7 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 		}
 		else
 		{
-			if(IntVal($location) <= 0)
+			if(intval($location) <= 0)
 			{
 				$dbLocation = CSaleLocation::GetList(Array("ID" => "ASC"), Array("LID" => $lang));
 				if($arLocation = $dbLocation->Fetch())
@@ -2585,7 +2659,6 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 
 		if(WIZARD_INSTALL_DEMO_DATA)
 		{
-
 			$db_sales = CSaleOrder::GetList(array("DATE_INSERT" => "ASC"), array("LID" => WIZARD_SITE_ID), false, false, array("ID"));
 			while ($ar_sales = $db_sales->Fetch())
 			{
@@ -2598,54 +2671,71 @@ if($bRus || COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SI
 				"PERSON_TYPE_ID" => $personType,
 				"CURRENCY" => $defCurrency,
 				"USER_ID" => 1,
+				"FUSER_ID" => Sale\Fuser::getIdByUserId(1),
 				"PAY_SYSTEM_ID" => $paySystem,
-				//"PRICE_DELIVERY" => "0",
-				//"DELIVERY_ID" => "",
 				"PROPS" => Array(),
 			);
 		foreach($arGeneralInfo["properies"][$personType] as $key => $val)
 		{
-			$arProp = Array(
-						"ID" => $val["ID"],
-						"NAME" => $val["NAME"],
-						"CODE" => $val["CODE"],
-						"VALUE" => "",
-					);
+			$propertyValue = '';
 
 			if($key == "FIO" || $key == "CONTACT_PERSON")
-				$arProp["VALUE"] = GetMessage("WIZ_ORD_FIO");
+				$propertyValue = GetMessage("WIZ_ORD_FIO");
 			elseif($key == "ADDRESS" || $key == "COMPANY_ADR")
-				$arProp["VALUE"] = GetMessage("WIZ_ORD_ADR");
+				$propertyValue = GetMessage("WIZ_ORD_ADR");
 			elseif($key == "EMAIL")
-				$arProp["VALUE"] = "example@example.com";
+				$propertyValue = "example@example.com";
 			elseif($key == "PHONE")
-				$arProp["VALUE"] = "8 495 2312121";
+				$propertyValue = "8 495 2312121";
 			elseif($key == "ZIP")
-				$arProp["VALUE"] = "101000";
+				$propertyValue = "101000";
 			elseif($key == "LOCATION")
-				$arProp["VALUE"] = $location;
+				$propertyValue = $location;
 			elseif($key == "CITY")
-				$arProp["VALUE"] = $shopLocation;
-			$arData["PROPS"][] = $arProp;
+				$propertyValue = $shopLocation;
+			$arData["PROPS"][$val["ID"]] = $propertyValue;
 		}
-		$orderID = __MakeOrder(3, $arData);
-		CSaleOrder::DeliverOrder($orderID, "Y");
-		CSaleOrder::PayOrder($orderID, "Y");
-		CSaleOrder::StatusOrder($orderID, "F");
-		$orderID = __MakeOrder(4, $arData);
-		CSaleOrder::DeliverOrder($orderID, "Y");
-		CSaleOrder::PayOrder($orderID, "Y");
-		CSaleOrder::StatusOrder($orderID, "F");
-		$orderID = __MakeOrder(2, $arData);
-		CSaleOrder::PayOrder($orderID, "Y");
-		CSaleOrder::StatusOrder($orderID, "P");
-		$orderID = __MakeOrder(1, $arData);
-		$orderID = __MakeOrder(3, $arData);
-		CSaleOrder::CancelOrder($orderID, "Y");
+
+		$productFilter = array(
+			"=IBLOCK_TYPE" => "offers",
+			"=IBLOCK_SITE_ID" => WIZARD_SITE_ID,
+			"PROPERTY_NEWPRODUCT" => false,
+			"ACTIVE" => "Y",
+			"CATALOG_AVAILABLE" => "Y",
+			"CATALOG_TYPE" => Catalog\ProductTable::TYPE_OFFER
+		);
+
+		$orderID = __MakeOrder($arData, $productFilter, 3);
+		if ($orderID)
+		{
+			CSaleOrder::DeliverOrder($orderID, "Y");
+			CSaleOrder::PayOrder($orderID, "Y");
+			CSaleOrder::StatusOrder($orderID, "F");
+		}
+		$orderID = __MakeOrder($arData, $productFilter, 4);
+		if ($orderID)
+		{
+			CSaleOrder::DeliverOrder($orderID, "Y");
+			CSaleOrder::PayOrder($orderID, "Y");
+			CSaleOrder::StatusOrder($orderID, "F");
+		}
+		$orderID = __MakeOrder($arData, $productFilter, 2);
+		if ($orderID)
+		{
+			CSaleOrder::PayOrder($orderID, "Y");
+			CSaleOrder::StatusOrder($orderID, "P");
+		}
+		$orderID = __MakeOrder($arData, $productFilter, 1);
+		$orderID = __MakeOrder($arData, $productFilter, 1);
+		if ($orderID)
+		{
+			CSaleOrder::CancelOrder($orderID, "Y");
+		}
 		CAgent::RemoveAgent("CSaleProduct::RefreshProductList();", "sale");
 		CAgent::AddAgent("CSaleProduct::RefreshProductList();", "sale", "N", 60*60*24*4, "", "Y");
+
+		Sale\Notify::setNotifyDisable(false);
 	}
 
 }
 return true;
-?>

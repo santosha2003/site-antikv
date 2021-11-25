@@ -55,7 +55,10 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 				}
 				else
 				{
-					$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 30));
+					if (!$this->error)
+					{
+						$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 30));
+					}
 				}
 			}
 			else
@@ -72,14 +75,14 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 		if (!is_string($highBlockName) || $highBlockName === "")
 		{
 			$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 110));
-			return;
+			return 0;
 		}
 
 		$name = $xmlArray[GetMessage("CC_BCIH_XML_REFERENCE")]["#"][GetMessage("CC_BCIH_XML_NAME")][0]["#"];
 		if (!is_string($name) || $name === "")
 		{
 			$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 120));
-			return;
+			return 0;
 		}
 
 		$hlblock = Bitrix\Highloadblock\HighloadBlockTable::getList(array(
@@ -96,8 +99,14 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 		{
 			$result = Bitrix\Highloadblock\HighloadBlockTable::add(array(
 				'NAME' => $highBlockName,
-				'TABLE_NAME' => 'b_'.strtolower($highBlockName),
+				'TABLE_NAME' => 'b_'.mb_strtolower($highBlockName),
 			));
+			if (!$result->isSuccess())
+			{
+				$this->error = GetMessage("CC_BCIH_REFERENCE_ERROR", array("#MESSAGE#" => implode($result->getErrorMessages())));
+				return 0;
+			}
+
 			$highBlockID = $result->getId();
 
 			$arFieldsName = array(
@@ -143,7 +152,7 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 				$len = "(50)";
 			else
 				$len = "";
-			$DB->Query("create index IX_HLBLOCK_".$highBlockID."_XML_ID on b_".strtolower($highBlockName)."(UF_XML_ID$len)");
+			$DB->Query("create index IX_HLBLOCK_".$highBlockID."_XML_ID on b_".mb_strtolower($highBlockName)."(UF_XML_ID$len)");
 		}
 
 		return $highBlockID;
@@ -156,7 +165,7 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 		if ($this->NS["HL"] <= 0)
 		{
 			$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 210));
-			return;
+			return 0;
 		}
 		$entity_id = "HLBLOCK_".$this->NS["HL"];
 		$xmlArray = $xmlObject->GetArray();
@@ -171,15 +180,15 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 		if (!is_string($id) || $id === "")
 		{
 			$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 220));
-			return;
+			return 0;
 		}
-		$id = substr("UF_".strtoupper($id), 0, 20);
+		$id = mb_substr("UF_".mb_strtoupper($id), 0, 20);
 
 		$name = $xmlArray[GetMessage("CC_BCIH_XML_FIELD")]["#"][GetMessage("CC_BCIH_XML_NAME")][0]["#"];
 		if (!is_string($name) || $name === "")
 		{
 			$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 230));
-			return;
+			return 0;
 		}
 
 		$type = $xmlArray[GetMessage("CC_BCIH_XML_FIELD")]["#"][GetMessage("CC_BCIH_XML_FIELD_TYPE")][0]["#"];
@@ -194,7 +203,7 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 		else
 		{
 			$this->error = GetMessage("CC_BCIH_XML_PARSE_ERROR", array("#CODE#" => 240));
-			return;
+			return 0;
 		}
 
 		$rsUserFields = CUserTypeEntity::GetList(array(), array(
@@ -298,12 +307,15 @@ class CBitrixCatalogImportHl extends CBitrixComponent
 				$xmlValueId = "DESCRIPTION";
 
 			$xmlValueId = $this->xml2id($xmlValueId);
-			$xmlValueId = substr("UF_".strtoupper($xmlValueId), 0, 20);
+			$xmlValueId = mb_substr("UF_".mb_strtoupper($xmlValueId), 0, 20);
 
 			switch ($this->NS["FM"][$xmlValueId])
 			{
 				case "datetime":
-					if ($xmlValue === "0001-01-01T00:00:00")
+					if (
+						$xmlValue === "0001-01-01T00:00:00"
+						|| $xmlValue === ""
+					)
 					{
 						$xmlValue = false;
 					}

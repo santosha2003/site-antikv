@@ -13,28 +13,22 @@ $APPLICATION->SetTitle(GetMessage("P_GALLERY"));
 		"ELEMENT_SORT_FIELD" => "id",
 		"ELEMENT_SORT_ORDER" => "desc",
 		"ELEMENTS_USE_DESC_PAGE" => "Y",
-		
+
 //		"UPLOAD_MAX_FILE_SIZE" => "1024",
 		"ALBUM_PHOTO_THUMBS_SIZE" => "100",
 		"ALBUM_PHOTO_SIZE" => "100",
-		"THUMBS_SIZE" => "120",
+		"THUMBNAIL_SIZE" => "90",
 		"JPEG_QUALITY1" => "95",
-		"PREVIEW_SIZE" => "500",
-		"JPEG_QUALITY2" => "95",
-		"ORIGINAL_SIZE" => "1500",
-		"JPEG_QUALITY" => "90",
-		
+		"ORIGINAL_SIZE" => "1280",
+		"JPEG_QUALITY" => "95",
+		"UPLOADER_TYPE" => "form",
+
 		"ADDITIONAL_SIGHTS" => array(),
 		"WATERMARK_MIN_PICTURE_SIZE" => "501",
 		"PATH_TO_FONT" => "",
 		"WATERMARK_RULES" => "USER",
+		"USE_WATERMARK" => "Y",
 		"WATERMARK" => "Y",
-		"WATERMARK_COLORS" => array(
-			0 => "FF0000",
-			1 => "FFFF00",
-			2 => "FFFFFF",
-			3 => "000000"),
-		
 		"USE_RATING" => "Y",
 		"MAX_VOTE" => "5",
 		"VOTE_NAMES" => array(

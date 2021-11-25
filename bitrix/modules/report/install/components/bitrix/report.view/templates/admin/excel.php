@@ -1,7 +1,8 @@
 <?
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
-__IncludeLang(dirname(__FILE__).'/lang/'.LANGUAGE_ID.'/template.php');
+/** @var CBitrixComponentTemplate $this */
+$this->IncludeLangFile('template.php');
 
 ?>
 <html>
@@ -28,10 +29,10 @@ __IncludeLang(dirname(__FILE__).'/lang/'.LANGUAGE_ID.'/template.php');
 <?php if ($arResult['groupingMode'] === true): // show result using a grouping mode ?>
 <?php
 // determine column data type
-function getResultColumnDataType(&$viewColumnInfo, &$customColumnTypes = array(), $helperClassName)
+function getResultColumnDataType(&$viewColumnInfo, &$customColumnTypes, $helperClassName)
 {
 	$dataType = null;
-	if (array_key_exists($viewColumnInfo['fieldName'], $customColumnTypes))
+	if (is_array($customColumnTypes) && array_key_exists($viewColumnInfo['fieldName'], $customColumnTypes))
 	{
 		$dataType = $customColumnTypes[$viewColumnInfo['fieldName']];
 	}
@@ -150,8 +151,16 @@ function groupingReportResultHtml(&$arParams, &$arResult, $level = 0, $arRowSet 
 				while ($rowNumber++ < $nRows)
 				{
 					// get index
-					if ($bUseRowSet) list(,$dataIndex) = each($arRowSet);
-					else list($dataIndex,) = each($arData);
+					if ($bUseRowSet)
+					{
+						$dataIndex = current($arRowSet);
+						next($arRowSet);
+					}
+					else
+					{
+						$dataIndex = key($arData);
+						next($arData);
+					}
 
 					// fill index and value of group
 					$arGroupValuesIndexes[] = $dataIndex;
@@ -324,8 +333,16 @@ function groupingReportResultHtml(&$arParams, &$arResult, $level = 0, $arRowSet 
 					while ($rowNumber++ < $nRows)
 					{
 						// get index
-						if ($bUseRowSet) list(,$dataIndex) = each($arRowSet);
-						else list($dataIndex,) = each($arData);
+						if ($bUseRowSet)
+						{
+							$dataIndex = current($arRowSet);
+							next($arRowSet);
+						}
+						else
+						{
+							$dataIndex = key($arData);
+							next($arData);
+						}
 
 						// total += values
 						foreach ($arColumns as $columnIndex => $viewColumnIndex)

@@ -23,4 +23,9 @@ $MESS["SALE_OVIEW_TAB_ANALYSIS"] = "Bestellauswertung";
 $MESS["SALE_OVIEW_ORDER_COPY"] = "Bestellung kopieren";
 $MESS["SALE_OVIEW_ORDER_COPY_TITLE"] = "Bestellung kopieren";
 $MESS["SALE_OVIEW_UNLOCK"] = "Bestellung entsperren";
+$MESS["SALE_OVIEW_TO_ARCHIVE"] = "Bestellung archivieren";
+$MESS["SALE_OVIEW_TO_ARCHIVE_TITLE"] = "Bestellung ins Archiv verschieben";
+$MESS["SALE_CONFIRM_ARCHIVE_MESSAGE"] = "Möchten Sie diese Bestellung wirklich archivieren? Diese Aktion kann nicht rückgängig gemacht werden.";
+$MESS["SALE_OVIEW_TO_ACTION"] = "Aktionen";
+$MESS["SALE_OVIEW_TO_ACTION_TITLE"] = "Aktion aus der Liste auswählen";
 ?>

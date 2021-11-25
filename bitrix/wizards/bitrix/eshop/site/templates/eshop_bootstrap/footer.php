@@ -1,6 +1,6 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
 					</div>
-					<?if (!$isCatalogPage):?>
+					<?if (!$hideSidebar):?>
 					<div class="sidebar col-md-3 col-sm-4">
 						<?$APPLICATION->IncludeComponent(
 							"bitrix:main.include",
@@ -103,13 +103,16 @@
 				<div class="col-sm-5 col-md-3 col-md-pull-9">
 					<div class="bx-inclogofooter">
 						<div class="bx-inclogofooter-block">
-							<a class="bx-inclogofooter-logo" href="<?=SITE_DIR?>">
+							<a class="bx-inclogofooter-logo" href="<?=htmlspecialcharsbx(SITE_DIR)?>">
 								<?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/company_logo_mobile.php"), false);?>
 							</a>
 						</div>
 						<div class="bx-inclogofooter-block">
 							<div class="bx-inclogofooter-tel"><?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/telephone.php"), false);?></div>
 							<div class="bx-inclogofooter-worktime"><?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/schedule.php"), false);?></div>
+						</div>
+						<div>
+							<?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/personal.php"), false);?>
 						</div>
 					</div>
 				</div>

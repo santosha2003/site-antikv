@@ -2,7 +2,7 @@
 
 class CPerfomanceTableList extends CDBResult
 {
-	function GetList($bFull = true)
+	public static function GetList($bFull = true)
 	{
 		global $DB;
 		if ($bFull)
@@ -51,7 +51,7 @@ class CPerfomanceTable extends CAllPerfomanceTable
 
 		if ($TABLE_NAME === false)
 			$TABLE_NAME = $this->TABLE_NAME;
-		if (strlen($TABLE_NAME) <= 0)
+		if ($TABLE_NAME == '')
 			return false;
 
 		$TABLE_NAME = trim($TABLE_NAME, "`");
@@ -73,7 +73,7 @@ class CPerfomanceTable extends CAllPerfomanceTable
 
 		if ($TABLE_NAME === false)
 			$TABLE_NAME = $this->TABLE_NAME;
-		if (strlen($TABLE_NAME) <= 0)
+		if ($TABLE_NAME == '')
 			return array();
 
 		$TABLE_NAME = trim($TABLE_NAME, "`");
@@ -103,7 +103,7 @@ class CPerfomanceTable extends CAllPerfomanceTable
 
 		if ($TABLE_NAME === false)
 			$TABLE_NAME = $this->TABLE_NAME;
-		if (strlen($TABLE_NAME) <= 0)
+		if ($TABLE_NAME == '')
 			return array();
 
 		$TABLE_NAME = trim($TABLE_NAME, "`");
@@ -133,7 +133,7 @@ class CPerfomanceTable extends CAllPerfomanceTable
 
 		if ($TABLE_NAME === false)
 			$TABLE_NAME = $this->TABLE_NAME;
-		if (strlen($TABLE_NAME) <= 0)
+		if ($TABLE_NAME == '')
 			return false;
 
 		$TABLE_NAME = trim($TABLE_NAME, "`");
@@ -217,12 +217,12 @@ class CPerfomanceTable extends CAllPerfomanceTable
 			return $cache[$TABLE_NAME][0];
 	}
 
-	function escapeColumn($column)
+	public static function escapeColumn($column)
 	{
 		return "`".str_replace("`", "``", $column)."`";
 	}
 
-	function escapeTable($tableName)
+	public static function escapeTable($tableName)
 	{
 		return "`".str_replace("`", "``", $tableName)."`";
 	}

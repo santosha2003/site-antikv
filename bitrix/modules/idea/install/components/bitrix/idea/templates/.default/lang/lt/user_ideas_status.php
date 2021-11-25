@@ -1,4 +1,0 @@
-<?
-$MESS["IDEA_USER_IDEA_LIST_MINE"] = "Mano idëjos";
-$MESS["IDEA_USER_IDEA_LIST_USER"] = "#USER_NAME#' idëjos";
-?>

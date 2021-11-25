@@ -16,13 +16,13 @@ $this->setFrameMode(false);
 if (!empty($arResult["ERRORS"])):?>
 	<?ShowError(implode("<br />", $arResult["ERRORS"]))?>
 <?endif;
-if (strlen($arResult["MESSAGE"]) > 0):?>
+if ($arResult["MESSAGE"] <> ''):?>
 	<?ShowNote($arResult["MESSAGE"])?>
 <?endif?>
 <form name="iblock_add" action="<?=POST_FORM_ACTION_URI?>" method="post" enctype="multipart/form-data">
 	<?=bitrix_sessid_post()?>
 	<?if ($arParams["MAX_FILE_SIZE"] > 0):?><input type="hidden" name="MAX_FILE_SIZE" value="<?=$arParams["MAX_FILE_SIZE"]?>" /><?endif?>
-	<table class="data-table">
+	<table class="data-table" style="width: 90%">
 		<thead>
 			<tr>
 				<td colspan="2">&nbsp;</td>
@@ -204,7 +204,7 @@ if (strlen($arResult["MESSAGE"]) > 0):?>
 										$value = "";
 									}
 								?>
-								<input type="text" name="PROPERTY[<?=$propertyID?>][<?=$i?>]" size="25" value="<?=$value?>" /><br /><?
+								<input type="text" name="PROPERTY[<?=$propertyID?>][<?=$i?>]" size="<?=$arResult["PROPERTY_LIST_FULL"][$propertyID]["COL_COUNT"]; ?>" value="<?=$value?>" /><br /><?
 								if($arResult["PROPERTY_LIST_FULL"][$propertyID]["USER_TYPE"] == "DateTime"):?><?
 									$APPLICATION->IncludeComponent(
 										'bitrix:main.calendar',
@@ -355,7 +355,7 @@ if (strlen($arResult["MESSAGE"]) > 0):?>
 			<tr>
 				<td colspan="2">
 					<input type="submit" name="iblock_submit" value="<?=GetMessage("IBLOCK_FORM_SUBMIT")?>" />
-					<?if (strlen($arParams["LIST_URL"]) > 0):?>
+					<?if ($arParams["LIST_URL"] <> ''):?>
 						<input type="submit" name="iblock_apply" value="<?=GetMessage("IBLOCK_FORM_APPLY")?>" />
 						<input
 							type="button"

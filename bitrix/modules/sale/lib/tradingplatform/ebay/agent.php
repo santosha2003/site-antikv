@@ -34,7 +34,7 @@ class Agent
 
 		$siteId = \EscapePHPString($siteId);
 
-		if(!in_array($feedType, array("ORDER", "PRODUCT", "INVENTORY", "IMAGE", "PROCESS_RESULT", "RESULTS")))
+		if(!in_array($feedType, array("ORDER", "PRODUCT", "INVENTORY", "IMAGE", "PROCESS_RESULT", "RESULTS", "ORDER_ACK")))
 			throw new ArgumentOutOfRangeException('feedType');
 
 		$result = "";
@@ -64,7 +64,7 @@ class Agent
 			Ebay::log(Logger::LOG_LEVEL_ERROR, "EBAY_FEED_ERROR", $feedType, $e->getMessage(), $siteId);
 		}
 
-		if(strlen($result) <=0 && !$once)
+		if($result == '' && !$once)
 			$result = 'Bitrix\Sale\TradingPlatform\Ebay\Agent::start("'.$feedType.'","'.$siteId.'");';
 
 		return $result;
@@ -93,7 +93,7 @@ class Agent
 			$sort = 50;
 		elseif($feedType == "PRODUCT" || $feedType == "PROCESS_RESULT" || $feedType ==  "RESULTS")
 			$sort = 100;
-		elseif($feedType == "INVENTORY" || $feedType == "IMAGE")
+		elseif($feedType == "INVENTORY" || $feedType == "IMAGE" || $feedType == "ORDER_ACK" )
 			$sort = 150;
 		else
 			throw new ArgumentOutOfRangeException('feedType');

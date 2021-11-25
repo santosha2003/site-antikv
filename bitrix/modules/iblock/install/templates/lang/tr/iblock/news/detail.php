@@ -1,6 +1,0 @@
-<?
-$MESS ['T_NEWS_DETAIL_ENLARGE_IMG'] = "Resmi büyüt";
-$MESS ['T_NEWS_DETAIL_BACK'] = "Haber listesine dönüþ";
-$MESS ['T_NEWS_DETAIL_NF'] = "Haber bulunamadý!";
-$MESS ['T_NEWS_DETAIL_MODULE_NA'] = "Modül ayarlý deðil!";
-?>

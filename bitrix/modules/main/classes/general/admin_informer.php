@@ -1,4 +1,8 @@
 <?
+
+use Bitrix\Main\Composite\Engine;
+use Bitrix\Main\Composite\Helper;
+
 IncludeModuleLangFile(__FILE__);
 
 class CAdminInformer
@@ -130,7 +134,7 @@ class CAdminInformer
 
 	private static function IsUpdateSystemNeedUpdate($sError)
 	{
-		return strpos($sError, 'NEW_UPDATE_SYSTEM');
+		return mb_strpos($sError, 'NEW_UPDATE_SYSTEM');
 	}
 
 	public static function InsertMainItems()
@@ -142,6 +146,18 @@ class CAdminInformer
 
 		if(!$USER->IsAuthorized())
 			return false;
+
+		if ($USER->CanDoOperation("cache_control") && !Helper::isOn() && !Engine::isSelfHostedPortal())
+		{
+			self::AddItem(array(
+				"TITLE" => GetMessage("top_panel_ai_composite_title"),
+				"HTML" => GetMessage("top_panel_ai_composite_desc"),
+				"COLOR" => "red",
+				"FOOTER" => '<a href="/bitrix/admin/composite.php?lang='.LANGUAGE_ID.'">'.GetMessage("top_panel_ai_composite_switch_on").'</a>',
+				"ALERT" => true,
+				"SORT" => 1
+			));
+		}
 
 		//Updates
 		if($USER->IsAdmin() || $USER->CanDoOperation('install_updates'))
@@ -185,11 +201,7 @@ class CAdminInformer
 		}
 
 		//Disk space (quota)
-<<<<<<< HEAD
-		$maxQuota = COption::GetOptionInt("main", "disk_space", 0)*1048576;
-=======
 		$maxQuota = (int)COption::GetOptionInt("main", "disk_space", 0)*1048576;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 		if ($maxQuota > 0)
 		{
 			$quota = new CDiskQuota();
@@ -221,8 +233,8 @@ class CAdminInformer
 		{
 			$cModules = COption::GetOptionString("main", "mp_modules_date", "");
 			$arModules = array();
-			if(strlen($cModules) > 0)
-				$arModules = unserialize($cModules);
+			if($cModules <> '')
+				$arModules = unserialize($cModules, ['allowed_classes' => false]);
 
 			$mCnt = count($arModules);
 			if($mCnt > 0)

@@ -1,8 +1,8 @@
 <?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/general/contractor.php");
 
-class CCatalogContractor
-	extends CAllCatalogContractor
+class CCatalogContractor extends CAllCatalogContractor
 {
 	/** Add new store in table b_catalog_contractor,
 	* @static
@@ -21,7 +21,7 @@ class CCatalogContractor
 		$arFields['~DATE_MODIFY'] = $DB->GetNowFunction();
 		$arFields['~DATE_CREATE'] = $DB->GetNowFunction();
 
-		if(!self::CheckFields('ADD', $arFields))
+		if(!self::checkFields('ADD', $arFields))
 			return false;
 
 		$arInsert = $DB->PrepareInsert("b_catalog_contractor", $arFields);

@@ -1,8 +1,8 @@
 <?
 $sCurUrl = urldecode($_SERVER["REQUEST_URI"]);
 $sCurUrl = str_replace("\0", "", $sCurUrl);
-$sCurUrl = ereg_replace("[\\/]+", "/", $sCurUrl);
-$sCurUrl = ereg_replace("\.+[\\/]", "", $sCurUrl);
+$sCurUrl = preg_replace("#[\\\\\\/]+#", "/", $sCurUrl);
+$sCurUrl = preg_replace("#\\.+[\\/]#", "", $sCurUrl);
 
 if($p = strpos($sCurUrl, "?"))
 {
@@ -34,13 +34,9 @@ if(file_exists($filename) && is_file($filename))
 		$cur_pos = 0;
 		$size = $filesize-1;
 
-		$sapi = php_sapi_name();
 		if($_SERVER["REQUEST_METHOD"]=="HEAD")
 		{
-			if($sapi=="cgi")
-				header("Status: 200 OK");
-			else
-				header("HTTP/1.1 200 OK");
+			CHTTP::SetStatus("200 OK");
 			header("Accept-Ranges: bytes");
 			header("Content-Length: ".$filesize);
 			header("Content-Type: application/force-download; name=\"".$file."\"");
@@ -70,10 +66,7 @@ if(file_exists($filename) && is_file($filename))
 
 			if(intval($cur_pos)>0)
 			{
-				if($sapi=="cgi")
-					header("Status: 206 Partial Content");
-				else
-					header("HTTP/1.1 206 Partial Content");
+				CHTTP::SetStatus("206 Partial Content");
 			}
 			else
 			{
@@ -102,10 +95,7 @@ if(file_exists($filename) && is_file($filename))
 				}
 				ob_end_clean();
 				session_write_close();
-				if ($sapi=="cgi")
-					header("Status: 200 OK");
-				else
-					header("HTTP/1.1 200 OK");
+				CHTTP::SetStatus("200 OK");
 			}
 
 			header("Content-Type: application/force-download; name=\"".$file."\"");

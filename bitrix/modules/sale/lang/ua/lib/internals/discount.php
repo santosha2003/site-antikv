@@ -14,4 +14,11 @@ $MESS["DISCOUNT_ENTITY_DATE_CREATE_FIELD"] = "Дата створення";
 $MESS["DISCOUNT_ENTITY_CREATED_BY_FIELD"] = "Ким створено";
 $MESS["DISCOUNT_ENTITY_PRIORITY_FIELD"] = "Пріоритет застосовності";
 $MESS["DISCOUNT_ENTITY_LAST_DISCOUNT_FIELD"] = "Припинити подальше застосування правил";
+$MESS["DISCOUNT_ENTITY_SITE_ID_FIELD"] = "Ідентифікатор сайту";
+$MESS["DISCOUNT_ENTITY_VERSION_FIELD"] = "Версія формату";
+$MESS["DISCOUNT_ENTITY_CONDITIONS_LIST_FIELD"] = "Додаткові умови";
+$MESS["DISCOUNT_ENTITY_ACTIONS_LIST_FIELD"] = "Дії";
+$MESS["DISCOUNT_ENTITY_USE_COUPONS_FIELD"] = "Купони";
+$MESS["DISCOUNT_ENTITY_EXECUTE_MODULE_FIELD"] = "Виконуючий модуль";
+$MESS["DISCOUNT_ENTITY_PRESET_ID_FIELD"] = "Пресет правила";
 ?>

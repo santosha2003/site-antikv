@@ -1,6 +1,0 @@
-<?
-$sSectionName = "Communication";
-$arDirProperties = array(
-
-);
-?>

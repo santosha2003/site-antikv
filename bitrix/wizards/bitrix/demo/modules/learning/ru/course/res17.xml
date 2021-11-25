@@ -1,2 +1,74 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE17"><presentation><material><mattext>��� �������� ��� ��������� ��������� ������ � �������?</mattext></material><response_lid ident="LID17" rcardinality="Single"><render_choice><response_label ident="ANS20"><material><mattext>� ������� ������ �������� ������ ��� �������� ����</mattext></material></response_label><response_label ident="ANS21"><material><mattext>� ������� ������ [ - ]</mattext></material></response_label><response_label ident="ANS22"><material><mattext>� ������� ������ �������������� ��� ������ �������� ����</mattext></material></response_label><response_label ident="ANS23"><material><mattext>� ������� ������ �������������� ��� ������ [ - ]</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID17">ANS22</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>887</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>200</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Режим Редактирование</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p>Режим <b>Редактирование</b> создан специально для изменения содержания страниц и разделов на сайте. Он включает в себя все возможности режима <b>Просмотр</b>, а также дополнительно позволяет:</p>
+<ul> 
+  <li>Создать страницу или раздел не только в публичном разделе с помощью мастера, но и в административном разделе с помощью традиционных форм: 
+  <p><img height="168" width="324" border="0" src="cid:resources/res17/AUQi5.o4bKd.edit_create_new_page.png" /></p>
+  </li>
+ 
+  <li>Изменить страницу или свойства раздела также можно с помощью мастера из публичного раздела или в административном разделе с помощью форм редактирования: 
+  <p><img height="168" width="388" border="0" src="cid:resources/res17/yYNbz.DM3CR.edit_page_admin.png" /> </p>
+  </li>
+ 
+  <li>Управлять структурой сайта из публичной части или перейти в административный раздел для управления текущим разделом сайта:
+  <p><img width="202" border="0" src="cid:resources/res17/aNdOP.lgYRt.structure_edit.png" hight="76" /></p>
+  </li>
+ 
+  <li>Управлять доступом к текущей странице или разделу из публичной части: 
+  <p><img width="117" border="0" src="cid:resources/res17/mMgfc.5XSxJ.access_edit.png" hight="73" /></p>
+  </li>
+ 
+  <li>Удалить текущую страницу: <img width="75" border="0" src="cid:resources/res17/ON0Rg.vudXy.delete_button.png" hight="24" />.</li> 
+ 
+  <li>Создать, изменить или просмотреть историю изменений текущей страницы через <b>Документооборот</b>: 
+  <p><img width="217" border="0" src="cid:resources/res17/hkaH4.WVKC8.flow_button.png" hight="95" /></p>
+  </li>
+</ul>
+
+<p>Кроме того, в режиме <b>Редактирование</b> удобно переходить к изменению содержимого страницы и ее свойств прямо из рабочей области:</p>
+<p><img width="292" border="0" src="cid:resources/res17/pcRS1.qrXBv.edit_page_fields.png" hight="173" /></p>
+<p>С помощью двойного клика мыши по странице (вне областей компонентов) также будет осуществлен переход к ее изменению в редакторе.</p>
+<p>В режиме <b>Редактирование</b> вся информация, размещенная во включаемых областях и компонентах, доступна для быстрого редактирования:</p> 
+
+  <p><img height="293" border="0" width="490" src="cid:resources/res17/CTwHl.GMxmn.edit_component.png" /></p>
+
+<p>Вы можете:</p>
+<ul>
+  <li>Отредактировать включаемые области: 
+  <p><img width="292" border="0" src="cid:resources/res17/ugciS.vojAm.html_fields_edit.png" hight="72" /></p></li>
+  <li>Управлять содержанием компонентов, размещенных на странице. 
+  <p>Например, меню действий компонента, выводящего структуру разделов инфоблока <b>Каталог книг</b>, содержит такие операции:</p>
+  <p><img width="156" border="0" src="cid:resources/res17/BogZ3.3bt2t.add_element.png" hight="72" /></p>
+  <p>При выборе действия <b>Добавить книгу</b> подгружается форма редактирования элемента в публичной части:</p>
+  <p><a href="javascript:ShowImg('/images/content_manager/controls/public_section/interface_to_version_9_5/add_element_form.png',700,502,'Форма редактирования элемента')"><img height="430" width="600" border="0" src="cid:resources/res17/yn34V.MrK8n.add_element_form_sm.png" alt="Нажмите на рисунок, чтобы увеличить" style="cursor: pointer;" /></a></p>
+  <p>После сохранения элемент будет добавлен и опубликован в публичной части.</p></li>
+</ul>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>200</edge_sort>
+<id>887</id>
+</content>

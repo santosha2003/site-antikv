@@ -12,6 +12,40 @@
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
 ?>
+<?if (CSite::InDir('/awards_rus/25317/')):?>
+<div style="background-color: white">
+<p style="text-align: center;">
+</p>
+<div style="text-align: center;">
+ <a href="/upload/medialibrary/3bc/3bcb8cfca88f0971e56763de0cd8ff78.jpg" rel="pict1" class="fancy active"><img alt="06_b.jpg" src="/upload/medialibrary/3bc/3bcb8cfca88f0971e56763de0cd8ff78.jpg" title="06_b.jpg" width="231" height="235" align="middle"></a><a href="/upload/medialibrary/858/858963049a5668e71cef4c2f0e899c5a.jpg" rel="pict1"><img alt="06_a.jpg" src="/upload/medialibrary/858/858963049a5668e71cef4c2f0e899c5a.jpg" title="06_a.jpg" width="232" height="235" align="middle"></a><br>
+</div>
+<div>
+	 1913-1915 гг. ,СПб монетный двор , медальер Васютинский А.Ф., светлая бронза , вес 14,08 гр., диаметр 28,2 мм., тираж 1.039.435 экз.
+</div>
+<div class="catalog-section-list">
+	<ul style='margin-left: 0;padding-left: 0;'>
+		<li style='list-style-type: none;' id="bx_149685683_274"><a href="/awards_rus/ploskiy-relef.php"><strong color="navy">Плоский рельеф</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_279"><a href="/awards_rus/sredniy-rele.php"><strong color="navy">Средний рельеф</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_281"><a href="/awards_rus/vysokiy-rele.php"><strong color="navy">Высокий рельеф</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_280"><a href="/awards_rus/frachnye-medal.php"><strong color="navy">Фрачные медали</strong></a></li>
+	</ul>
+</div>
+</div>
+<?elseif (CSite::InDir('/awards_rus/24183/')):?>
+<h3>     Знак отличия ордена Святой Анны (ЗООСА) или         Анненская медаль (АМ)</h3>
+<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </b>
+<blockquote>
+<div class="catalog-section-list">
+	<ul style='margin-left: 0;padding-left: 0;'>
+		<li style='list-style-type: none;' id="bx_149685683_274"><a href="/awards_rus/pavel.php"><strong color="navy">Павел I</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_279"><a href="/awards_rus/aleksandr.php"><strong color="navy">Александр I</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_281"><a href="/awards_rus/nikolay.php"><strong color="navy">Николай I</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_280"><a href="/awards_rus/aleksandr-2.php"><strong color="navy">Александр II</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_281"><a href="/awards_rus/aleksandr-3.php"><strong color="navy">Александр III</strong></a></li>
+		<li style='list-style-type: none;' id="bx_149685683_280"><a href="/awards_rus/nikolay-2.php"><strong color="navy">Николай II</strong></a></li>
+	</ul>
+</div>
+<?else:?>
 <?$ElementID = $APPLICATION->IncludeComponent(
 	"bitrix:news.detail",
 	"",
@@ -65,6 +99,7 @@ $this->setFrameMode(true);
 	),
 	$component
 );?>
+<?endif?> 
 <p><a href="<?=$arResult["FOLDER"].$arResult["URL_TEMPLATES"]["news"]?>"><?=GetMessage("T_NEWS_DETAIL_BACK")?></a></p>
 <?if($arParams["USE_RATING"]=="Y" && $ElementID):?>
 <?$APPLICATION->IncludeComponent(

@@ -1,4 +1,6 @@
 <?
+$MESS["BUYER_SUB_ACTION_EDIT_PROFILE"] = "Kunden bearbeiten";
+$MESS["BUYER_ADD_USER"] = "Kunden hinzufügen";
 $MESS["BUYER_TITLE"] = "Kunden";
 $MESS["BUYER_PRLIST"] = "Kunden";
 $MESS["BUYER_PROFILE"] = "Nutzerprofil";
@@ -52,4 +54,10 @@ $MESS["BUYER_ROW_DATE_REGISTER"] = "Registriert am";
 $MESS["BUYER_F_BUYERS_NEW"] = "Neue Kunden";
 $MESS["BUYER_LID"] = "Website";
 $MESS["BUYER_ORDERS_LID"] = "Bestellungen der Website";
+$MESS["BUYER_ROW_COUNT_FULL_PAID_ORDER"] = "Bestellungen komplett bezahlt";
+$MESS["BUYER_ROW_COUNT_PART_PAID_ORDER"] = "Teilweise bezahlte Bestellungen";
+$MESS["BUYER_ROW_SUM_PAID"] = "Gesamtbetrag erhalten";
+$MESS["BUYER_F_PAID_ALL"] = "Betrag erhalten";
+$MESS["BUYER_F_QUANTITY_FULL"] = "Bestellungen komplett bezahlt";
+$MESS["BUYER_F_QUANTITY_PART"] = "Teilweise bezahlte Bestellungen";
 ?>

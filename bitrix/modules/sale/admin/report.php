@@ -1,6 +1,8 @@
 <?
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+
+\Bitrix\Main\Loader::includeModule('sale');
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
 global $DB;
@@ -43,7 +45,8 @@ if (!CModule::IncludeModule('iblock'))
 	$errorMessage .= GetMessage("IBLOCK_MODULE_NOT_INSTALLED").'<br>';
 }
 
-if (!$errorMessage) {
+if (!$errorMessage)
+{
 
 	CBaseSaleReportHelper::init();
 
@@ -148,7 +151,7 @@ if (!$errorMessage) {
 
 		foreach ($arID as $ID)
 		{
-			if (strlen($ID) <= 0) continue;
+			if ($ID == '') continue;
 			switch ($_REQUEST['action'])
 			{
 				case "delete":
@@ -200,7 +203,7 @@ if (!$errorMessage) {
 	while ($arRes = $dbRepList->NavNext(false))
 	{
 		$lRow = $lReports->AddRow($arRes['ID'], $arRes);
-		$lRow->AddViewField('TITLE', "<a href='" . "sale_report_view.php?lang=" . LANG . '&ID=' . $arRes['ID'] . "' title='" . $arRes['DESCRIPTION'] . "'>" . $arRes['TITLE'] . "</a>");
+		$lRow->AddViewField('TITLE', "<a href='" . "sale_report_view.php?lang=" . LANG . '&ID=' . $arRes['ID'] . "' title='" . CUtil::addslashes(htmlspecialcharsEx($arRes['DESCRIPTION'])) . "'>" . CUtil::addslashes(htmlspecialcharsEx($arRes['TITLE'])) . "</a>");
 		$createdDateStr = ($arRes['CREATED_DATE'] instanceof \Bitrix\Main\Type\DateTime || $arRes['CREATED_DATE'] instanceof \Bitrix\Main\Type\Date) ? ConvertTimeStamp($arRes['CREATED_DATE']->getTimestamp(), 'SHORT') : '';
 		$lRow->AddViewField('CREATED_DATE', $createdDateStr);
 
@@ -219,7 +222,8 @@ if (!$errorMessage) {
 				"DEFAULT"=>true
 			);
 		}
-		if ($saleModulePermissions >= 'W') {
+		if ($saleModulePermissions >= 'W')
+		{
 			$arRowActions[] = array(
 				"ICON"=>"copy",
 				"TEXT"=>GetMessage('SALE_REPORT_LIST_ROW_ACTIONS_COPY_TEXT'),
@@ -301,7 +305,8 @@ if( $errorMessage )
 	);
 	echo $errAdmMessage->Show();
 }
-else {
+else
+{
 	?>
 	<?php if ($nReports == 0): ?>
 

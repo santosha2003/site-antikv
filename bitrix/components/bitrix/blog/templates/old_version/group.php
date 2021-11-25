@@ -37,7 +37,7 @@ $APPLICATION->IncludeComponent(
 				"PATH_TO_BLOG"				=> $arResult["PATH_TO_BLOG"],
 				"PATH_TO_POST"				=> $arResult["PATH_TO_POST"],
 				"PATH_TO_USER"				=> $arResult["PATH_TO_USER"],
-				"ID"						=> (IntVal($arParams["GROUP_ID"]) > 0) ? $arParams["GROUP_ID"] : $arResult["VARIABLES"]["group_id"],
+				"ID"						=> (intval($arParams["GROUP_ID"]) > 0) ? $arParams["GROUP_ID"] : $arResult["VARIABLES"]["group_id"],
 				"CACHE_TYPE"				=> $arResult["CACHE_TYPE"],
 				"CACHE_TIME"				=> $arResult["CACHE_TIME"],
 				"SET_TITLE"					=> $arResult["SET_TITLE"],

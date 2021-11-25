@@ -1,2 +1,58 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE14"><presentation><material><mattext>� ������� ������ ������ ������� �������������� ������ � ���������� �������� ��������-��������?</mattext></material><response_lid ident="LID14" rcardinality="Single"><render_choice><response_label ident="ANS895"><material><mattext>1</mattext></material></response_label><response_label ident="ANS896"><material><mattext>2</mattext></material></response_label><response_label ident="ANS897"><material><mattext>3</mattext></material></response_label><response_label ident="ANS898"><material><mattext>4</mattext></material></response_label><response_label ident="ANS903"><material><mattext>5</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID14">ANS903</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description><![CDATA[<img height="225" src="cid:resources/res14/h86ix.functions_test.png" width="189" />]]></description><description_type>html</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>884</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>500</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Веб-мессенджер</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[</p>Интерактивный инструмент <b>Веб-мессенджер</b> позволяет эффективно общаться и получать информацию прямо через браузер:</p>
+
+<p><img src="cid:resources/res14/6UYSH.xYtHn.im_default2.png" border="0" width="774" height="487" ></p>
+
+<p><div class="warning"><b>Внимание! </b>Для добавления пользователя в список контактов <b>Веб-мессенджера</b> необходимо предварительно добавить его в свои друзья. </div></p>
+
+<p><div class="warning"><b>Примечание: </b>В «1C-Битрикс: Управление сайтом» версии 12 и выше можно написать сообщение пользователю не из вашего контакт-листа (не из ваших друзей), используя <b>Веб-мессенджер</b>. Для этого нужно найти пользователя через поиск в <b>Социальной сети</b>, зайти в его профиль  и кликнуть на ссылку <b>Написать сообщение</b>. Откроется окно диалогов <b>Веб-мессенджера</b>.</div></p>
+
+
+<br />
+<p>На панели Веб-мессенджера присутствуют 2 кнопки, рядом с которыми отображается счетчик непрочитанных сообщений:</p>
+<p><img src="cid:resources/res14/wUftq.BgxlZ.im_panel.png" border="0" width="90" height="58" > - панель Веб-мессенджера до версии 12;</p>
+
+<p><img src="cid:resources/res14/OVZ1h.LhUpY.im_2.png" border="0" width="107" height="60" > - панель Веб-мессенджера версии 12.</p>
+<ul>
+<li><font color="red"><b>1</b></font> - вызывает окно диалогов.</li>
+<li><font color="blue"><b>2</b></font> - вызывает окно <b>Центра нотификаций</b>, в котором выводится информация о различных событиях на портале.</li>
+</ul>
+
+
+
+
+<p><div class="hint"><b>Примечание: </b>Подробнее о работе <b>Веб-мессенджера</b> см. в <a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=71&LESSON_ID=5121" target="_blank" />курсе «Пользователь корпоративного портала»</a>.</div></p>
+
+<br>
+
+<p><div class="warning"><b>Примечание: </b>Веб-месенджер и Уведомления доступны, только если установлен модуль <b>Социальная сеть</b>, который входит не во все <a href="http://www.1c-bitrix.ru/products/cms/editions/#tab-table-link" traget="blank" />редакции</a> «1C-Битрикс: Управление сайтом».</div></p>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>500</edge_sort>
+<id>884</id>
+</content>

@@ -14,11 +14,13 @@ if(!is_array($arParams)) $arParams = array();
 if(strlen($arParams["site_id"]) <= 0)
 	$arParams["site_id"] = "s1";
 
+$import = new CIBlockCMLImport();
+
 $search = array(
 	"#IBLOCK.ID(XML_ID=FUTURE-1C-CATALOG)#",
 );
 $replace = array(
-	CIBlockCMLImport::GetIBlockByXML_ID("FUTURE-1C-CATALOG"),
+	$import->GetIBlockByXML_ID("FUTURE-1C-CATALOG"),
 );
 
 //Create directory and copy files

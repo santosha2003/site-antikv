@@ -6,7 +6,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/search/tools/stemming.ph
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/search/tools/tags.php");
 
 global $DB;
-$db_type = strtolower($DB->type);
+$db_type = mb_strtolower($DB->type);
 CModule::AddAutoloadClasses(
 	"search",
 	array(
@@ -28,6 +28,7 @@ CModule::AddAutoloadClasses(
 		"CSearchFullText" => "classes/general/full_text.php",
 		"CSearchSphinx" => "tools/sphinx.php",
 		"CSearchStemTable" => "tools/stemtable.php",
+		"CSearchMysql" => "tools/mysql.php",
 	)
 );
 

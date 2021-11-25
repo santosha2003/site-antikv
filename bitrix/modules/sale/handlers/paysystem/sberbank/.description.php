@@ -1,11 +1,30 @@
 <?php
-
-use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Loader,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Sale\PaySystem;
 
 Loc::loadMessages(__FILE__);
 
+$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_TRUE;
+
+$licensePrefix = Loader::includeModule('bitrix24') ? \CBitrix24::getLicensePrefix() : "";
+$portalZone = Loader::includeModule('intranet') ? CIntranetUtils::getPortalZone() : "";
+
+if (Loader::includeModule("bitrix24"))
+{
+	if ($licensePrefix !== 'ru')
+	{
+		$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+	}
+}
+elseif (Loader::includeModule('intranet') && $portalZone !== 'ru')
+{
+	$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+}
+
 $data = array(
 	'NAME' => Loc::getMessage('SALE_HPS_SBERBANK_TITLE'),
+	'IS_AVAILABLE' => $isAvailable,
 	'CODES' => array(
 		"SELLER_COMPANY_NAME" => array(
 			"NAME" => Loc::getMessage('SALE_HPS_SBERBANK_COMPANY_NAME_DESC'),
@@ -48,7 +67,16 @@ $data = array(
 			'GROUP' => 'PAYMENT',
 			'DEFAULT' => array(
 				'PROVIDER_KEY' => 'PAYMENT',
-				'PROVIDER_VALUE' => 'ID'
+				'PROVIDER_VALUE' => 'ACCOUNT_NUMBER'
+			)
+		),
+		"PAYMENT_ORDER_ID" => array(
+			"NAME" => Loc::getMessage('SALE_HPS_SBERBANK_ORDER_ID_DESC'),
+			"SORT" => 800,
+			'GROUP' => 'PAYMENT',
+			'DEFAULT' => array(
+				'PROVIDER_KEY' => 'ORDER',
+				'PROVIDER_VALUE' => 'ACCOUNT_NUMBER'
 			)
 		),
 		"PAYMENT_DATE_INSERT" => array(
@@ -98,6 +126,11 @@ $data = array(
 		"BUYER_PERSON_ADDRESS_FACT" => array(
 			"NAME" => Loc::getMessage('SALE_HPS_SBERBANK_PAYER_ADDRESS_FACT_DESC'),
 			"SORT" => 1500,
+			'GROUP' => 'BUYER_PERSON'
+		),
+		"BUYER_PERSON_BANK_ACCOUNT" => array(
+			"NAME" => Loc::getMessage('SALE_HPS_SBERBANK_PAYER_ACCOUNT_DESC'),
+			"SORT" => 1550,
 			'GROUP' => 'BUYER_PERSON'
 		),
 		"PAYMENT_SHOULD_PAY" => array(

@@ -42,7 +42,7 @@ $aTabs = array(
 );
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 
-if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin && check_bitrix_sessid())
+if($REQUEST_METHOD=="POST" && ($save <> '' || $apply <> '')&& $isAdmin && check_bitrix_sessid())
 {
 	if(!$isUserHavePhpAccess)
 	{
@@ -64,7 +64,7 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 		$ADDITIONAL_FIELD_tmp = array();
 		foreach($ADDITIONAL_FIELD['NAME'] as $AddFieldNum => $addFieldName)
 		{
-			if(strlen($addFieldName)>0)
+			if($addFieldName <> '')
 			{
 				if(isset($ADDITIONAL_FIELD['VALUE'][$AddFieldNum]))
 					$addFieldValue = $ADDITIONAL_FIELD['VALUE'][$AddFieldNum];
@@ -80,7 +80,7 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 
 
 	$em = new CEventMessage;
-	$arFields = Array(
+	$arFields = array(
 		"ACTIVE"		    => $ACTIVE,
 		"EVENT_NAME"	    => $EVENT_NAME,
 		"LID"			    => $LID,
@@ -99,8 +99,9 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 		"MESSAGE"		    => $MESSAGE,
 		"BODY_TYPE"		    => $BODY_TYPE,
 		"SITE_TEMPLATE_ID"	=> $SITE_TEMPLATE_ID,
-		"ADDITIONAL_FIELD" => $ADDITIONAL_FIELD
-		);
+		"ADDITIONAL_FIELD" => $ADDITIONAL_FIELD,
+		"LANGUAGE_ID" => $_POST["LANGUAGE_ID"],
+	);
 
 	if($ID>0 && $COPY_ID<=0)
 		$res = $em->Update($ID, $arFields);
@@ -117,34 +118,61 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 	}
 	else
 	{
-		//Delete checked
-		if(is_array($FILES_del))
+		// Delete files
+		$FILE_ID_tmp = array();
+		//New files
+		$arFiles = array();
+
+		//update files
+		if(is_array($_FILES["FILES"]))
 		{
-			$FILE_ID_tmp = array();
+			foreach($_FILES["FILES"] as $attribute=>$files)
+			{
+				if(is_array($files))
+				{
+					foreach($files as $index=>$value)
+					{
+						$arFiles[$index][$attribute]=$value;
+					}
+				}
+			}
+
+			foreach($arFiles as $index => $file)
+			{
+				if(!is_uploaded_file($file["tmp_name"]))
+				{
+					unset($arFiles[$index]);
+				}
+				else if ($index > 0)
+				{
+					$FILE_ID_tmp[] = intval($index);
+				}
+			}
+		}
+
+		//Delete checked
+		if(!empty($FILES_del) && is_array($FILES_del))
+		{
 			foreach($FILES_del as $file=>$fileMarkDel)
 			{
 				$file = intval($file);
 				if($file>0)
 					$FILE_ID_tmp[] = $file;
 			}
-
-			if(count($FILE_ID_tmp)>0)
-			{
-				$deleteFileDb = \Bitrix\Main\Mail\Internal\EventMessageAttachmentTable::getList(array(
-					'select' => array('FILE_ID'),
-					'filter' => array('EVENT_MESSAGE_ID' => $ID, 'FILE_ID' => $FILE_ID_tmp),
-				));
-				while($arDeleteFile = $deleteFileDb->fetch())
-				{
-					CFile::Delete($arDeleteFile["FILE_ID"]);
-					\Bitrix\Main\Mail\Internal\EventMessageAttachmentTable::delete($arDeleteFile['FILE_ID']);
-				}
-			}
 		}
 
-
-		//New files
-		$arFiles = array();
+		if(count($FILE_ID_tmp)>0)
+		{
+			$deleteFileDb = \Bitrix\Main\Mail\Internal\EventMessageAttachmentTable::getList(array(
+				'select' => array('EVENT_MESSAGE_ID', 'FILE_ID'),
+				'filter' => array('=EVENT_MESSAGE_ID' => $ID, '=FILE_ID' => $FILE_ID_tmp),
+			));
+			while($deleteFile = $deleteFileDb->fetch())
+			{
+				CFile::Delete($deleteFile["FILE_ID"]);
+				\Bitrix\Main\Mail\Internal\EventMessageAttachmentTable::delete($deleteFile);
+			}
+		}
 
 		//Brandnew
 		if(is_array($_FILES["NEW_FILE"]))
@@ -204,7 +232,7 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 				{
 					if(
 						is_array($file)
-						&& strlen($file["tmp_name"]) > 0
+						&& $file["tmp_name"] <> ''
 						&& $APPLICATION->GetFileAccessPermission($file["tmp_name"]) >= "W"
 					)
 					{
@@ -216,7 +244,7 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 
 		foreach($arFiles as $file)
 		{
-			if(strlen($file["name"])>0 and intval($file["size"])>0)
+			if($file["name"] <> '' and intval($file["size"])>0)
 			{
 				$resultInsertAttachFile = false;
 				$file["MODULE_ID"] = "main";
@@ -235,7 +263,7 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 			}
 		}
 	
-		if (strlen($save)>0)
+		if ($save <> '')
 		{
 			if (!empty($_REQUEST["type"]))
 				LocalRedirect(BX_ROOT."/admin/type_edit.php?EVENT_NAME=".$EVENT_NAME."&lang=".LANGUAGE_ID);
@@ -248,8 +276,8 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0)&& $isAdmin &
 }
 
 $arEventMessageFile = array();
-$str_ACTIVE="Y";
-$str_EVENT_NAME=$EVENT_NAME;
+$str_ACTIVE = "Y";
+$str_EVENT_NAME = $_REQUEST["EVENT_NAME"];
 $em = CEventMessage::GetByID($ID);
 if(!$em->ExtractEditFields("str_"))
 {
@@ -284,7 +312,6 @@ $arMailSiteTemplate = array();
 $mailSiteTemplateDb = CSiteTemplate::GetList(null, array('TYPE' => 'mail'));
 while($mailSiteTemplate = $mailSiteTemplateDb->GetNext())
 	$arMailSiteTemplate[] = $mailSiteTemplate;
-
 
 if(!$isUserHavePhpAccess)
 {
@@ -392,32 +419,23 @@ if ($e = $APPLICATION->GetException())
 if($message)
 	echo $message->Show();
 
-if(strlen($strError)>0)
+if($strError <> '')
 	CAdminMessage::ShowMessage(Array("MESSAGE"=>$strError, "HTML"=>true, "TYPE"=>"ERROR"));
 
 $tabControl->Begin();
 
 $tabControl->BeginNextTab();
 ?>
-	<?if($ID>0 && $COPY_ID<=0):?>
-	<tr>
-		<td width="40%"><?echo GetMessage('LAST_UPDATE')?></td>
-		<td width="60%"><?echo $str_TIMESTAMP_X?></td>
-	</tr>
-	<? endif; ?>
-	<tr>
-		<td><label for="active"><?echo GetMessage('ACTIVE')?></label></td>
-		<td><input type="checkbox" name="ACTIVE" id="active" value="Y"<?if($str_ACTIVE=="Y")echo " checked"?>></td>
-	</tr>
-	<tr class="adm-detail-required-field">
-		<td class="adm-detail-valign-top"><?echo GetMessage('LID')?></td>
-		<td><?=CLang::SelectBoxMulti("LID", $str_LID);?></td>
-	</tr>
 	<tr>
 		<td><?echo GetMessage("EVENT_NAME")?></td>
 		<td><?
 			$event_type_ref = array();
-			$rsType = CEventType::GetList(array("LID"=>LANGUAGE_ID), array("name"=>"asc"));
+			$rsType = CEventType::GetList(
+				array(
+					"LID"=>LANGUAGE_ID,
+					"EVENT_TYPE" => \Bitrix\Main\Mail\Internal\EventTypeTable::TYPE_EMAIL),
+				array("name"=>"asc")
+			);
 			while ($arType = $rsType->Fetch())
 			{
 				$arType["NAME_WITHOUT_EVENT_NAME"] = $arType["NAME"];
@@ -436,7 +454,7 @@ $tabControl->BeginNextTab();
 			{
 				$id_1st = false;
 				?>
-				<select name="EVENT_NAME" style="width:370px" onChange="window.location='message_edit.php?lang=<?=LANGUAGE_ID?>&EVENT_NAME='+this[this.selectedIndex].value">
+				<select name="EVENT_NAME" style="width:370px" onchange="window.location='message_edit.php?lang=<?=LANGUAGE_ID?>&EVENT_NAME='+this[this.selectedIndex].value">
 				<?
 				foreach($event_type_ref as $ev_name=>$arType):
 					if($id_1st===false)
@@ -458,6 +476,42 @@ $tabControl->BeginNextTab();
 			}
 		?></td>
 	</tr>
+	<?if($ID>0 && $COPY_ID<=0):?>
+	<tr>
+		<td width="40%"><?echo GetMessage('LAST_UPDATE')?></td>
+		<td width="60%"><?echo $str_TIMESTAMP_X?></td>
+	</tr>
+	<? endif; ?>
+	<tr>
+		<td><label for="active"><?echo GetMessage('ACTIVE')?></label></td>
+		<td><input type="checkbox" name="ACTIVE" id="active" value="Y"<?if($str_ACTIVE=="Y")echo " checked"?>></td>
+	</tr>
+	<tr class="adm-detail-required-field">
+		<td class="adm-detail-valign-top"><?echo GetMessage('LID')?></td>
+		<td><?=CLang::SelectBoxMulti("LID", $str_LID);?></td>
+	</tr>
+	<tr>
+		<td><?echo GetMessage("main_mess_edit_lang")?></td>
+		<td>
+			<select name="LANGUAGE_ID">
+				<option value=""><?echo GetMessage("main_mess_edit_lang_not_set")?></option>
+				<?
+				$languages = \Bitrix\Main\Localization\LanguageTable::getList(array(
+					"filter" => array("=ACTIVE" => "Y"),
+					"order" => array("SORT" => "ASC", "NAME" => "ASC")
+				));
+				?>
+				<? while($language = $languages->fetch()): ?>
+					<option value="<?=$language["LID"]?>"<? if($str_LANGUAGE_ID == $language["LID"]) echo " selected" ?>>
+						<?=\Bitrix\Main\Text\HtmlFilter::encode($language["NAME"])?>
+					</option>
+				<? endwhile ?>
+			</select>
+		</td>
+	</tr>
+	<tr class="heading">
+		<td colspan="2"><?echo GetMessage("main_mess_edit_fields")?></td>
+	</tr>
 	<tr class="adm-detail-required-field">
 		<td><? echo GetMessage('MSG_EMAIL_FROM')?></td>
 		<td><input type="text" name="EMAIL_FROM" size="50" maxlength="255" value="<?echo $str_EMAIL_FROM?>" onfocus="t=this">
@@ -470,7 +524,7 @@ $tabControl->BeginNextTab();
 
 	<?
 	$str_show_ext = '';
-	$show_ext = ($str_CC!='' || $str_BCC!='' || $str_REPLY_TO!='' || $str_IN_REPLY_TO!='' || $str_PRIORITY!='' || count($str_ADDITIONAL_FIELD)>0);
+	$show_ext = ($str_CC!='' || $str_BCC!='' || $str_REPLY_TO!='' || $str_IN_REPLY_TO!='' || $str_PRIORITY!='' || !empty($str_ADDITIONAL_FIELD));
 	if(!$show_ext):
 		$str_show_ext = 'style="display:none;"';
 		?>
@@ -615,7 +669,7 @@ $tabControl->BeginNextTab();
 	$arAttachedImagePlaceHolders = array();
 	foreach($arEventMessageFile as $arFile)
 	{
-		if(substr($arFile['CONTENT_TYPE'], 0, 5) == 'image')
+		if(mb_substr($arFile['CONTENT_TYPE'], 0, 5) == 'image')
 		{
 			$arAttachedImagePlaceHolders[] = $arFile;
 		}
@@ -643,7 +697,11 @@ $tabControl->BeginNextTab();
 	?>
 	<tr>
 		<td align="left" colspan="2"><br><b><?=GetMessage("AVAILABLE_FIELDS")?></b><br><br>
-			<?echo ReplaceVars(nl2br(trim($type_DESCRIPTION)."\r\n".$str_def));?></td>
+			<?echo ReplaceVars(nl2br(trim($type_DESCRIPTION)."\r\n".$str_def));?>
+			<?=BeginNote()?>
+				<?echo GetMessage("main_message_edit_html_note")?>
+			<?=EndNote()?>
+		</td>
 	</tr>
 	
 	<?

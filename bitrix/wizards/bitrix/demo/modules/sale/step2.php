@@ -23,9 +23,9 @@ if(!$dbLocation->Fetch())//if there are no data in module
 	//Locations
 	include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/csv_data.php");
 	$csvFile = new CCSVData();
+	$csvFile->LoadFile(dirname(__FILE__)."/data/".$lang."/loc.csv");
 	if(IntVal($_SESSION["LOC_POST"]) > 0)
 		$csvFile->SetPos($_SESSION["LOC_POST"]);
-	$csvFile->LoadFile(dirname(__FILE__)."/data/".$lang."/loc.csv");
 	$csvFile->SetFieldsType("R");
 	$csvFile->SetFirstHeader(false);
 	$csvFile->SetDelimiter(",");

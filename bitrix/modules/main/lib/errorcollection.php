@@ -47,7 +47,7 @@ class ErrorCollection extends Dictionary
 		foreach($this->values as $error)
 		{
 			/** @var Error $error */
-			if($error->getCode() == $code)
+			if($error->getCode() === $code)
 			{
 				return $error;
 			}
@@ -59,7 +59,7 @@ class ErrorCollection extends Dictionary
 	/**
 	 * Adds an error to the collection.
 	 * @param Error $error An error object.
-	 * @param $offset Offset in the array.
+	 * @param mixed $offset Offset in the array.
 	 * @return void
 	 */
 	public function setError(Error $error, $offset = null)

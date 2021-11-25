@@ -1,7 +1,0 @@
-<?
-$MESS ['VOTE_ENLARGE'] = "Agrandir";
-$MESS ['VOTE_RED_LAMP'] = "L'enquête n'est pas active.";
-$MESS ['VOTE_OK'] = "Merci d'avoir voté.";
-$MESS ['VOTE_SUBMIT_BUTTON'] = "Voter";
-$MESS ['VOTE_ALREADY_VOTE'] = "Vous ne pouvez participer une seconde fois à cette enquête.";
-?>

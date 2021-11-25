@@ -111,10 +111,13 @@ $search = array(
 	"#FORUM.ID(NAME=books-reviews)#",
 	"#MODULE.INSTALLED(ID=forum)#",
 );
+
+$import = new CIBlockCMLImport();
+
 $replace = array(
-	CIBlockCMLImport::GetIBlockByXML_ID("books-authors"),
-	CIBlockCMLImport::GetIBlockByXML_ID("books-books"),
-	CIBlockCMLImport::GetIBlockByXML_ID("books-reviews"),
+	$import->GetIBlockByXML_ID("books-authors"),
+	$import->GetIBlockByXML_ID("books-books"),
+	$import->GetIBlockByXML_ID("books-reviews"),
 	$arForum["ID"],
 	(IsModuleInstalled("forum")? "Y": "N"),
 );

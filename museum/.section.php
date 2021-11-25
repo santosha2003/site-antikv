@@ -1,5 +1,5 @@
 <?
-$sSectionName = "Музей личных коллекций";
+$sSectionName = "Выставка личных коллекций";
 $arDirProperties = Array(
    "title" => "Rusantikvar.ru | Музей личных коллекций"
 );

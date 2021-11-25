@@ -3,10 +3,10 @@ class CPackageWelcome extends CWizardStep
 {
 	var $package;
 
-	function CPackageWelcome($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -23,7 +23,7 @@ class CPackageWelcome extends CWizardStep
 	{
 		$package = $this->package;
 
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content = GetMessage("MAIN_WIZARD_WELCOME_TEXT");
 	}
 }
@@ -33,10 +33,10 @@ class CPackageLicense extends CWizardStep
 {
 	var $package;
 
-	function CPackageLicense($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -65,7 +65,7 @@ class CPackageLicense extends CWizardStep
 		$wizard = $this->GetWizard();
 		$package = $this->package;
 
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content .= GetMessage("MAIN_WIZARD_LICENSE_STEP_CONTENT");
 
 		$licensePath = $package->__GetLicensePath();
@@ -80,10 +80,10 @@ class CPackageSelectSite extends CWizardStep
 {
 	var $package;
 
-	function CPackageSelectSite($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -157,7 +157,7 @@ class CPackageSelectSite extends CWizardStep
 			$this->content .= '<label for="'.htmlspecialcharsbx($siteID).'">';
 			$this->content .= '<b>'.htmlspecialcharsEx($arSite["NAME"]).'</b></label>';
 
-			if (isset($arSite["DESCRIPTION"]) && strlen($arSite["DESCRIPTION"]) > 0)
+			if (isset($arSite["DESCRIPTION"]) && $arSite["DESCRIPTION"] <> '')
 				$this->content .= '<br /><div style="margin-left:20px;"><label for="'.htmlspecialcharsbx($siteID).'">'.$arSite["DESCRIPTION"].'</label></div>';
 
 			$this->content .='</td>';
@@ -178,10 +178,10 @@ class CPackageSelectGroup extends CWizardStep
 {
 	var $package;
 
-	function CPackageSelectGroup($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -273,10 +273,10 @@ class CPackageSelectTemplate extends CWizardStep
 {
 	var $package;
 
-	function CPackageSelectTemplate($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -357,7 +357,7 @@ class CPackageSelectTemplate extends CWizardStep
 			$this->content .= '<label for="'.htmlspecialcharsbx($arTemplate["ID"]).'">'.$arTemplate["NAME"].'</label></td></tr>';
 			$this->content .= '</table>';
 
-			$this->content .= (strlen($arTemplate["DESCRIPTION"]) > 0 ? "<br />".$arTemplate["DESCRIPTION"] : "").'';
+			$this->content .= ($arTemplate["DESCRIPTION"] <> '' ? "<br />".$arTemplate["DESCRIPTION"] : "").'';
 
 			$this->content .= "</td>";
 
@@ -382,10 +382,10 @@ class CPackageSelectService extends CWizardStep
 {
 	var $package;
 
-	function CPackageSelectService($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -457,10 +457,10 @@ class CPackageSelectService extends CWizardStep
 			if (array_key_exists("FORM", $arService) && is_array($arService["FORM"]))
 			{
 				if (array_key_exists("TYPE", $arService["FORM"]))
-					$type = strtolower($arService["FORM"]["TYPE"]);
+					$type = mb_strtolower($arService["FORM"]["TYPE"]);
 
 				if (array_key_exists("GROUP", $arService["FORM"]))
-					$group = strtolower(preg_replace("~[^a-zA-Z0-9_]~i", "", $arService["FORM"]["GROUP"]));
+					$group = mb_strtolower(preg_replace("~[^a-zA-Z0-9_]~i", "", $arService["FORM"]["GROUP"]));
 
 				if (array_key_exists("DEFAULT", $arService["FORM"]) && $type != "required")
 				{
@@ -477,14 +477,14 @@ class CPackageSelectService extends CWizardStep
 				$this->content .= '<td valign="top">'.$this->ShowRadioField("__serviceID[".$group."]", $serviceID, Array("id" => $serviceID)).'</td>';
 
 				$this->content .= '<td valign="top">';
-				if (isset($arService["ICON"]) && strlen($arService["ICON"]) > 0)
+				if (isset($arService["ICON"]) && $arService["ICON"] <> '')
 					$this->content .= '<label for="'.$serviceID.'"><img src="'.$package->GetPath().'/'.$arService["ICON"].'" /></label>';
 				$this->content .= '</td>';
 
 				$this->content .= '<td valign="top" width="100%">';
 				$this->content .= '<label for="'.$serviceID.'">&nbsp;<b>'.$arService["NAME"].'</b></label><br />';
 
-				if (isset($arService["DESCRIPTION"]) && strlen($arService["DESCRIPTION"]) > 0)
+				if (isset($arService["DESCRIPTION"]) && $arService["DESCRIPTION"] <> '')
 					$this->content .= '<div style="margin-left:20px;"><label for="'.$serviceID.'">'.$arService["DESCRIPTION"].'</label></div>';
 
 				$this->content .= '</td>';
@@ -497,14 +497,14 @@ class CPackageSelectService extends CWizardStep
 				$this->content .= '<td valign="top"><input type="checkbox" disabled="disabled" checked="checked" name="required" value="" /></td>';
 
 				$this->content .= '<td valign="top">';
-				if (isset($arService["ICON"]) && strlen($arService["ICON"]) > 0)
+				if (isset($arService["ICON"]) && $arService["ICON"] <> '')
 					$this->content .= '<img src="'.$package->GetPath().'/'.$arService["ICON"].'" />';
 				$this->content .= '</td>';
 
 				$this->content .= '<td valign="top" width="100%">';
 				$this->content .= "&nbsp;<b>".$arService["NAME"].'</b><br />';
 
-				if (isset($arService["DESCRIPTION"]) && strlen($arService["DESCRIPTION"]) > 0)
+				if (isset($arService["DESCRIPTION"]) && $arService["DESCRIPTION"] <> '')
 					$this->content .= '<div style="margin-left:20px;">'.$arService["DESCRIPTION"].'</div>';
 
 				$this->content .= $this->ShowHiddenField("__serviceID[]", $serviceID);
@@ -519,14 +519,14 @@ class CPackageSelectService extends CWizardStep
 				$this->content .= '<td valign="top">'.$this->ShowCheckboxField("__serviceID[]", $serviceID, Array("id" => $serviceID)).'</td>';
 
 				$this->content .= '<td valign="top">';
-				if (isset($arService["ICON"]) && strlen($arService["ICON"]) > 0)
+				if (isset($arService["ICON"]) && $arService["ICON"] <> '')
 					$this->content .= '<label for="'.$serviceID.'"><img src="'.$package->GetPath().'/'.$arService["ICON"].'" /></label>';
 				$this->content .= '</td>';
 
 				$this->content .= '<td valign="top" width="100%">';
 				$this->content .= '<label for="'.$serviceID.'">&nbsp;<b>'.$arService["NAME"].'</b></label><br />';
 
-				if (isset($arService["DESCRIPTION"]) && strlen($arService["DESCRIPTION"]) > 0)
+				if (isset($arService["DESCRIPTION"]) && $arService["DESCRIPTION"] <> '')
 					$this->content .= '<div style="margin-left:20px;"><label for="'.$serviceID.'">'.$arService["DESCRIPTION"].'</label></div>';
 
 				$this->content .= '</td>';
@@ -545,10 +545,10 @@ class CPackageSelectStructure extends CWizardStep
 {
 	var $package;
 
-	function CPackageSelectStructure($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -576,7 +576,7 @@ class CPackageSelectStructure extends CWizardStep
 			$labelID++;
 			$strTree .= '<li><input id="page'.$labelID.'" type="checkbox"'.($isService ? ' class="locked"'.($systemTree ? ' disabled="disabled"' : '') : '').' value="'.$pageID.'" onclick="WizOnCheckBoxClick(this)">';
 
-			if (isset($arPage["ICON"]) && strlen($arPage["ICON"]) > 3 )
+			if (isset($arPage["ICON"]) && mb_strlen($arPage["ICON"]) > 3 )
 				$strTree .= '<img src="'.$this->package->GetPath().'/'.$arPage["ICON"].'" />&nbsp;';
 			else
 			{
@@ -597,7 +597,7 @@ class CPackageSelectStructure extends CWizardStep
 					$subPageID = (isset($arSubPage["ID"]) ? $arSubPage["ID"] : $pageID."-".$subPageID);
 					$strTree .= '<li><input id="page'.$labelID.'" type="checkbox" value="'.$subPageID.'" onclick="WizOnCheckBoxClick(this)" />';
 
-					if (isset($arSubPage["ICON"]) && strlen($arSubPage["ICON"]) > 3 )
+					if (isset($arSubPage["ICON"]) && mb_strlen($arSubPage["ICON"]) > 3 )
 						$strTree .= '<img src="'.$this->package->GetPath().'/'.$arSubPage["ICON"].'" />';
 					else
 						$strTree .= '<img src="/bitrix/images/main/wizard/page.gif" width="16" height="16" border="0" alt="" />';
@@ -1081,11 +1081,11 @@ class CPackageStartInstall extends CWizardStep
 	var $package;
 	var $arSelected;
 
-	function CPackageStartInstall($package, $arSelected)
+	public function __construct($package, $arSelected)
 	{
 		$this->package = $package;
 		$this->arSelected = $arSelected;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -1104,7 +1104,7 @@ class CPackageStartInstall extends CWizardStep
 	{
 		$package = $this->package;
 
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content .= GetMessage("MAIN_WIZARD_START_INSTALL_DESC");
 
 		$siteID = $this->arSelected["siteID"];
@@ -1120,10 +1120,10 @@ class CPackageStartInstall extends CWizardStep
 		foreach ($arServices as $serviceID)
 		{
 			if (array_key_exists($serviceID, $package->arServices) && isset($package->arServices[$serviceID]["NAME"]))
-				$strService .= (strlen($strService) > 0 ? ", " : "")."<i>".$package->arServices[$serviceID]["NAME"]."</i>";
+				$strService .= ($strService <> '' ? ", " : "")."<i>".$package->arServices[$serviceID]["NAME"]."</i>";
 		}
 
-		if (strlen($strService) > 0)
+		if ($strService <> '')
 			$this->content .= "&nbsp;&nbsp;".GetMessage("MAIN_WIZARD_SITE_SERVICES").": ".$strService;
 
 	}
@@ -1134,11 +1134,11 @@ class CPackageInstallSite extends CWizardStep
 	var $package;
 	var $siteID;
 
-	function CPackageInstallSite($package, $siteID)
+	public function __construct($package, $siteID)
 	{
 		$this->package = $package;
 		$this->siteID = $siteID;
-		parent::CWizardStep();
+		parent::__construct();
 		$this->SetAutoSubmit();
 		$this->SetTitle(GetMessage("MAIN_WIZARD_RUN_INSTALLATION"));
 	}
@@ -1151,7 +1151,7 @@ class CPackageInstallSite extends CWizardStep
 
 	function ShowStep()
 	{
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content = GetMessage("MAIN_WIZARD_SITE_INSTALL");
 	}
 
@@ -1162,11 +1162,11 @@ class CPackageInstallTemplate extends CWizardStep
 	var $package;
 	var $templateID;
 
-	function CPackageInstallTemplate($package, $templateID)
+	public function __construct($package, $templateID)
 	{
 		$this->package = $package;
 		$this->templateID = $templateID;
-		parent::CWizardStep();
+		parent::__construct();
 		$this->SetAutoSubmit();
 		$this->SetTitle(GetMessage("MAIN_WIZARD_RUN_INSTALLATION"));
 	}
@@ -1179,7 +1179,7 @@ class CPackageInstallTemplate extends CWizardStep
 
 	function ShowStep()
 	{
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content = GetMessage("MAIN_WIZARD_TEMPLATE_INSTALL");
 	}
 }
@@ -1189,11 +1189,11 @@ class CPackageInstallService extends CWizardStep
 	var $package;
 	var $serviceID;
 
-	function CPackageInstallService($package, $serviceID)
+	public function __construct($package, $serviceID)
 	{
 		$this->package = $package;
 		$this->serviceID = $serviceID;
-		parent::CWizardStep();
+		parent::__construct();
 		$this->SetAutoSubmit();
 		$this->SetTitle(GetMessage("MAIN_WIZARD_RUN_INSTALLATION"));
 	}
@@ -1212,16 +1212,16 @@ class CPackageInstallService extends CWizardStep
 		if (array_key_exists($this->serviceID, $package->arServices) && array_key_exists("NAME", $package->arServices[$this->serviceID]))
 			$serviceName = $package->arServices[$this->serviceID]["NAME"];
 
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content = GetMessage("MAIN_WIZARD_SERVICE_INSTALL").' "'.htmlspecialcharsEx($serviceName).'" ...';
 	}
 }
 
 class CPackageInstallStructure extends CWizardStep
 {
-	function CPackageInstallStructure()
+	public function __construct()
 	{
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -1239,7 +1239,7 @@ class CPackageInstallStructure extends CWizardStep
 
 	function ShowStep()
 	{
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content = GetMessage("MAIN_WIZARD_INSTALL_STRUCTURE");
 	}
 }
@@ -1248,10 +1248,10 @@ class CPackageFinish extends CWizardStep
 {
 	var $package;
 
-	function CPackageStepFinal($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -1267,7 +1267,7 @@ class CPackageFinish extends CWizardStep
 
 	function ShowStep()
 	{
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content = GetMessage("MAIN_WIZARD_FINISH_DESC");
 	}
 }
@@ -1276,10 +1276,10 @@ class CPackageCancel extends CWizardStep
 {
 	var $package;
 
-	function CPackageCancel($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()
@@ -1295,7 +1295,7 @@ class CPackageCancel extends CWizardStep
 
 	function ShowStep()
 	{
-		if (strlen($this->content) == 0)
+		if ($this->content == '')
 			$this->content .= GetMessage("MAIN_WIZARD_CANCEL_DESC");
 	}
 }
@@ -1304,10 +1304,10 @@ class CPackageError extends CWizardStep
 {
 	var $package;
 
-	function CPackageError($package)
+	public function __construct($package)
 	{
 		$this->package = $package;
-		parent::CWizardStep();
+		parent::__construct();
 	}
 
 	function InitStep()

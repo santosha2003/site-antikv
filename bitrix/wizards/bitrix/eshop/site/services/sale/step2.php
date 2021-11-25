@@ -8,7 +8,7 @@ if(!CModule::IncludeModule('sale'))
 $dbSite = CSite::GetByID(WIZARD_SITE_ID);
 if($arSite = $dbSite -> Fetch())
 	$lang = $arSite["LANGUAGE_ID"];
-if(strlen($lang) <= 0)
+if($lang == '')
 	$lang = "ru";
 $bRus = false;
 if($lang == "ru")
@@ -24,10 +24,15 @@ $delivery = $wizard->GetVar("delivery");
 $shopLocalization = $wizard->GetVar("shopLocalization");
 
 WizardServices::IncludeServiceLang("step2.php", $lang);
+
+//Init delivery handlers classes
+\Bitrix\Sale\Delivery\Services\Manager::getHandlersList();
+$deliveryItems = array();
+$arLocation4Delivery = Array();
+
 if(COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) != "Y")
 {
 	$locationGroupID = 0;
-	$arLocation4Delivery = Array();
 	$arLocationArr = Array();
 
 	if(\Bitrix\Main\Config\Option::get('sale', 'sale_locationpro_migrated', '') == 'Y') // CSaleLocation::isLocationProMigrated()
@@ -70,353 +75,318 @@ if(COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) !=
 				);
 		}
 		//Location group
-		if(IntVal($locationGroupID) > 0)
+		if(intval($locationGroupID) > 0)
 			$arLocation4Delivery[] = Array("LOCATION_ID" => $locationGroupID, "LOCATION_TYPE"=>"G");
 	}
 
-	$dbDelivery = CSaleDelivery::GetList(array(), Array("LID" => WIZARD_SITE_ID));
-	if(!$dbDelivery->Fetch())
-	{
-		//delivery handler
-		$arFields = Array(
-				"NAME" => GetMessage("SALE_WIZARD_COUR"),
-				"LID" => WIZARD_SITE_ID,
-				"PERIOD_FROM" => 0,
-				"PERIOD_TO" => 0,
-				"PERIOD_TYPE" => "D",
-				"WEIGHT_FROM" => 0,
-				"WEIGHT_TO" => 0,
-				"ORDER_PRICE_FROM" => 0,
-				"ORDER_PRICE_TO" => 0,
-				"ORDER_CURRENCY" => $defCurrency,
-				"ACTIVE" => "Y",
-				"PRICE" => ($bRus ? "500" : "30"),
-				"CURRENCY" => $defCurrency,
-				"SORT" => 100,
-				"DESCRIPTION" => GetMessage("SALE_WIZARD_COUR_DESCR"),
-				"LOCATIONS" => $arLocation4Delivery,
-			);
-		if($delivery["courier"] != "Y")
-			$arFields["ACTIVE"] = "N";
+	$dbRes = \Bitrix\Sale\Internals\ServiceRestrictionTable::getList(array(
+		'filter' => array(
+			'=CLASS_NAME' => '\Bitrix\Sale\Delivery\Restrictions\BySite',
+			'=SERVICE_TYPE' => \Bitrix\Sale\Delivery\Restrictions\Manager::SERVICE_TYPE_SHIPMENT
+		)
+	));
 
-		CSaleDelivery::Add($arFields);
-		
-		$arFields = Array(
-				"NAME" => GetMessage("SALE_WIZARD_COUR1"),
-				"LID" => WIZARD_SITE_ID,
-				"PERIOD_FROM" => 0,
-				"PERIOD_TO" => 0,
-				"PERIOD_TYPE" => "D",
-				"WEIGHT_FROM" => 0,
-				"WEIGHT_TO" => 0,
-				"ORDER_PRICE_FROM" => 0,
-				"ORDER_PRICE_TO" => 0,
-				"ORDER_CURRENCY" => $defCurrency,
-				"ACTIVE" => "Y",
-				"PRICE" => 0,
-				"CURRENCY" => $defCurrency,
-				"SORT" => 200,
-				"DESCRIPTION" => GetMessage("SALE_WIZARD_COUR1_DESCR"),
-				"LOCATIONS" => $arLocation4Delivery,
-			);
-		if($delivery["self"] != "Y")
-			$arFields["ACTIVE"] = "N";
-		CSaleDelivery::Add($arFields);
+	$dlvBySiteExist = false;
+
+	while($rstr = $dbRes->fetch())
+	{
+		$lids = $rstr["PARAMS"]["SITE_ID"];
+
+		if(is_array($lids))
+			$dlvBySiteExist = in_array(WIZARD_SITE_ID, $lids);
+		else
+			$dlvBySiteExist = (WIZARD_SITE_ID == $lids);
+
+		if($dlvBySiteExist)
+			break;
 	}
 
-	$dbDelivery = CSaleDeliveryHandler::GetList();
-	if(!$dbDelivery->Fetch())
+	if(!$dlvBySiteExist)
 	{
-		if($bRus)
-		{
-			if ($shopLocalization == "ru")
-			{
-				$arFields = Array(
-						"LID" => "",
-						"ACTIVE" => "N",
-						"HID" => "cpcr",
-						"NAME" => GetMessage("SALE_WIZARD_SPSR"),
-						"SORT" => 100,
-						"DESCRIPTION" => GetMessage("SALE_WIZARD_SPSR_DESCR"),
-						"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_cpcr.php",
-						"SETTINGS" => "8",
-						"PROFILES" => "",
-						"TAX_RATE" => 0,
-				);
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
+		$deliveryItems[] = array(
+			"NAME" => GetMessage("SALE_WIZARD_COUR"),
+			"DESCRIPTION" => GetMessage("SALE_WIZARD_COUR_DESCR"),
+			"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Configurable',
+			"CURRENCY" => $defCurrency,
+			"SORT" => 100,
+			"ACTIVE" => $delivery["courier"] == "Y" ? "Y" : "N",
+			"LOGOTIP" => "/bitrix/modules/sale/ru/delivery/courier_logo.png",
+			"CONFIG" => array(
+				"MAIN" => array(
+					"PRICE" => ($bRus ? "500" : "30"),
+					"CURRENCY" => $defCurrency,
+					"PERIOD" => array(
+						"FROM" => 0,
+						"TO" => 0,
+						"TYPE" => "D"
+					)
+				)
+			)
+		);
 
-				CSaleDeliveryHandler::Set("cpcr", $arFields);
-
-				$arFields = Array(
-						"LID" => "",
-						"ACTIVE" => "Y",
-						"HID" => "russianpost",
-						"NAME" => GetMessage("SALE_WIZARD_MAIL"),
-						"SORT" => 200,
-						"DESCRIPTION" => "",
-						"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_russianpost.php",
-						"SETTINGS" => "23",
-						"PROFILES" => "",
-						"TAX_RATE" => 0,
-					);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				if($delivery["russianpost"] != "Y")
-					$arFields["ACTIVE"] = "N";
-				CSaleDeliveryHandler::Set("russianpost", $arFields);
-
-			//new russian post
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "rus_post",
-					"NAME" => GetMessage("SALE_WIZARD_MAIL2"),
-					"SORT" => 400,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_rus_post.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				if($delivery["rus_post"] != "Y")
-					$arFields["ACTIVE"] = "N";
-				CSaleDeliveryHandler::Set("rus_post", $arFields);
-
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "rus_post_first",
-					"NAME" => GetMessage("SALE_WIZARD_MAIL_FIRST"),
-					"SORT" => 500,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_rus_post_first.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				if($delivery["rus_post_first"] != "Y")
-					$arFields["ACTIVE"] = "N";
-				CSaleDeliveryHandler::Set("rus_post_first", $arFields);
-			}
-			elseif ($shopLocalization == "ua")
-			{
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "ua_post",
-					"NAME" => GetMessage("SALE_WIZARD_UA_POST"),
-					"SORT" => 600,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_ua_post.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				if($delivery["ua_post"] != "Y")
-					$arFields["ACTIVE"] = "N";
-				CSaleDeliveryHandler::Set("ua_post", $arFields);
-			}
-			elseif ($shopLocalization == "kz")
-			{
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "kaz_post",
-					"NAME" => GetMessage("SALE_WIZARD_KAZ_POST"),
-					"SORT" => 600,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_kaz_post.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				if($delivery["kaz_post"] != "Y")
-					$arFields["ACTIVE"] = "N";
-				CSaleDeliveryHandler::Set("kaz_post", $arFields);
-			}
-		}
-
-		$arFields = Array(
-				"LID" => "",
-				"ACTIVE" => "Y",
-				"HID" => "ups",
-				"NAME" => "UPS",
-				"SORT" => 300,
-				"DESCRIPTION" => GetMessage("SALE_WIZARD_UPS"),
-				"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_ups.php",
-				"SETTINGS" => "/bitrix/modules/sale/delivery/ups/ru_csv_zones.csv;/bitrix/modules/sale/delivery/ups/ru_csv_export.csv",
-				"PROFILES" => "",
-				"TAX_RATE" => 0,
-			);
-
-		if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/delivery/".$arFields["HID"]."_logo.gif"))
-			$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/delivery/".$arFields["HID"]."_logo.gif");
-
-		if($delivery["ups"] != "Y")
-			$arFields["ACTIVE"] = "N";
-		CSaleDeliveryHandler::Set("ups", $arFields);
-		
-		$arFields = Array(
-				"LID" => "",
-				"ACTIVE" => "Y",
-				"HID" => "dhlusa",
-				"NAME" => "DHL (USA)",
-				"SORT" => 300,
-				"DESCRIPTION" => GetMessage("SALE_WIZARD_UPS"),
-				"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_dhl_usa.php ",
-				"SETTINGS" => "",
-				"PROFILES" => "",
-				"TAX_RATE" => 0,
-			);
-
-		if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/delivery/".$arFields["HID"]."_logo.gif"))
-			$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/delivery/".$arFields["HID"]."_logo.gif");
-		
-		if($delivery["dhl"] != "Y")
-			$arFields["ACTIVE"] = "N";
-		CSaleDeliveryHandler::Set("dhlusa", $arFields);
+		$deliveryItems[] = array(
+			"NAME" => GetMessage("SALE_WIZARD_COUR1"),
+			"DESCRIPTION" => GetMessage("SALE_WIZARD_COUR1_DESCR"),
+			"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Configurable',
+			"CURRENCY" => $defCurrency,
+			"SORT" => 200,
+			"ACTIVE" => $delivery["self"] == "Y" ? "Y" : "N",
+			"LOGOTIP" => "/bitrix/modules/sale/ru/delivery/self_logo.png",
+			"CONFIG" => array(
+				"MAIN" => array(
+					"PRICE" => 0,
+					"CURRENCY" => $defCurrency,
+					"PERIOD" => array(
+						"FROM" => 0,
+						"TO" => 0,
+						"TYPE" => "D"
+					)
+				)
+			)
+		);
 	}
 }
-else
+
+$dbRes = \Bitrix\Sale\Delivery\Services\Table::getList(array(
+	'filter' => array(
+		'=CLASS_NAME' => array(
+			'\Sale\Handlers\Delivery\SpsrHandler',
+			'\Bitrix\Sale\Delivery\Services\Automatic',
+			'\Sale\Handlers\Delivery\AdditionalHandler'
+		)
+	),
+	'select' => array('ID', 'CODE', 'ACTIVE', 'CLASS_NAME')
+));
+
+$existAutoDlv = array();
+
+while($dlv = $dbRes->fetch())
 {
-	$arAutoDeliveries = array();
-	$dbDelivery = CSaleDeliveryHandler::GetList();
-	while($arDelivery = $dbDelivery->Fetch())
+	if($dlv['CLASS_NAME'] == '\Sale\Handlers\Delivery\SpsrHandler')
+		$existAutoDlv['spsr'] = $dlv;
+	elseif($dlv['CLASS_NAME'] == '\Sale\Handlers\Delivery\AdditionalHandler' && $dlv['CONFIG']['MAIN']['SERVICE_TYPE'] == 'RUSPOST')
+		$existAutoDlv['ruspost'] = $dlv;
+	elseif(!empty($dlv['CODE']))
+		$existAutoDlv[$dlv['CODE']] = $dlv;
+}
+
+if($bRus)
+{
+	if ($shopLocalization == "ru")
 	{
-		$arAutoDeliveries[$arDelivery["SID"]] = $arDelivery["ACTIVE"];
+		if(empty($existAutoDlv["spsr"]))
+		{
+			$deliveryItems[] = array(
+				"NAME" => GetMessage("SALE_WIZARD_SPSR"),
+				"DESCRIPTION" => GetMessage("SALE_WIZARD_SPSR_DESCR"),
+				"CLASS_NAME" => '\Sale\Handlers\Delivery\SpsrHandler',
+				"CURRENCY" => $defCurrency,
+				"SORT" => 100,
+				"LOGOTIP" => "/bitrix/modules/sale/handlers/delivery/spsr/logo.png",
+				"ACTIVE" => $delivery["spsr"] == "Y" ? "Y" : "N",
+				"CONFIG" => array(
+					"MAIN" => array(
+						"CALCULATE_IMMEDIATELY" => "Y",
+						"DEFAULT_WEIGHT" => 1000,
+						"AMOUNT_CHECK" => 1,
+						"NATURE" => 1,
+						"LOGIN" => "",
+						"PASS" => "",
+						"ICN" => ""
+					)
+				)
+			);
+		}
+
+		//new russian post
+		if(!empty($delivery["rus_post"]))
+		{
+			$deliveryItems["rus_post"] = array(
+				"NAME" => GetMessage("SALE_WIZARD_MAIL2"),
+				"DESCRIPTION" => GetMessage("SALE_WIZARD_MAIL_DESC2"),
+				"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Automatic',
+				"CURRENCY" => $defCurrency,
+				"SORT" => 400,
+				"LOGOTIP" => "/bitrix/modules/sale/ru/delivery/rus_post_logo.png",
+				"ACTIVE" => $delivery["rus_post"] == "Y" ? "Y" : "N",
+				"CONFIG" => array(
+					"MAIN" => array(
+						"SID" => "rus_post",
+						"MARGIN_VALUE" => 0,
+						"MARGIN_TYPE" => "%"
+					)
+				)
+			);
+		}
 	}
-
-	if($bRus)
+	elseif ($shopLocalization == "ua")
 	{
-		if ($shopLocalization == "ru")
+		if(!empty($delivery["ua_post"]))
 		{
-			if($delivery["russianpost"] == "Y" && $arAutoDeliveries["russianpost"] != "Y")
+			$deliveryItems["ua_post"] = array(
+				"NAME" => GetMessage("SALE_WIZARD_UA_POST"),
+				"DESCRIPTION" => "",
+				"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Automatic',
+				"CURRENCY" => $defCurrency,
+				"SORT" => 600,
+				"ACTIVE" => $delivery["ua_post"] == "Y" ? "Y" : "N",
+				"LOGOTIP" => "/bitrix/modules/sale/ru/delivery/ua_post_logo.png",
+				"CONFIG" => array(
+					"MAIN" => array(
+						"SID" => "ua_post",
+						"MARGIN_VALUE" => 0,
+						"MARGIN_TYPE" => "%"
+					)
+				)
+			);
+		}
+	}
+	elseif ($shopLocalization == "kz")
+	{
+		if(!empty($delivery["kaz_post"]))
+		{
+			$deliveryItems["kaz_post"] = array(
+			"NAME" => GetMessage("SALE_WIZARD_KAZ_POST"),
+			"DESCRIPTION" => "",
+			"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Automatic',
+			"CURRENCY" => $defCurrency,
+			"SORT" => 600,
+			"ACTIVE" => $delivery["kaz_post"] == "Y" ? "Y" : "N",
+			"LOGOTIP" => "/bitrix/modules/sale/ru/delivery/kaz_post_logo.png",
+			"CONFIG" => array(
+				"MAIN" => array(
+					"SID" => "kaz_post",
+					"MARGIN_VALUE" => 0,
+					"MARGIN_TYPE" => "%"
+				)
+			));
+		}
+	}
+}
+
+if(!empty($delivery["ups"]))
+{
+	$deliveryItems["ups"] = array(
+		"NAME" => "UPS",
+		"DESCRIPTION" => GetMessage("SALE_WIZARD_UPS"),
+		"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Automatic',
+		"CURRENCY" => $defCurrency,
+		"SORT" => 300,
+		"ACTIVE" => $delivery["ups"] == "Y" ? "Y" : "N",
+		"LOGOTIP" => "/bitrix/modules/sale/delivery/ups_logo.gif",
+		"CONFIG" => array(
+			"MAIN" => array(
+				"SID" => "ups",
+				"MARGIN_VALUE" => 0,
+				"MARGIN_TYPE" => "%",
+				"OLD_SETTINGS" => array(
+					"SETTINGS" => "/bitrix/modules/sale/delivery/ups/ru_csv_zones.csv;/bitrix/modules/sale/delivery/ups/ru_csv_export.csv",
+				)
+			)
+		)
+	);
+}
+
+if(!empty($delivery["dhlusa"]))
+{
+	$deliveryItems["dhlusa"] = array(
+		"NAME" => "DHL (USA)",
+		"DESCRIPTION" => GetMessage("SALE_WIZARD_UPS"),
+		"CLASS_NAME" => '\Bitrix\Sale\Delivery\Services\Automatic',
+		"CURRENCY" => $defCurrency,
+		"SORT" => 300,
+		"ACTIVE" => $delivery["dhlusa"] == "Y" ? "Y" : "N",
+		"LOGOTIP" => "/bitrix/modules/sale/delivery/dhlusa_logo.gif",
+		"CONFIG" => array(
+			"MAIN" => array(
+				"SID" => "dhlusa",
+				"MARGIN_VALUE" => 0,
+				"MARGIN_TYPE" => "%"
+			)
+		)
+	);
+}
+
+foreach($deliveryItems as $code => $fields)
+{
+	//If service already exist just set activity
+	if($fields['CLASS_NAME'] == '\Bitrix\Sale\Delivery\Services\Automatic' && !empty($existAutoDlv[$code]) && $fields["ACTIVE"] == "Y")
+	{
+		\Bitrix\Sale\Delivery\Services\Manager::update(
+			$existAutoDlv[$code]["ID"],
+			array("ACTIVE" => "Y")
+		);
+	}
+	//not exist
+	else
+	{
+		if(!empty($fields["LOGOTIP"]))
+		{
+			if (file_exists($_SERVER["DOCUMENT_ROOT"].$fields["LOGOTIP"]))
 			{
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "russianpost",
-					"NAME" => GetMessage("SALE_WIZARD_MAIL"),
-					"SORT" => 200,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_russianpost.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				CSaleDeliveryHandler::Set("russianpost", $arFields);
-			}
-
-			if($delivery["rus_post"] == "Y" && $arAutoDeliveries["rus_post"] != "Y")
-			{
-				//new russian post
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "rus_post",
-					"NAME" => GetMessage("SALE_WIZARD_MAIL2"),
-					"SORT" => 400,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_rus_post.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				CSaleDeliveryHandler::Set("rus_post", $arFields);
-			}
-
-			if($delivery["rus_post_first"] == "Y" && $arAutoDeliveries["rus_post_first"] != "Y")
-			{
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "rus_post_first",
-					"NAME" => GetMessage("SALE_WIZARD_MAIL_FIRST"),
-					"SORT" => 500,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_rus_post_first.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				CSaleDeliveryHandler::Set("rus_post_first", $arFields);
+				$fields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"].$fields["LOGOTIP"]);
+				$fields["LOGOTIP"]["MODULE_ID"] = "sale";
+				CFile::SaveForDB($fields, "LOGOTIP", "sale/delivery/logotip");
 			}
 		}
-		elseif ($shopLocalization == "ua")
+
+		try
 		{
-			if($delivery["ua_post"] == "Y" && $arAutoDeliveries["ua_post"] != "Y")
-			{
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "ua_post",
-					"NAME" => GetMessage("SALE_WIZARD_UA_POST"),
-					"SORT" => 600,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_ua_post.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
-				);
-
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
-
-				CSaleDeliveryHandler::Set("ua_post", $arFields);
-			}
+			if($service = \Bitrix\Sale\Delivery\Services\Manager::createObject($fields))
+				$fields = $service->prepareFieldsForSaving($fields);
 		}
-		elseif ($shopLocalization == "kz")
+		catch(\Bitrix\Main\SystemException $e)
 		{
-			if($delivery["kaz_post"] == "Y" && $arAutoDeliveries["kaz_post"] != "Y")
+			continue;
+		}
+
+		$res = \Bitrix\Sale\Delivery\Services\Manager::add($fields);
+
+		if($res->isSuccess())
+		{
+			if(!$fields["CLASS_NAME"]::isInstalled())
+				$fields["CLASS_NAME"]::install();
+
+			if($fields["CLASS_NAME"] == '\Bitrix\Sale\Delivery\Services\Configurable')
 			{
-				$arFields = Array(
-					"LID" => "",
-					"ACTIVE" => "Y",
-					"HID" => "kaz_post",
-					"NAME" => GetMessage("SALE_WIZARD_KAZ_POST"),
-					"SORT" => 600,
-					"DESCRIPTION" => "",
-					"HANDLERS" => "/bitrix/modules/sale/delivery/delivery_kaz_post.php",
-					"SETTINGS" => "23",
-					"PROFILES" => "",
-					"TAX_RATE" => 0,
+				$newId = $res->getId();
+
+				$res = \Bitrix\Sale\Internals\ServiceRestrictionTable::add(array(
+					"SERVICE_ID" => $newId,
+					"SERVICE_TYPE" => \Bitrix\Sale\Services\Base\RestrictionManager::SERVICE_TYPE_SHIPMENT,
+					"CLASS_NAME" => '\Bitrix\Sale\Delivery\Restrictions\BySite',
+					"PARAMS" => array(
+						"SITE_ID" => array(WIZARD_SITE_ID),
+					)
+				));
+
+				\Bitrix\Sale\Location\Admin\LocationHelper::resetLocationsForEntity(
+					$newId,
+					$arLocation4Delivery,
+					\Bitrix\Sale\Delivery\Services\Manager::getLocationConnectorEntityName(),
+					false // is locations codes?
 				);
 
-				if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif"))
-					$arFields["LOGOTIP"] = CFile::MakeFileArray($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/ru/delivery/".$arFields["HID"]."_logo.gif");
+				$res = \Bitrix\Sale\Internals\ServiceRestrictionTable::add(array(
+					"SERVICE_ID" => $newId,
+					"SERVICE_TYPE" => \Bitrix\Sale\Services\Base\RestrictionManager::SERVICE_TYPE_SHIPMENT,
+					"CLASS_NAME" => '\Bitrix\Sale\Delivery\Restrictions\ByLocation'
+				));
 
-				CSaleDeliveryHandler::Set("kaz_post", $arFields);
+				//Link delivery "pickup" to store
+				if($fields["NAME"] == GetMessage("SALE_WIZARD_COUR1"))
+				{
+					\Bitrix\Main\Loader::includeModule('catalog');
+					$dbStores = CCatalogStore::GetList(array(), array("ACTIVE" => 'Y'), false, false, array("ID"));
+
+					if($store = $dbStores->Fetch())
+					{
+						\Bitrix\Sale\Delivery\ExtraServices\Manager::saveStores(
+							$newId,
+							array($store['ID'])
+						);
+					}
+				}
 			}
 		}
 	}
@@ -465,7 +435,7 @@ if(CModule::IncludeModule('subscribe'))
 			"DAYS_OF_MONTH"	=> "",
 			"DAYS_OF_WEEK"	=> "1,2,3,4,5,6,7",  
 			"TIMES_OF_DAY"	=> "05:00",
-			"TEMPLATE"	=> substr($template, strlen($_SERVER["DOCUMENT_ROOT"]."/")),
+			"TEMPLATE"	=> mb_substr($template, mb_strlen($_SERVER["DOCUMENT_ROOT"]."/")),
 			"VISIBLE"	=> "Y",
 			"FROM_FIELD"	=> COption::GetOptionString("main", "email_from", "info@ourtestsite.com"),
 			"LAST_EXECUTED"	=> ConvertTimeStamp(false, "FULL"), 
@@ -484,7 +454,7 @@ COption::SetOptionString('main', 'captcha_registration', 'Y');
 COption::SetOptionString('main', 'site_name', $siteName);
 COption::SetOptionInt("search", "suggest_save_days", 250);
 
-if(strlen(COption::GetOptionString('main', 'CAPTCHA_presets', '')) <= 0)
+if(COption::GetOptionString('main', 'CAPTCHA_presets', '') == '')
 {
 	COption::SetOptionString('main', 'CAPTCHA_transparentTextPercent', '0');
 	COption::SetOptionString('main', 'CAPTCHA_arBGColor_1', 'FFFFFF');
@@ -518,7 +488,7 @@ $dbResult = CTask::GetList(Array(), Array("NAME" => "main_change_profile"));
 if ($arTask = $dbResult->Fetch())
 	$editProfileTask = $arTask["ID"];
 //Registered users group
-$dbResult = CGroup::GetList($by, $order, Array("STRING_ID" => "REGISTERED_USERS"));
+$dbResult = CGroup::GetList('', '', Array("STRING_ID" => "REGISTERED_USERS"));
 if (!$dbResult->Fetch())
 {
 	$group = new CGroup;
@@ -538,7 +508,7 @@ if (!$dbResult->Fetch())
 	}
 }
 
-$rsGroups = CGroup::GetList(($by="c_sort"), ($order="desc"), array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N")); 
+$rsGroups = CGroup::GetList("c_sort", "desc", array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
 if(!($rsGroups->Fetch()))
 {
 	$group = new CGroup;
@@ -559,7 +529,7 @@ if(!($rsGroups->Fetch()))
 }
 
 $userGroupID = "";
-$dbGroup = CGroup::GetList($by = "", $order = "", Array("STRING_ID" => "sale_administrator"));
+$dbGroup = CGroup::GetList('', '', Array("STRING_ID" => "sale_administrator"));
 if($arGroup = $dbGroup -> Fetch())
 {
 	$userGroupID = $arGroup["ID"];
@@ -578,7 +548,7 @@ else
 	$userGroupID = $group->Add($arFields);
 }
 
-if(IntVal($userGroupID) > 0)
+if(intval($userGroupID) > 0)
 {
 	WizardServices::SetFilePermission(Array($siteID, "/bitrix/admin"), Array($userGroupID => "R"));
 	WizardServices::SetFilePermission(Array($siteID, "/bitrix/admin"), Array($userGroupID => "R"));
@@ -647,7 +617,7 @@ if(IntVal($userGroupID) > 0)
 }
 
 $userGroupID = "";
-$dbGroup = CGroup::GetList($by = "", $order = "", Array("STRING_ID" => "content_editor"));
+$dbGroup = CGroup::GetList('', '', Array("STRING_ID" => "content_editor"));
 
 if($arGroup = $dbGroup -> Fetch())
 {
@@ -665,9 +635,9 @@ else
 		"STRING_ID"      => "content_editor",
 		);
 	$userGroupID = $group->Add($arFields);
-	$DB->Query("INSERT INTO b_sticker_group_task(GROUP_ID, TASK_ID)	SELECT ".intVal($userGroupID).", ID FROM b_task WHERE NAME='stickers_edit' AND MODULE_ID='fileman'", false, "FILE: ".__FILE__."<br> LINE: ".__LINE__);
+	$DB->Query("INSERT INTO b_sticker_group_task(GROUP_ID, TASK_ID)	SELECT ".intval($userGroupID).", ID FROM b_task WHERE NAME='stickers_edit' AND MODULE_ID='fileman'", false, "FILE: ".__FILE__."<br> LINE: ".__LINE__);
 }
-if(IntVal($userGroupID) > 0)
+if(intval($userGroupID) > 0)
 {
 	WizardServices::SetFilePermission(Array($siteID, "/bitrix/admin"), Array($userGroupID => "R"));
 	
@@ -684,7 +654,8 @@ if(IntVal($userGroupID) > 0)
 	}
 	
 	$SiteDir = "";
-	if(WIZARD_SITE_ID != "s1"){
+	if(WIZARD_SITE_ID != "s1")
+	{
 		$SiteDir = "/site_" . WIZARD_SITE_ID;
 	}
 	WizardServices::SetFilePermission(Array($siteID, $SiteDir . "/index.php"), Array($userGroupID => "W"));

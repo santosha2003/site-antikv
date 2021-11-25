@@ -9,6 +9,9 @@
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
 /** @global CCacheManager $CACHE_MANAGER */
+
+use Bitrix\Iblock;
+
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 $arParams['PHONE'] = (isset($arParams['PHONE']) && $arParams['PHONE'] == 'Y' ? 'Y' : 'N');
@@ -18,20 +21,19 @@ $arParams['PATH_TO_ELEMENT'] = (isset($arParams['PATH_TO_ELEMENT']) ? trim($arPa
 if ($arParams['PATH_TO_ELEMENT'] == '')
 	$arParams['PATH_TO_ELEMENT'] = 'store/#store_id#';
 
-$arParams['MAP_TYPE'] = (isset($arParams['MAP_TYPE']) ? $arParams['MAP_TYPE'] : 'Yandex');
-if ($arParams['MAP_TYPE'] != 'Yandex' && $arParams['MAP_TYPE'] != 'Google')
-	$arParams['MAP_TYPE'] = 'Yandex';
+$arParams['MAP_TYPE'] = (int)(isset($arParams['MAP_TYPE']) ? $arParams['MAP_TYPE'] : 0);
 
 $arParams['SET_TITLE'] = (isset($arParams['SET_TITLE']) && $arParams['SET_TITLE'] == 'Y' ? 'Y' : 'N');
+$arParams['TITLE'] = (isset($arParams['TITLE']) ? trim($arParams['TITLE']) : '');
 
 if (!isset($arParams['CACHE_TIME']))
 	$arParams['CACHE_TIME'] = 3600;
 
-if ($this->StartResultCache())
+if ($this->startResultCache())
 {
 	if (!\Bitrix\Main\Loader::includeModule("catalog"))
 	{
-		$this->AbortResultCache();
+		$this->abortResultCache();
 		ShowError(GetMessage("CATALOG_MODULE_NOT_INSTALL"));
 		return;
 	}
@@ -49,18 +51,25 @@ if ($this->StartResultCache())
 		"IMAGE_ID",
 		"PHONE",
 		"SCHEDULE",
+		"SITE_ID"
 	);
 	$dbStoreProps = CCatalogStore::GetList(array('TITLE' => 'ASC', 'ID' => 'ASC'), array("ACTIVE"=>"Y"), false, false, $arSelect);
 	$arResult["PROFILES"] = array();
 	$viewMap = false;
 	while ($arProp = $dbStoreProps->GetNext())
 	{
-		$url = CComponentEngine::MakePathFromTemplate($arParams["PATH_TO_ELEMENT"], array("store_id" => $arProp["ID"]));
+		$storeSite = (string)$arProp['SITE_ID'];
+		if ($storeSite != '' && $storeSite != SITE_ID)
+			continue;
+		unset($storeSite);
+		$url = CComponentEngine::makePathFromTemplate($arParams["PATH_TO_ELEMENT"], array("store_id" => $arProp["ID"]));
 
 		$storeImg = false;
 		$arProp['IMAGE_ID'] = (int)$arProp['IMAGE_ID'];
 		if ($arProp['IMAGE_ID'] > 0)
 			$storeImg = CFile::GetFileArray($arProp['IMAGE_ID']);
+		if (!empty($storeImg))
+			$storeImg['SRC'] = Iblock\Component\Tools::getImageSrc($storeImg, true);
 		$arProp['IMAGE_ID'] = (empty($storeImg) ? false : $storeImg);
 
 		if ($arProp["TITLE"]=='' && $arProp["ADDRESS"]!='')
@@ -81,7 +90,7 @@ if ($this->StartResultCache())
 		if($arProp["GPS_N"] && $arProp["GPS_S"])
 		{
 			$viewMap=true;
-			$this->AbortResultCache();
+			$this->abortResultCache();
 		}
 		$arResult["STORES"][] = array(
 			'ID' => $arProp["ID"],
@@ -91,13 +100,14 @@ if ($this->StartResultCache())
 			'DETAIL_IMG' => $arProp['IMAGE_ID'],
 			'GPS_N' => $arProp["GPS_N"],
 			'GPS_S' => $arProp["GPS_S"],
-			'ADDRESS' => $arProp["TITLE"],
+			'STORE_TITLE' => $arProp['TITLE'],
+			'ADDRESS' => $arProp["ADDRESS"],
 			'URL' => $url,
 			'DESCRIPTION' => (string)$arProp['DESCRIPTION']
 		);
 	}
 	$arResult['VIEW_MAP'] = $viewMap;
-	$this->IncludeComponentTemplate();
+	$this->includeComponentTemplate();
 }
-if ($arParams["SET_TITLE"] == "Y")
-	$APPLICATION->SetTitle($arParams["TITLE"]);
+if ($arParams['SET_TITLE'] == 'Y')
+	$APPLICATION->SetTitle($arParams['TITLE']);

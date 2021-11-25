@@ -32,7 +32,6 @@ if ($bSocialNetwork)
 	if(!defined("BXMAINUSERLINK"))
 	{
 		define("BXMAINUSERLINK", true);
-		$APPLICATION->AddHeadScript('/bitrix/js/main/utils.js');
 		if ($bUseTooltip)
 			CJSCore::Init(array("ajax", "tooltip"));
 		else
@@ -45,39 +44,40 @@ else
 }
 
 $arParams['AJAX_CALL'] = $_GET["MUL_MODE"];
-
+$arResult["stylePrefix"] = ($_REQUEST["MODE"] == 'UI' ? 'bx-ui-tooltip' : 'bx-user');
 if ($bSocialNetwork)
 {
 	if (!array_key_exists("SHOW_FIELDS", $arParams) || !$arParams["SHOW_FIELDS"])
 	{
-		$arParams["SHOW_FIELDS"] = unserialize(COption::GetOptionString("socialnetwork", "tooltip_fields", 's:0:"";'));
+		$arParams["SHOW_FIELDS"] = unserialize(COption::GetOptionString("socialnetwork", "tooltip_fields", 's:0:"";'), ['allowed_classes' => false]);
 		if (!is_array($arParams["SHOW_FIELDS"]))
 		{
-			if ($bIntranet)
-				$arParams["SHOW_FIELDS"] = array(
-					"EMAIL",
-					"WORK_PHONE",
-					"PERSONAL_PHOTO",
-					"PERSONAL_CITY",
-					"WORK_COMPANY",
-					"WORK_POSITION",
-					"MANAGERS",
-				);
-			else
-				$arParams["SHOW_FIELDS"] = array(
-					"PERSONAL_ICQ",
-					"PERSONAL_BIRTHDAY",
-					"PERSONAL_PHOTO",
-					"PERSONAL_CITY",
-					"WORK_COMPANY",
-					"WORK_POSITION"
-				);
+			$arParams["SHOW_FIELDS"] = (
+				$bIntranet
+					? array(
+						"EMAIL",
+						"WORK_PHONE",
+						"PERSONAL_PHOTO",
+						"PERSONAL_CITY",
+						"WORK_COMPANY",
+						"WORK_POSITION",
+						"MANAGERS",
+					)
+					: array(
+						"PERSONAL_ICQ",
+						"PERSONAL_BIRTHDAY",
+						"PERSONAL_PHOTO",
+						"PERSONAL_CITY",
+						"WORK_COMPANY",
+						"WORK_POSITION"
+					)
+			);
 		}
 	}
 
 	if (!array_key_exists("USER_PROPERTY", $arParams) || !$arParams["USER_PROPERTY"])
 	{
-		$arParams["USER_PROPERTY"] = unserialize(COption::GetOptionString("socialnetwork", "tooltip_properties", 's:0:"";'));
+		$arParams["USER_PROPERTY"] = unserialize(COption::GetOptionString("socialnetwork", "tooltip_properties", 's:0:"";'), ['allowed_classes' => false]);
 		if (!is_array($arParams["USER_PROPERTY"]))
 		{
 			if ($bIntranet)
@@ -93,7 +93,7 @@ if ($bSocialNetwork)
 	}
 
 	if (COption::GetOptionString("socialnetwork", "tooltip_show_rating", "N") == "Y")
-		$arParams["USER_RATING"] = unserialize(COption::GetOptionString("socialnetwork", "tooltip_rating_id", serialize(array())));
+		$arParams["USER_RATING"] = unserialize(COption::GetOptionString("socialnetwork", "tooltip_rating_id", serialize(array())), ['allowed_classes' => false]);
 
 }
 
@@ -111,12 +111,12 @@ if (intval($_GET["USER_ID"]) > 0)
 	$arParams["ID"] = $_GET["USER_ID"];
 }
 
-$arParams["ID"] = IntVal($arParams["ID"]);
+$arParams["ID"] = intval($arParams["ID"]);
 
 $arContext = array();
 if (
 	isset($_GET["entityType"])
-	&& strlen($_GET["entityType"]) > 0
+	&& $_GET["entityType"] <> ''
 )
 {
 	$arContext["ENTITY_TYPE"] = $_GET["entityType"];
@@ -132,7 +132,7 @@ if (
 
 if ($arParams["ID"] <= 0 && $arParams["AJAX_ONLY"] != "Y")
 	$arResult["FatalError"] = GetMessage("MAIN_UL_NO_ID").". ";
-elseif (strlen(trim($arParams["HTML_ID"])) <= 0)
+elseif (trim($arParams["HTML_ID"]) == '')
 	$arParams["HTML_ID"] = "mul_".RandString(8);
 
 if ($arParams['USE_THUMBNAIL_LIST'] != "N")
@@ -164,7 +164,7 @@ if ($arParams["DO_RETURN"] != "Y")
 
 $bNeedGetUser = false;
 
-if (strlen($arResult["FatalError"]) <= 0)
+if ($arResult["FatalError"] == '')
 {
 	if ($bSocialNetwork && !array_key_exists("IS_ONLINE", $arParams) && $arParams["AJAX_ONLY"] != "Y" && (!array_key_exists("INLINE", $arParams) || $arParams["INLINE"] != "Y"))
 		MULChangeOnlineStatus($arParams["ID"], $arParams["HTML_ID"]);
@@ -220,14 +220,14 @@ if (strlen($arResult["FatalError"]) <= 0)
 			$arResult["CurrentUserPerms"]["Operations"]["videocall"] = false;
 		}
 
-		if ($arParams['AJAX_CALL'] != 'INFO' && strlen($arParams["PROFILE_URL_LIST"]) > 0) // don't use PROFILE_URL in ajax call because it could be another component inclusion
+		if ($arParams['AJAX_CALL'] != 'INFO' && $arParams["PROFILE_URL_LIST"] <> '') // don't use PROFILE_URL in ajax call because it could be another component inclusion
 			$arResult["Urls"]["SonetProfile"] = $arParams["~PROFILE_URL_LIST"];
-		elseif ($arParams['AJAX_CALL'] != 'INFO' && strlen($arParams["PROFILE_URL"]) > 0)
+		elseif ($arParams['AJAX_CALL'] != 'INFO' && $arParams["PROFILE_URL"] <> '')
 			$arResult["Urls"]["SonetProfile"] = $arParams["~PROFILE_URL"];
-		elseif(strlen($arParams["PATH_TO_SONET_USER_PROFILE"]) > 0)
+		elseif($arParams["PATH_TO_SONET_USER_PROFILE"] <> '')
 			$arResult["Urls"]["SonetProfile"] = CComponentEngine::MakePathFromTemplate($arParams["~PATH_TO_SONET_USER_PROFILE"], array("user_id" => $arParams["ID"], "USER_ID" => $arParams["ID"], "ID" => $arParams["ID"]));
 
-		if (strlen($arResult["Urls"]["SonetProfile"]) <= 0 && $bIntranet)
+		if ($arResult["Urls"]["SonetProfile"] == '' && $bIntranet)
 		{
 			$arParams['DETAIL_URL'] = COption::GetOptionString('intranet', 'search_user_url', '/user/#ID#/');
 			$arParams['DETAIL_URL'] = str_replace(array('#ID#', '#USER_ID#'), array($arParams["ID"], $arParams["ID"]), $arParams['DETAIL_URL']);
@@ -239,9 +239,9 @@ if (strlen($arResult["FatalError"]) <= 0)
 	}
 	else
 	{
-		if (strlen($arParams["PROFILE_URL_LIST"]) > 0)
+		if ($arParams["PROFILE_URL_LIST"] <> '')
 			$arParams['DETAIL_URL'] = $arParams["~PROFILE_URL_LIST"];
-		elseif (strlen($arParams["PROFILE_URL"]) > 0)
+		elseif ($arParams["PROFILE_URL"] <> '')
 			$arParams['DETAIL_URL'] = $arParams["~PROFILE_URL"];
 	}
 
@@ -285,7 +285,7 @@ if (strlen($arResult["FatalError"]) <= 0)
 			}
 
 			if (
-				strlen($arResult["FatalError"]) <= 0 
+				$arResult["FatalError"] == ''
 				&& $arParams["USE_THUMBNAIL_LIST"] == "Y" 
 				&& $arParams['AJAX_CALL'] != 'INFO'
 			)
@@ -330,11 +330,11 @@ if (strlen($arResult["FatalError"]) <= 0)
 					&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"]
 				)
 				{
-					if (strlen($arParams["HREF"]) > 0)
+					if ($arParams["HREF"] <> '')
 					{
 						$imageUrl = $arParams["HREF"];
 					}
-					elseif (strlen($arResult["User"]["DETAIL_URL"]) > 0)
+					elseif ($arResult["User"]["DETAIL_URL"] <> '')
 					{
 						$imageUrl = $arResult["User"]["DETAIL_URL"];
 					}
@@ -384,18 +384,18 @@ if (strlen($arResult["FatalError"]) <= 0)
 			$arResult["Urls"]["VideoCall"] = CComponentEngine::MakePathFromTemplate($arParams["~PATH_TO_VIDEO_CALL"], array("user_id" => $arParams["ID"], "USER_ID" => $arParams["ID"], "ID" => $arParams["ID"]));
 
 		if (
-			strlen($arResult["FatalError"]) <= 0 
+			$arResult["FatalError"] == ''
 			&& $arParams['AJAX_CALL'] == 'INFO' 
 			&& $bUseTooltip
 		)
 		{
 			$arResult["User"]["PERSONAL_LOCATION"] = GetCountryByID($arResult["User"]["PERSONAL_COUNTRY"]);
-			if (strlen($arResult["User"]["PERSONAL_LOCATION"])>0 && strlen($arResult["User"]["PERSONAL_CITY"])>0)
+			if ($arResult["User"]["PERSONAL_LOCATION"] <> '' && $arResult["User"]["PERSONAL_CITY"] <> '')
 				$arResult["User"]["PERSONAL_LOCATION"] .= ", ";
 			$arResult["User"]["PERSONAL_LOCATION"] .= $arResult["User"]["PERSONAL_CITY"];
 
 			$arResult["User"]["WORK_LOCATION"] = GetCountryByID($arResult["User"]["WORK_COUNTRY"]);
-			if (strlen($arResult["User"]["WORK_LOCATION"])>0 && strlen($arResult["User"]["WORK_CITY"])>0)
+			if ($arResult["User"]["WORK_LOCATION"] <> '' && $arResult["User"]["WORK_CITY"] <> '')
 				$arResult["User"]["WORK_LOCATION"] .= ", ";
 			$arResult["User"]["WORK_LOCATION"] .= $arResult["User"]["WORK_CITY"];
 
@@ -404,8 +404,8 @@ if (strlen($arResult["FatalError"]) <= 0)
 				"F" => GetMessage("MAIN_UL_SEX_F"),
 			);
 
-			if (strlen($arResult["User"]["PERSONAL_WWW"]) > 0)
-				$arResult["User"]["PERSONAL_WWW"] = ((strpos($arResult["User"]["PERSONAL_WWW"], "http") === false) ? "http://" : "").$arResult["User"]["PERSONAL_WWW"];
+			if ($arResult["User"]["PERSONAL_WWW"] <> '')
+				$arResult["User"]["PERSONAL_WWW"] = ((mb_strpos($arResult["User"]["PERSONAL_WWW"], "http") === false) ? "http://" : "").$arResult["User"]["PERSONAL_WWW"];
 
 			$arMonths_r = array();
 			for ($i = 1; $i <= 12; $i++)
@@ -422,12 +422,12 @@ if (strlen($arResult["FatalError"]) <= 0)
 
 			if (
 				isset($_GET["entityType"])
-				&& strlen($_GET["entityType"]) > 0
+				&& $_GET["entityType"] <> ''
 				&& isset($_GET["entityId"])
 				&& intval($_GET["entityId"]) > 0
 			)
 			{
-				$arTmpUser["DETAIL_URL"] .= (strpos($arTmpUser["DETAIL_URL"], '?') === false ? '?' : '&')."entityType=".urlencode($_GET["entityType"])."&entityId=".intval($_GET["entityId"]);
+				$arTmpUser["DETAIL_URL"] .= (mb_strpos($arTmpUser["DETAIL_URL"], '?') === false ? '?' : '&')."entityType=".urlencode($_GET["entityType"])."&entityId=".intval($_GET["entityId"]);
 			}
 
 			$rsCurrentUser = CUser::GetById($USER->GetId());
@@ -437,6 +437,11 @@ if (strlen($arResult["FatalError"]) <= 0)
 			{
 				$template = &$this->GetTemplate();
 				$arResult["FOLDER_PATH"] = $folderPath = $template->GetFolder();
+				$arResult["VERSION"] = (!empty($_GET["version"]) ? intval($_GET["version"]) : 1);
+				if ($arResult["VERSION"] >= 2)
+				{
+					$arParams['THUMBNAIL_DETAIL_SIZE'] = 57;
+				}
 				include($_SERVER["DOCUMENT_ROOT"].$folderPath."/card.php");
 			}
 
@@ -482,22 +487,22 @@ if (strlen($arResult["FatalError"]) <= 0)
 						&& $arResult["CurrentUserPerms"]["Operations"]["message"]
 					)
 					{
-						$strOnclick = "if (top.BXIM) { top.BXIM.openMessenger(".$arResult["User"]["ID"]."); return false; } else { window.open('".$arResult["Urls"]["SonetMessageChat"]."', '', 'location=yes,status=no,scrollbars=yes,resizable=yes,width=700,height=550,top='+Math.floor((screen.height - 550)/2-14)+',left='+Math.floor((screen.width - 700)/2-5)); return false; }";
+						$strOnclick = "return BX.tooltip.openIM(".$arResult["User"]["ID"].");";
 						$strToolbar2 .= '<li class="bx-icon bx-icon-message"><span onmouseover="'.$strOnmouseover.'" onmouseout="'.$strOnmouseout.'" onclick="'.$strOnclick.'">'.GetMessage("MAIN_UL_TOOLBAR_MESSAGES_CHAT").'</span></li>';
 
-						$strOnclick = "if (top.BXIM) { top.BXIM.callTo(".$arResult["User"]["ID"]."); return false; }";
-						$strToolbar2 .= '<li id="im-video-call-button" class="bx-icon bx-icon-video"><span onmouseover="'.$strOnmouseover.'" onmouseout="'.$strOnmouseout.'" onclick="'.$strOnclick.'">'.GetMessage("MAIN_UL_TOOLBAR_VIDEO_CALL").'</span></li>';
-						$strToolbar2 .= "<script type='text/javascript'>BX.ready(function(){ if (!top.BXIM || !top.BXIM.checkCallSupport()) { BX.remove(BX('im-video-call-button')); } });</script>";
+						$strOnclick = "return BX.tooltip.openCallTo(".$arResult["User"]["ID"].");";
+						$strToolbar2 .= '<li id="im-video-call-button'.$arResult["User"]["ID"].'" class="bx-icon bx-icon-video"><span onmouseover="'.$strOnmouseover.'" onmouseout="'.$strOnmouseout.'" onclick="'.$strOnclick.'">'.GetMessage("MAIN_UL_TOOLBAR_VIDEO_CALL").'</span></li>';
+						$strToolbar2 .= '<script type="text/javascript">BX.ready(function() {BX.tooltip.checkCallTo(\'im-video-call-button'.$arResult["User"]["ID"].'\'); };</script>';
 					}
 				}
 				elseif (
 					$USER->IsAuthorized()
 					&& $arResult["User"]["ID"] != $USER->GetID()
 					&& $arResult["CurrentUserPerms"]["Operations"]["videocall"]
-					&& strlen($arResult["Urls"]["VideoCall"]) > 0
+					&& $arResult["Urls"]["VideoCall"] <> ''
 				)
 				{
-					$strOnclick = "window.open('".$arResult["Urls"]["VideoCall"]."', '', 'location=yes,status=no,scrollbars=yes,resizable=yes,width=1000,height=600,top='+Math.floor((screen.height - 600)/2-14)+',left='+Math.floor((screen.width - 1000)/2-5)); return false;";
+					$strOnclick = "return BX.tooltip.openVideoCall(".$arResult["User"]["ID"].");";
 					$strToolbar2 .= '<li class="bx-icon bx-icon-video"><span onmouseover="'.$strOnmouseover.'" onmouseout="'.$strOnmouseout.'" onclick="'.$strOnclick.'">'.GetMessage("MAIN_UL_TOOLBAR_VIDEO_CALL").'</span></li>';
 				}
 			}
@@ -520,22 +525,25 @@ if (strlen($arResult["FatalError"]) <= 0)
 				$intToolbarItems++;
 			}
 
-			if (strlen($strToolbar) > 0)
+			if ($strToolbar <> '')
 			{
 				$strToolbar = "<ul>".$strToolbar."</ul>";
 			}
 
-			if (strlen($strToolbar2) > 0)
+			if ($strToolbar2 <> '')
 			{
-				$strToolbar2 = "<div class='bx-user-info-data-separator'></div><ul>".$strToolbar2."</ul>";
+				$strToolbar2 = "<div class='".$arResult["stylePrefix"]."-info-data-separator'></div><ul>".$strToolbar2."</ul>";
 			}
 
 			$arResult = array(
 				"Toolbar" => $strToolbar,
 				"ToolbarItems" => $intToolbarItems,
 				"Toolbar2" => $strToolbar2,
+				"Name" => $strNameFormatted,
 				"Card" => $strCard,
 				"Photo" => $strPhoto,
+				"Position" => $strPosition,
+				"Scripts" => (!empty($arScripts) ? $arScripts : array())
 			);
 
 			$APPLICATION->RestartBuffer();
@@ -557,7 +565,7 @@ if (strlen($arResult["FatalError"]) <= 0)
 		$arResult["User"]["LOGIN"] = $arParams["LOGIN"];
 		if (
 			$arParams["USE_THUMBNAIL_LIST"] == "Y"
-			&& strlen($arParams["HREF"]) <= 0
+			&& $arParams["HREF"] == ''
 		)
 		{
 			$arResult["User"]["PersonalPhotoImgThumbnail"] = array(
@@ -578,7 +586,7 @@ if (strlen($arResult["FatalError"]) <= 0)
 		}
 	}
 
-	if (array_key_exists("NAME_LIST_FORMATTED", $arParams) && strlen(trim($arParams['NAME_LIST_FORMATTED'])) > 0)
+	if (array_key_exists("NAME_LIST_FORMATTED", $arParams) && trim($arParams['NAME_LIST_FORMATTED']) <> '')
 		$arResult["User"]["NAME_FORMATTED"] = trim($arParams['NAME_LIST_FORMATTED']);
 	else
 		$arResult["User"]["NAME_FORMATTED"] = CUser::FormatName($arParams['NAME_TEMPLATE'], $arResult["User"], $bUseLogin);
@@ -586,12 +594,12 @@ if (strlen($arResult["FatalError"]) <= 0)
 	if ($bSocialNetwork)
 		$arResult["User"]["HTML_ID"] = $arParams["HTML_ID"];
 
-	if (strlen($arParams["HREF"]) > 0)
+	if ($arParams["HREF"] <> '')
 		$arResult["User"]["HREF"] = $arParams["~HREF"];
 
 	$arResult["bSocialNetwork"] = $bSocialNetwork;
 
-	if (strlen($arParams["DESCRIPTION"]) > 0)
+	if ($arParams["DESCRIPTION"] <> '')
 	{
 		$arResult["User"]["NAME_DESCRIPTION"] = $arParams["~DESCRIPTION"];
 		if (CheckDateTime($arResult["User"]["NAME_DESCRIPTION"]))

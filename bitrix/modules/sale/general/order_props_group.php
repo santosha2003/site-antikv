@@ -1,13 +1,14 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
 
 class CAllSaleOrderPropsGroup
 {
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$strSql =
 			"SELECT * ".
 			"FROM b_sale_order_props_group ".
@@ -21,19 +22,19 @@ class CAllSaleOrderPropsGroup
 		return False;
 	}
 
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
 		global $DB, $USER;
 
 		if (is_set($arFields, "PERSON_TYPE_ID") && $ACTION!="ADD")
 			UnSet($arFields["PERSON_TYPE_ID"]);
 
-		if ((is_set($arFields, "PERSON_TYPE_ID") || $ACTION=="ADD") && IntVal($arFields["PERSON_TYPE_ID"]) <= 0)
+		if ((is_set($arFields, "PERSON_TYPE_ID") || $ACTION=="ADD") && intval($arFields["PERSON_TYPE_ID"]) <= 0)
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SKGOPG_EMPTY_PERS_TYPE"), "ERROR_NO_PERSON_TYPE");
 			return false;
 		}
-		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && strlen($arFields["NAME"]) <= 0)
+		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && $arFields["NAME"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SKGOPG_EMPTY_GROUP"), "ERROR_NO_NAME");
 			return false;
@@ -51,11 +52,11 @@ class CAllSaleOrderPropsGroup
 		return True;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (!CSaleOrderPropsGroup::CheckFields("UPDATE", $arFields, $ID)) return false;
 
@@ -67,11 +68,11 @@ class CAllSaleOrderPropsGroup
 		return $ID;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$db_orderProps = CSaleOrderProps::GetList(($by="PROPS_GROUP_ID"), ($order="ASC"), Array("PROPS_GROUP_ID"=>$ID));
 		while ($arOrderProps = $db_orderProps->Fetch())
@@ -79,12 +80,10 @@ class CAllSaleOrderPropsGroup
 			$DB->Query("DELETE FROM b_sale_order_props_variant WHERE ORDER_PROPS_ID = ".$arOrderProps["ID"]."", true);
 			$DB->Query("UPDATE b_sale_order_props_value SET ORDER_PROPS_ID = NULL WHERE ORDER_PROPS_ID = ".$arOrderProps["ID"]."", true);
 			$DB->Query("DELETE FROM b_sale_order_props_relation WHERE PROPERTY_ID = ".$arOrderProps["ID"]."", true);
-			$DB->Query("DELETE FROM b_sale_user_props_value WHERE ORDER_PROPS_ID = ".$arOrderProps["ID"]."", true);
 		}
-		$DB->Query("DELETE FROM b_sale_order_props WHERE PROPS_GROUP_ID = ".$ID."", true);
+		$DB->Query("UPDATE b_sale_order_props SET PROPS_GROUP_ID = NULL WHERE PROPS_GROUP_ID = ".$ID."", true);
 		CSaleOrderUserProps::ClearEmpty();
 
 		return $DB->Query("DELETE FROM b_sale_order_props_group WHERE ID = ".$ID."", true);
 	}
 }
-?>

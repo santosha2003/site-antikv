@@ -816,7 +816,7 @@ Model (модель) в данном случае - это ядро системы. Model представляет собой данн
 
 &lt;p&gt;Пример:&lt;/p&gt;
 
-&lt;p&gt;&amp;nbsp;&lt;img src=&quot;images/sql_news.png&quot; height=&quot;307&quot; width=&quot;350&quot;/&gt;
+&lt;p&gt;&amp;nbsp;&lt;img src=&quot;/content/articles/images/sql_news.png&quot; height=&quot;307&quot; width=&quot;350&quot;/&gt;
   &lt;br clear=&quot;all&quot; /&gt;
 &lt;/p&gt;
 
@@ -828,7 +828,7 @@ Model (модель) в данном случае - это ядро системы. Model представляет собой данн
 
 &lt;p&gt;Рассмотрим другой пример: запросы на странице блогов. &lt;/p&gt;
 
-&lt;p&gt;&amp;nbsp;&lt;img src=&quot;images/sql_menu.png&quot; height=&quot;346&quot; width=&quot;350&quot;/&gt;
+&lt;p&gt;&amp;nbsp;&lt;img src=&quot;/content/articles/images/sql_menu.png&quot; height=&quot;346&quot; width=&quot;350&quot;/&gt;
   &lt;br clear=&quot;all&quot; /&gt;
 &lt;/p&gt;
 

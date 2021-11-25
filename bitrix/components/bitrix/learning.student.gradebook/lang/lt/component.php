@@ -1,5 +1,0 @@
-<?
-$MESS['LEARNING_MODULE_NOT_FOUND'] = 'Apmokymø modulis nëra ádiegtas';
-$MESS['LEARNING_NO_AUTHORIZE'] = 'Norëdami perþiûrëti ðá puslapá, áveskite naudotojo vardà ir slaptaþodá.';
-$MESS['LEARNING_PROFILE_TITLE'] = 'Testavimo rezultatai';
-?>

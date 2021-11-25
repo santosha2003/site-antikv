@@ -10,6 +10,7 @@ use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\Web\HttpClient;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\Payment;
+use Bitrix\Sale\PriceMaths;
 
 Loc::loadMessages(__FILE__);
 
@@ -23,7 +24,9 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 	public function initiatePay(Payment $payment, Request $request = null)
 	{
 		$extraParams = array(
-			'URL' => $this->getUrl('pay')
+			'URL' => $this->getUrl($payment, 'pay'),
+			'ASSIST_SUCCESS_URL' => $this->getSuccessUrl($payment),
+			'ASSIST_FAIL_URL' => $this->getFailUrl($payment),
 		);
 		$this->setExtraParams($extraParams);
 
@@ -40,21 +43,24 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 	/**
 	 * @param Payment $payment
+	 * @param int $refundableSum
 	 * @return PaySystem\ServiceResult
 	 */
-	public function refund(Payment $payment)
+	public function refund(Payment $payment, $refundableSum)
 	{
 		$result = new PaySystem\ServiceResult();
 
 		$params = $this->getParamsBusValue($payment);
-		$refundUrl = $this->getUrl('return');
+		$refundUrl = $this->getUrl($payment, 'return');
 
 		$data = array(
-			'BILLNUMBER' => $params['ASSIST_SHOP_ID'],
-			'SHOP_ID' => $params['ASSIST_SHOP_ID'],
-			'LOGIN' => $params['ASSIST_LOGIN'],
-			'PASSWORD' => $params['ASSIST_PASSWORD'],
-			'SUBTOTAL_P' => $params['PAYMENT_SHOULD_PAY']
+			'Billnumber' => $payment->getField('PS_INVOICE_ID'),
+			'Merchant_ID' => $params['ASSIST_SHOP_IDP'],
+			'Login' => $params['ASSIST_SHOP_LOGIN'],
+			'Password' => $params['ASSIST_SHOP_PASSWORD'],
+			'Amount' => $refundableSum,
+			'Currency' => $params['PAYMENT_CURRENCY'],
+			'Format' => 3
 		);
 
 		$clientHttp = new HttpClient();
@@ -62,17 +68,26 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 		if ($response)
 		{
-			$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
+			$xml = new \CDataXML();
+			$xml->LoadString($response);
+			$data = $xml->GetArray();
+			if ($data && $data['result']['@']['firstcode'] == '0' && $data['result']['@']['secondcode'] == '0')
+			{
+				$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
+			}
+			else
+			{
+				$error = 'assist error refund: firstcode='.$data['result']['@']['firstcode'].' secondcode='.$data['result']['@']['secondcode'];
+				PaySystem\Logger::addError('Assist: return: '.$error);
+				$result->addError(new EntityError(Loc::getMessage('SALE_PS_MESSAGE_ERROR_CONNECT_PAY_SYS')));
+			}
 		}
 		else
 		{
 			$message = 'Incorrect server response';
-
 			$result->addError(new Error($message));
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => 'return',
-				'MESSAGE' => $message
-			));
+
+			PaySystem\Logger::addError('Assist: return: '.$message);
 		}
 
 		return $result;
@@ -106,7 +121,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 		$sum = $request->get('orderamount');
 		$paymentSum = $this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY');
 
-		return (float)$paymentSum == (float)$sum;
+		return PriceMaths::roundPrecision($paymentSum) === PriceMaths::roundPrecision($sum);
 	}
 
 	/**
@@ -139,11 +154,12 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 		$text .= '</pushpaymentresult>';
 
 		echo $text;
+		die();
 	}
 
 	/**
 	 * @param Request $request
-	 * @return array
+	 * @return mixed
 	 */
 	public function getPaymentIdFromRequest(Request $request)
 	{
@@ -167,17 +183,18 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 			$result->setPSData(
 				array(
 					"PS_STATUS" => $psStatus,
-					"PS_STATUS_CODE" => substr($status, 0, 5),
+					"PS_STATUS_CODE" => mb_substr($status, 0, 5),
 					"PS_STATUS_DESCRIPTION" => Loc::getMessage('SALE_PS_DESCRIPTION_'.ToUpper($status)),
 					"PS_STATUS_MESSAGE" => Loc::getMessage('SALE_PS_MESSAGE_'.ToUpper($status)),
 					"PS_SUM" => $request->get('orderamount'),
 					"PS_CURRENCY" => $request->get('ordercurrency'),
-					"PS_RESPONSE_DATE" => new \Bitrix\Main\Type\DateTime()
+					"PS_INVOICE_ID" => $request->get('billnumber'),
+					"PS_RESPONSE_DATE" => new DateTime()
 				)
 			);
 
 			if ($this->isCorrectSum($payment, $request) &&
-				!$this->getBusinessValue($payment, 'PS_CHANGE_STATUS_PAY') == 'Y' &&
+				$this->getBusinessValue($payment, 'PS_CHANGE_STATUS_PAY') == 'Y' &&
 				$psStatus == 'Y' &&
 				!$payment->isPaid()
 			)
@@ -196,21 +213,19 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 		if (!$result->isSuccess())
 		{
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => $request->get('orderstate'),
-				'MESSAGE' => join('\n', $result->getErrorMessages())
-			));
+			PaySystem\Logger::addError('Assist: '.$request->get('orderstate').': '.join('\n', $result->getErrorMessages()));
 		}
 
 		return $result;
 	}
 
 	/**
+	 * @param Payment $payment
 	 * @return bool
 	 */
-	protected function isTestMode()
+	protected function isTestMode(Payment $payment = null)
 	{
-		return ($this->getBusinessValue(null, 'PS_IS_TEST') == 'Y');
+		return ($this->getBusinessValue($payment, 'PS_IS_TEST') == 'Y');
 	}
 
 	/**
@@ -219,22 +234,27 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 	protected function getUrlList()
 	{
 		return array(
-			'confirm' => array(
-				self::ACTIVE_URL=> 'https://test.paysecure.ru/charge/charge.cfm.'
-			),
-			'return' => array(
-				self::ACTIVE_URL=> 'https://secure.assist.ru/rvr/rvr.cfm',
-				self::TEST_URL => 'https://test.paysecure.ru/cancel/cancel.cfm'
-			),
-			'pay' => array(
-				self::ACTIVE_URL=> 'https://payments.paysecure.ru/pay/order.cfm',
-				self::TEST_URL => 'https://test.paysecure.ru/pay/order.cfm'
-			),
-			'check' => array(
-				self::ACTIVE_URL=> 'https://payments.paysecure.ru/orderstate/orderstate.cfm',
-				self::TEST_URL=> 'https://test.paysecure.ru/orderstate/orderstate.cfm'
-			)
+			'confirm' => 'https://#SERVER_NAME#/charge/charge.cfm',
+			'return' => 'https://#SERVER_NAME#/cancel/wscancel.cfm',
+			'pay' => 'https://#SERVER_NAME#/pay/order.cfm',
+			'check' => 'https://#SERVER_NAME#/orderstate/orderstate.cfm',
 		);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @param string $action
+	 * @return string
+	 */
+	protected function getUrl(Payment $payment = null, $action)
+	{
+		$url = parent::getUrl($payment, $action);
+		if ($this->isTestMode($payment))
+			$domain = 'payments.demo.paysecure.ru';
+		else
+			$domain = $this->getBusinessValue($payment, 'ASSIST_SERVER_URL');
+
+		return str_replace('#SERVER_NAME#', $domain, $url);
 	}
 
 	/**
@@ -247,7 +267,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 	/**
 	 * @param Payment $payment
-	 * @return bool
+	 * @return PaySystem\ServiceResult
 	 */
 	public function check(Payment $payment)
 	{
@@ -267,7 +287,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 		);
 
 		$httpClient = new HttpClient();
-		$queryRes = $httpClient->query('POST', $this->getUrl('check'), $postData);
+		$queryRes = $httpClient->query('POST', $this->getUrl($payment, 'check'), $postData);
 
 		if ($queryRes)
 		{
@@ -290,7 +310,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 						$psData = array(
 							'PS_STATUS' => ($orderData['orderstate'][0]['#'] == 'Approved' ? 'Y' : 'N'),
-							'PS_STATUS_CODE' => substr($orderData['orderstate'][0]['#'], 0, 5),
+							'PS_STATUS_CODE' => mb_substr($orderData['orderstate'][0]['#'], 0, 5),
 							'PS_STATUS_DESCRIPTION' => Loc::getMessage('SALE_PS_DESCRIPTION_'.ToUpper($status)),
 							'PS_STATUS_MESSAGE' => Loc::getMessage('SALE_PS_MESSAGE_'.ToUpper($status)),
 							'PS_SUM' => DoubleVal($orderData['orderamount'][0]['#']),
@@ -318,5 +338,23 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 		}
 
 		return $serviceResult;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getSuccessUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'ASSIST_SUCCESS_URL') ?: $this->service->getContext()->getUrl();
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getFailUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'ASSIST_FAIL_URL') ?: $this->service->getContext()->getUrl();
 	}
 }

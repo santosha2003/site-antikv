@@ -1,7 +1,0 @@
-<?
-$MESS["SONET_C35_T_PROMT"] = "Ar tikrai norite paðalinti ðá naudotojà ið savo draugø sàraðo?";
-$MESS["SONET_C35_T_USER"] = "Naudotojas";
-$MESS["SONET_C35_T_SAVE"] = "Paðalinti ið draugø";
-$MESS["SONET_C35_T_CANCEL"] = "Atðaukti";
-$MESS["SONET_C35_T_SUCESS"] = "Naudotojas buvo paðalintas ið jûsø draugø sàraðo.";
-?>

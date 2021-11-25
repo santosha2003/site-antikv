@@ -46,6 +46,8 @@ $MESS["SALE_REPORT_DEFAULT_SALES_ALIAS_6"] = "Оплачено";
 $MESS["SALE_REPORT_DEFAULT_SALES_ALIAS_13"] = "Кількість товару";
 $MESS["SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS"] = "Самі очікувані товари";
 $MESS["SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS_DESCR"] = "Звіт показує товари, поява яких на складі очікується найбільшою кількістю клієнтів магазину. Звіт призначений для визначення найбільш цінних товарів для поставки в магазин і призначений для менеджерів із закупівель.";
+$MESS["SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS_ALIAS_0"] = "ID товару";
+$MESS["SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS_ALIAS_1"] = "Найменування товару";
 $MESS["SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS_ALIAS_5"] = "Кількість підписок";
 $MESS["SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS_ALIAS_8"] = "Можливий дохід";
 $MESS["SALE_REPORT_DEFAULT_MOST_VIEWED_GOODS"] = "Популярні товари";
@@ -126,4 +128,8 @@ $MESS["SALE_REPORT_DEFAULT_GOODS_INVENTORIES_BY_STORE__12_5_1_ALIAS_2"] = "Ка�
 $MESS["SALE_REPORT_DEFAULT_GOODS_INVENTORIES_BY_STORE__12_5_1_ALIAS_23"] = "кінцевий залишок";
 $MESS["SALE_REPORT_DEFAULT_GOODS_INVENTORIES_BY_STORE__12_5_1_ALIAS_25"] = "прихід";
 $MESS["SALE_REPORT_DEFAULT_GOODS_INVENTORIES_BY_STORE__12_5_1_ALIAS_26"] = "витрата";
+$MESS["REPORT_sale_SaleOrder_Payment:ORDER"] = "Оплата";
+$MESS["REPORT_sale_SaleOrder_Shipment:REPS_ORDER"] = "Відвантаження";
+$MESS["REPORT_sale_SaleBasket_ORDER.Payment:ORDER"] = "Оплата";
+$MESS["REPORT_sale_SaleBasket_ORDER.Shipment:REPS_ORDER"] = "Відвантаження";
 ?>

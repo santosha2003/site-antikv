@@ -4,8 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<?=LANG_CHARSET?>" />
     <?$APPLICATION->ShowHead();?>
-    <title><?$APPLICATION->ShowTitle(true);?></title>
-    <link rel="SHORTCUT ICON" href="/favicon.ico">
+    <title><?$APPLICATION->ShowTitle(true);?></title>    <link rel="SHORTCUT ICON" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!--<link rel="stylesheet" type="text/css" href="<?=SITE_TEMPLATE_PATH;?>/fancybox/jquery.fancybox-1.3.1.css" media="screen" />-->
@@ -14,7 +13,9 @@
     <link rel="stylesheet" type="text/css" href="<?=SITE_TEMPLATE_PATH;?>/slick/slick-theme.css"/>
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH;?>/css/normilize.css">
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH;?>/css/style.css">
-	<link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH;?>/css/custom.css">
+	<link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH;?>/css/custom.css?v=202011301512">
+	<link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH;?>/css/new_header.css">
+	<link rel="stylesheet" href="/forum/styles/rusantikvar/theme/responsive.css"> <!--Это стили для баннера-->
 </head>
 <body>
 <?$APPLICATION->ShowPanel()?>
@@ -52,6 +53,60 @@
                 );?>
             </div>
         </div>
+<?$APPLICATION->IncludeComponent("bitrix:main.include", "", array(
+	"AREA_FILE_SHOW" => "file",
+		"AREA_FILE_SUFFIX" => "inc",
+		"EDIT_TEMPLATE" => "",
+		"PATH" => SITE_DIR."/include/announcement.php"
+	),
+	false,
+	array(
+	"ACTIVE_COMPONENT" => "Y"
+	)
+);?>
+		<div class="header-new">
+			<table width="100%">
+    			<tr>
+        			<td class="header-new" width="25%">
+						<img id="firstIMG" class="header-new" src="#">
+					</td>
+        			<td class="header-new" width="50%">
+						<center><p class="header-new">Профессиональный коллектив окажет<br>
+ 						необходимые консультации по вопросам <br>
+						наград и знаков Российской Империи, <br>
+						советских республик, СССР и зарубежных стран. <br>
+						Выкуп, помощь в оценке, подборе коллекций, <br>
+						продажа, консультации. <br> <br>
+						<a class="header-new" href="tel:+7(903)2022101">8 903 202 21 01</a> <br>
+						<a class="header-new" href="mailto:antikvar@rusantikvar.ru">antikvar@rusantikvar.ru</a>
+						</p></center>
+						<p class="test"></p>
+					</td>
+        			<td class="header-new" width="25%">
+						<img  id="secondIMG" class="header-new" src="#">
+					</td>
+    			</tr>
+			</table>
+		</div>
+		<?
+			$dir = $_SERVER['DOCUMENT_ROOT'] ."/new_header";
+			$filenames = array_diff(scandir($dir), array('..', '.', '.section.php'));
+			$js_array = '["'. join('","', $filenames) .'"]';
+		?>
+		<script type="text/javascript">
+			var arr = <?echo $js_array;?>;
+			var max = (arr.length)-1;
+			var i = (Math.floor((Math.random()*max)+0)); 
+			var j = (Math.floor((Math.random()*max)+0)); 
+			document.getElementById("firstIMG").src='/new_header/'+arr[i];
+			document.getElementById("secondIMG").src='/new_header/'+arr[j];
+			setInterval(function(){   
+				var i = (Math.floor((Math.random()*max)+0)); 
+				var j = (Math.floor((Math.random()*max)+0)); 
+				document.getElementById("firstIMG").src='/new_header/'+arr[i];
+				document.getElementById("secondIMG").src='/new_header/'+arr[j];
+ 			}, 5000);
+		</script>
         <div class="header-menu">
             <?$APPLICATION->IncludeComponent(
                 "bitrix:menu",
@@ -129,6 +184,9 @@
                     );?>
 
                 </div>
+
+				<!--tyt-->
+
                 <div class="content-left-bottom">
 
                     <?$APPLICATION->IncludeComponent(
@@ -201,4 +259,3 @@
             <div class="content-right">
                 <div class="content-right-top">
                     <h1><?$APPLICATION->ShowTitle(false);?></h1>
-

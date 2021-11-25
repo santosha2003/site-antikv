@@ -1,5 +1,0 @@
-<?
-$MESS["SALE_CONVERSION_RATE_CART_NAME"] = "Pridëta á krepðelá";
-$MESS["SALE_CONVERSION_RATE_ORDER_NAME"] = "Sukurti uþsakymai";
-$MESS["SALE_CONVERSION_RATE_PAYMENT_NAME"] = "Apmokëti uþsakymai";
-?>

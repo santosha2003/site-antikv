@@ -10,7 +10,7 @@
 
 	BX.Sale.Delivery = {
 
-		ajaxUrl: "/bitrix/admin/sale_delivery_ajax.php",
+		ajaxUrl: "sale_delivery_ajax.php",
 
 		showGroupsDialog: function(nextUrl, currentGroup)
 		{
@@ -173,6 +173,9 @@
 
 							for (var i in data['SCRIPT'])
 							{
+								if(!data['SCRIPT'].hasOwnProperty(i))
+									continue;
+
 								BX.evalGlobal(data['SCRIPT'][i]['JS']);
 								delete(data['SCRIPT'][i]);
 
@@ -206,10 +209,15 @@
 
 		showRestrictionParamsDialog: function(content, rstrParams)
 		{
-			if(rstrParams.class == '\\Bitrix\\Sale\\Delivery\\Restrictions\\ByLocation')
+			if(rstrParams.class == '\\Bitrix\\Sale\\Delivery\\Restrictions\\ByLocation'
+				|| rstrParams.class == '\\Bitrix\\Sale\\Delivery\\Restrictions\\ExcludeLocation')
+			{
 				var width = 1030;
+			}
 			else
-				width = 400;
+			{
+				width = 600;
+			}
 
 			var	dialog = new BX.CDialog({
 					'content': '<form id="sale-delivery-restriction-edit-form">'+
@@ -359,7 +367,8 @@
 			container.innerHTML = data['HTML'];
 
 			for (var i in data['SCRIPT'])
-				BX.evalGlobal(data['SCRIPT'][i]['JS']);
+				if(data['SCRIPT'].hasOwnProperty(i))
+					BX.evalGlobal(data['SCRIPT'][i]['JS']);
 		},
 
 		resetRusPostSettings: function()
@@ -374,6 +383,9 @@
 
 		addRestrictionProductSection: function(id, name)
 		{
+			name = BX.util.htmlspecialcharsback(name);
+			name = name.replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
+
 			var alreadyExist = BX('sale-admin-delivery-restriction-cat-'+id);
 
 			if(alreadyExist)
@@ -388,7 +400,7 @@
 					BX.create('td',{
 						children:[
 							BX.create('span',{
-								html: " - "+name
+								html: " - "+ BX.util.htmlspecialchars(name)
 							}),
 							BX.create('input',{
 								props:{

@@ -49,7 +49,7 @@ if ('POST' == $_SERVER['REQUEST_METHOD'] && (isset($_REQUEST["Convert"]) && 'Y' 
 		));
 		?><script type="text/javascript">
 			BX.closeWait();
-			DoNext(<? echo CCatalogDiscountConvert::$intConverted; ?>, <? echo CCatalogDiscountConvert::$intLastConvertID; ?>, <?=$maxMessage?>, <?=CCatalogDiscountConvert::$intNextConvertPerStep; ?>, '<? echo CCatalogDiscountConvert::$strSessID; ?>');
+			DoNext(<? echo CCatalogDiscountConvert::$intConverted; ?>, <? echo CCatalogDiscountConvert::$intLastConvertID; ?>, <?=$maxMessage?>, <?=CCatalogDiscountConvert::$intNextConvertPerStep; ?>, '<?=CUtil::JSEscape(CCatalogDiscountConvert::$strSessID); ?>');
 		</script><?
 	}
 	else
@@ -67,8 +67,8 @@ if ('POST' == $_SERVER['REQUEST_METHOD'] && (isset($_REQUEST["Convert"]) && 'Y' 
 					array('#LINK#', '#NAME#', '#MESS#'),
 					array(
 						'/bitrix/admin/cat_discount_edit.php?lang='.LANGUAGE_ID.'&ID='.$arOneError['ID'],
-						htmlspecialcharsex($arOneError['NAME']),
-						htmlspecialcharsex($arOneError['ERROR']),
+						htmlspecialcharsbx($arOneError['NAME']),
+						htmlspecialcharsbx($arOneError['ERROR']),
 					),
 					GetMessage('CAT_DISC_CONVERT_ONE_ERROR')
 				).'</li>';

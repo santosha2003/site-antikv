@@ -26,8 +26,8 @@ if($arLocation = $dbLocation->Fetch())//if there are no data in module
 	$DB->StartTransaction();
     include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/csv_data.php");
 	$csvFile = new CCSVData();
-	$csvFile->SetPos(IntVal($_SESSION["ZIP_POST"]));
 	$csvFile->LoadFile(dirname(__FILE__)."/data/".$lang."/zip.csv");
+	$csvFile->SetPos(IntVal($_SESSION["ZIP_POST"]));
 	$csvFile->SetFieldsType("R");
 	$csvFile->SetFirstHeader(false);
 	$csvFile->SetDelimiter(";");

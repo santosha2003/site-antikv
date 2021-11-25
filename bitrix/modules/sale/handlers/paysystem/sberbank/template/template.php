@@ -1,10 +1,11 @@
 <?
 	use Bitrix\Main\Localization\Loc;
 	use Bitrix\Sale\Payment;
+	use Bitrix\Sale\PriceMaths;
 
-	Loc::loadMessages(__FILE__);
+Loc::loadMessages(__FILE__);
 	if (array_key_exists('PAYMENT_SHOULD_PAY', $params))
-		$params['PAYMENT_SHOULD_PAY'] = Payment::roundByFormatCurrency($params['PAYMENT_SHOULD_PAY'], $params['PAYMENT_CURRENCY']);
+		$params['PAYMENT_SHOULD_PAY'] = PriceMaths::roundPrecision($params['PAYMENT_SHOULD_PAY']);
 ?>
 <?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
@@ -34,7 +35,7 @@ body {font-size: 10pt;}
 				<td align="right"><small><i><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_FORM_TITLE')?></i></small></td>
 			</tr>
 			<tr>
-				<td style="border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_NAME"]?></td>
+				<td style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_NAME"])?></td>
 			</tr>
 			<tr>
 				<td align="center"><small><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_COMPANY_NAME')?></small></td>
@@ -43,9 +44,9 @@ body {font-size: 10pt;}
 
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
-				<td style="width:37mm; border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_INN"]."/".$params['SBERBANK_KPP']?></td>
+				<td style="width:37mm; border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_INN"])."/".htmlspecialcharsbx($params['SELLER_COMPANY_KPP'])?></td>
 				<td style="width:9mm;">&nbsp;</td>
-				<td style="border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_ACCOUNT"]?></td>
+				<td style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_ACCOUNT"])?></td>
 			</tr>
 			<tr>
 				<td align="center"><small><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_INN')?></small></td>
@@ -56,9 +57,9 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_IN')?>&nbsp;</td>
-				<td style="width:73mm; border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_NAME"]?></td>
+				<td style="width:73mm; border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_NAME"])?></td>
 				<td align="right"><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_BANK_BIC')?>&nbsp;&nbsp;</td>
-				<td style="width:33mm; border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_BIC"]?></td>
+				<td style="width:33mm; border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_BIC"])?></td>
 			</tr>
 			<tr>
 				<td></td>
@@ -70,17 +71,16 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td width="1%" nowrap><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_BANK_COR_ACC')?>&nbsp;&nbsp;</td>
-				<td width="100%" style="border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_ACCOUNT_CORR"]?></td>
+				<td width="100%" style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_ACCOUNT_CORR"])?></td>
 			</tr>
 		</table>
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
-				<td style="width:60mm; border-bottom:1pt solid #000000;"><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ORDER_ID')?>
-	<?=$params["PAYMENT_ID"]?>
+				<td style="width:60mm; border-bottom:1pt solid #000000;"><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ORDER_ID', array('#PAYMENT_ID#' => htmlspecialcharsbx($params["PAYMENT_ID"]), '#ORDER_ID#' => htmlspecialcharsbx($params["PAYMENT_ORDER_ID"])))?>
 	<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ORDER_FROM')?>
-	<?=$params["PAYMENT_DATE_INSERT"]?></td>
+	<?=htmlspecialcharsbx($params["PAYMENT_DATE_INSERT"])?></td>
 				<td style="width:2mm;">&nbsp;</td>
-				<td style="border-bottom:1pt solid #000000;">&nbsp;</td>
+				<td style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params['BUYER_PERSON_BANK_ACCOUNT']);?></td>
 			</tr>
 			<tr>
 				<td align="center"><small><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_PAYMENT_NAME')?></small></td>
@@ -91,7 +91,7 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td width="1%" nowrap><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_PAYER_FIO')?>&nbsp;&nbsp;</td>
-				<td width="100%" style="border-bottom:1pt solid #000000;"><?=$params["BUYER_PERSON_FIO"]?></td>
+				<td width="100%" style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["BUYER_PERSON_FIO"])?></td>
 			</tr>
 		</table>
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
@@ -101,28 +101,28 @@ body {font-size: 10pt;}
 				
 					$sAddrFact = array();
 					if($params["BUYER_PERSON_ZIP"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_ZIP"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_ZIP"]);
 
 					if($params["BUYER_PERSON_COUNTRY"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_COUNTRY"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_COUNTRY"]);
 
 					if($params["BUYER_PERSON_REGION"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_REGION"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_REGION"]);
 
 					if($params["BUYER_PERSON_CITY"] != '')
 					{
-						$g = substr($params["BUYER_PERSON_CITY"], 0, 2);
-						$sAddrFact[] = '<nobr>'.($g<>Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR') && $g<>ToUpper(Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR'))? Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR')." ":"").$params["BUYER_PERSON_CITY"].'</nobr>';
+						$g = mb_substr($params["BUYER_PERSON_CITY"], 0, 2);
+						$sAddrFact[] = '<nobr>'.($g<>Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR') && $g<>ToUpper(Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR'))? Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR')." ":"").htmlspecialcharsbx($params["BUYER_PERSON_CITY"]).'</nobr>';
 					}
 
 					if($params["BUYER_PERSON_VILLAGE"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_VILLAGE"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_VILLAGE"]);
 
 					if($params["BUYER_PERSON_STREET"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_STREET"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_STREET"]);
 
-					if($params["BUYER_PERSON_ADDRESS"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_ADDRESS"];
+					if($params["BUYER_PERSON_ADDRESS_FACT"] != '')
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_ADDRESS_FACT"]);
 
 					echo implode(', ', $sAddrFact);
 				?>&nbsp;</td>
@@ -131,7 +131,7 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHOULD_PAY')?>&nbsp;<?
-				if (strpos($params["PAYMENT_SHOULD_PAY"], ".")!==false)
+				if (mb_strpos($params["PAYMENT_SHOULD_PAY"], ".") !== false)
 					$a = explode(".", $params["PAYMENT_SHOULD_PAY"]);
 				else
 					$a = explode(",", $params["PAYMENT_SHOULD_PAY"]);
@@ -141,7 +141,7 @@ body {font-size: 10pt;}
 				elseif ($a[1] == 0)
 					$a[1] = "00";
 
-				echo "<font style=\"text-decoration:underline;\">&nbsp;".$a[0]."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_RUB')."&nbsp;<font style=\"text-decoration:underline;\">&nbsp;".$a[1]."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_COP')."";
+				echo "<font style=\"text-decoration:underline;\">&nbsp;".htmlspecialcharsbx($a[0])."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_RUB')."&nbsp;<font style=\"text-decoration:underline;\">&nbsp;".htmlspecialcharsbx($a[1])."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_COP')."";
 				?></td>
 				<td align="right">&nbsp;&nbsp;<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ADD_SUM')?>&nbsp;&nbsp;_____&nbsp;<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_RUB')?>&nbsp;____&nbsp;<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_COP')?></td>
 			</tr>
@@ -179,7 +179,7 @@ body {font-size: 10pt;}
 				<td align="right"><small><i><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_FORM_TITLE')?></i></small></td>
 			</tr>
 			<tr>
-				<td style="border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_NAME"]?></td>
+				<td style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_NAME"])?></td>
 			</tr>
 			<tr>
 				<td align="center"><small><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_COMPANY_NAME')?></small></td>
@@ -188,9 +188,9 @@ body {font-size: 10pt;}
 
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
-				<td style="width:37mm; border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_INN"]."/".$params["SELLER_COMPANY_KPP"]?></td>
+				<td style="width:37mm; border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_INN"])."/".htmlspecialcharsbx($params["SELLER_COMPANY_KPP"])?></td>
 				<td style="width:9mm;">&nbsp;</td>
-				<td style="border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_ACCOUNT"]?></td>
+				<td style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_ACCOUNT"])?></td>
 			</tr>
 			<tr>
 				<td align="center"><small><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_INN')?></small></td>
@@ -201,9 +201,9 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_IN')?>&nbsp;</td>
-				<td style="width:73mm; border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_NAME"]?></td>
+				<td style="width:73mm; border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_NAME"])?></td>
 				<td align="right"><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_BANK_BIC')?>&nbsp;&nbsp;</td>
-				<td style="width:33mm; border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_BIC"]?></td>
+				<td style="width:33mm; border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_BIC"])?></td>
 			</tr>
 			<tr>
 				<td></td>
@@ -215,17 +215,16 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td width="1%" nowrap><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_BANK_COR_ACC')?>&nbsp;&nbsp;</td>
-				<td width="100%" style="border-bottom:1pt solid #000000;"><?=$params["SELLER_COMPANY_BANK_ACCOUNT_CORR"]?></td>
+				<td width="100%" style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["SELLER_COMPANY_BANK_ACCOUNT_CORR"])?></td>
 			</tr>
 		</table>
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
-				<td style="width:60mm; border-bottom:1pt solid #000000;"><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ORDER_ID')?>
-	<?=$params["PAYMENT_ID"]?>
+				<td style="width:60mm; border-bottom:1pt solid #000000;"><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ORDER_ID', array('#PAYMENT_ID#' => htmlspecialcharsbx($params["PAYMENT_ID"]), '#ORDER_ID#' => htmlspecialcharsbx($params["PAYMENT_ORDER_ID"])))?>
 	<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ORDER_FROM')?>
-	<?=$params["PAYMENT_DATE_INSERT"]?></td>
+	<?=htmlspecialcharsbx($params["PAYMENT_DATE_INSERT"])?></td>
 				<td style="width:2mm;">&nbsp;</td>
-				<td style="border-bottom:1pt solid #000000;">&nbsp;</td>
+				<td style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params['BUYER_PERSON_BANK_ACCOUNT']);?></td>
 			</tr>
 			<tr>
 				<td align="center"><small><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_PAYMENT_NAME')?></small></td>
@@ -236,7 +235,7 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td width="1%" nowrap><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_PAYER_FIO')?>&nbsp;&nbsp;</td>
-				<td width="100%" style="border-bottom:1pt solid #000000;"><?=$params["BUYER_PERSON_FIO"]?></td>
+				<td width="100%" style="border-bottom:1pt solid #000000;"><?=htmlspecialcharsbx($params["BUYER_PERSON_FIO"])?></td>
 			</tr>
 		</table>
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
@@ -246,28 +245,28 @@ body {font-size: 10pt;}
 				
 					$sAddrFact = array();
 					if($params["BUYER_PERSON_ZIP"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_ZIP"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_ZIP"]);
 
 					if($params["BUYER_PERSON_COUNTRY"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_COUNTRY"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_COUNTRY"]);
 
 					if($params["BUYER_PERSON_REGION"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_REGION"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_REGION"]);
 
 					if($params["BUYER_PERSON_CITY"] != '')
 					{
-						$g = substr($params["BUYER_PERSON_CITY"], 0, 2);
-						$sAddrFact[] = '<nobr>'.($g<>Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR') && $g<>ToUpper(Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR'))? Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR')." ":"").$params["BUYER_PERSON_CITY"].'</nobr>';
+						$g = mb_substr($params["BUYER_PERSON_CITY"], 0, 2);
+						$sAddrFact[] = '<nobr>'.($g<>Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR') && $g<>ToUpper(Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR'))? Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_YEAR')." ":"").htmlspecialcharsbx($params["BUYER_PERSON_CITY"]).'</nobr>';
 					}
 
 					if($params["BUYER_PERSON_VILLAGE"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_VILLAGE"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_VILLAGE"]);
 
 					if($params["BUYER_PERSON_STREET"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_STREET"];
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_STREET"]);
 
-					if($params["BUYER_PERSON_ADDRESS"] != '')
-						$sAddrFact[] = $params["BUYER_PERSON_ADDRESS"];
+					if($params["BUYER_PERSON_ADDRESS_FACT"] != '')
+						$sAddrFact[] = htmlspecialcharsbx($params["BUYER_PERSON_ADDRESS_FACT"]);
 
 					echo implode(', ', $sAddrFact);
 				?>&nbsp;</td>
@@ -276,7 +275,7 @@ body {font-size: 10pt;}
 		<table border="0" cellspacing="0" cellpadding="0" style="width:122mm; margin-top:3pt;">
 			<tr>
 				<td><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHOULD_PAY')?>&nbsp;<?
-				if(strpos($params["PAYMENT_SHOULD_PAY"], ".")!==false)
+				if(mb_strpos($params["PAYMENT_SHOULD_PAY"], ".") !== false)
 					$a = explode(".", $params["PAYMENT_SHOULD_PAY"]);
 				else
 					$a = explode(",", $params["PAYMENT_SHOULD_PAY"]);
@@ -286,7 +285,7 @@ body {font-size: 10pt;}
 				elseif ($a[1] == 0)
 					$a[1] = "00";
 
-				echo "<font style=\"text-decoration:underline;\">&nbsp;".$a[0]."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_RUB')."&nbsp;<font style=\"text-decoration:underline;\">&nbsp;".$a[1]."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_COP');
+				echo "<font style=\"text-decoration:underline;\">&nbsp;".htmlspecialcharsbx($a[0])."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_RUB')."&nbsp;<font style=\"text-decoration:underline;\">&nbsp;".htmlspecialcharsbx($a[1])."&nbsp;</font>&nbsp;".Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_COP');
 				?></td>
 				<td align="right">&nbsp;&nbsp;<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_ADD_SUM')?>&nbsp;&nbsp;_____&nbsp;<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_RUB')?>&nbsp;____&nbsp;<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_SHORT_COP')?></td>
 			</tr>
@@ -318,7 +317,7 @@ body {font-size: 10pt;}
 
 
 <p><b><?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_NOTE')?></b>
-<?=$params["SELLER_COMPANY_NAME"]?>
+<?=htmlspecialcharsbx($params["SELLER_COMPANY_NAME"])?>
 	<?=Loc::getMessage('SALE_HANDLERS_PAY_SYSTEM_SBERBANK_NOTE_DESCRIPTION')?></p>
 </body>
 </html>

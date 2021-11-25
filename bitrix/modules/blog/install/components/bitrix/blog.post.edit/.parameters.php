@@ -8,7 +8,7 @@ $postProp = array();
 if (!empty($arRes))
 {
 	foreach ($arRes as $key => $val)
-		$postProp[$val["FIELD_NAME"]] = (strLen($val["EDIT_FORM_LABEL"]) > 0 ? $val["EDIT_FORM_LABEL"] : $val["FIELD_NAME"]);
+		$postProp[$val["FIELD_NAME"]] = ($val["EDIT_FORM_LABEL"] <> '' ? $val["EDIT_FORM_LABEL"] : $val["FIELD_NAME"]);
 }
 
 $arComponentParameters = Array(
@@ -18,6 +18,7 @@ $arComponentParameters = Array(
 		),
 	),
 	"PARAMETERS" => Array(
+		"USER_CONSENT" => array(),
 		"BLOG_URL" => Array(
 				"NAME" => GetMessage("BPE_BLOG_URL"),
 				"TYPE" => "STRING",

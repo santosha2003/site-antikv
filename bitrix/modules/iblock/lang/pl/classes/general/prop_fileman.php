@@ -1,5 +1,0 @@
-<?
-$MESS ['IBLOCK_PROP_FILEMAN_VIEW'] = "Przegl±daj...";
-$MESS ['IBLOCK_PROP_FILEMAN_DESCRIPTION_TITLE'] = "Opis warto¶ci parametru";
-$MESS ['IBLOCK_PROP_FILEMAN_DESCRIPTION_LABEL'] = "Opis";
-?>

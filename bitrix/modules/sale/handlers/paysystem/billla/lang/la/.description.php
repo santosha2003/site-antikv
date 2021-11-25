@@ -1,6 +1,5 @@
 <?
 $MESS["SALE_HPS_BILL_LA_TITLE"] = "Factura (Español)";
-$MESS["SALE_HPS_BILL_LA_DDESCR"] = "Versión impresa de la factura. Se abrirá en una nueva ventana.";
 $MESS["SALE_HPS_BILL_LA_DATE"] = "Fecha de la orden";
 $MESS["SALE_HPS_BILL_LA_DATE_DESC"] = "Fecha en que se creó la orden ";
 $MESS["SALE_HPS_BILL_LA_PAY_BEFORE"] = "Paga por ";
@@ -85,3 +84,19 @@ $MESS["SALE_HPS_BILL_LA_LOGO_DPI_96"] = "100% (96 dpi)";
 $MESS["SALE_HPS_BILL_LA_LOGO_DPI_150"] = "64% (150 dpi)";
 $MESS["SALE_HPS_BILL_LA_LOGO_DPI_300"] = "32% (300 dpi)";
 $MESS["SALE_HPS_BILL_LA_LOGO_DPI_600"] = "16% (600 dpi)";
+
+$MESS["SALE_HPS_BILL_LA_TOTAL_SHOW"] = "Mostrar resumen";
+$MESS["SALE_HPS_BILL_LA_HEADER"] = "Título de la factura";
+$MESS["SALE_HPS_BILL_LA_PAYER_SHOW"] = "Mostrar información del ordenante";
+$MESS["SALE_HPS_BILL_LA_COLUMN_TITLE"] = "Título de la columna ";
+$MESS["SALE_HPS_BILL_LA_COLUMN_SORT"] = "Ordenar";
+$MESS["SALE_HPS_BILL_LA_COLUMN_SHOW"] = "Activo";
+
+$MESS["SALE_HPS_BILL_LA_COLUMN_NUMBER_VALUE"] = "#";
+$MESS["SALE_HPS_BILL_LA_COLUMN_NAME_VALUE"] = "Artículo / Descripción";
+$MESS["SALE_HPS_BILL_LA_COLUMN_QUANTITY_VALUE"] = "Cant";
+$MESS["SALE_HPS_BILL_LA_COLUMN_MEASURE_VALUE"] = "Unidades";
+$MESS["SALE_HPS_BILL_LA_COLUMN_PRICE_VALUE"] = "Precio unitario";
+$MESS["SALE_HPS_BILL_LA_COLUMN_SUM_VALUE"] = "Total";
+$MESS["SALE_HPS_BILL_LA_COLUMN_VAT_RATE_VALUE"] = "Tasa impositiva";
+$MESS["SALE_HPS_BILL_LA_HEADER_VALUE"] = "Factura";

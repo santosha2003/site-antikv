@@ -1,7 +1,0 @@
-<?
-$MESS["LEARNING_PROFILE_TITLE"] = "Studento profilis";
-$MESS["LEARNING_MODULE_NOT_FOUND"] = "Apmokymø modulis nëra ádiegtas";
-$MESS["LEARNING_NO_AUTHORIZE"] = "Norëdami perþiûrëti ðá puslapá, áveskite naudotojo vardà ir slaptaþodá.";
-$MESS["LEARNING_NO_MAIL"] = "Nenurodytas el. paðtas";
-$MESS["LEARNING_BAD_MAIL"] = "Neteisingas el. paðto adresas";
-?>

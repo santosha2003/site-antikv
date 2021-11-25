@@ -1,6 +1,8 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
+$this->setFramemode(false);
+
 if (!CModule::IncludeModule("sale"))
 {
 	ShowError(GetMessage("SALE_MODULE_NOT_INSTALL"));
@@ -27,7 +29,7 @@ $dbPaySysAction = CSalePaySystemAction::GetList(
 
 if ($arPaySysAction = $dbPaySysAction->Fetch())
 {
-	if (strlen($arPaySysAction["ACTION_FILE"]) > 0)
+	if ($arPaySysAction["ACTION_FILE"] <> '')
 	{
 		$GLOBALS["SALE_CORRESPONDENCE"] = CSalePaySystemAction::UnSerializeParams($arPaySysAction["PARAMS"]);
 		$pathToAction = $_SERVER["DOCUMENT_ROOT"].$arPaySysAction["ACTION_FILE"];
@@ -36,8 +38,8 @@ if ($arPaySysAction = $dbPaySysAction->Fetch())
 			$GLOBALS["SALE_INPUT_PARAMS"] = array();
 
 		$pathToAction = str_replace("\\", "/", $pathToAction);
-		while (substr($pathToAction, strlen($pathToAction) - 1, 1) == "/")
-			$pathToAction = substr($pathToAction, 0, strlen($pathToAction) - 1);
+		while (mb_substr($pathToAction, mb_strlen($pathToAction) - 1, 1) == "/")
+			$pathToAction = mb_substr($pathToAction, 0, mb_strlen($pathToAction) - 1);
 
 		if (file_exists($pathToAction))
 		{
@@ -48,7 +50,7 @@ if ($arPaySysAction = $dbPaySysAction->Fetch())
 			}
 		}
 
-		if(strlen($arPaySysAction["ENCODING"]) > 0)
+		if($arPaySysAction["ENCODING"] <> '')
 		{
 			define("BX_SALE_ENCODING", $arPaySysAction["ENCODING"]);
 			AddEventHandler("main", "OnEndBufferContent", "ChangeEncoding");

@@ -1,5 +1,6 @@
 (function(window){
-if (BX.CAutoSave && top.BX.CAutoSave) return;
+	var topWindow = BX.PageObject.getRootWindow();
+if (BX.CAutoSave && topWindow.BX.CAutoSave) return;
 /******************************* AUTOSAVE *********************************/
 
 BX.CAutoSave = function(params)
@@ -21,6 +22,21 @@ BX.CAutoSave = function(params)
 
 	BX.ready(BX.defer(this.Prepare, this));
 	BX.garbage(BX.delegate(this.Clear, this));
+
+	if (
+		BX.type.isNotEmptyString(this.FORM_MARKER)
+		&& BX(this.FORM_MARKER)
+	)
+	{
+		var formMarker = BX(this.FORM_MARKER);
+		if (
+			BX(formMarker.form)
+			&& BX.type.isNotEmptyString(formMarker.form.name)
+		)
+		{
+			BX.addCustomEvent(topWindow, 'onExtAutoSaveReset_' + formMarker.form.name, BX.proxy(this.Reset, this));
+		}
+	}
 };
 
 BX.CAutoSave.prototype.Prepare = function()
@@ -97,12 +113,17 @@ BX.CAutoSave.prototype._PrepareAfter = function()
 	if (this.RESTORE_DATA)
 	{
 		var id = this.FORM.name || Math.random();
+		BX.removeCustomEvent('onExtAutoSaveRestoreClick_' + id, BX.proxy(this.Restore, this));
 		BX.addCustomEvent('onExtAutoSaveRestoreClick_' + id, BX.proxy(this.Restore, this));
 
 		var o = this._NotifyContext();
 		if (o)
 		{
-			o.Notify(BX.message('AUTOSAVE') + ' <a href="javascript:void(0)" onclick="BX.CAutoSave.Restore(\'' + BX.util.urlencode(id) + '\', this); return false;">' + BX.message('AUTOSAVE_R') + '</a>');
+			o.Notify(
+				BX.message('AUTOSAVE') + ' <a href="javascript:void(0)" onclick="BX.CAutoSave.Restore(\'' + BX.util.urlencode(id) + '\', this); return false;">' +	BX.message('AUTOSAVE_R') + '</a>',
+				false,
+				true
+			);
 		}
 
 		// may be useful sometimes
@@ -212,6 +233,16 @@ BX.CAutoSave.prototype.Save = function()
 	else
 	{
 		this.Clear();
+	}
+};
+
+BX.CAutoSave.prototype.Reset = function()
+{
+	if (this.FORM && BX.isNodeInDom(this.FORM))
+	{
+		BX.ajax.post(
+			'/bitrix/tools/autosave.php?bxsender=core_autosave&action=reset&sessid=' + BX.bitrix_sessid(), {autosave_id: this.FORM_ID }, null
+		);
 	}
 };
 
@@ -403,6 +434,6 @@ function _decodeData(data)
 	}
 	return d;
 }
-	top.BX.CAutoSave = BX.CAutoSave;
+	topWindow.BX.CAutoSave = BX.CAutoSave;
 })(window);
 

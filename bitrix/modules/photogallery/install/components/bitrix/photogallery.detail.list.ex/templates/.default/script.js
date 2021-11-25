@@ -148,6 +148,9 @@ window.BXPhotoSlider.prototype = {
 			this.InitAjaxNavi();
 
 		this.pFixedOverlay.style.display = "";
+
+		BX.ZIndexManager.bringToFront(this.pFixedOverlay);
+
 		this.bPopupOpened = true;
 		this.InitPopupEvents(true);
 
@@ -717,6 +720,8 @@ window.BXPhotoSlider.prototype = {
 
 		this.pFixedOverlay = document.body.appendChild(BX.create("DIV", {props: {className: (!BX.browser.IsDoctype() && BX.browser.IsIE()) ? "photo-fixed-overlay photo-quirks-mode" : "photo-fixed-overlay sds"}}));
 		this.pTable = this.pFixedOverlay.appendChild(BX.create("TABLE", {props: {className: "photo-main-table", cellSpacing: 0}}));
+
+		BX.ZIndexManager.register(this.pFixedOverlay);
 
 		var r = this.pTable.insertRow(-1);
 		var
@@ -1924,12 +1929,6 @@ window.BXPhotoSlider.prototype = {
 		BX.addCustomEvent(oEditDialog, "onWindowRegister", function(){
 			oEditDialog.adjustSizeEx();
 			BX.focus(BX('bxph_title'));
-
-			var div = window.oPhotoEditDialog.Get();
-			if (div)
-				div.style.zIndex = 3101;
-			if (window.oPhotoEditDialog.OVERLAY)
-				window.oPhotoEditDialog.OVERLAY.style.zIndex = 3097;
 		});
 
 		BX.addCustomEvent(oEditDialog, "onWindowUnRegister", function(){
@@ -2618,7 +2617,7 @@ BXTopSlider.prototype = {
 		this.pSliderContPos = BX.pos(this.pSliderCont);
 		this.wndSize = BX.GetWindowScrollPos();
 		this.startX = e.clientX + this.wndSize.scrollLeft;
-		this.startLeft = parseInt(this.pWnd.style.left) || 0;
+		this.selectorStartLeft = parseInt(this.pWnd.style.left) || 0;
 		this.minLeft = this.pSliderContPos.width - this.pObj.itemsCount * this.thumbContSize;
 
 		var _this = this;
@@ -2745,7 +2744,7 @@ BXTopSlider.prototype = {
 			var x = parseInt(e.clientX) + parseInt(this.wndSize.scrollLeft);
 			var offsetX = x - this.startX;
 
-			var newLeft = this.startLeft + offsetX;
+			var newLeft = this.selectorStartLeft + offsetX;
 			if (newLeft > this.extraSize)
 				newLeft = this.extraSize;
 			if (newLeft < this.minLeft - this.extraSize)

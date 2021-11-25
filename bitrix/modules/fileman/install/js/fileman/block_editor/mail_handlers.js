@@ -199,7 +199,7 @@ BXMailBlockEditorHandler = function()
 			{
 				'button_caption': {
 					'func': function(node, param, value){
-						return this.helper.innerHTML(node, value);
+						return this.helper.textContent(node, value);
 					}
 				},
 				'color': {
@@ -221,6 +221,11 @@ BXMailBlockEditorHandler = function()
 					'func': function(node, param, value){
 						return this.helper.attr(node, param, value);
 					}
+				},
+				'text-decoration': {
+					'func': function(node, param, value){
+						return this.helper.style(node, param, value);
+					}
 				}
 			},
 			'bxBlockContentButtonEdge': {
@@ -233,7 +238,7 @@ BXMailBlockEditorHandler = function()
 					'func': function(node, param, value){
 						if(typeof(value) !== "undefined")
 						{
-							if(value == 'N')
+							if(value === 'N')
 							{
 								node.removeAttribute('width');
 							}
@@ -311,11 +316,11 @@ BXMailBlockEditorHandler = function()
 						if(typeof(value) !== "undefined")
 						{
 							value = JSON.parse(value);
-							itemList = BX.findChildren(node, {tag: 'table'}, true);
+							var itemList = BX.findChildren(node, {tag: 'table'}, true);
 							var diffLength = value.length - itemList.length;
 							var diffLengthAbs = Math.abs(diffLength);
 							var diffDelete = diffLength < 0;
-							if (diffLength != 0)
+							if (diffLength !== 0)
 							{
 								for (var i = 0; i < diffLengthAbs; i++)
 								{
@@ -335,9 +340,9 @@ BXMailBlockEditorHandler = function()
 							{
 								var itemValue = value[j];
 								var a = BX.findChild(itemList[j], {'tag': 'a'}, true);
-								a.innerHTML = itemValue.name.trim();
-								a.href = itemValue.href.trim();
-								a.title = itemValue.name.trim();
+								a.textContent = itemValue.name.trim();
+								a.href = BX.util.htmlspecialchars(itemValue.href.trim());
+								a.title = BX.util.htmlspecialchars(itemValue.name.trim());
 							}
 						}
 
@@ -392,6 +397,12 @@ BXMailBlockEditorHandler = function()
 						'func': function (node, param, value) {
 							return this.helper.column(node, param, value);
 						}
+					},
+					'paddings': {
+						'className': 'bxBlockContentText',
+						'func': function(node, param, value) {
+							return this.helper.paddings(node, param, value);
+						}
 					}
 				}
 			},
@@ -406,6 +417,12 @@ BXMailBlockEditorHandler = function()
 						'className': 'bxBlockContentText',
 						'func': function (node, param, value) {
 							return this.helper.column(node, param, value);
+						}
+					},
+					'paddings': {
+						'className': 'bxBlockContentEdge',
+						'func': function(node, param, value) {
+							return this.helper.paddings(node.parentNode, param, value);
 						}
 					}
 				}

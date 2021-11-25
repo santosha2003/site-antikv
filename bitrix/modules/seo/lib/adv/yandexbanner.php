@@ -39,8 +39,8 @@ class YandexBannerTable extends AdvEntity
 {
 	const ENGINE = 'yandex_direct';
 
-	const MAX_TITLE_LENGTH = 33;
-	const MAX_TEXT_LENGTH = 75;
+	const MAX_TITLE_LENGTH = 35;
+	const MAX_TEXT_LENGTH = 81;
 
 	const CACHE_LIFETIME = 3600;
 
@@ -398,14 +398,14 @@ class YandexBannerTable extends AdvEntity
 		{
 			$bannerParam["Title"] = trim($data['SETTINGS']["Title"]);
 
-			if(strlen($bannerParam["Title"]) <= 0)
+			if($bannerParam["Title"] == '')
 			{
 				$result->addError(new Entity\FieldError(
 					static::getEntity()->getField('NAME'),
 					Loc::getMessage('SEO_BANNER_ERROR_NO_NAME')
 				));
 			}
-			elseif(strlen($bannerParam["Title"]) > static::MAX_TITLE_LENGTH)
+			elseif(mb_strlen($bannerParam["Title"]) > static::MAX_TITLE_LENGTH)
 			{
 				$result->addError(new Entity\FieldError(
 					static::getEntity()->getField('NAME'),
@@ -419,14 +419,14 @@ class YandexBannerTable extends AdvEntity
 		if($newBanner || isset($data['SETTINGS']["Text"]))
 		{
 			$bannerParam["Text"] = trim($data['SETTINGS']["Text"]);
-			if(strlen($bannerParam["Text"]) <= 0)
+			if($bannerParam["Text"] == '')
 			{
 				$result->addError(new Entity\FieldError(
 					static::getEntity()->getField('SETTINGS'),
 					Loc::getMessage('SEO_BANNER_ERROR_NO_TEXT')
 				));
 			}
-			elseif(strlen($bannerParam["Text"]) > static::MAX_TEXT_LENGTH)
+			elseif(mb_strlen($bannerParam["Text"]) > static::MAX_TEXT_LENGTH)
 			{
 				$result->addError(new Entity\FieldError(
 					static::getEntity()->getField('SETTINGS'),
@@ -440,7 +440,7 @@ class YandexBannerTable extends AdvEntity
 		if($newBanner || isset($data['SETTINGS']["Href"]))
 		{
 			$bannerParam["Href"] = trim($data['SETTINGS']["Href"]);
-			if(strlen($bannerParam["Href"]) <= 0)
+			if($bannerParam["Href"] == '')
 			{
 				$result->addError(new Entity\FieldError(
 					static::getEntity()->getField('SETTINGS'),
@@ -449,6 +449,7 @@ class YandexBannerTable extends AdvEntity
 			}
 		}
 
+//		format Geolocation seletc to string
 		if($newBanner || isset($data["SETTINGS"]["Geo"]))
 		{
 			if(is_array($data["SETTINGS"]["Geo"]))
@@ -461,7 +462,14 @@ class YandexBannerTable extends AdvEntity
 
 		if($newBanner || isset($data["SETTINGS"]["Phrases"]))
 		{
-			if(!is_array($data["SETTINGS"]["Phrases"]) || count($data["SETTINGS"]["Phrases"]) <= 0)
+			if($data["SETTINGS"]["Geo"] == '')
+			{
+				$result->addError(new Entity\FieldError(
+					static::getEntity()->getField('SETTINGS'),
+					Loc::getMessage('SEO_BANNER_ERROR_NO_GEO')
+				));
+			}
+			elseif(!is_array($data["SETTINGS"]["Phrases"]) || count($data["SETTINGS"]["Phrases"]) <= 0)
 			{
 				$result->addError(new Entity\FieldError(
 					static::getEntity()->getField('SETTINGS'),
@@ -474,7 +482,8 @@ class YandexBannerTable extends AdvEntity
 
 				foreach($bannerParam["Phrases"] as $key => $phraseInfo)
 				{
-					$phraseInfo['AutoBudgetPriority'] = static::$priorityList[intval($phraseInfo['AutoBudgetPriority'])];
+					if(is_numeric($phraseInfo['AutoBudgetPriority']))
+						$phraseInfo['AutoBudgetPriority'] = static::$priorityList[intval($phraseInfo['AutoBudgetPriority'])];
 
 					$bannerParam["Phrases"][$key] = $phraseInfo;
 				}
@@ -485,7 +494,7 @@ class YandexBannerTable extends AdvEntity
 		{
 			if(!is_array($data["SETTINGS"]["MinusKeywords"]))
 			{
-				if(strlen($data["SETTINGS"]["MinusKeywords"]) > 0)
+				if($data["SETTINGS"]["MinusKeywords"] <> '')
 				{
 					$data["SETTINGS"]["MinusKeywords"] = array();
 				}

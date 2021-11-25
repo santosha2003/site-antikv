@@ -1,37 +1,35 @@
 <?
-use Bitrix\Main\Loader;
+use Bitrix\Main\Loader,
+	Bitrix\Iblock,
+	Bitrix\Catalog,
+	Bitrix\Currency;
+
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 /** @var array $arCurrentValues */
 /** @global CUserTypeManager $USER_FIELD_MANAGER */
 
-if (!Loader::includeModule("catalog"))
+if (!Loader::includeModule('catalog'))
 	return;
+
+$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
+
+$iblockExists = (!empty($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0);
 
 $arIBlockType = CIBlockParameters::GetIBlockTypes();
 
-$arIBlock=array();
-$rsIBlock = CIBlock::GetList(array("sort" => "asc"), array("TYPE" => $arCurrentValues["IBLOCK_TYPE"], "ACTIVE"=>"Y"));
-while($arr=$rsIBlock->Fetch())
-{
-	$arIBlock[$arr["ID"]] = "[".$arr["ID"]."] ".$arr["NAME"];
-}
-
-
-
+$arIBlock = array();
+$iblockFilter = (
+	!empty($arCurrentValues['IBLOCK_TYPE'])
+	? array('TYPE' => $arCurrentValues['IBLOCK_TYPE'], 'ACTIVE' => 'Y')
+	: array('ACTIVE' => 'Y')
+);
+$rsIBlock = CIBlock::GetList(array('SORT' => 'ASC'), $iblockFilter);
+while ($arr = $rsIBlock->Fetch())
+	$arIBlock[$arr['ID']] = '['.$arr['ID'].'] '.$arr['NAME'];
+unset($arr, $rsIBlock, $iblockFilter);
 
 // Prices
-$catalogGroupIterator = CCatalogGroup::GetListEx(
-	array("NAME" => "ASC", "SORT" => "ASC"),
-	array(),
-	false,
-	false,
-	array('ID', 'NAME', 'NAME_LANG')
-);
-$catalogGroups = array();
-while ($catalogGroup = $catalogGroupIterator->Fetch())
-{
-	$catalogGroups[$catalogGroup['NAME']] = "[{$catalogGroup['NAME']}] {$catalogGroup['NAME_LANG']}";
-}
+$catalogGroups = CCatalogIBlockParameters::getPriceTypesList();
 
 $arAscDesc = array(
 	"asc" => GetMessage("CVP_SORT_ASC"),
@@ -252,34 +250,40 @@ $arComponentParameters = array(
 
 // Params groups
 $iblockMap = array();
-$iblockIterator = CIBlock::GetList(array("SORT" => "ASC"), array("ACTIVE" => "Y"));
-while ($iblock = $iblockIterator->fetch())
-{
-	$iblockMap[$iblock['ID']] = $iblock;
-}
-
 $catalogs = array();
 $productsCatalogs = array();
 $skuCatalogs = array();
-$catalogIterator = CCatalog::GetList(
-	array("IBLOCK_ID" => "ASC"),
-	array("@IBLOCK_ID" => array_keys($iblockMap)),
-	false,
-	false,
-	array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID', 'SKU_PROPERTY_ID')
-);
-while($catalog = $catalogIterator->fetch())
+$catalogFilter = array('=IBLOCK.ACTIVE' => 'Y');
+if ($iblockExists)
+	$catalogFilter[] = array(
+		'LOGIC' => 'OR',
+		'=IBLOCK_ID' => $arCurrentValues['IBLOCK_ID'],
+		'=PRODUCT_IBLOCK_ID' =>  $arCurrentValues['IBLOCK_ID']
+	);
+$iterator = Catalog\CatalogIblockTable::getList(array(
+	'select' => array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID', 'SKU_PROPERTY_ID', 'IBLOCK_NAME' => 'IBLOCK.NAME'),
+	'filter' => $catalogFilter,
+	'order' => array('IBLOCK_ID' => 'ASC')
+));
+while ($row = $iterator->fetch())
 {
-	$isOffersCatalog = (int)$catalog['PRODUCT_IBLOCK_ID'] > 0;
-	if($isOffersCatalog)
+	$iblockMap[$row['IBLOCK_ID']] = array(
+		'ID' => $row['IBLOCK_ID'],
+		'NAME' => $row['IBLOCK_NAME']
+	);
+	unset($row['IBLOCK_NAME']);
+	if ((int)$row['PRODUCT_IBLOCK_ID'] > 0)
 	{
-		$skuCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
+		$skuCatalogs[$row['PRODUCT_IBLOCK_ID']] = $row;
+		if (!isset($productsCatalogs[$row['PRODUCT_IBLOCK_ID']]))
+			$productsCatalogs[$row['PRODUCT_IBLOCK_ID']] = $row;
 	}
 	else
 	{
-		$productsCatalogs[$catalog['IBLOCK_ID']] = $catalog;
+		$productsCatalogs[$row['IBLOCK_ID']] = $row;
 	}
 }
+unset($row, $iterator, $catalogFilter);
 
 foreach($productsCatalogs as $catalog)
 {
@@ -315,7 +319,7 @@ foreach ($catalogs as $catalog)
 	$fileProperties = array();
 	$treeProperties = array();
 
-	$propertyIterator = CIBlockProperty::getList(array("SORT" => "ASC", "NAME" => "ASC"), array("IBLOCK_ID" => $iblock['ID'], "ACTIVE" => "Y"));
+	$propertyIterator = CIBlockProperty::GetList(array("SORT" => "ASC", "NAME" => "ASC"), array("IBLOCK_ID" => $iblock['ID'], "ACTIVE" => "Y"));
 	while ($property = $propertyIterator->fetch())
 	{
 		$property['ID'] = (int)$property['ID'];
@@ -355,28 +359,34 @@ foreach ($catalogs as $catalog)
 		);
 	}
 
-	$arComponentParameters["PARAMETERS"]['PROPERTY_CODE_' . $iblock['ID']] = array(
-		"PARENT" => $groupId,
-		"NAME" => GetMessage("CVP_PROPERTY_DISPLAY"),
-		"TYPE" => "LIST",
-		"MULTIPLE" => "Y",
-		"VALUES" => $allProperties,
-		"ADDITIONAL_VALUES" => "Y",
-		"DEFAULT" => "",
-		"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
-	);
+	if (!$usePropertyFeatures)
+	{
+		$arComponentParameters["PARAMETERS"]['PROPERTY_CODE_'.$iblock['ID']] = array(
+			"PARENT" => $groupId,
+			"NAME" => GetMessage("CVP_PROPERTY_DISPLAY"),
+			"TYPE" => "LIST",
+			"MULTIPLE" => "Y",
+			"VALUES" => $allProperties,
+			"ADDITIONAL_VALUES" => "Y",
+			"DEFAULT" => "",
+			"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
+		);
+	}
 
 	// 3. Cart properties
-	$arComponentParameters["PARAMETERS"]['CART_PROPERTIES_' . $iblock['ID']] = array(
-		"PARENT" => $groupId,
-		"NAME" => GetMessage("CVP_PROPERTY_ADD_TO_BASKET"),
-		"TYPE" => "LIST",
-		"MULTIPLE" => "Y",
-		"VALUES" => $treeProperties,
-		"ADDITIONAL_VALUES" => "Y",
-		"HIDDEN" => ((isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N') ||
+	if (!$usePropertyFeatures)
+	{
+		$arComponentParameters["PARAMETERS"]['CART_PROPERTIES_'.$iblock['ID']] = array(
+			"PARENT" => $groupId,
+			"NAME" => GetMessage("CVP_PROPERTY_ADD_TO_BASKET"),
+			"TYPE" => "LIST",
+			"MULTIPLE" => "Y",
+			"VALUES" => $treeProperties,
+			"ADDITIONAL_VALUES" => "Y",
+			"HIDDEN" => ((isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N') ||
 			!$catalog['VISIBLE'] ? 'Y' : 'N')
-	);
+		);
+	}
 
 	// 2. Additional Image
 	$arComponentParameters["PARAMETERS"]['ADDITIONAL_PICT_PROP_' . $iblock['ID']] = array(
@@ -392,16 +402,19 @@ foreach ($catalogs as $catalog)
 
 	if ((int)$catalog['SKU_PROPERTY_ID'] > 0)
 	{
-		$arComponentParameters["PARAMETERS"]['OFFER_TREE_PROPS_' . $iblock['ID']] = array(
-			"PARENT" => $groupId,
-			"NAME" => GetMessage("CVP_PROPERTY_GROUP"),
-			"TYPE" => "LIST",
-			"MULTIPLE" => "Y",
-			"VALUES" => array_merge($defaultListValues, $treeProperties),
-			"ADDITIONAL_VALUES" => "N",
-			"DEFAULT" => "-",
-			"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
-		);
+		if (!$usePropertyFeatures)
+		{
+			$arComponentParameters["PARAMETERS"]['OFFER_TREE_PROPS_'.$iblock['ID']] = array(
+				"PARENT" => $groupId,
+				"NAME" => GetMessage("CVP_PROPERTY_GROUP"),
+				"TYPE" => "LIST",
+				"MULTIPLE" => "Y",
+				"VALUES" => array_merge($defaultListValues, $treeProperties),
+				"ADDITIONAL_VALUES" => "N",
+				"DEFAULT" => "-",
+				"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
+			);
+		}
 	}
 	else
 	{
@@ -437,20 +450,12 @@ $arComponentParameters["PARAMETERS"]['CONVERT_CURRENCY'] = array(
 
 if (isset($arCurrentValues['CONVERT_CURRENCY']) && 'Y' == $arCurrentValues['CONVERT_CURRENCY'])
 {
-	$arCurrencyList = array();
-	$by = 'SORT';
-	$order = 'ASC';
-	$rsCurrencies = CCurrency::GetList($by, $order);
-	while ($arCurrency = $rsCurrencies->Fetch())
-	{
-		$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];
-	}
 	$arComponentParameters['PARAMETERS']['CURRENCY_ID'] = array(
 		'PARENT' => 'PRICES',
 		'NAME' => GetMessage('CVP_CURRENCY_ID'),
 		'TYPE' => 'LIST',
-		'VALUES' => $arCurrencyList,
-		'DEFAULT' => CCurrency::GetBaseCurrency(),
+		'VALUES' => Currency\CurrencyManager::getCurrencyList(),
+		'DEFAULT' => Currency\CurrencyManager::getBaseCurrency(),
 		"ADDITIONAL_VALUES" => "Y",
 	);
 }

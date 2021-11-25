@@ -1,8 +1,8 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
 <?
 IncludeTemplateLangFile(__FILE__);
-?> 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+?>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -74,9 +74,9 @@ $APPLICATION->IncludeFile(
 		</div>
 		
 		<div id="banner">		
-			<table id="banner-layout" cellspacing="0">
+			<table id="banner-layout">
 				<tr>
-					<td id="banner-image"><div><img src="<?=SITE_TEMPLATE_PATH?>/images/head.jpg" /></div></td>
+					<td id="banner-image"><div><img src="<?=SITE_TEMPLATE_PATH?>/images/head.jpg" alt=""/></div></td>
 					<td id="banner-slogan">
 <?
 $APPLICATION->IncludeFile(

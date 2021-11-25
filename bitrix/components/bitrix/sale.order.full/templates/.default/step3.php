@@ -26,7 +26,7 @@
 				?>
 				<tr>
 					<td colspan="2">
-						<b><?=$arDelivery["TITLE"]?></b><?if (strlen($arDelivery["DESCRIPTION"]) > 0):?><br />
+						<b><?=$arDelivery["TITLE"]?></b><?if ($arDelivery["DESCRIPTION"] <> ''):?><br />
 						<?=nl2br($arDelivery["DESCRIPTION"])?><br /><?endif;?>
 						<table border="0" cellspacing="0" cellpadding="3">
 
@@ -39,7 +39,7 @@
 						<td width="0%" valign="top"><input type="radio" id="ID_DELIVERY_<?=$delivery_id?>_<?=$profile_id?>" name="<?=$arProfile["FIELD_NAME"]?>" value="<?=$delivery_id.":".$profile_id;?>" <?=$arProfile["CHECKED"] == "Y" ? "checked=\"checked\"" : "";?> /></td>
 						<td width="50%" valign="top">
 							<label for="ID_DELIVERY_<?=$delivery_id?>_<?=$profile_id?>">
-								<small><b><?=$arProfile["TITLE"]?></b><?if (strlen($arProfile["DESCRIPTION"]) > 0):?><br />
+								<small><b><?=$arProfile["TITLE"]?></b><?if ($arProfile["DESCRIPTION"] <> ''):?><br />
 								<?=nl2br($arProfile["DESCRIPTION"])?><?endif;?></small>
 							</label>
 						</td>
@@ -81,7 +81,7 @@
 							<label for="ID_DELIVERY_ID_<?= $arDelivery["ID"] ?>">
 							<b><?= $arDelivery["NAME"] ?></b><br />
 							<?
-							if (strlen($arDelivery["PERIOD_TEXT"])>0)
+							if ($arDelivery["PERIOD_TEXT"] <> '')
 							{
 								echo $arDelivery["PERIOD_TEXT"];
 								?><br /><?
@@ -89,7 +89,7 @@
 							?>
 							<?=GetMessage("SALE_DELIV_PRICE");?> <?=$arDelivery["PRICE_FORMATED"]?><br />
 							<?
-							if (strlen($arDelivery["DESCRIPTION"])>0)
+							if ($arDelivery["DESCRIPTION"] <> '')
 							{
 								?>
 								<?=$arDelivery["DESCRIPTION"]?><br />

@@ -57,6 +57,8 @@ class Calculator
 			$strParams = $this->createCalcParams();
 			$jsonInfo = $this->send($strParams);
 			$result = $this->parseCalcResult($jsonInfo);
+
+
 		}
 		catch(\Exception $e)
 		{
@@ -76,7 +78,7 @@ class Calculator
 
 		if(is_array($arInfo) && !empty($arInfo))
 		{
-			if(strtolower(SITE_CHARSET) != 'utf-8')
+			if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 				$arInfo = \Bitrix\Main\Text\Encoding::convertEncodingArray($arInfo, 'UTF-8', SITE_CHARSET);
 
 			if(isset($arInfo[$this->profileId][2]))
@@ -93,7 +95,7 @@ class Calculator
 					$price += intval($arInfo["deliver"][2]);
 
 				foreach($arInfo as $key => $value)
-					if(substr($key,0,3) == "ADD")
+					if(mb_substr($key, 0, 3) == "ADD")
 						$price += intval($arInfo[$key][2]);
 
 				$arResult = array(
@@ -109,15 +111,15 @@ class Calculator
 				elseif($this->profileId == "avia" && !empty($arInfo["aperiods"]))
 					$period = $arInfo["aperiods"];
 
-				if(strlen($period) > 0)
+				if($period <> '')
 				{
-					$pos = strpos($period, ':');
+					$pos = mb_strpos($period, ':');
 
 					if($pos !== false)
 					{
 						$CBXSanitizer = new \CBXSanitizer;
 						$CBXSanitizer->DelAllTags();
-						$arResult["TRANSIT"] = " (".GetMessage("SALE_DH_PECOM_PERIOD_DAYS").") ".$CBXSanitizer->SanitizeHtml(substr($period, $pos+1));
+						$arResult["TRANSIT"] = " (".GetMessage("SALE_DH_PECOM_PERIOD_DAYS").") ".$CBXSanitizer->SanitizeHtml(mb_substr($period, $pos + 1));
 					}
 				}
 			}
@@ -127,7 +129,7 @@ class Calculator
 				{
 					$error = implode("<br>", $arInfo["error"]);
 
-					if(strtolower(SITE_CHARSET) != 'utf-8')
+					if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 						$error = $APPLICATION->ConvertCharset($error, 'utf-8', SITE_CHARSET);
 				}
 				else
@@ -160,9 +162,11 @@ class Calculator
 			"streamTimeout" => 30,
 			"redirect" => true,
 			"redirectMax" => 5,
+			"disableSslVerification" => true
 		));
 
-		$jsnData = $http->post("http://www.pecom.ru/bitrix/components/pecom/calc/ajax.php", $strParams);
+		$jsnData = $http->get("http://calc.pecom.ru/bitrix/components/pecom/calc/ajax.php?".$strParams);
+
 		$errors = $http->getError();
 
 		if (!$jsnData && !empty($errors))
@@ -276,6 +280,9 @@ class Calculator
 				|| $item["WEIGHT"] > \CDeliveryPecom::$EXTRA_DEMENSIONS_WEIGHT
 			)
 				$loadingRange = false;
+
+			if($itemsStr <> '')
+				$itemsStr .='&';
 
 			$itemsStr .= 'places['.$i.'][]='.strval($width).
 				'&places['.$i.'][]='.strval($lenght).

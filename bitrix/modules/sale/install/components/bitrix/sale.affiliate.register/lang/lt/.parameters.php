@@ -1,4 +1,0 @@
-<?
-$MESS['SPCD1_REDIRECT_PAGE'] = 'Sëkmingai uþsiregistravus nukreipti á ðá puslapá';
-$MESS['SPCD1_AGREEMENT_TEXT_FILE'] = 'Marðrutas á failà su vartotojo sutartimi';
-?>

@@ -1,5 +1,0 @@
-<?
-$MESS["BRL_DEFAULT_TEMPLATE_NAME"] = "Nuorodos á tinklaraðèio RSS";
-$MESS["BRL_DEFAULT_TEMPLATE_DESCRIPTION"] = "Atvaizduoja nuorodas á RSS";
-$MESS["BRL_NAME"] = "Tinklaraðèiai";
-?>

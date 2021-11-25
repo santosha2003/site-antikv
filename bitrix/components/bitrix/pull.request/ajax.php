@@ -25,7 +25,7 @@ if (defined('PULL_USER_ID'))
 {
 	$userId = PULL_USER_ID;
 }
-else if (!$USER->IsAuthorized() && IsModuleInstalled('statistic') && intval($_SESSION["SESS_SEARCHER_ID"]) <= 0 && intval($_SESSION["SESS_GUEST_ID"]) > 0 && COption::GetOptionString("pull", "guest") == 'Y')
+else if (!$USER->IsAuthorized() && intval($_SESSION["SESS_SEARCHER_ID"]) <= 0 && intval($_SESSION["SESS_GUEST_ID"]) > 0 && \CPullOptions::GetGuestStatus())
 {
 	$userId = intval($_SESSION["SESS_GUEST_ID"])*-1;
 }
@@ -39,11 +39,6 @@ else
 	$userId = intval($USER->GetID());
 	if ($userId <= 0)
 	{
-		// TODO need change AUTHORIZE ERROR callbacks
-		//header("HTTP/1.0 401 Not Authorized");
-		//header("Content-Type: application/x-javascript");
-		//header("BX-Authorize: ".bitrix_sessid());
-
 		echo CUtil::PhpToJsObject(Array(
 			'ERROR' => 'AUTHORIZE_ERROR',
 			'BITRIX_SESSID' => bitrix_sessid()
@@ -71,25 +66,29 @@ if (check_bitrix_sessid())
 	}
 	elseif ($_POST['PULL_UPDATE_WATCH'] == 'Y')
 	{
-		$arResult = Array();
-		foreach ($_POST['WATCH'] as $tag)
-		{
-			$arResult[$tag] = CPullWatch::Extend($userId, $tag);
-		}
+		$arResult = CPullWatch::Extend($userId, $_POST['WATCH']);
 
 		echo CUtil::PhpToJsObject(Array('RESULT' => $arResult, 'ERROR' => ''));
 	}
 	elseif ($_POST['PULL_UPDATE_STATE'] == 'Y')
 	{
+		$serverTime = date('c');
+		$serverTimeUnix = microtime(true);
 		$arMessage = CPullStack::Get($_POST['CHANNEL_ID'], intval($_POST['CHANNEL_LAST_ID']));
 
-		$arResult["COUNTERS"] = CUserCounter::GetAllValues($userId);
-		if (!empty($arResult["COUNTERS"]))
+		if (!empty($counters))
 		{
 			$arMessage[] = Array(
 				'module_id' => 'main',
 				'command' => 'user_counter',
-				'params' => $arResult["COUNTERS"]
+				'params' => $counters,
+				'extra' => Array(
+					'server_time' => $serverTime,
+					'server_time_unix' => $serverTimeUnix,
+					'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
+					'revision_web' => PULL_REVISION_WEB,
+					'revision_mobile' => PULL_REVISION_MOBILE,
+				),
 			);
 		}
 		echo CUtil::PhpToJsObject(Array('MESSAGE' => $arMessage, 'ERROR' => ''));

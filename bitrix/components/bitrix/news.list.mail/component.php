@@ -10,8 +10,21 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
 
+use Bitrix\Main\Loader,
+	Bitrix\Main,
+	Bitrix\Iblock;
+
 if(!isset($arParams["CACHE_TIME"]))
-	$arParams["CACHE_TIME"] = 36000000;
+	$arParams["CACHE_TIME"] = 3600;
+
+if(isset($arParams["SENDER_CHAIN_ID"]) && $arParams["PREVENT_SEND_IF_NO_NEWS"] == "Y")
+{
+	$arParams["SENDER_CHAIN_ID"] = intval($arParams["SENDER_CHAIN_ID"]);
+}
+else
+{
+	$arParams["SENDER_CHAIN_ID"] = 0;
+}
 
 $arNavParams = array(
 	"nTopCount" => $arParams["NEWS_COUNT"],
@@ -20,7 +33,7 @@ $arNavParams = array(
 $arNavigation = false;
 
 $arParams["IBLOCK_TYPE"] = trim($arParams["IBLOCK_TYPE"]);
-if(strlen($arParams["IBLOCK_TYPE"])<=0)
+if($arParams["IBLOCK_TYPE"] == '')
 	$arParams["IBLOCK_TYPE"] = "news";
 $arParams["IBLOCK_ID"] = trim($arParams["IBLOCK_ID"]);
 $arParams["PARENT_SECTION"] = intval($arParams["PARENT_SECTION"]);
@@ -31,17 +44,17 @@ if($arParams["NEWS_COUNT"]<=0)
 	$arParams["NEWS_COUNT"] = 20;
 
 $arParams["SORT_BY1"] = trim($arParams["SORT_BY1"]);
-if(strlen($arParams["SORT_BY1"])<=0)
+if($arParams["SORT_BY1"] == '')
 	$arParams["SORT_BY1"] = "ACTIVE_FROM";
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER1"]))
 	$arParams["SORT_ORDER1"]="DESC";
 
-if(strlen($arParams["SORT_BY2"])<=0)
+if($arParams["SORT_BY2"] == '')
 	$arParams["SORT_BY2"] = "SORT";
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER2"]))
 	$arParams["SORT_ORDER2"]="ASC";
 
-if(strlen($arParams["FILTER_NAME"])<=0 || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
+if($arParams["FILTER_NAME"] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
 {
 	$arrFilter = array();
 }
@@ -77,17 +90,17 @@ if(!$arParams["CACHE_FILTER"] && count($arrFilter)>0)
 	$arParams["CACHE_TIME"] = 0;
 
 $arParams["ACTIVE_DATE_FORMAT"] = trim($arParams["ACTIVE_DATE_FORMAT"]);
-if(strlen($arParams["ACTIVE_DATE_FORMAT"])<=0)
+if($arParams["ACTIVE_DATE_FORMAT"] == '')
 	$arParams["ACTIVE_DATE_FORMAT"] = $DB->DateFormatToPHP(CSite::GetDateFormat("SHORT"));
 $arParams["PREVIEW_TRUNCATE_LEN"] = intval($arParams["PREVIEW_TRUNCATE_LEN"]);
 $arParams["HIDE_LINK_WHEN_NO_DETAIL"] = $arParams["HIDE_LINK_WHEN_NO_DETAIL"]=="Y";
 
 
-if($this->StartResultCache(false, array($arParams)))
+if($this->startResultCache(false, array($arParams)))
 {
-	if(!CModule::IncludeModule("iblock"))
+	if(!Loader::includeModule("iblock"))
 	{
-		$this->AbortResultCache();
+		$this->abortResultCache();
 		return;
 	}
 	if(is_numeric($arParams["IBLOCK_ID"]))
@@ -136,6 +149,29 @@ if($this->StartResultCache(false, array($arParams)))
 		if($arParams["CHECK_DATES"])
 			$arFilter["ACTIVE_DATE"] = "Y";
 
+		if($arParams["SENDER_CHAIN_ID"] > 0 && Loader::includeModule('sender'))
+		{
+			$postingDb = \Bitrix\Sender\PostingTable::getList(array(
+				'select' => array('DATE_SENT'),
+				'filter' => array(
+					'=MAILING_CHAIN_ID' => $arParams["SENDER_CHAIN_ID"],
+					'=STATUS' => array(
+						\Bitrix\Sender\PostingTable::STATUS_SENT,
+						\Bitrix\Sender\PostingTable::STATUS_SENT_WITH_ERRORS
+					)
+				),
+				'order' => array('DATE_SENT' => 'DESC'),
+				'limit' => 1
+			));
+			if($posting = $postingDb->fetch())
+			{
+				if($arParams["CHECK_DATES"])
+					$arFilter[">ACTIVE_FROM"] = $posting['DATE_SENT'];
+				else
+					$arFilter[">DATE_CREATE"] = $posting['DATE_SENT'];
+			}
+		}
+
 		$arParams["PARENT_SECTION"] = CIBlockFindTools::GetSectionID(
 			$arParams["PARENT_SECTION"],
 			$arParams["PARENT_SECTION_CODE"],
@@ -180,6 +216,14 @@ if($this->StartResultCache(false, array($arParams)))
 		$arResult["ITEMS"] = array();
 		$arResult["ELEMENTS"] = array();
 		$rsElement = CIBlockElement::GetList($arSort, array_merge($arFilter, $arrFilter), false, $arNavParams, $arSelect);
+		if($arParams["SENDER_CHAIN_ID"] && $rsElement->SelectedRowsCount() < $arParams["NEWS_COUNT"])
+		{
+			if(class_exists('\Bitrix\Main\Mail\StopException'))
+			{
+				\Bitrix\Main\Mail\EventMessageThemeCompiler::stop();
+			}
+		}
+
 		$rsElement->SetUrlTemplates($arParams["DETAIL_URL"], "", $arParams["IBLOCK_URL"]);
 		$i = 0;
 		while($obElement = $rsElement->GetNextElement())
@@ -192,7 +236,7 @@ if($this->StartResultCache(false, array($arParams)))
 			if($arParams["PREVIEW_TRUNCATE_LEN"] > 0)
 				$arItem["PREVIEW_TEXT"] = $obParser->html_cut($arItem["PREVIEW_TEXT"], $arParams["PREVIEW_TRUNCATE_LEN"]);
 
-			if(strlen($arItem["ACTIVE_FROM"])>0)
+			if($arItem["ACTIVE_FROM"] <> '')
 				$arItem["DISPLAY_ACTIVE_FROM"] = CIBlockFormatProperties::DateFormat($arParams["ACTIVE_DATE_FORMAT"], MakeTimeStamp($arItem["ACTIVE_FROM"], CSite::GetDateFormat()));
 			else
 				$arItem["DISPLAY_ACTIVE_FROM"] = "";
@@ -200,32 +244,12 @@ if($this->StartResultCache(false, array($arParams)))
 			$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
 			$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
 
-			if(isset($arItem["PREVIEW_PICTURE"]))
-			{
-				$arItem["PREVIEW_PICTURE"] = (0 < $arItem["PREVIEW_PICTURE"] ? CFile::GetFileArray($arItem["PREVIEW_PICTURE"]) : false);
-				if ($arItem["PREVIEW_PICTURE"])
-				{
-					$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_ALT"];
-					if ($arItem["PREVIEW_PICTURE"]["ALT"] == "")
-						$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["NAME"];
-					$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_TITLE"];
-					if ($arItem["PREVIEW_PICTURE"]["TITLE"] == "")
-						$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["NAME"];
-				}
-			}
-			if(isset($arItem["DETAIL_PICTURE"]))
-			{
-				$arItem["DETAIL_PICTURE"] = (0 < $arItem["DETAIL_PICTURE"] ? CFile::GetFileArray($arItem["DETAIL_PICTURE"]) : false);
-				if ($arItem["DETAIL_PICTURE"])
-				{
-					$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_ALT"];
-					if ($arItem["DETAIL_PICTURE"]["ALT"] == "")
-						$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["NAME"];
-					$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_TITLE"];
-					if ($arItem["DETAIL_PICTURE"]["TITLE"] == "")
-						$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["NAME"];
-				}
-			}
+			Iblock\Component\Tools::getFieldImageData(
+				$arItem,
+				array('PREVIEW_PICTURE', 'DETAIL_PICTURE'),
+				Iblock\Component\Tools::IPROPERTY_ENTITY_ELEMENT,
+				'IPROPERTY_VALUES'
+			);
 
 			$arItem["FIELDS"] = array();
 			foreach($arParams["FIELD_CODE"] as $code)
@@ -240,7 +264,7 @@ if($this->StartResultCache(false, array($arParams)))
 				$prop = &$arItem["PROPERTIES"][$pid];
 				if(
 					(is_array($prop["VALUE"]) && count($prop["VALUE"])>0)
-					|| (!is_array($prop["VALUE"]) && strlen($prop["VALUE"])>0)
+					|| (!is_array($prop["VALUE"]) && $prop["VALUE"] <> '')
 				)
 				{
 					$arItem["DISPLAY_PROPERTIES"][$pid] = CIBlockFormatProperties::GetDisplayValue($arItem, $prop, "news_out");
@@ -251,9 +275,10 @@ if($this->StartResultCache(false, array($arParams)))
 			$arResult["ELEMENTS"][] = $arItem["ID"];
 		}
 		$arResult["NAV_STRING"] = $rsElement->GetPageNavStringEx($navComponentObject, $arParams["PAGER_TITLE"], $arParams["PAGER_TEMPLATE"], $arParams["PAGER_SHOW_ALWAYS"]);
-		$arResult["NAV_CACHED_DATA"] = $navComponentObject->GetTemplateCachedData();
+		/** @var CBitrixComponent $navComponentObject */
+		$arResult["NAV_CACHED_DATA"] = $navComponentObject->getTemplateCachedData();
 		$arResult["NAV_RESULT"] = $rsElement;
-		$this->SetResultCacheKeys(array(
+		$this->setResultCacheKeys(array(
 			"ID",
 			"IBLOCK_TYPE_ID",
 			"LIST_PAGE_URL",
@@ -264,19 +289,17 @@ if($this->StartResultCache(false, array($arParams)))
 			"IPROPERTY_VALUES",
 		));
 
-		$this->IncludeComponentTemplate();
+		$this->includeComponentTemplate();
 	}
 	else
 	{
-		$this->AbortResultCache();
+		$this->abortResultCache();
 	}
 }
 
 if(isset($arResult["ID"]))
 {
-	$this->SetTemplateCachedData($arResult["NAV_CACHED_DATA"]);
+	$this->setTemplateCachedData($arResult["NAV_CACHED_DATA"]);
 
 	return $arResult["ELEMENTS"];
 }
-
-?>

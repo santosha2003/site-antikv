@@ -7,10 +7,13 @@ use Bitrix\Main\Config\Option;
 use Bitrix\Main\Error;
 use Bitrix\Main\Event;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ORM\Data\UpdateResult;
 use Bitrix\Main\SystemException;
 use Bitrix\Sale\Delivery\Services;
 use Bitrix\Sale\Internals\ShipmentTable;
 use Bitrix\Sale\Order;
+use Bitrix\Sale;
+use Bitrix\Sale\PropertyValueCollection;
 use Bitrix\Sale\Result;
 use Bitrix\Sale\Shipment;
 
@@ -31,6 +34,7 @@ class Statuses
 	const HANDED 			= 40; //shipping definitely finished
 	const PROBLEM			= 50;
 	const UNKNOWN			= 60; //Incorrect status mapping made by tracking handler.
+	const RETURNED 			= 70;
 }
 
 /**
@@ -67,6 +71,8 @@ class StatusChangeEventParam
 	public $orderId;
 	/**	@var int */
 	public $shipmentId;
+	/**	@var int */
+	public $deliveryId;
 }
 
 /**
@@ -83,6 +89,9 @@ class Manager
 	protected static $classNames = null;
 	//If status didn't changed for a long time let's stop update it.
 	protected static $activeStatusLiveTime = 5184000;  //60 days
+	
+	/** @var bool  */
+	protected $isClone = false;
 
 	protected function __clone(){}
 
@@ -130,7 +139,27 @@ class Manager
 			Statuses::HANDED => Loc::getMessage("SALE_DTM_STATUS_NAME_HANDED"),
 			Statuses::PROBLEM => Loc::getMessage("SALE_DTM_STATUS_NAME_PROBLEM"),
 			Statuses::UNKNOWN => Loc::getMessage("SALE_DTM_STATUS_NAME_UNKNOWN"),
+			Statuses::RETURNED => Loc::getMessage("SALE_DTM_STATUS_NAME_RETURNED"),
 		);
+	}
+
+	/**
+	 * @param int $deliveryId Delivery service id.
+	 * @param string $trackingNumber Trcking number.
+	 * @return string  Url were we can see tracking information.
+	 * @throws ArgumentNullException
+	 */
+	public function getTrackingUrl($deliveryId, $trackingNumber = '')
+	{
+		if(!$deliveryId)
+			return '';
+
+		$trackingObject = $this->getTrackingObjectByDeliveryId($deliveryId);
+
+		if(!$trackingObject)
+			return '';
+
+		return $trackingObject->getTrackingUrl($trackingNumber);
 	}
 
 	/**
@@ -163,13 +192,13 @@ class Manager
 			return $result;
 		}
 
-		if(strlen($trackingNumber) > 0 && $trackingNumber != $shipment['TRACKING_NUMBER'])
+		if($trackingNumber <> '' && $trackingNumber != $shipment['TRACKING_NUMBER'])
 			$shipment['TRACKING_NUMBER'] = $trackingNumber;
 
-		if(strlen($shipment['TRACKING_NUMBER']) <= 0)
+		if($shipment['TRACKING_NUMBER'] == '')
 			return $result;
 
-		$result = $this->getStatus($shipment['TRACKING_NUMBER'], $shipment['DELIVERY_ID']);
+		$result = $this->getStatus($shipment);
 
 		if($result->isSuccess())
 		{
@@ -182,6 +211,7 @@ class Manager
 				$eventParams->trackingNumber = $shipment['TRACKING_NUMBER'];
 				$eventParams->description = $result->description;
 				$eventParams->lastChangeTimestamp = $result->lastChangeTimestamp;
+				$eventParams->deliveryId = $shipment['DELIVERY_ID'];
 				$res = $this->processStatusChange(array($eventParams));
 
 				if(!$res)
@@ -199,7 +229,7 @@ class Manager
 	 */
 	protected static function getMappedStatuses()
 	{
-		$result = unserialize(Option::get('sale', 'tracking_map_statuses',''));
+		$result = unserialize(Option::get('sale', 'tracking_map_statuses',''), ['allowed_classes' => false]);
 
 		if(!is_array($result))
 			$result = array();
@@ -213,25 +243,24 @@ class Manager
 	}
 
 	/**
-	 * @param $trackingNumber
-	 * @param $deliveryId
+	 * @param array shipment
 	 * @return StatusResult
 	 * @throws ArgumentNullException
 	 * @throws SystemException
 	 */
-	protected function getStatus($trackingNumber, $deliveryId)
+	protected function getStatus($shipment)
 	{
-		$result = new \Bitrix\Sale\Result();
+		$result = new StatusResult();
 
-		if(intval($deliveryId) <= 0)
+		if(intval($shipment['DELIVERY_ID']) <= 0)
 			throw new ArgumentNullException('deliveryId');
 
-		$trackingObject = $this->getTrackingObjectByDeliveryId($deliveryId);
+		$trackingObject = $this->getTrackingObjectByDeliveryId($shipment['DELIVERY_ID']);
 
 		if(!$trackingObject)
 			return $result;
 
-		return $trackingObject->getStatus($trackingNumber);
+		return $trackingObject->getStatusShipment($shipment);
 	}
 
 
@@ -256,7 +285,7 @@ class Manager
 
 		$class = $deliveryService->getTrackingClass();
 
-		if(strlen($class) > 0)
+		if($class <> '')
 		{
 			$result = $this->createTrackingObject(
 				$class,
@@ -271,13 +300,14 @@ class Manager
 	/**
 	 * @param string $className Class name delivered from \Bitrix\Sale\Delivery\Tracking\Base
 	 * @param array $params
+	 * @param Services\Base $deliveryService
 	 * @return Base
 	 * @throws ArgumentNullException
 	 * @throws SystemException
 	 */
 	protected function createTrackingObject($className, array $params, Services\Base $deliveryService)
 	{
-		if(strlen($className) <= 0)
+		if($className == '')
 			throw new ArgumentNullException('className');
 
 		if(!class_exists($className))
@@ -309,12 +339,25 @@ class Manager
 				"DESCRIPTION" => implode('\n', $result->getErrorMessages())
 			));
 		}
-		else
-		{
-			$data = $result->getData();
 
-			if(!empty($data))
-				$manager->processStatusChange($data);
+		$data = $result->getData();
+
+		if(!empty($data))
+		{
+			$result = $manager->processStatusChange($data);
+
+			if(!$result->isSuccess())
+			{
+				$eventLog = new \CEventLog;
+
+				$eventLog->Add(array(
+					"SEVERITY" => \CEventLog::SEVERITY_ERROR,
+					"AUDIT_TYPE_ID" => 'SALE_DELIVERY_TRACKING_REFRESHING_STATUS_ERROR',
+					"MODULE_ID" => "sale",
+					"ITEM_ID" => time(),
+					"DESCRIPTION" => implode('\n', $result->getErrorMessages())
+				));
+			}
 		}
 
 		return '\Bitrix\Sale\Delivery\Tracking\Manager::startRefreshingStatuses();';
@@ -322,8 +365,6 @@ class Manager
 
 	/**
 	 * @return Result
-	 * @throws ArgumentNullException
-	 * @throws \Bitrix\Main\ArgumentException
 	 * todo: timelimit
 	 */
 	protected function updateStatuses()
@@ -343,7 +384,11 @@ class Manager
 				'!=DELIVERY_ID' => false,
 				array(
 					'LOGIC' => 'OR',
-					array('!=TRACKING_STATUS' => Statuses::HANDED),
+					array(
+						'LOGIC' => 'AND',
+						array('!=TRACKING_STATUS' => Statuses::HANDED),
+						array('!=TRACKING_STATUS' => Statuses::RETURNED),
+					),
 					array('=TRACKING_STATUS' => false)
 				),
 				array(
@@ -377,7 +422,7 @@ class Manager
 			if(!isset($shipmentsData[$shipment['DELIVERY_ID']]))
 				$shipmentsData[$shipment['DELIVERY_ID']] = array();
 
-			if(strlen($shipment['TRACKING_NUMBER']) <= 0)
+			if($shipment['TRACKING_NUMBER'] == '')
 				continue;
 
 			$shipmentsData[$shipment['DELIVERY_ID']][$shipment['TRACKING_NUMBER']] = array(
@@ -392,9 +437,16 @@ class Manager
 				$res = $this->processStatusesByDelivery($deliveryId, $shipmentsData[$deliveryId]);
 
 				if($res->isSuccess())
-					$result->addData($res->getData());
+				{
+					$data = $res->getData();
+
+					if(!empty($data))
+						$result->setData(array_merge($result->getData(), $data));
+				}
 				else
+				{
 					$result->addErrors($res->getErrors());
+				}
 
 				$deliveryId = $shipment['DELIVERY_ID'];
 			}
@@ -408,9 +460,16 @@ class Manager
 			$res = $this->processStatusesByDelivery($deliveryId, $shipmentsData[$deliveryId]);
 
 			if($res->isSuccess())
-				$result->addData($res->getData());
+			{
+				$data = $res->getData();
+
+				if(!empty($data))
+					$result->setData(array_merge($result->getData(), $data));
+			}
 			else
+			{
 				$result->addErrors($res->getErrors());
+			}
 		}
 
 		return $result;
@@ -423,48 +482,65 @@ class Manager
 
 		if($trackingObject)
 		{
-			$statusResults = $trackingObject->getStatuses(
-				array_keys(
-					$shipmentsData
-				)
-			);
+			$statusResults = $trackingObject->getStatusesShipment($shipmentsData);
+			$eventsParams = array();
 
+			/** @var StatusResult $statusResult */
 			foreach($statusResults as $number => $statusResult)
 			{
-				if($statusResult->isSuccess())
+				$eventParams = null;
+
+				if(empty($shipmentsData[$number]))
+					continue;
+
+				if(!$statusResult->isSuccess())
 				{
-					$eventsParams = array();
+					$eventLog = new \CEventLog;
 
-					if(empty($shipmentsData[$number]))
-						continue;
+					$eventLog->Add(array(
+						"SEVERITY" => \CEventLog::SEVERITY_ERROR,
+						"AUDIT_TYPE_ID" => 'SALE_DELIVERY_TRACKING_STATUS_RESULT',
+						"MODULE_ID" => "sale",
+						"ITEM_ID" => $shipmentsData[$number]['SHIPMENT_ID'],
+						"DESCRIPTION" => implode('\n', $statusResult->getErrorMessages())
+					));
 
-					if($statusResult->status != $shipmentsData[$number]['TRACKING_STATUS'])
-					{
-						$eventParams = new StatusChangeEventParam();
-						$eventParams->orderId = $shipmentsData[$number]['ORDER_ID'];
-						$eventParams->shipmentId = $shipmentsData[$number]['SHIPMENT_ID'];
-						$eventParams->status = $statusResult->status;
-						$eventParams->trackingNumber = $number;
-						$eventParams->description = $statusResult->description;
-						$eventParams->lastChangeTimestamp = $statusResult->lastChangeTimestamp;
-						$eventsParams[] = $eventParams;
-					}
-
-					$res = $this->updateShipment(
-						$shipmentsData[$number]['SHIPMENT_ID'],
-						$statusResult
-					);
-
-					if(!$res->isSuccess())
-						$result->addErrors($res->getErrors());
-
-					$result->setData($eventsParams);
+					continue;
 				}
-				else
+
+				if(($statusResult->status != $shipmentsData[$number]['TRACKING_STATUS']))
 				{
-					$result->addErrors($statusResult->getErrors());
+					$eventParams = new StatusChangeEventParam();
+					$eventParams->orderId = $shipmentsData[$number]['ORDER_ID'];
+					$eventParams->shipmentId = $shipmentsData[$number]['SHIPMENT_ID'];
+					$eventParams->status = $statusResult->status;
+					$eventParams->trackingNumber = $number;
+					$eventParams->description = $statusResult->description;
+					$eventParams->lastChangeTimestamp = $statusResult->lastChangeTimestamp;
+					$eventParams->deliveryId = $deliveryId;
+					$eventsParams[] = $eventParams;
+				}
+
+				$res = $this->updateShipment(
+					$shipmentsData[$number]['SHIPMENT_ID'],
+					$statusResult
+				);
+
+				if(!$res->isSuccess())
+				{
+					$eventLog = new \CEventLog;
+
+					$eventLog->Add(array(
+						"SEVERITY" => \CEventLog::SEVERITY_ERROR,
+						"AUDIT_TYPE_ID" => 'SALE_DELIVERY_TRACKING_UPDATE_SHIPMENT',
+						"MODULE_ID" => "sale",
+						"ITEM_ID" => $shipmentsData[$number]['SHIPMENT_ID'],
+						"DESCRIPTION" => implode('\n', $res->getErrorMessages())
+					));
 				}
 			}
+
+			$result->setData($eventsParams);
 		}
 
 		return $result;
@@ -480,9 +556,13 @@ class Manager
 	{
 		$result = new Result();
 
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Sale\Order $orderClass */
+		$orderClass = $registry->getOrderClassName();
+
 		foreach($params as $param)
 		{
-			if(intval($param->status) <= 0)
+			if(intval($param->status) <= 0 && $param->description == '')
 				continue;
 
 			$mappedStatuses = $this->getMappedStatuses();
@@ -490,34 +570,169 @@ class Manager
 			if(!empty($mappedStatuses[$param->status]))
 			{
 				/** @var Order $order */
-				$order = Order::load($param->orderId);
-				/** @var \Bitrix\Sale\ShipmentCollection  $shipmentCollection */
-				$shipmentCollection = $order->getShipmentCollection();
-				/** @var Shipment $oShipment */
-				$oShipment = $shipmentCollection->getItemById($param->shipmentId);
-				$res = $oShipment->setField('STATUS_ID', $mappedStatuses[$param->status]);
+				$order = $orderClass::load($param->orderId);
+				$shipmentCollection = null;
+				$oShipment = null;
 
-				if($res->isSuccess())
+				if($order)
 				{
-					$res = $order->save();
-
-					if(!$res->isSuccess())
-						$result->addErrors($res->getErrors());
+					/** @var \Bitrix\Sale\ShipmentCollection  $shipmentCollection */
+					$shipmentCollection = $order->getShipmentCollection();
 				}
-				else
+
+				if($shipmentCollection)
 				{
-					$result->addErrors($res->getErrors());
+					/** @var Shipment $oShipment */
+					$oShipment = $shipmentCollection->getItemById($param->shipmentId);
+				}
+
+				if($oShipment)
+				{
+					$res = $oShipment->setField('STATUS_ID', $mappedStatuses[$param->status]);
+
+					if($res->isSuccess())
+					{
+						$res = $order->save();
+
+						if(!$res->isSuccess())
+							$result->addErrors($res->getErrors());
+					}
+					else
+					{
+						$result->addErrors($res->getErrors());
+					}
 				}
 			}
 		}
 
 		$this->sendOnStatusesChangedEvent($params);
+		$this->sendStatusChangedMail($params);
 		return $result;
 	}
 
 	/**
 	 * @param StatusChangeEventParam[] $params
-	 * @throws SystemException
+	 * @return bool|int
+	 */
+	protected function sendStatusChangedMail($params)
+	{
+		if(empty($params))
+			return true;
+
+		/** @var  StatusChangeEventParam[] $paramsByShipmentId */
+		$paramsByShipmentId = array();
+
+		foreach($params as $status)
+			$paramsByShipmentId[$status->shipmentId] = $status;
+
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Sale\Order $orderClass */
+		$orderClass = $registry->getOrderClassName();
+
+		$res = ShipmentTable::getList(array(
+			'filter' => array(
+				'=ID' => array_keys($paramsByShipmentId)
+			),
+			'select' => array(
+				'DELIVERY_NAME',
+				'SITE_ID' => 'ORDER.LID',
+				'SITE_NAME' => 'SITE.NAME',
+				'SHIPMENT_NO' => 'ID',
+				'SHIPMENT_DATE' => 'DATE_INSERT',
+				'ORDER_NO' => 'ORDER.ACCOUNT_NUMBER',
+				'ORDER_DATE' => 'ORDER.DATE_INSERT',
+				'USER_NAME' => 'ORDER.USER.NAME',
+				'USER_LAST_NAME' => 'ORDER.USER.LAST_NAME',
+				'EMAIL' => 'ORDER.USER.EMAIL'
+			),
+			'runtime' => array(
+				'SITE' => array(
+					'data_type' => 'Bitrix\Main\SiteTable',
+					'reference' => array(
+						'ref.LID' => 'this.ORDER.LID',
+					),
+					'join_type' => 'left'
+				),
+			)
+		));
+
+		$event = new \CEvent;
+
+		while($data = $res->fetch())
+		{
+			$userEmail = '';
+			$userName = '';
+			$order = $orderClass::load($paramsByShipmentId[$data['SHIPMENT_NO']]->orderId);
+
+			/** @var PropertyValueCollection $propertyCollection */
+			if ($propertyCollection = $order->getPropertyCollection())
+			{
+				if ($propUserEmail = $propertyCollection->getUserEmail())
+					$userEmail = $propUserEmail->getValue();
+
+				if ($propPayerName = $propertyCollection->getPayerName())
+					$userName = $propPayerName->getValue();
+			}
+
+			if(empty($userEmail))
+				$userEmail = $data['EMAIL'];
+
+			if(empty($userName))
+				$userName = $data["USER_NAME"].(($data["USER_NAME"] == '' || $data["USER_LAST_NAME"] == '') ? "" : " ").$data["USER_LAST_NAME"];
+
+			$siteFields = \CAllEvent::GetSiteFieldsArray($data['SITE_ID']);
+
+			$fields = array(
+				'SITE_NAME' => $data['SITE_NAME'],
+				'ORDER_NO' => $data['ORDER_NO'],
+				'ORDER_DATE' => $data['ORDER_DATE']->toString(),
+				'ORDER_USER' => $userName,
+				'SHIPMENT_NO' => $data['SHIPMENT_NO'],
+				'SHIPMENT_DATE' => $data['SHIPMENT_DATE']->toString(),
+				'EMAIL' => $userEmail,
+				'STATUS_NAME' => self::getStatusName($paramsByShipmentId[$data['SHIPMENT_NO']]->status),
+				'STATUS_DESCRIPTION' => $paramsByShipmentId[$data['SHIPMENT_NO']]->description,
+				'TRACKING_NUMBER' => $paramsByShipmentId[$data['SHIPMENT_NO']]->trackingNumber,
+				'DELIVERY_NAME' => $data['DELIVERY_NAME'],
+				"ORDER_ACCOUNT_NUMBER_ENCODE" => urlencode(urlencode($data['ORDER_NO'])),
+				"SALE_EMAIL" => Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
+			);
+
+			$fields['ORDER_DETAIL_URL'] = Loc::getMessage(
+				'SALE_DTM_ORDER_DETAIL_URL',
+				array(
+					'#A1#' => '<a href="http://'.$siteFields['SERVER_NAME'].'/personal/order/detail/'.$fields['ORDER_ACCOUNT_NUMBER_ENCODE'].'/">',
+					'#A2#' => '</a>'
+				)
+			).'.';
+
+			$trackingUrl = self::getTrackingUrl(
+				$paramsByShipmentId[$data['SHIPMENT_NO']]->deliveryId,
+				$paramsByShipmentId[$data['SHIPMENT_NO']]->trackingNumber
+			);
+
+			$deliveryTrackingUrl = '';
+
+			if($trackingUrl <> '')
+			{
+				$deliveryTrackingUrl = Loc::getMessage(
+					'SALE_DTM_SHIPMENT_STATUS_TRACKING_URL',
+					array(
+						'#A1#' => '<a href="'.$trackingUrl.'">',
+						'#A2#' => '</a>'
+					)
+				).".<br><br>";
+			}
+
+			$fields['DELIVERY_TRACKING_URL'] = $deliveryTrackingUrl;
+			$event->Send("SALE_ORDER_SHIPMENT_STATUS_CHANGED", $data['SITE_ID'], $fields, "N");
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param StatusChangeEventParam[] $params
 	 */
 	protected function sendOnStatusesChangedEvent(array $params)
 	{
@@ -597,8 +812,7 @@ class Manager
 	/**
 	 * @param int $shipmentId
 	 * @param StatusResult $params
-	 * @param bool|false $isStatusChanged
-	 * @return Result
+	 * @return UpdateResult
 	 * @throws ArgumentNullException
 	 * @throws \Exception
 	 */
@@ -607,28 +821,64 @@ class Manager
 		if($shipmentId <= 0)
 			throw new ArgumentNullException('id');
 
-		if(strlen($params->trackingNumber) <= 0)
-			return new Result();
+		$updParams = array();
 
-		$dateTime = new \Bitrix\Main\Type\DateTime();
+		if($params->status !== null)
+			$updParams['TRACKING_STATUS'] = $params->status;
+
+		$updParams['TRACKING_LAST_CHECK'] = new \Bitrix\Main\Type\DateTime();
 
 		if(intval($params->lastChangeTimestamp) > 0)
 		{
-			$lastChange = \Bitrix\Main\Type\DateTime::createFromTimestamp(
+			$updParams['TRACKING_LAST_CHANGE'] = \Bitrix\Main\Type\DateTime::createFromTimestamp(
 				$params->lastChangeTimestamp
 			);
 		}
 		else
 		{
-			$lastChange = null;
+			$updParams['TRACKING_LAST_CHANGE'] = null;
 		}
 
-		return ShipmentTable::update($shipmentId, array(
-			'TRACKING_STATUS' => $params->status,
-			'TRACKING_LAST_CHECK' => $dateTime,
-			'TRACKING_LAST_CHANGE' => $lastChange,
-			'TRACKING_DESCRIPTION' => $params->description,
-			'TRACKING_NUMBER' => $params->trackingNumber
-		));
+		if($params->trackingNumber !== null)
+			$updParams['TRACKING_NUMBER'] = $params->trackingNumber;
+
+		$updParams['TRACKING_DESCRIPTION'] = $params->description;
+
+		if(!$params->isSuccess())
+			$updParams['TRACKING_DESCRIPTION'] .= ' '.implode(', ', $params->getErrorMessages());
+
+		return ShipmentTable::update($shipmentId, $updParams);
+	}
+
+	/**
+	 * @internal 
+	 * @param \SplObjectStorage $cloneEntity
+	 *
+	 * @return Manager
+	 */
+	public function createClone(\SplObjectStorage $cloneEntity)
+	{
+		if ($this->isClone() && $cloneEntity->contains($this))
+		{
+			return $cloneEntity[$this];
+		}
+
+		$trackingClone = clone $this;
+		$trackingClone->isClone = true;
+
+		if (!$cloneEntity->contains($this))
+		{
+			$cloneEntity[$this] = $trackingClone;
+		}
+		
+		return $trackingClone;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isClone()
+	{
+		return $this->isClone;
 	}
 }

@@ -3,12 +3,25 @@ define('BX_SESSION_ID_CHANGE', false);
 define('BX_SKIP_POST_UNQUOTE', true);
 define('NO_AGENT_CHECK', true);
 define("STATISTIC_SKIP_ACTIVITY_CHECK", true);
+define("BX_FORCE_DISABLE_SEPARATED_SESSION_MODE", true);
 
 if (isset($_REQUEST["type"]) && $_REQUEST["type"] == "crm")
 {
-	define("LANG", "en");
 	define("ADMIN_SECTION", true);
 }
+
+if(isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] == "GET")
+{
+	//from main 20.0.1300 only POST allowed
+	if(isset($_GET["USER_LOGIN"]) && isset($_GET["USER_PASSWORD"]) && isset($_GET["AUTH_FORM"]) && isset($_GET["TYPE"]))
+	{
+		$_POST["USER_LOGIN"] = $_GET["USER_LOGIN"];
+		$_POST["USER_PASSWORD"] = $_GET["USER_PASSWORD"];
+		$_POST["AUTH_FORM"] = $_GET["AUTH_FORM"];
+		$_POST["TYPE"] = $_GET["TYPE"];
+	}
+}
+
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
 
 if($type=="sale")
@@ -48,6 +61,7 @@ elseif($type=="crm")
 		$IMPORT_SIZE = intval($_GET["IMPORT_SIZE"]);
 		$GZ_COMPRESSION_SUPPORTED = intval($_GET["GZ_COMPRESSION_SUPPORTED"]);
 	}
+
 	$APPLICATION->IncludeComponent("bitrix:sale.export.1c", "", Array(
 			"CRM_MODE" => "Y",
 			"ORDER_ID" => $orderId,
@@ -117,14 +131,34 @@ elseif($type=="listen")
 {
 	$APPLICATION->RestartBuffer();
 
+	CModule::IncludeModule('sale');
+
+	$timeLimit = 60;//1 minute
+	$startExecTime = time();
+	$max_execution_time = (intval(ini_get("max_execution_time")) * 0.75);
+	$max_execution_time = ($max_execution_time > $timeLimit )? $timeLimit:$max_execution_time;
+
 	if(CModule::IncludeModule("sale") && defined("CACHED_b_sale_order"))
 	{
 		while(!$CACHE_MANAGER->getImmediate(CACHED_b_sale_order, "sale_orders"))
 		{
 			usleep(1000);
+
+			if(intval(time() - $startExecTime) > $max_execution_time)
+			{
+				break;
+			}
 		}
 	}
-	echo "success\n";
+
+	if($CACHE_MANAGER->getImmediate(CACHED_b_sale_order, "sale_orders"))
+	{
+		echo "success\n";
+	}
+	else
+	{
+		CHTTP::SetStatus("304 Not Modified");
+	}
 }
 else
 {

@@ -2,6 +2,8 @@
 
 namespace Bitrix\Sale\Compatible;
 
+use Bitrix\Main\Application;
+use Bitrix\Main\DB;
 use	Bitrix\Main\Entity,
 	Bitrix\Main\Entity\Query,
 	Bitrix\Main\Entity\Field,
@@ -49,7 +51,7 @@ class AliasedQuery extends Query
 
 	public function addAlias($alias, $field = null)
 	{
-		if ($this->aliases[$alias])
+		if (($this->aliases[$alias] ?? false))
 		{
 			throw new SystemException("`$alias` already added", 0, __FILE__, __LINE__);
 		}
@@ -285,7 +287,7 @@ final class CDBResult extends \CDBResult
 //			return false;
 
 //		$this->result = $res_tmp->result;
-		$this->DB = DB;
+		$this->DB = $DB;
 
 		if($this->SqlTraceIndex)
 			$start_time = microtime(true);
@@ -403,7 +405,7 @@ class OrderQuery extends AliasedQuery
 
 	public static function explodeFilterKey($key)
 	{
-		preg_match('/^([!+]{0,1})([<=>@%~]{0,2})(.*)$/', $key, $matches);
+		preg_match('/^([!+*]{0,1})([<=>@%~?]{0,2})(.*)$/', $key, $matches);
 
 		return array(
 			'modifier' => $matches[1], // can be ""
@@ -425,14 +427,17 @@ class OrderQuery extends AliasedQuery
 		switch ($operator)
 		{
 			case  '':
-			case '@': $operator = '='; break;
+			case '@': $operator = ($modifier === '*' ? '' : '=');
+				break;
 
-			case '~': $operator =  ''; break;
+			case '~': $operator =  '';
+				break;
 			// default: with no changes
 		}
 
 		switch ($modifier)
 		{
+			case '*':
 			case '' : return $this->addFilter($modifier.$operator.$name, $value);
 
 			case '!': return $operator == '=' && $value
@@ -568,6 +573,11 @@ class OrderQuery extends AliasedQuery
 		return $names;
 	}
 
+	protected function prepareCompatibleRows(array $rows)
+	{
+		return $rows;
+	}
+
 	public function compatibleExec(CDBResult $result, $navStart)
 	{
 		if ($this->aggregated)
@@ -589,9 +599,79 @@ class OrderQuery extends AliasedQuery
 		}
 
 		$rows = $this->exec()->fetchAll();
+		$rows = $this->prepareCompatibleRows($rows);
 		$result->InitFromArray($rows);
 
 		return $result;
+	}
+}
+
+class OrderPropertyValuesQuery extends OrderQuery
+{
+	/**
+	 * @param array $rows
+	 * @return array
+	 */
+	protected function prepareCompatibleRows(array $rows)
+	{
+		$locationIds = [];
+		foreach ($rows as $key => $row)
+		{
+			if ($row['TYPE'] === 'LOCATION' && !empty($row['VALUE']))
+			{
+				if (is_array($row['VALUE']))
+				{
+					$locationIds = array_merge($locationIds, $row['VALUE']);
+				}
+				else
+				{
+					$locationIds[] = $row['VALUE'];
+				}
+			}
+		}
+
+		if (!empty($locationIds))
+		{
+			$locationMap = [];
+			$locationRaw = \Bitrix\Sale\Location\LocationTable::getList([
+				'filter' => ['=CODE' => $locationIds],
+				'select' => ['ID', 'CODE']
+			]);
+			while ($location = $locationRaw->fetch())
+			{
+				$locationMap[$location['CODE']] = $location['ID'];
+			}
+		}
+
+		foreach ($rows as &$row)
+		{
+			if (isset($row['VALUE']))
+			{
+				if ($row['TYPE'] === 'LOCATION' && !empty($row['VALUE']))
+				{
+					if (is_array($row['VALUE']))
+					{
+						foreach ($row['VALUE'] as &$valueItem)
+						{
+							$valueItem = $locationMap[$valueItem];
+						}
+					}
+					else
+					{
+						$row['VALUE'] = $locationMap[$row['VALUE']];
+					}
+				}
+
+				$row['PROXY_VALUE'] = $row['VALUE'];
+				if (is_array($row['VALUE']))
+				{
+					$row['PROXY_VALUE'] = serialize($row['VALUE']);
+				}
+				unset($row['VALUE']);
+			}
+		}
+
+		return $rows;
 	}
 }
 
@@ -604,6 +684,7 @@ class OrderQueryLocation extends OrderQuery
 		if((string) $fieldName == '')
 			return false;
 
+
 		$this->registerRuntimeField(
 			'LOCATION',
 			array(
@@ -615,12 +696,24 @@ class OrderQueryLocation extends OrderQuery
 			)
 		);
 
+		$fieldType = "CHAR";
+		/** @var DB\Connection $connection */
+		$connection = Application::getConnection();
+		if ($connection instanceof DB\MssqlConnection)
+		{
+			$fieldType = "VARCHAR";
+		}
+		elseif($connection instanceof DB\OracleConnection)
+		{
+			$fieldType = "VARCHAR2";
+		}
+
 		$this->registerRuntimeField(
 			'PROXY_'.$fieldName.'_LINK',
 			array(
 				'data_type' => 'string',
 				'expression' => array(
-					"CASE WHEN %s = 'LOCATION' THEN CAST(%s AS CHAR) ELSE %s END",
+					"CASE WHEN %s = 'LOCATION' THEN CAST(%s AS ".$fieldType."(500)) ELSE %s END",
 					($ref !== false ? $ref.'.' : '').'TYPE',
 					'LOCATION.ID',
 					$fieldName

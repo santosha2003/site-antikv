@@ -37,7 +37,7 @@ $aMenuLinks = Array(
 	),
 	Array(
 		"Форум фалеристов,<br> нумизматов<br> и кладоискателей", 
-		"/forum/", 
+		"http://rusantikvar.ru/forum/index.php", 
 		Array(), 
 		Array("class"=>"forum"), 
 		"" 

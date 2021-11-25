@@ -7,7 +7,11 @@
  */
 namespace Bitrix\Sale\Internals;
 
+use Bitrix\Main\Application;
+use Bitrix\Main\Entity\DeleteResult;
+use Bitrix\Main\Entity\StringField;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\PaySystem;
 
 Loc::loadMessages(__FILE__);
 
@@ -105,9 +109,42 @@ class PaySystemActionTable extends \Bitrix\Main\Entity\DataManager
 				'values' => array('N', 'Y')
 			),
 			'IS_CASH' => array(
+				'data_type' => 'string'
+			),
+			'AUTO_CHANGE_1C' => array(
 				'data_type' => 'boolean',
 				'values' => array('N', 'Y')
-			)
+			),
+			'CAN_PRINT_CHECK' => array(
+				'data_type' => 'boolean',
+				'values' => array('N', 'Y')
+			),
+			'ENTITY_REGISTRY_TYPE' => array(
+				'data_type' => 'string',
+			),
+			'XML_ID' => array(
+				'data_type' => 'string',
+			),
 		);
+	}
+
+	/**
+	 * Deletes row in entity table by primary key
+	 *
+	 * @param mixed $primary
+	 *
+	 * @return DeleteResult
+	 *
+	 * @throws \Exception
+	 */
+	public static function delete($primary)
+	{
+		if ($primary == PaySystem\Manager::getInnerPaySystemId())
+		{
+			$cacheManager = Application::getInstance()->getManagedCache();
+			$cacheManager->clean(PaySystem\Manager::CACHE_ID);
+		}
+
+		return parent::delete($primary);
 	}
 }

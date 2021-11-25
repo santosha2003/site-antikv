@@ -1,5 +1,0 @@
-<?
-$MESS ['T_IBLOCK_DESC_CATALOG'] = "Katalog";
-$MESS ['IBLOCK_ELEMENT_TEMPLATE_NAME'] = "katalog öðesi detaylý";
-$MESS ['IBLOCK_ELEMENT_TEMPLATE_DESCRIPTION'] = "Katalog öðesi hakkýnda detaylý bilgi girer";
-?>

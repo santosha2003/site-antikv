@@ -1,62 +1,118 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<content type="LES"><id>1278</id>
-<timestamp_x>1209909514</timestamp_x>
-<date_create>1209547508</date_create>
-<created_by>6104</created_by>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>873</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>200</sort>
+<timestamp_x>1406637346</timestamp_x>
+<date_create>1406636850</date_create>
+<created_user_name>(admin) РРІР°РЅ РРІР°РЅРѕРІ</created_user_name>
+<created_by>1</created_by>
 <active>Y</active>
-<course_id>1</course_id>
-<chapter_id></chapter_id>
-<name>Режим Просмотра</name>
-<sort>20</sort>
+<name>РџСЂРёРјРµСЂС‹ СЂРµС€РµРЅРёСЏ С‚РёРїРѕРІС‹С… Р·Р°РґР°С‡</name>
 <preview_picture></preview_picture>
 <preview_text></preview_text>
 <preview_text_type>text</preview_text_type>
-<detail_picture></detail_picture>
-<detail_text><![CDATA[<p>Состояние административной панели, которое служит для просмотра страниц в том виде, как они будут доступны простым пользователям. В этом режиме также можно выполнять основные операции по управлению содержанием сайта:</p>
+<detail_text><![CDATA[<p>Р‘РѕР»СЊС€Р°СЏ С‡Р°СЃС‚СЊ СЂРµС€РµРЅРёР№ С‚РёРїРѕРІС‹С… Р·Р°РґР°С‡ РљРѕРЅС‚РµРЅС‚-РјРµРЅРµРґР¶РµСЂР° РѕРїРёСЃР°РЅР° РІ С‚РµРєСЃС‚Рµ РєСѓСЂСЃР°, РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёС… С‚РµРјР°С…. РќРёР¶Рµ РїСЂРёРІРµРґРµРЅС‹ СЃСЃС‹Р»РєРё РЅР° С‚Р°РєРёРµ СЃС‚СЂР°РЅРёС†С‹.</p>
+
 <ul>
-   <li>Создание страницы или раздела:
-    <p><img src="cid:resources/res3/QU35z.create_page_section.png" width="106" height="77" border="0" /></p>
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=3512">РљР°Рє РґРѕР±Р°РІРёС‚СЊ РЅРѕРІРѕСЃС‚СЊ РЅР° СЃР°Р№С‚</a></li>
 
-Страница и раздел из публичной части создаются с помощью мастера. С его помощью пользователь, не имеющий подготовки, сможет создать страницу или раздел, последовательно внося данные на каждом шаге мастера. Содержание страницы создается в визуальном редакторе, загружаемом прямо в публичной части.
-</li>
-   <li>Редактирование текущей страницы и изменение свойств страницы или раздела:
-    <br /><br /><img src="cid:resources/res3/gJjiV.change_page_section.png" width="193" height="128" border="0" /><br /><br />
-Редактирование страницы производится либо в визуальном редакторе, либо в виде HTML кода без визуального представления. Свойства страницы или раздела изменяются в специальной форме. Все формы загружаются прямо в публичной части. После сохранения изменения сразу вступают в силу. 
-</li>
-   <li>Редактирование меню:
-    <p><img src="cid:resources/res3/WMUUY.menu.png" width="244" height="77" border="0" /></p>
-<p>Вы можете отредактировать пункты меню в форме из публичной части:</p>
-   <p><img src="cid:resources/res3/fqQmO.menu_edit_form_sm.png" height="241" alt="Нажмите на рисунок, чтобы увеличить" width="350" border="0"/>
-</p>
-После сохранения изменения сразу вступят в силу.
- </li>
-   <li>В режиме просмотра можно получить минимальную информацию по статистике данного сайта.
-    <p><img src="cid:resources/res3/PYUWA.statistics.png" width="420" height="77" border="0" /></p>
-Есть возможность построить график посещаемости данной страницы, а также вывести статистику переходов по ссылкам с данной страницы.
-</li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=2055">РљР°Рє РЅР°РїРѕР»РЅРёС‚СЊ С„РѕС‚РѕРіР°Р»РµСЂРµСЋ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&CHAPTER_ID=04593">РљР°Рє РЅР°РїРѕР»РЅРёС‚СЊ РІРёРґРµРѕС‚РµРєСѓ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1833">РљР°Рє РІРµСЂРЅСѓС‚СЊ РїРѕС‚РµСЂСЏРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РІ СЃР»СѓС‡Р°Рµ РЅРµС€С‚Р°С‚РЅРѕР№ СЃРёС‚СѓР°С†РёРё</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=3068">РљР°Рє РЅР°СЃС‚СЂРѕРёС‚СЊ СЂР°Р±РѕС‡РёР№ СЃС‚РѕР» Рё СЂР°Р·РјРµСЃС‚РёС‚СЊ РЅР° РЅРµРј СЃСЂРµРґСЃС‚РІР° РґР»СЏ РІС‹РІРѕРґР° СЂР°Р·Р»РёС‡РЅС‹С… РґР°РЅРЅС‹С…</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1911">РљР°Рє СЃРѕР·РґР°С‚СЊ СЂР°Р·РґРµР» РёР»Рё СЃС‚СЂР°РЅРёС†Сѓ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1878">РљР°Рє РѕРіСЂР°РЅРёС‡РёС‚СЊ РґРѕСЃС‚СѓРї Рє СЃС‚СЂР°РЅРёС†Рµ РёР»Рё СЂР°Р·РґРµР»Сѓ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1862#change_menu">РљР°Рє СЃРѕР·РґР°С‚СЊ Рё СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РїСѓРЅРєС‚С‹ РјРµРЅСЋ СЃР°Р№С‚Р°</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1874">РљР°Рє СЃРѕР·РґР°С‚СЊ С‚Р°Р±Р»РёС†Сѓ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1873">РљР°Рє СЂР°Р±РѕС‚Р°С‚СЊ СЃ РіРёРїРµСЂСЃСЃС‹Р»РєР°РјРё</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=1877">РљР°Рє РґРѕР±Р°РІР»СЏС‚СЊ РЅР° СЃС‚СЂР°РЅРёС†Сѓ Р·Р°СЂР°РЅРµРµ РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Р№ С‚РµРєСЃС‚ РёР»Рё РєРѕРґ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=4576">РљР°Рє Р±С‹СЃС‚СЂРѕ РѕС‚СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РЅРµСЃРєРѕР»СЊРєРѕ СЌР»РµРјРµРЅС‚РѕРІ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=2200">РљР°Рє РІСЃС‚Р°РІРёС‚СЊ РІРёРґРµРѕ, СЂР°Р·РјРµС‰РµРЅРЅРѕРµ РЅР° РґСЂСѓРіРѕРј СЃРµСЂРІРµСЂРµ, РЅР°РїСЂРёРјРµСЂ, РЅР° YouTube</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=3579">РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р§РџРЈ</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=5523">РљР°Рє Р·Р°РєСЂРµРїРёС‚СЊ РЅРѕРІРѕСЃС‚СЊ РЅР°РІРµСЂС…Сѓ РѕР±С‰РµРіРѕ СЃРїРёСЃРєР°</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=2099">РљР°Рє РёСЃРїСЂР°РІРёС‚СЊ РѕС€РёР±РєРё, РІРѕР·РЅРёРєР°СЋС‰РёРµ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РёРЅС„РѕР±Р»РѕРєР°РјРё</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=2149">РљР°Рє РёСЃРїСЂР°РІРёС‚СЊ РѕС€РёР±РєРё, РІРѕР·РЅРёРєР°СЋС‰РёРµ РїСЂРё СЂР°Р±РѕС‚Рµ СЃРѕ СЃС‚СЂСѓРєС‚СѓСЂРѕР№</a></li>
+
+<li><a href="/learning/course/index.php?COURSE_ID={SELF}&LESSON_ID=6471">РљР°Рє СЂР°Р±РѕС‚Р°С‚СЊ СЃ РєРѕРјРјРµРЅС‚Р°СЂРёСЏРјРё РјРЅРѕРіРѕРїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕР№ РіР°Р»РµСЂРµРё</a></li>
 </ul>
-<p>В случае необходимости административная панель может быть временно скрыта:
-</p>
-    <p><img src="cid:resources/res3/hy77P.hide_panel.png" width="181" height="91" border="0" /></p>
-<p>Развернуть ее в нужный момент можно по стрелке вниз:    <img src="cid:resources/res3/o1ms7.show_panel.png" width="127" height="34" border="0" />  </p>
 
-<p>Панель может быть зафиксирована вверху экрана: <img src="cid:resources/res3/B0yIQ.panel_fix.png" width="33" height="27" border="0" /> </p>
+<p>РР· РґСЂСѓРіРёС… РєСѓСЂСЃРѕРІ:</p>
+<ul>
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=35&LESSON_ID=2021">РЎРѕР·РґР°РЅРёРµ Рё СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ СЃС‚СЂР°РЅРёС†/СЂР°Р·РґРµР»РѕРІ РІ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РёРІРЅРѕР№ С‡Р°СЃС‚Рё</a></li>
 
-<p>По кнопке <img src="cid:resources/res3/aBQzO.admin_button_opt.png" width="134" height="24" border="0" />  можно перейти к изменению профиля текущего пользователя в форме административного раздела.</p>
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=35&LESSON_ID=2164">РћС‡РёСЃС‚РєР° РєСЌС€Р°</a></li>
 
-<p>Кнопка <img src="cid:resources/res3/7XigX.log_out.png" width="63" height="24" border="0" /> служит для завершения авторизованного сеанса работы текущего пользователя.</p>
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=35&LESSON_ID=2068">Р—Р°РЅРµСЃРµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЃС‚СЂР°РЅРёС†Р°С… СЃР°Р№С‚Р° РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С… Google</a></li>
 
-<p>Административная панель теперь позволяет переходить на заранее определенную страницу административной части. Это выполняется с помощью кнопки <b>&quot;Пуск&quot;</b>. Разделы административной части подгружаются динамически:</p>
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=35&LESSON_ID=3582">Р РµР№С‚РёРЅРіРё. РџСЂРёРјРµСЂС‹ СЂР°Р±РѕС‚С‹</a></li>
 
-<table>
-  <tr>
-     <td valign="top"><img src="cid:resources/res3/srLX7.start_button.png" width="123" height="87" border="0" /></td>
-    <td>&nbsp;&nbsp;&nbsp;</td>
-     <td><img src="cid:resources/res3/8ez6f.start_button_content.png" width="331" height="252" border="0" /></td>
-     
-</tr>
-</table>
-<br />
-Таким образом, вы можете сразу перейти, например, на страницу со списком заказов.]]></detail_text>
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=35&LESSON_ID=5347">РЎРѕР·РґР°РЅРёРµ РґРѕСЃРєРё РѕР±СЉСЏРІР»РµРЅРёР№</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2981">Р’РєР»СЋС‡РµРЅРёРµ С„СѓРЅРєС†РёРѕРЅР°Р»Р° С„РѕС‚РѕРіР°Р»РµСЂРµРё РґР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ Рё РіСЂСѓРїРї</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2982">Р Р°Р·РјРµС‰РµРЅРёРµ С„РѕС‚РѕРіР°Р»РµСЂРµРё</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2955">Р”РѕР±Р°РІР»РµРЅРёРµ СЃРїРёСЃРєР° Р»СЋР±РѕРіРѕ С‚РёРїР°</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2855">Р Р°Р·РјРµС‰РµРЅРёРµ Р±Р°РЅРЅРµСЂР° РІ СЂРµРєР»Р°РјРЅРѕР№ РѕР±Р»Р°СЃС‚Рё</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=3105">РљР°Рє СѓР·РЅР°С‚СЊ РёР· СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РєСѓСЂСЃР° Рѕ СЃС‚РµРїРµРЅРё РїРѕРЅРёРјР°РЅРёСЏ С‚РѕР№ РёР»Рё РёРЅРѕР№ С‡Р°СЃС‚Рё РјР°С‚РµСЂРёР°Р»Р°</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2931">РЎРѕР·РґР°РЅРёРµ РѕРїСЂРѕСЃР°</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2951">РџРѕРґРїРёСЃРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ РЅР° СЂР°СЃСЃС‹Р»РєРё СЃР°Р№С‚Р°</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=2926">РЎРѕР·РґР°РЅРёРµ РІРµР±-С„РѕСЂРјС‹</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&CHAPTER_ID=1020">РЎРѕР·РґР°РЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР° Р±Р»РѕРіРѕРІ СЃ РїРѕРјРѕС‰СЊСЋ РєРѕРјРїРѕРЅРµРЅС‚Р°</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=41&LESSON_ID=3846">РќР°СЃС‚СЂРѕР№РєР° РґРѕСЃС‚СѓРїР° РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ Рє СЃРІРѕРёРј СЂРµР·СѓР»СЊС‚Р°С‚Р°Рј Р·Р°РїРѕР»РЅРµРЅРёСЏ РІРµР±-С„РѕСЂРјС‹</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=3101">РџРµС‡Р°С‚СЊ РґРѕРєСѓРјРµРЅС‚РѕРІ</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=3457">Р­РєСЃРїРѕСЂС‚ Рё РёРјРїРѕСЂС‚ РёР· С‚РѕСЂРіРѕРІС‹С… РєР°С‚Р°Р»РѕРіРѕРІ</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=3456">РќР°СЃС‚СЂРѕР№РєР° РёРЅС„РѕР±Р»РѕРєР° РЅР° СѓС‡Р°СЃС‚РёРµ РІ С‚РѕСЂРіРѕРІС‹С… РѕРїРµСЂР°С†РёСЏС…</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=3199">РћСЃСѓС‰РµСЃС‚РІР»РµРЅРёРµ РїРѕРґРїРёСЃРєРё РЅР° РєРѕРЅС‚РµРЅС‚</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=5124">РљР°Рє СЂР°Р·РјРµСЃС‚РёС‚СЊ РІ РёРЅС„РѕР±Р»РѕРєРµ СЂР°Р·РЅС‹Рµ РєР°С‚РµРіРѕСЂРёРё С‚РѕРІР°СЂРѕРІ</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=5355">РЎРѕР·РґР°РЅРёРµ СЃРєРёРґРѕРє РЅР° Р·Р°РєР°Р·С‹</a></li>
+
+<li><a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=35&LESSON_ID=5840">РќР°СЃС‚СЂРѕР№РєР° SEO РґР°РЅРЅС‹С… РІ РёРЅС„РѕР±Р»РѕРєРµ</a></li>
+</ul><br>]]></detail_text>
+<detail_picture></detail_picture>
 <detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>200</edge_sort>
+<id>873</id>
 </content>

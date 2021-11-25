@@ -12,8 +12,11 @@
 if (!CModule::IncludeModule("forum"))
 	return 0;
 $this->IncludeComponentLang("action.php");
+$post = $this->request->getPostList()->toArray();
+if ($post["AJAX_POST"] == "Y")
+	CUtil::decodeURIComponent($post);
 
-if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"] != "VIEW") && check_bitrix_sessid())
+if (($action <> '' || $s_action <> '') && ($_REQUEST["MESSAGE_MODE"] != "VIEW") && check_bitrix_sessid())
 {
 	//*************************!Subscribe***************************************************
 	if ($s_action == 'SUBSCRIBE' || $s_action == 'UNSUBSCRIBE')
@@ -32,7 +35,7 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 	}
 	$result = false;
 	//*************************!Subscribe***************************************************
-	if (strlen($action) > 0 && $action != "SUBSCRIBE" && $action != "UNSUBSCRIBE" )
+	if ($action <> '' && $action != "SUBSCRIBE" && $action != "UNSUBSCRIBE" )
 	{
 		$arFields = array();
 		$url = false;
@@ -56,7 +59,7 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 				$MID = 0;
 				$db_res = CForumMessage::GetList(array("ID"=>"ASC"), array("TOPIC_ID"=>$arParams["TID"]), false, 1);
 				if (($db_res) && ($res = $db_res->Fetch()))
-					$MID = intVal($res["ID"]);
+					$MID = intval($res["ID"]);
 				if ($MID > 0)
 				{
 					$url = ForumAddPageParams(
@@ -69,12 +72,12 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 				$arFields = array(
 						"FID" => $arParams["FID"],
 						"TID" => $arParams["TID"],
-						"POST_MESSAGE" => $_POST["POST_MESSAGE"],
-						"AUTHOR_NAME" => $_POST["AUTHOR_NAME"],
-						"AUTHOR_EMAIL" => $_POST["AUTHOR_EMAIL"],
-						"USE_SMILES" => $_POST["USE_SMILES"],
-						"captcha_word" =>  $_POST["captcha_word"],
-						"captcha_code" => $_POST["captcha_code"],
+						"POST_MESSAGE" => $post["POST_MESSAGE"],
+						"AUTHOR_NAME" => $post["AUTHOR_NAME"],
+						"AUTHOR_EMAIL" => $post["AUTHOR_EMAIL"],
+						"USE_SMILES" => $post["USE_SMILES"],
+						"captcha_word" =>  $post["captcha_word"],
+						"captcha_code" => $post["captcha_code"],
 						"NAME_TEMPLATE" => $arParams["NAME_TEMPLATE"]
 						);
 				if (!empty($_FILES["ATTACH_IMG"]))
@@ -96,7 +99,7 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 					{
 						$res = array();
 						foreach ($_FILES as $key => $val):
-							if (substr($key, 0, strlen("FILE_NEW")) == "FILE_NEW" && !empty($val["name"])):
+							if (mb_substr($key, 0, mb_strlen("FILE_NEW")) == "FILE_NEW" && !empty($val["name"])):
 								$arFiles[] = $_FILES[$key];
 							endif;
 						endforeach;
@@ -122,7 +125,7 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 					array("FID" => $arParams["FID"], 
 						"TID" => $arParams["TID"],
 						"TITLE_SEO" => $arResult["TOPIC"]["TITLE_SEO"],
-						"MID" => (intVal($_REQUEST["MID"]) > 0 ? $_REQUEST["MID"] : "s")
+						"MID" => (intval($_REQUEST["MID"]) > 0 ? $_REQUEST["MID"] : "s")
 					));
 				break;
 			case "HIDE":
@@ -232,7 +235,7 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 				}
 				else 
 				{
-					$mid = intVal($message);
+					$mid = intval($message);
 					if (is_array($message))
 					{
 						sort($message);
@@ -251,7 +254,7 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 						if ($db_res && $res = $db_res->Fetch())
 							$mid = $res["ID"];
 					endif;
-					$mid = (intVal($mid) > 0 ? $mid : "s");
+					$mid = (intval($mid) > 0 ? $mid : "s");
 					$url = str_replace("#MID#", $mid, $url);
 				}
 			}
@@ -261,14 +264,14 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 			}
 			elseif ($action == "REPLY")
 			{
-				$arParams["MID"] = intVal($result);
+				$arParams["MID"] = intval($result);
 			}
 			
 			$url = str_replace("#result#", $result, $url);
 		}
 		else
 			$result = true;
-		$action = strToLower($action);
+		$action = mb_strtolower($action);
 	}
 	
 	if (!$result)
@@ -291,12 +294,12 @@ if ((strlen($action) > 0 || strlen($s_action) > 0) && ($_REQUEST["MESSAGE_MODE"]
 		die();
 	}
 }
-elseif ((strlen($action) > 0) && ($_REQUEST["MESSAGE_MODE"] != "VIEW") && !check_bitrix_sessid())
+elseif (($action <> '') && ($_REQUEST["MESSAGE_MODE"] != "VIEW") && !check_bitrix_sessid())
 {
 	$bVarsFromForm = true;
 	$strErrorMessage = GetMessage("F_ERR_SESS_FINISH");
 }
-elseif($_POST["MESSAGE_MODE"] == "VIEW")
+elseif($post["MESSAGE_MODE"] == "VIEW")
 {
 	$View = true;
 	$bVarsFromForm = true;
@@ -315,16 +318,16 @@ elseif($_POST["MESSAGE_MODE"] == "VIEW")
 		"NL2BR" => $arResult["FORUM"]["ALLOW_NL2BR"]);
 	$arAllow["SMILES"] = ($_POST["USE_SMILES"]!="Y" ? "N" : $arResult["FORUM"]["ALLOW_SMILES"]);
 	$arFields = array(
-		"FORUM_ID" => intVal($arParams["FID"]),
-		"TOPIC_ID" => intVal($arParams["TID"]),
-		"MESSAGE_ID" => intVal($arParams["MID"]),
-		"USER_ID" => intVal($GLOBALS["USER"]->GetID()));
+		"FORUM_ID" => intval($arParams["FID"]),
+		"TOPIC_ID" => intval($arParams["TID"]),
+		"MESSAGE_ID" => intval($arParams["MID"]),
+		"USER_ID" => intval($GLOBALS["USER"]->GetID()));
 	$arFiles = array();
 	$arFilesExists = array();
 	$res = array();
 
 	foreach ($_FILES as $key => $val):
-		if (substr($key, 0, strlen("FILE_NEW")) == "FILE_NEW" && !empty($val["name"])):
+		if (mb_substr($key, 0, mb_strlen("FILE_NEW")) == "FILE_NEW" && !empty($val["name"])):
 			$arFiles[] = $_FILES[$key];
 		endif;
 	endforeach;
@@ -355,9 +358,9 @@ elseif($_POST["MESSAGE_MODE"] == "VIEW")
 	$arFilesExists = array_keys($arFilesExists);
 	sort($arFilesExists);
 	$arResult["MESSAGE_VIEW"]["FILES"] = $_REQUEST["FILES"] = $arFilesExists;
-	$arResult["POST_MESSAGE_VIEW"] = $parser->convert($_POST["POST_MESSAGE"], $arAllow, "html", $arResult["MESSAGE_VIEW"]["FILES"]);
+	$arResult["POST_MESSAGE_VIEW"] = $parser->convert($post["POST_MESSAGE"], $arAllow, "html", $arResult["MESSAGE_VIEW"]["FILES"]);
 	$arResult["MESSAGE_VIEW"]["FILES_PARSED"] = $parser->arFilesIDParsed;
-	$arResult["MESSAGE_VIEW"]["AUTHOR_NAME"] = ($USER->IsAuthorized() || empty($_POST["AUTHOR_NAME"]) ? $arResult["USER"]["SHOW_NAME"] : trim($_POST["AUTHOR_NAME"]));
+	$arResult["MESSAGE_VIEW"]["AUTHOR_NAME"] = ($USER->IsAuthorized() || empty($post["AUTHOR_NAME"]) ? $arResult["USER"]["SHOW_NAME"] : trim($post["AUTHOR_NAME"]));
 	$arResult["MESSAGE_VIEW"]["TEXT"] = $arResult["POST_MESSAGE_VIEW"];
 	$arResult["VIEW"] = "Y";
 }

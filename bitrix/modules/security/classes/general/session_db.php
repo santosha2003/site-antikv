@@ -2,11 +2,16 @@
 
 use Bitrix\Security\SessionTable;
 
+/**
+ * Class CSecuritySessionDB
+ * @deprecated
+ * @see \Bitrix\Main\Session\Handlers\DatabaseSessionHandler
+ */
 class CSecuritySessionDB
 {
 	protected static $isReadOnly = false;
 	protected static $sessionId = null;
-
+	protected static $hasFailedRead = false;
 	/**
 	 * @return bool
 	 */
@@ -60,7 +65,15 @@ class CSecuritySessionDB
 
 		if ($sessionRow && isset($sessionRow['SESSION_DATA']))
 		{
-			return $sessionRow['SESSION_DATA'];
+			return base64_decode($sessionRow['SESSION_DATA']);
+		}
+		else
+		{
+			if (!self::$hasFailedRead)
+			{
+				AddEventHandler("main", "OnPageStart", array("CSecuritySession", "UpdateSessID"));
+				self::$hasFailedRead = true;
+			}
 		}
 
 		return '';
@@ -77,7 +90,12 @@ class CSecuritySessionDB
 			return false;
 
 		if (self::$isReadOnly)
-			return true;
+		{
+			if (!CSecuritySession::isOldSessionIdExist())
+			{
+				return true;
+			}
+		}
 
 		if(CSecuritySession::isOldSessionIdExist())
 			$oldSessionId = CSecuritySession::getOldSessionId(true);
@@ -88,7 +106,7 @@ class CSecuritySessionDB
 		$result = SessionTable::add(array(
 			'SESSION_ID' => $id,
 			'TIMESTAMP_X' => new Bitrix\Main\Type\DateTime,
-			'SESSION_DATA' => $sessionData
+			'SESSION_DATA' => base64_encode($sessionData),
 		));
 
 		return $result->isSuccess();

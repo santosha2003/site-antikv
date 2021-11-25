@@ -23,7 +23,7 @@ foreach($arResult["CATEGORIES"] as $category_id => $arCategory)
 			$arResult["SEARCH"][] = &$arResult["CATEGORIES"][$category_id]["ITEMS"][$i];
 			if (
 				$arItem["MODULE_ID"] == "iblock"
-				&& substr($arItem["ITEM_ID"], 0, 1) !== "S"
+				&& mb_substr($arItem["ITEM_ID"], 0, 1) !== "S"
 			)
 			{
 				if ($arCatalogs === false)
@@ -107,6 +107,7 @@ if (!empty($arResult["ELEMENTS"]) && CModule::IncludeModule("iblock"))
 		$arFilter["CATALOG_SHOP_QUANTITY_".$value["ID"]] = 1;
 	}
 	$arFilter["=ID"] = $arResult["ELEMENTS"];
+	$arResult["ELEMENTS"] = array();
 	$rsElements = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
 	while($arElement = $rsElements->Fetch())
 	{

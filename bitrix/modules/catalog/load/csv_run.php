@@ -8,11 +8,7 @@ if (!CCatalog::IsUserExists())
 {
 	$bTmpUserCreated = true;
 	if (isset($USER))
-	{
 		$USER_TMP = $USER;
-		unset($USER);
-	}
-
 	$USER = new CUser();
 }
 
@@ -136,7 +132,7 @@ if (empty($arRunErrors))
 				$delimiter_r_char = " ";
 				break;
 			case "OTR":
-				$delimiter_r_char = (isset($delimiter_other_r) ? substr($delimiter_other_r, 0, 1) : '');
+				$delimiter_r_char = (isset($delimiter_other_r)? mb_substr($delimiter_other_r, 0, 1) : '');
 				break;
 			case "TZP":
 				$delimiter_r_char = ";";
@@ -144,7 +140,7 @@ if (empty($arRunErrors))
 		}
 	}
 
-	if (strlen($delimiter_r_char) != 1)
+	if (mb_strlen($delimiter_r_char) != 1)
 	{
 		$arRunErrors[] = GetMessage("CATI_NO_DELIMITER");
 	}
@@ -155,7 +151,7 @@ if (empty($arRunErrors))
 	}
 
 
-	if (!isset($SETUP_FILE_NAME) || strlen($SETUP_FILE_NAME) <= 0)
+	if (!isset($SETUP_FILE_NAME) || $SETUP_FILE_NAME == '')
 	{
 		$arRunErrors[] = GetMessage("CATI_NO_SAVE_FILE");
 	}
@@ -166,9 +162,9 @@ if (empty($arRunErrors))
 	else
 	{
 		$SETUP_FILE_NAME = Rel2Abs("/", $SETUP_FILE_NAME);
-		if (strtolower(substr($SETUP_FILE_NAME, strlen($SETUP_FILE_NAME)-4)) != ".csv")
+		if (mb_strtolower(mb_substr($SETUP_FILE_NAME, mb_strlen($SETUP_FILE_NAME) - 4)) != ".csv")
 			$SETUP_FILE_NAME .= ".csv";
-		if (0 !== strpos($SETUP_FILE_NAME, $strCatalogDefaultFolder))
+		if (0 !== mb_strpos($SETUP_FILE_NAME, $strCatalogDefaultFolder))
 		{
 			$arRunErrors[] = GetMessage('CES_ERROR_PATH_WITHOUT_DEFAUT');
 		}
@@ -198,11 +194,11 @@ if (empty($arRunErrors))
 	$tableLinksCount = 10;
 	for ($i = 0, $intCount = count($field_code); $i < $intCount; $i++)
 	{
-		if (substr($field_code[$i], 0, strlen("CR_PRICE_"))=="CR_PRICE_" && isset($field_needed[$i]) && $field_needed[$i]=="Y")
+		if (mb_substr($field_code[$i], 0, mb_strlen("CR_PRICE_")) == "CR_PRICE_" && isset($field_needed[$i]) && $field_needed[$i]=="Y")
 		{
 			$tableLinksCount++;
 		}
-		elseif (substr($field_code[$i], 0, strlen("IP_PROP"))=="IP_PROP" && isset($field_needed[$i]) && $field_needed[$i]=="Y")
+		elseif (mb_substr($field_code[$i], 0, mb_strlen("IP_PROP")) == "IP_PROP" && isset($field_needed[$i]) && $field_needed[$i]=="Y")
 		{
 			$tableLinksCount+=2;
 		}
@@ -401,9 +397,7 @@ if (empty($arRunErrors))
 
 			$strVal = COption::GetOptionString("catalog", "allowed_currencies", $defCatalogAvailCurrencies);
 			$arVal = explode(",", $strVal);
-			$by1="sort";
-			$order1="asc";
-			$lcur = CCurrency::GetList($by1, $order1);
+			$lcur = CCurrency::GetList('sort', 'asc');
 			$arCurList = array();
 			while ($lcur_res = $lcur->Fetch())
 			{
@@ -422,7 +416,7 @@ if (empty($arRunErrors))
 					{
 						if (!(empty($field_needed[$mxSelKey]) || 'Y' != $field_needed[$mxSelKey]))
 						{
-							$arTempo = explode('_',substr($strOneFieldsCode,9));
+							$arTempo = explode('_', mb_substr($strOneFieldsCode, 9));
 							$arTempo[0] = intval($arTempo[0]);
 							if (0 < $arTempo[0])
 							{
@@ -532,9 +526,9 @@ if (empty($arRunErrors))
 
 					if (!$bFieldOut)
 					{
-						if (substr($arNeedFields[$i], 0, strlen("IP_PROP"))=="IP_PROP")
+						if (mb_substr($arNeedFields[$i], 0, mb_strlen("IP_PROP")) == "IP_PROP")
 						{
-							$strTempo = substr($arNeedFields[$i], strlen("IP_PROP"));
+							$strTempo = mb_substr($arNeedFields[$i], mb_strlen("IP_PROP"));
 							if (!empty($arFileProps) && in_array($strTempo,$arFileProps))
 							{
 								$valueTmp = '';
@@ -548,17 +542,16 @@ if (empty($arRunErrors))
 							}
 							else
 							{
-								//$arResFields[$i] = $res1["PROPERTY_".substr($arNeedFields[$i], strlen("IP_PROP"))."_VALUE"];
 								$arResFields[$i] = $res1["PROPERTY_".$strTempo."_VALUE"];
 							}
 							$bFieldOut = True;
 						}
-						elseif ($boolCatalog && substr($arNeedFields[$i], 0, strlen("CR_PRICE_"))=="CR_PRICE_")
+						elseif ($boolCatalog && mb_substr($arNeedFields[$i], 0, mb_strlen("CR_PRICE_")) == "CR_PRICE_")
 						{
-							$sPriceTmp = substr($arNeedFields[$i], strlen("CR_PRICE_"));
+							$sPriceTmp = mb_substr($arNeedFields[$i], mb_strlen("CR_PRICE_"));
 							$arPriceTmp = explode("_", $sPriceTmp);
 
-							if (strlen($res1["CATALOG_CURRENCY_".intval($arPriceTmp[0])])>0
+							if ($res1["CATALOG_CURRENCY_".intval($arPriceTmp[0])] <> ''
 								&& $res1["CATALOG_CURRENCY_".intval($arPriceTmp[0])]!=$arPriceTmp[1])
 							{
 								$arResFields[$i] = Round(CCurrencyRates::ConvertCurrency($res1["CATALOG_PRICE_".intval($arPriceTmp[0])], $res1["CATALOG_CURRENCY_".intval($arPriceTmp[0])], $arPriceTmp[1]), 2);
@@ -575,11 +568,11 @@ if (empty($arRunErrors))
 					{
 						foreach ($arAvailGroupFields_names as $key => $value)
 						{
-							if ($key==substr($arNeedFields[$i], 0, strlen($key))
-								&& is_numeric(substr($arNeedFields[$i], strlen($key))))
+							if ($key == mb_substr($arNeedFields[$i], 0, mb_strlen($key))
+								&& is_numeric(mb_substr($arNeedFields[$i], mb_strlen($key))))
 							{
 								$bFieldOut = True;
-								$arResFields[$i] = $arResSections[$inds][intval(substr($arNeedFields[$i], strlen($key)))][$key];
+								$arResFields[$i] = $arResSections[$inds][intval(mb_substr($arNeedFields[$i], mb_strlen($key)))][$key];
 								break;
 							}
 						}
@@ -600,11 +593,9 @@ CCatalogDiscountSave::Enable();
 
 if ($bTmpUserCreated)
 {
-	unset($USER);
 	if (isset($USER_TMP))
 	{
 		$USER = $USER_TMP;
 		unset($USER_TMP);
 	}
 }
-?>

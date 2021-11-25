@@ -30,6 +30,7 @@ if(!Main\Loader::includeModule('socialservices'))
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
 }
 
+
 $strError = "";
 $engine = new Engine\Yandex();
 
@@ -80,7 +81,8 @@ while($arSite = $dbSites->fetch(Converter::getHtmlConverter()))
 	$row =& $lAdmin->AddRow($arSite['DOMAIN'], $arSite);
 
 	$siteDomainEnc = Converter::getHtmlConverter()->encode($arSite['DOMAIN']);
-	$siteDomainEncView = Converter::getHtmlConverter()->encode(\CBXPunycode::ToUnicode($arSite['DOMAIN'], $e = null));
+	$e = [];
+	$siteDomainEncView = Converter::getHtmlConverter()->encode(\CBXPunycode::ToUnicode($arSite['DOMAIN'], $e));
 	$siteDirEnc = Converter::getHtmlConverter()->encode($arSite['SITE_DIR']);
 
 	$row->AddViewField("DOMAIN", '<a href="http://'.Converter::getHtmlConverter()->encode($arSite['DOMAIN'].CHTTP::urnEncode($arSite['SITE_DIR'])).'">'.$siteDomainEncView.$siteDirEnc.'</a>');
@@ -112,6 +114,12 @@ if($strError != '')
 ?>
 <div id="ajax_status"></div>
 <script type="text/javascript">
+	BX.message({'SEO_VERIFY_STATUS_NONE':'<?=Loc::getMessage('SEO_VERIFY_STATUS_NONE')?>'});
+	BX.message({'SEO_VERIFY_STATUS_VERIFIED':'<?=Loc::getMessage('SEO_VERIFY_STATUS_VERIFIED')?>'});
+	BX.message({'SEO_VERIFY_STATUS_IN_PROGRESS':'<?=Loc::getMessage('SEO_VERIFY_STATUS_IN_PROGRESS')?>'});
+	BX.message({'SEO_VERIFY_STATUS_VERIFICATION_FAILED':'<?=Loc::getMessage('SEO_VERIFY_STATUS_VERIFICATION_FAILED')?>'});
+	BX.message({'SEO_VERIFY_STATUS_INTERNAL_ERROR':'<?=Loc::getMessage('SEO_VERIFY_STATUS_INTERNAL_ERROR')?>'});
+	
 window.lastSeoResult = null;
 function getSiteInfo(domain)
 {
@@ -177,9 +185,9 @@ function updateCallback(res)
 						nodes[i].innerHTML = '<?=CUtil::JSEscape(Loc::getMessage('MAIN_YES'))?>';
 					break;
 					case 'site-verified':
-						if(res[domain].verification == 'VERIFIED')
+						if(typeof res[domain].verification != 'undefined')
 						{
-							nodes[i].innerHTML = '<?=CUtil::JSEscape(Loc::getMessage('MAIN_YES'))?>';
+							nodes[i].innerHTML = BX.message('SEO_VERIFY_STATUS_' + res[domain].verification);
 						}
 						else
 						{

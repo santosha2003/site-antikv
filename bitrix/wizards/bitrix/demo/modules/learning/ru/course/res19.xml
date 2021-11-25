@@ -1,2 +1,37 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE19"><presentation><material><mattext>��� ����� ������� �� ����������� ������ ������������ ������ �����������:</mattext></material><response_lid ident="LID19" rcardinality="Multiple"><render_choice><response_label ident="ANS915"><material><mattext>��� ���� �������</mattext></material></response_label><response_label ident="ANS916"><material><mattext>��� ���� ��������������</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID19">ANS915</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description><![CDATA[<img height="28" src="cid:resources/res19/r6n4v.admin_context_panel.png" width="338" />]]></description><description_type>html</description_type><self>N</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="CHA"><lesson_id>889</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>6</childs_cnt>
+<is_childs>1</is_childs>
+<sort>1000200</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Административный раздел</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p><div class="note"><b>Административный раздел </b>- раздел системы, содержащий интерфейс для управления модулями системы, структурой, содержанием, посетителями и другими составляющими сайта. Недоступен для просмотра обычным посетителям сайта.</div></p>
+
+<p>В главе рассмотрены основные элементы интерфейса Административного раздела системы, позволяющие осуществлять полное управление содержанием и настройками сайта. (В документации иногда может использоваться выражение "Административная часть" как синоним Административного раздела.)</p>
+
+<p>Для перехода в Административный раздел служит закладка <img height="43" width="219" src="cid:resources/res19/oWRZH.Wws8P.admin_mode_95_new.png"/>, расположенная на <b>Панели управления</b> в публичном разделе сайта (в продукте до версии 9.5 вид закладки такой: <img height="23" width="164" src="cid:resources/res19/dbeAW.aF3PX.tab_admin.png" />).
+</p>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>1000200</edge_sort>
+<id>889</id>
+</content>

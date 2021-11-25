@@ -5,7 +5,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/img.php");
 
 if (!check_bitrix_sessid()) exit;
 
-__IncludeLang(dirname(__FILE__).'/lang/'.LANGUAGE_ID.'/'.basename(__FILE__));
+Bitrix\Main\Localization\Loc::loadMessages(__FILE__);
 
 function checkPostChartData(&$postData, $chartXValueTypes, $chartTypes)
 {
@@ -131,22 +131,22 @@ function checkPostChartData(&$postData, $chartXValueTypes, $chartTypes)
 }
 
 $chartXValueTypes = array('boolean', 'date', 'datetime', 'float', 'integer', 'string', 'text', 'enum', 'file',
-	'disk_file', 'employee', 'crm', 'crm_status', 'iblock_element', 'iblock_section');
+	'disk_file', 'employee', 'crm', 'crm_status', 'iblock_element', 'iblock_section', 'money');
 
 // <editor-fold defaultstate="collapsed" desc="chart types">
 $chartTypes = array(
 	array('id' => 'line', 'name' => GetMessage('REPORT_CHART_TYPE_LINE'), 'value_types' => array(
 		/*'boolean', 'date', 'datetime', */
 		'float', 'integer'/* , 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-		'iblock_element', 'iblock_section'*/)),
+		'iblock_element', 'iblock_section', 'money'*/)),
 	array('id' => 'bar', 'name' => GetMessage('REPORT_CHART_TYPE_BAR'), 'value_types' => array(
 		/*'boolean', 'date', 'datetime', */
 		'float', 'integer'/* , 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-		'iblock_element', 'iblock_section'*/)),
+		'iblock_element', 'iblock_section', 'money'*/)),
 	array('id' => 'pie', 'name' => GetMessage('REPORT_CHART_TYPE_PIE'), 'value_types' => array(
 		/*'boolean', 'date', 'datetime', */
 		'float', 'integer'/* , 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-		'iblock_element', 'iblock_section'*/)),
+		'iblock_element', 'iblock_section', 'money'*/)),
 );
 // </editor-fold>
 
@@ -358,7 +358,7 @@ if ($errorCode === 0)
 				foreach ($arCounting as $k => $v)
 				{
 					$arCounting[$k] = $v * 100 / $sumAll;
-					$sumAllPrcnt =+ $arCounting[$k];
+					$sumAllPrcnt += $arCounting[$k];
 				}
 				if (arsort($arCounting, SORT_NUMERIC))
 				{
@@ -379,7 +379,8 @@ if ($errorCode === 0)
 					$sumTrifle = 0;
 					if ($offset > 0)
 					{
-						$arTrifle = array_splice($arCounting, $offset);
+						$arTrifle = array_slice($arCounting, $offset, null, true);
+						$arCounting = array_slice($arCounting, 0, $offset, true);
 						foreach (array_keys($arTrifle) as $k) $sumTrifle += $arConsolidated[$k];
 					}
 					if (round($prcntCount,2) < 100.0)
@@ -437,7 +438,7 @@ if ($errorCode === 0)
 		ShowImageHeader($imageHandle);
 		$img_base64 = base64_encode(ob_get_contents());
 		ob_end_clean();
-		if (substr($img_base64, 0, 5) === 'iVBOR')
+		if (mb_substr($img_base64, 0, 5) === 'iVBOR')
 		{
 			$imageData = 'data:image/png;base64,'.PHP_EOL.chunk_split($img_base64);
 			$response = array(

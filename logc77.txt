@@ -1,0 +1,168 @@
+Array
+(
+    [ACTIVE] => N
+    [MODIFIED_BY] => 1
+    [IBLOCK_ID] => 4
+    [ACTIVE_FROM] => 
+    [ACTIVE_TO] => 
+    [SORT] => 500
+    [NAME] => Тестовый товар 2
+    [CODE] => testovyy-tovar-2
+    [TAGS] => 
+    [PREVIEW_PICTURE] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+            [description] => 
+            [MODULE_ID] => iblock
+            [old_file] => 533422
+        )
+
+    [PREVIEW_TEXT] => 
+    [PREVIEW_TEXT_TYPE] => html
+    [DETAIL_PICTURE] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+            [description] => 
+            [MODULE_ID] => iblock
+            [old_file] => 533423
+        )
+
+    [DETAIL_TEXT] => 
+    [DETAIL_TEXT_TYPE] => html
+    [TMP_ID] => 0
+    [PROPERTY_VALUES] => Array
+        (
+            [68] => Array
+                (
+                    [410989] => Array
+                        (
+                            [VALUE] => 1124324
+                        )
+
+                )
+
+            [69] => Array
+                (
+                    [410990] => Array
+                        (
+                            [VALUE] => 2514
+                        )
+
+                )
+
+            [70] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [71] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [72] => Array
+                (
+                    [410991] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 
+                                    [type] => 
+                                    [tmp_name] => 
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+
+                    [410992] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 
+                                    [type] => 
+                                    [tmp_name] => 
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+
+                    [410993] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 
+                                    [type] => 
+                                    [tmp_name] => 
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+
+                    [n0] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => medal.jpg
+                                    [type] => image/jpeg
+                                    [tmp_name] => /var/www/html/upload/tmp/BXTEMP-2021-11-13/00/bxu/main/3b5bd3099ff7fe9949a3f500b104f2ab/file1636715271862/default
+                                    [size] => 68525
+                                    [error] => 0
+                                )
+
+                        )
+
+                )
+
+            [73] => Array
+                (
+                )
+
+        )
+
+    [IBLOCK_SECTION] => Array
+        (
+        )
+
+    [XML_ID] => testovyy-tovar-2
+    [IPROPERTY_TEMPLATES] => Array
+        (
+            [ELEMENT_META_TITLE] => 
+            [ELEMENT_META_KEYWORDS] => 
+            [ELEMENT_META_DESCRIPTION] => 
+            [ELEMENT_PAGE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_ALT] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_NAME] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_ALT] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_TITLE] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_NAME] => 
+        )
+
+    [WF] => N
+    [WF_NEW] => 
+    [SEARCHABLE_CONTENT] => ТЕСТОВЫЙ ТОВАР 2
+
+
+    [ID] => 36729
+)

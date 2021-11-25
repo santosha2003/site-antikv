@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 <?
-=======
-<?php
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 /**
  * Bitrix Framework
  * @package bitrix
@@ -16,11 +12,7 @@
  * @global CMain $APPLICATION
  */
 
-<<<<<<< HEAD
-use Bitrix\Main\Text\String;
-=======
-use Bitrix\Main\Text\TString;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+use Bitrix\Main\Text\HtmlFilter;
 use Bitrix\Main\Localization\Loc;
 
 require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
@@ -63,7 +55,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 	}
 	else
 	{
-		$res = (strlen($langs->Add($arFields))>0);
+		$res = ($langs->Add($arFields) <> '');
 	}
 
 	if(!$res)
@@ -108,11 +100,7 @@ else
 
 $langField = array();
 foreach($language as $key => $val)
-<<<<<<< HEAD
-	$langField[$key] = String::htmlEncode($val);
-=======
-	$langField[$key] = TString::htmlEncode($val);
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+	$langField[$key] = HtmlFilter::encode($val);
 
 $strTitle = ($ID > 0? Loc::getMessage("EDIT_LANG_TITLE", array("#ID#" => $langField["LID"])) : Loc::getMessage("NEW_LANG_TITLE"));
 $APPLICATION->SetTitle($strTitle);
@@ -168,11 +156,7 @@ if($message)
 <?=bitrix_sessid_post()?>
 <input type="hidden" name="lang" value="<?=LANGUAGE_ID?>">
 <input type="hidden" name="ID" value="<?echo $ID?>">
-<<<<<<< HEAD
-<?if($_REQUEST["COPY_ID"] <> ''):?><input type="hidden" name="COPY_ID" value="<?echo String::htmlEncode($_REQUEST["COPY_ID"])?>"><?endif?>
-=======
-<?if($_REQUEST["COPY_ID"] <> ''):?><input type="hidden" name="COPY_ID" value="<?echo TString::htmlEncode($_REQUEST["COPY_ID"])?>"><?endif?>
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+<?if($_REQUEST["COPY_ID"] <> ''):?><input type="hidden" name="COPY_ID" value="<?echo HtmlFilter::encode($_REQUEST["COPY_ID"])?>"><?endif?>
 <?
 $tabControl->Begin();
 $tabControl->BeginNextTab();
@@ -244,11 +228,7 @@ BX.ready(BXSetCulture);
 <?
 foreach($cultures as $cult):
 ?>
-<<<<<<< HEAD
-				<option value="<?=$cult["ID"]?>"<?if($cult["ID"] == $language["CULTURE_ID"]) echo " selected"?>><?=String::htmlEncode($cult["NAME"])?></option>
-=======
-				<option value="<?=$cult["ID"]?>"<?if($cult["ID"] == $language["CULTURE_ID"]) echo " selected"?>><?=TString::htmlEncode($cult["NAME"])?></option>
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+				<option value="<?=$cult["ID"]?>"<?if($cult["ID"] == $language["CULTURE_ID"]) echo " selected"?>><?=HtmlFilter::encode($cult["NAME"])?></option>
 <?
 endforeach;
 ?>

@@ -33,7 +33,7 @@ $aTabs = array(array("DIV"=>"tab1", "TAB"=>GetMessage("MAIN_AGENT_TAB"), "ICON"=
 $editTab = new CAdminTabControl("editTab", $aTabs);
 
 $APPLICATION->ResetException();
-if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0) && $isAdmin && check_bitrix_sessid())
+if($REQUEST_METHOD=="POST" && ($save <> '' || $apply <> '') && $isAdmin && check_bitrix_sessid())
 {
 	$arFields = Array(
 		"NAME" => $NAME,
@@ -49,6 +49,9 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0) && $isAdmin 
 	if(intval($USER_ID) > 0)
 		$arFields["USER_ID"] = $USER_ID;
 
+	if($arFields["ACTIVE"] == "Y")
+		$arFields["RETRY_COUNT"] = 0;
+
 	if($ID>0)
 		$res = CAgent::Update($ID, $arFields);
 	else
@@ -59,9 +62,9 @@ if($REQUEST_METHOD=="POST" && (strlen($save)>0 || strlen($apply)>0) && $isAdmin 
 
 	if($res)
 	{
-		if(strlen($save) > 0)
+		if($save <> '')
 			LocalRedirect("/bitrix/admin/agent_list.php");
-		elseif(strlen($apply) > 0)
+		elseif($apply <> '')
 			LocalRedirect("/bitrix/admin/agent_edit.php?&ID=".$ID."&".$editTab->ActiveTabParam());
 	}
 }
@@ -147,10 +150,10 @@ $editTab->BeginNextTab();
 		<td><input type="text" name="SORT" size="40" value="<? echo $a_SORT?>"></td>
 	</tr>
 	<tr>
-		<td><?echo GetMessage("MAIN_AGENT_PERIOD")?></td>
+		<td class="adm-detail-valign-top"><?echo GetMessage("MAIN_AGENT_PERIODICAL1")?></td>
 		<td>
-			<input type="hidden" name="IS_PERIOD" value="N">
-			<input type="checkbox" name="IS_PERIOD" value="Y"<?if($a_IS_PERIOD=="Y") echo " checked"?>>
+			<label><input type="radio" name="IS_PERIOD" value="N"<?if($a_IS_PERIOD<>"Y") echo " checked"?>><?echo GetMessage("MAIN_AGENT_PERIODICAL_INTERVAL")?></label><br>
+			<label><input type="radio" name="IS_PERIOD" value="Y"<?if($a_IS_PERIOD=="Y") echo " checked"?>><?echo GetMessage("MAIN_AGENT_PERIODICAL_TIME")?></label>
 		</td>
 	</tr>
 	<tr>

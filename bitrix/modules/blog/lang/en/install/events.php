@@ -245,4 +245,29 @@ $MESS["BLOG_SONET_POST_SHARE_NAME"] = "New recipient added";
 $MESS["BLOG_SONET_POST_SHARE_DESC"] = "#EMAIL_TO# - Recipient email
 #POST_ID# - Post ID
 #URL_ID# - Post URL";
+$MESS["BLOG_POST_BROADCAST_NAME"] = "New post added";
+$MESS["BLOG_POST_BROADCAST_DESC"] = "
+#MESSAGE_TITLE# - Post subject
+#MESSAGE_TEXT# - Post text 
+#MESSAGE_PATH# - Post URL
+#AUTHOR# - Post author
+#EMAIL_TO# - E-mail recipient";
+$MESS["BLOG_POST_BROADCAST_SUBJECT"] = "#SITE_NAME#: #MESSAGE_TITLE#";
+$MESS["BLOG_POST_BROADCAST_MESSAGE"] = "New activity on #SITE_NAME#
+------------------------------------------
+
+A new post has been added since your last visit.
+
+Subject:
+#MESSAGE_TITLE#
+
+Author: #AUTHOR#
+
+Post text:
+#MESSAGE_TEXT#
+
+Post address:
+#MESSAGE_PATH#
+
+This message has been generated automatically.";
 ?>

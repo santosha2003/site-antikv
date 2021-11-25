@@ -28,7 +28,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 	 * Fatal error list. Any fatal error makes useless further execution of a component code. 
 	 * In most cases, there will be only one error in a list according to the scheme "one shot - one dead body"
 	 *
-	 * @var string[] Array of fatal errors.
+	 * @var array Array of fatal errors.
 	 */
 
 	protected $errors = array();
@@ -55,14 +55,21 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 
 	/**
 	 * Function checks if required modules installed. If not, throws an exception
-	 * @return void
+	 * @return bool
 	 */
 	protected function checkRequiredModules()
 	{
-		if (!Loader::includeModule('sale'))
+		if (!static::includeRequiredModules())
+		{
 			$this->errors['FATAL'][] = Loc::getMessage("SALE_SLS_SALE_MODULE_NOT_INSTALL");
+		}
 
 		return true;
+	}
+
+	protected static function includeRequiredModules(): bool
+	{
+		return Loader::includeModule('sale');
 	}
 
 	/**
@@ -101,16 +108,17 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 
 		// which site it is
 		if(!is_string($arParams['FILTER_SITE_ID']) || empty($arParams['FILTER_SITE_ID']) || $arParams['FILTER_SITE_ID'] == 'current')
-			$arParams['FILTER_SITE_ID'] = SITE_ID;
+			$arParams['FILTER_SITE_ID'] = SITE_ID; //todo: it looks like a bug for admin pages, where SITE_ID == 'ru'.
 		else
-			$arParams['FILTER_SITE_ID'] = substr(self::tryParseStringStrict($arParams['FILTER_SITE_ID']), 0, 2);
+			$arParams['FILTER_SITE_ID'] = mb_substr(self::tryParseStringStrict($arParams['FILTER_SITE_ID']), 0, 2);
 
 		self::tryParseBoolean($arParams['FILTER_BY_SITE']);
 		self::tryParseBoolean($arParams['SHOW_DEFAULT_LOCATIONS']);
 
 		// the code below should not be here, is should belong to a template
-		self::tryParseStringStrict($arParams['JS_CONTROL_GLOBAL_ID']);
-		self::tryParseStringStrict($arParams['JS_CONTROL_DEFERRED_INIT']);
+		self::tryParseString($arParams['RANDOM_TAG']);
+		self::tryParseString($arParams['JS_CONTROL_GLOBAL_ID']);
+		self::tryParseString($arParams['JS_CONTROL_DEFERRED_INIT']);
 		self::tryParseStringStrict($arParams['JS_CALLBACK']);
 
 		return $arParams;
@@ -190,7 +198,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 	public static function tryParseString(&$fld, $default = false)
 	{
 		$fld = trim((string)$fld);
-		if(!strlen($fld) && $default !== false)
+		if(!mb_strlen($fld) && $default !== false)
 			$fld = $default;
 
 		$fld = htmlspecialcharsbx($fld);
@@ -207,7 +215,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 	public static function tryParseStringStrict(&$fld, $default = false)
 	{
 		$fld = trim((string)$fld);
-		if(!strlen($fld) && $default !== false)
+		if(!mb_strlen($fld) && $default !== false)
 			$fld = $default;
 
 		$fld = preg_replace('#[^a-z0-9_-]#i', '', $fld);
@@ -292,7 +300,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 				$toBeFound = true;
 				$res = Location\LocationTable::getPathToNode($this->arParams['ID'], $parameters);
 			}
-			elseif(strlen($this->arParams['CODE']))
+			elseif(mb_strlen($this->arParams['CODE']))
 			{
 				$toBeFound = true;
 				$res = Location\LocationTable::getPathToNodeByCode($this->arParams['CODE'], $parameters);
@@ -553,6 +561,8 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 		'NAME.NAME' => 's',
 		'NAME.LANGUAGE_ID' => 's',
 		'GROUPLOCATION.LOCATION_GROUP_ID' => 'i',
+		'LONGITUDE' => 's',
+		'LATITUDE' => 's',
 
 		// special (filter only)
 		'PHRASE' => 's',
@@ -579,8 +589,15 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 			$safe['PAGE'] = intval($parameters['PAGE']);
 		if(isset($parameters['PAGE_SIZE']))
 			$safe['PAGE_SIZE'] = intval($parameters['PAGE_SIZE']);
+		if(isset($parameters['order']))
+			$safe['order'] = $parameters['order'];
 
 		$parameters = $safe;
+
+		if(!isset($parameters['filter']))
+		{
+			$parameters['filter'] = [];
+		}
 
 		// check select
 		if(!is_array($parameters['select']))
@@ -604,8 +621,9 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 		//	throw new Main\ArgumentException(Loc::getMessage('SALE_SLS_BAD_QUERY'));
 
 		// phrase should be string and longer than static::START_SEARCH_LEN
-		if(isset($parameters['filter']['=PHRASE']) && (!is_string($parameters['filter']['=PHRASE']) || strlen($parameters['filter']['=PHRASE']) < static::START_SEARCH_LEN))
+		if(isset($parameters['filter']['=PHRASE']) && (!is_string($parameters['filter']['=PHRASE']) || mb_strlen($parameters['filter']['=PHRASE']) < static::START_SEARCH_LEN))
 			throw new Main\ArgumentException(Loc::getMessage('SALE_SLS_BAD_QUERY'));
+
 
 		foreach($parameters['filter'] as $field => $value)
 		{
@@ -615,14 +633,21 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 			if(!isset(static::$allowedLocationFields[$field]))
 				throw new Main\ArgumentException(Loc::getMessage('SALE_SLS_BAD_QUERY'));
 
+			if(!is_array($value))
+				$value = array($value);
+
 			// check value
 			$type = static::$allowedLocationFields[$field];
-			if(
-				($type == 'i' && !((string) $value === (string) intval($value)))
-				||
-				($type == 's' && !is_string($value))
-			)
-				throw new Main\ArgumentException(Loc::getMessage('SALE_SLS_BAD_QUERY'));
+
+			foreach($value as $item)
+			{
+				if(
+					($type == 'i' && !((string) $item === (string) intval($item)))
+					||
+					($type == 's' && !is_string($item))
+				)
+					throw new Main\ArgumentException(Loc::getMessage('SALE_SLS_BAD_QUERY'));
+			}
 		}
 
 		// check limitation, if searching by PHRASE
@@ -693,7 +718,6 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 		$clean['select'][] = 'LEFT_MARGIN';
 		$clean['select'][] = 'RIGHT_MARGIN';
 		$clean['select'][] = 'ID';
-
 		return $clean;
 	}
 
@@ -704,7 +728,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 
 	public static function processSearchRequestV2($parameters)
 	{
-		static::checkRequiredModules();
+		static::includeRequiredModules();
 		$parameters = static::processSearchRequestV2CheckQuery($parameters);
 
 		// map page & page_size => limit & offset
@@ -715,6 +739,9 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 			$parameters['limit'] = $pageSize;
 			$parameters['offset'] = ($page ? $page * $pageSize : 0);
 		}
+
+		$parameters['select'][] = 'CHILD_CNT';
+
 		unset($parameters['PAGE_SIZE']);
 		unset($parameters['PAGE']);
 
@@ -725,16 +752,22 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 		);
 
 		$result = Location\Search\Finder::find(static::processSearchRequestV2ModifyParameters($parameters), static::processSearchRequestV2GetFinderBehaviour());
+
 		while($item = $result->fetch())
 		{
 			// hack to repair ORM
 			if(!isset($item['ID']))
 				$item['ID'] = $item['VALUE'];
 
+			if(intval($item['CHILD_CNT']) > 0)
+				$item['IS_PARENT'] = true;
+
+			unset($item['CHILD_CNT']);
 			$data['ITEMS'][] = $item;
 		}
 
 		static::processSearchRequestV2GetAdditional($data, $parameters);
+		$parameters['select'][] = 'IS_PARENT';
 		static::processSearchRequestV2AfterSearchFormatResult($data, $parameters);
 
 		return $data;
@@ -890,7 +923,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 	{
 		return	intval($this->arParams['CACHE_TIME']) > 0 &&
 				$this->arParams['CACHE_TYPE'] != 'N' &&
-				(ADMIN_SECTION !== 1) && 
+				(!(defined("ADMIN_SECTION") && ADMIN_SECTION == true)) &&
 				Config\Option::get("main", "component_cache_on", "Y") == "Y";
 	}
 
@@ -1037,7 +1070,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 	 */
 	public static function processSearchRequest()
 	{
-		static::checkRequiredModules();
+		static::includeRequiredModules();
 
 		$parameters = static::processSearchGetParameters();
 
@@ -1080,7 +1113,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 	 */
 	protected static function processSearchRequestGetLang()
 	{
-		return strlen($_REQUEST['BEHAVIOUR']['LANGUAGE_ID']) ? $_REQUEST['BEHAVIOUR']['LANGUAGE_ID'] : LANGUAGE_ID;
+		return $_REQUEST['BEHAVIOUR']['LANGUAGE_ID'] <> ''? $_REQUEST['BEHAVIOUR']['LANGUAGE_ID'] : LANGUAGE_ID;
 	}
 
 	/**
@@ -1100,8 +1133,10 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 			'LANGUAGE_ID' => $langId
 		);
 
-		if(strlen($rFilter['SITE_ID']))
+		if($rFilter['SITE_ID'] <> '')
+		{
 			$filter['SITE_ID'] = $rFilter['SITE_ID'];
+		}
 
 		if($_REQUEST['BEHAVIOUR']['EXPECT_EXACT'])
 		{
@@ -1110,7 +1145,7 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 			###################################
 
 			// EXPECT_EXACT assumes presence of QUERY key in query. in this case QUERY is being treated as an exact value for ID
-			if(!strlen($rFilter['QUERY']))
+			if($rFilter['QUERY'] == '')
 				throw new Main\SystemException(Loc::getMessage('SALE_SLS_BAD_QUERY'));
 
 			$filter['ID'] = intval($rFilter['QUERY']);
@@ -1121,13 +1156,17 @@ class CBitrixLocationSelectorSearchComponent extends CBitrixComponent
 			# Non-exact search, there could be a set of matched elements
 			###################################
 
-			if(strlen($rFilter['QUERY']))
+			if($rFilter['QUERY'] <> '')
 			{
-				if(strlen($rFilter['QUERY']) >= static::START_SEARCH_LEN)
+				if(mb_strlen($rFilter['QUERY']) >= static::START_SEARCH_LEN)
+				{
 					$filter['NAME'] = $rFilter['QUERY'];
+				}
 
 				if($_REQUEST['BEHAVIOUR']['SEARCH_BY_PRIMARY'])
+				{
 					$filter['PRIMARY'] = $rFilter['QUERY'];
+				}
 			}
 
 			if(isset($rFilter['PARENT_ID']) && intval($rFilter['PARENT_ID']) >= 0)

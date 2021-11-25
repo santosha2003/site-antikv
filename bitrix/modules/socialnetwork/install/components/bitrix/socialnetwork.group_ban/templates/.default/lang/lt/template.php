@@ -1,7 +1,0 @@
-<?
-$MESS["SONET_C7_ACT_SAVE"] = "Atkurti naudotojus";
-$MESS["SONET_C7_SUBTITLE"] = "Grupës juodasis sàraðas";
-$MESS["SONET_C7_NO_USERS"] = "Nëra naudotojø.";
-$MESS["SONET_C7_NO_USERS_DESCR"] = "Èia rodomi naudotojai átraukti á grupës juodàjá sàraðà.";
-$MESS["SONET_C7_ACT_IN_BAN"] = "Átraukti á juodàjá sàraðà";
-?>

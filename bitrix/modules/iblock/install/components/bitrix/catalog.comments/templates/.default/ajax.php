@@ -47,4 +47,4 @@ if (check_bitrix_sessid())
 		);
 	}
 }
-die();
+CMain::FinalActions();

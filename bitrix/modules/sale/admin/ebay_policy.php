@@ -27,7 +27,7 @@ $bSaved = false;
 
 $siteList = array();
 $defaultSite = "";
-$rsSites = CSite::GetList($by = "sort", $order = "asc", Array("ACTIVE"=> "Y"));
+$rsSites = CSite::GetList("sort", "asc", Array("ACTIVE"=> "Y"));
 
 
 while($arRes = $rsSites->Fetch())
@@ -47,9 +47,17 @@ $settings = $ebay->getSettings();
 
 if(isset($_POST["EBAY_SETTINGS"]) && is_array($_POST["EBAY_SETTINGS"]))
 {
-	$settings[$SITE_ID] = array_merge($settings[$SITE_ID], $_POST["EBAY_SETTINGS"]);
+	$site = !empty($_POST["SITE_ID_INITIAL"]) && $SITE_ID == $_POST["SITE_ID_INITIAL"] ? $SITE_ID : $_POST["SITE_ID_INITIAL"];
+
+	if(!is_array($settings[$site]))
+		$settings[$site] = array();
+
+	$settings[$site] = array_merge($settings[$site], $_POST["EBAY_SETTINGS"]);
 	$bSaved = $ebay->saveSettings($settings);
 }
+
+if(!isset($settings[$SITE_ID]))
+	LocalRedirect("/bitrix/admin/sale_ebay_general.php?lang=".LANG."&SITE_ID=".$SITE_ID."&back_url=".urlencode($APPLICATION->GetCurPageParam()));
 
 $siteSettings = $settings[$SITE_ID];
 $details = new \Bitrix\Sale\TradingPlatform\Ebay\Api\Details($SITE_ID);
@@ -78,16 +86,16 @@ $arTabs = array(
 $tabControl = new CAdminTabControl("tabControl", $arTabs);
 $policy = null;
 
-if(isset($siteSettings["API"]["AUTH_TOKEN"]) && strlen($siteSettings["API"]["AUTH_TOKEN"]) > 0)
+if(isset($siteSettings["API"]["AUTH_TOKEN"]) && $siteSettings["API"]["AUTH_TOKEN"] <> '')
 	$policy = new \Bitrix\Sale\TradingPlatform\Ebay\Policy($siteSettings["API"]["AUTH_TOKEN"], $SITE_ID);
-elseif(!isset($siteSettings["API"]["AUTH_TOKEN"]) || strlen($siteSettings["API"]["AUTH_TOKEN"]) <= 0)
+elseif(!isset($siteSettings["API"]["AUTH_TOKEN"]) || $siteSettings["API"]["AUTH_TOKEN"] == '')
 	$errorMsg = "You must set API token first!\n";
 
 $APPLICATION->SetTitle(Loc::getMessage("SALE_EBAY_TITLE"));
 
 require_once ($DOCUMENT_ROOT.BX_ROOT."/modules/main/include/prolog_admin_after.php");
 
-if(strlen($errorMsg) > 0)
+if($errorMsg <> '')
 	CAdminMessage::ShowMessage(array("MESSAGE"=>$errorMsg, "TYPE"=>"ERROR"));
 
 if($bSaved)
@@ -96,13 +104,14 @@ if($bSaved)
 ?>
 <form method="post" action="<?=$APPLICATION->GetCurPage()?>?lang=<?=LANGUAGE_ID?>" name="ebay_policysettings_form">
 <?=bitrix_sessid_post();?>
+<input type="hidden" name="SITE_ID_INITIAL" value="<?=$SITE_ID?>">
 <table width="100%">
 	<tr>
 		<td align="left">
 			<?=Loc::getMessage("SALE_EBAY_SITE")?>: <?=CLang::SelectBox("SITE_ID", $SITE_ID, "", "this.form.submit();")?>
 		</td>
 		<td align="right">
-			<img alt="eBay logo" src="/bitrix/images/sale/ebay-logo.png" style="width: 100px; height: 67px;">
+			<img alt="eBay logo" src="/bitrix/images/sale/ebay/logo.png" style="width: 100px; height: 67px;">
 		</td>
 	</tr>
 </table>
@@ -193,7 +202,7 @@ $tabControl->BeginNextTab();
 					<select name="EBAY_SETTINGS[MAPS][SHIPMENT][<?=$service?>]">
 						<option value=""><?=Loc::getMessage("SALE_EBAY_NOT_MAPPED")?></option>
 						<?foreach($arDeliveryList as $deliveryId => $deliveryName):?>
-							<option value="<?=$deliveryId?>"<?=(isset($siteSettings["MAPS"]["SHIPMENT"][$service]) && $siteSettings["MAPS"]["SHIPMENT"][$service] ==  $deliveryId ? " selected" : "")?>><?=$deliveryName?></option>
+							<option value="<?=$deliveryId?>"<?=(isset($siteSettings["MAPS"]["SHIPMENT"][$service]) && $siteSettings["MAPS"]["SHIPMENT"][$service] ==  $deliveryId ? " selected" : "")?>><?=htmlspecialcharsbx($deliveryName)?></option>
 						<?endforeach;?>
 					</select>
 				</td>

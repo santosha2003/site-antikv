@@ -8,7 +8,7 @@
 namespace Bitrix\Sale;
 
 use Bitrix\Main;
-use Bitrix\Sale\Internals\FuserTable;
+use Bitrix\Sale\Internals;
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
@@ -24,11 +24,31 @@ class Fuser
 	 * Return fuserId.
 	 *
 	 * @param bool $skipCreate		Create, if not exist.
-	 * @return int
+	 * @return int|null
 	 */
 	public static function getId($skipCreate = false)
 	{
-		$id = \CSaleUser::getID($skipCreate);
+		global $USER;
+
+		$id = null;
+
+		static $fuserList = array();
+
+		if ((isset($USER) && $USER instanceof \CUser) && $USER->IsAuthorized())
+		{
+			$currentUserId = (int)$USER->GetID();
+			if (!isset($fuserList[$currentUserId]))
+			{
+				$fuserList[$currentUserId] = static::getIdByUserId($currentUserId);
+			}
+			$id = $fuserList[$currentUserId];
+			unset($currentUserId);
+		}
+
+		if ((int)$id <= 0)
+		{
+			$id = \CSaleUser::getID($skipCreate);
+		}
 		static::updateSession($id);
 		return $id;
 	}
@@ -68,17 +88,18 @@ class Fuser
 	 */
 	public static function getIdByUserId($userId)
 	{
-		$res = FuserTable::getList(array(
+		$res = Internals\FuserTable::getList(array(
 			'filter' => array(
 				'USER_ID' => $userId
 			),
 			'select' => array(
 				'ID'
-			)
+			),
+			'order' => array('ID' => "DESC")
 		));
 		if ($fuserData = $res->fetch())
 		{
-			return intval($fuserData['ID']);
+			return (int)$fuserData['ID'];
 		}
 		else
 		{
@@ -107,9 +128,10 @@ class Fuser
 		$fuserId = (int)$fuserId;
 		if ($fuserId <= 0)
 			return $result;
-		$row = FuserTable::getList(array(
+		$row = Internals\FuserTable::getList(array(
 			'select' => array('USER_ID'),
-			'filter' => array('=ID' => $fuserId)
+			'filter' => array('=ID' => $fuserId),
+			'order' => array('ID' => "DESC")
 		))->fetch();
 		if (!empty($row))
 			$result = (int)$row['USER_ID'];
@@ -126,7 +148,7 @@ class Fuser
 	public static function deleteOld($days)
 	{
 		$expired = new Main\Type\DateTime();
-		$expired->add('-'.$days.'days');
+		$expired->add('-'.$days.' days');
 		$expiredValue = $expired->format('Y-m-d H:i:s');
 
 		/** @var Main\DB\Connection $connection */
@@ -158,6 +180,6 @@ class Fuser
 		);
 
 		/** @var Result $r */
-		return FuserTable::add($fields);
+		return Internals\FuserTable::add($fields);
 	}
 }

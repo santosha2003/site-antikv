@@ -2,9 +2,10 @@
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
 /** @global CDatabase $DB */
-use Bitrix\Main\Loader;
-use Bitrix\Main;
-use Bitrix\Currency;
+use Bitrix\Main,
+	Bitrix\Main\Loader,
+	Bitrix\Currency;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_discount')))
@@ -44,13 +45,23 @@ $arFilterFields = array(
 	"filter_renewal",
 	"filter_value_start",
 	"filter_value_end",
+	"filter_use_coupons"
 );
 
 $lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
 
-if (!empty($filter_site_id) && $filter_site_id != "NOT_REF") $arFilter["SITE_ID"] = $filter_site_id;
+$filterSite = array();
+if (!empty($filter_site_id))
+{
+	if (!is_array($filter_site_id))
+		$filter_site_id = ($filter_site_id == 'NOT_REF' ? array() : array($filter_site_id));
+	$filterSite = $filter_site_id;
+}
+if (!empty($filterSite))
+	$arFilter["@SITE_ID"] = $filterSite;
+
 if (!empty($filter_active)) $arFilter["ACTIVE"] = $filter_active;
 if (!empty($filter_date_active_from)) $arFilter["!>ACTIVE_FROM"] = $filter_date_active_from;
 if (!empty($filter_date_active_to)) $arFilter["!<ACTIVE_TO"] = $filter_date_active_to;
@@ -61,6 +72,8 @@ if (isset($filter_value_start) && doubleval($filter_value_start) > 0)
 	$arFilter[">=VALUE"] = doubleval($filter_value_start);
 if (isset($filter_value_end) && doubleval($filter_value_end) > 0)
 	$arFilter["<=VALUE"] = doubleval($filter_value_end);
+if (!empty($filter_use_coupons))
+	$arFilter['USE_COUPONS'] = $filter_use_coupons;
 
 if (!$bReadOnly && $lAdmin->EditAction())
 {
@@ -110,7 +123,7 @@ if (!$bReadOnly && ($arID = $lAdmin->GroupAction()))
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -258,6 +271,12 @@ $lAdmin->AddHeaders(array(
 		"sort" => "LAST_DISCOUNT",
 		"default" => false
 	),
+	array(
+		"id" => "USE_COUPONS",
+		"content" => GetMessage("DSC_USE_COUPONS"),
+		"sort" => "USE_COUPONS",
+		"default" => true
+	)
 ));
 
 $arSelectFieldsMap = array(
@@ -279,6 +298,7 @@ $arSelectFieldsMap = array(
 	"XML_ID" => false,
 	"CURRENCY" => false,
 	"LAST_DISCOUNT" => false,
+	"USE_COUPONS" => false
 );
 
 $arSelectFields = $lAdmin->GetVisibleHeaderColumns();
@@ -296,21 +316,20 @@ if (in_array('VALUE', $arSelectFields) || in_array('MAX_DISCOUNT', $arSelectFiel
 $arSelectFields = array_values($arSelectFields);
 $arSelectFieldsMap = array_merge($arSelectFieldsMap, array_fill_keys($arSelectFields, true));
 
+$siteList = array();
 $arSiteList = array();
 $arSiteLinkList = array();
-if ($arSelectFieldsMap['SITE_ID'])
+$iterator = Main\SiteTable::getList(array(
+	'select' => array('LID', 'SORT', 'NAME'),
+	'order' => array('SORT' => 'ASC')
+));
+while ($row = $iterator->fetch())
 {
-	$siteIterator = Main\SiteTable::getList(array(
-		'select' => array('LID'),
-		'order' => array('SORT' => 'ASC')
-	));
-	while ($oneSite = $siteIterator->fetch())
-	{
-		$arSiteList[$oneSite['LID']] = $oneSite['LID'];
-		$arSiteLinkList[$oneSite['LID']] = '<a href="/bitrix/admin/site_edit.php?lang='.LANGUAGE_ID.'&LID='.$oneSite['LID'].'" title="'.GetMessage('BT_CAT_DISCOUNT_ADM_MESS_SITE_ID').'">'.$oneSite['LID'].'</a>';
-	}
-	unset($oneSite, $siteIterator);
+	$siteList[] = $row;
+	$arSiteList[$row['LID']] = $row['LID'];
+	$arSiteLinkList[$row['LID']] = '<a href="/bitrix/admin/site_edit.php?lang='.LANGUAGE_ID.'&LID='.$row['LID'].'" title="'.GetMessage('BT_CAT_DISCOUNT_ADM_MESS_SITE_ID').'">'.$row['LID'].'</a>';
 }
+unset($row, $iterator);
 
 $arCurrencyList = array();
 if ($arSelectFieldsMap['CURRENCY'])
@@ -369,6 +388,7 @@ while ($arDiscount = $dbResultList->Fetch())
 		$row->AddCalendarField("TIMESTAMP_X", false);
 
 	$row->AddViewField("ID", '<a href="/bitrix/admin/cat_discount_edit.php?lang='.LANGUAGE_ID.'&ID='.$arDiscount["ID"].'">'.$arDiscount["ID"].'</a>');
+	$row->AddCheckField('USE_COUPONS', false);
 
 	if ($bReadOnly)
 	{
@@ -425,7 +445,7 @@ while ($arDiscount = $dbResultList->Fetch())
 		$strDiscountValue = '';
 		if ($arDiscount["VALUE_TYPE"] == CCatalogDiscount::TYPE_PERCENT)
 		{
-			$strDiscountValue = roundEx($arDiscount["VALUE"], CATALOG_VALUE_PRECISION)."%";
+			$strDiscountValue = $arDiscount["VALUE"]."%";
 		}
 		elseif ($arDiscount["VALUE_TYPE"] == CCatalogDiscount::TYPE_SALE)
 		{
@@ -578,6 +598,7 @@ $oFilter = new CAdminFilter(
 		GetMessage("DSC_COUPON"),
 		GetMessage("DSC_RENEW"),
 		GetMessage("DSC_VALUE"),
+		GetMessage('DSC_FILTER_USE_COUPONS')
 	)
 );
 
@@ -585,17 +606,28 @@ $oFilter->Begin();
 ?>
 	<tr>
 		<td><?= GetMessage("DSC_SITE") ?>:</td>
-		<td>
-			<?echo CSite::SelectBox("filter_site_id", $filter_site_id, "(".GetMessage("DSC_ALL").")"); ?>
+		<td><?
+			$siteSize = count($siteList);
+			if ($siteSize > 10)
+				$siteSize = 10;
+			elseif ($siteSize < 3)
+				$siteSize = 3;
+			?><select name="filter_site_id[]" multiple size="<?=$siteSize; ?>"><?
+			foreach ($siteList as $row)
+			{
+				?><option value="<?=$row['LID']; ?>"<?=(in_array($row['LID'], $filterSite) ? ' selected' : ''); ?>>[<?=$row['LID']; ?>]&nbsp;<?=htmlspecialcharsbx($row['NAME']); ?></option><?
+			}
+			unset($row);
+			?></select>
 		</td>
 	</tr>
 	<tr>
 		<td><?= GetMessage("DSC_ACTIVE") ?>:</td>
 		<td>
 			<select name="filter_active">
-				<option value=""><?= htmlspecialcharsex("(".GetMessage("DSC_ALL").")") ?></option>
-				<option value="Y"<?if ($filter_active=="Y") echo " selected"?>><?= htmlspecialcharsex(GetMessage("DSC_YES")) ?></option>
-				<option value="N"<?if ($filter_active=="N") echo " selected"?>><?= htmlspecialcharsex(GetMessage("DSC_NO")) ?></option>
+				<option value=""><?=htmlspecialcharsbx("(".GetMessage("DSC_ALL").")"); ?></option>
+				<option value="Y"<?if ($filter_active=="Y") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("DSC_YES")); ?></option>
+				<option value="N"<?if ($filter_active=="N") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("DSC_NO")); ?></option>
 			</select>
 		</td>
 	</tr>
@@ -608,31 +640,41 @@ $oFilter->Begin();
 	<tr>
 		<td><?= GetMessage("DSC_NAME") ?>:</td>
 		<td>
-			<input type="text" name="filter_name" size="50" value="<?echo htmlspecialcharsex($filter_name)?>" size="30">&nbsp;<?=ShowFilterLogicHelp()?>
+			<input type="text" name="filter_name" size="50" value="<?=htmlspecialcharsbx($filter_name); ?>">&nbsp;<?=ShowFilterLogicHelp()?>
 		</td>
 	</tr>
 	<tr>
 		<td><?= GetMessage("DSC_COUPON") ?>:</td>
 		<td>
-			<input type="text" name="filter_coupon" size="50" value="<?echo htmlspecialcharsex($filter_coupon)?>" size="30">
+			<input type="text" name="filter_coupon" size="50" value="<?=htmlspecialcharsbx($filter_coupon); ?>">
 		</td>
 	</tr>
 	<tr>
 		<td><?= GetMessage("DSC_RENEW") ?>:</td>
 		<td>
 			<select name="filter_renewal">
-				<option value=""><?= htmlspecialcharsex("(".GetMessage("DSC_ALL").")") ?></option>
-				<option value="Y"<?if ($filter_renewal=="Y") echo " selected"?>><?= htmlspecialcharsex(GetMessage("DSC_YES")) ?></option>
-				<option value="N"<?if ($filter_renewal=="N") echo " selected"?>><?= htmlspecialcharsex(GetMessage("DSC_NO")) ?></option>
+				<option value=""><?=htmlspecialcharsbx("(".GetMessage("DSC_ALL").")"); ?></option>
+				<option value="Y"<?if ($filter_renewal=="Y") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("DSC_YES")); ?></option>
+				<option value="N"<?if ($filter_renewal=="N") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("DSC_NO")); ?></option>
 			</select>
 		</td>
 	</tr>
 	<tr>
 		<td><? echo GetMessage('DSC_VALUE'); ?>:</td>
 		<td>
-			<input type="text" name="filter_value_start" value="<?echo htmlspecialcharsex($filter_value_start)?>" size="15">
+			<input type="text" name="filter_value_start" value="<?=htmlspecialcharsbx($filter_value_start); ?>" size="15">
 			...
-			<input type="text" name="filter_value_end" value="<?echo htmlspecialcharsex($filter_value_end)?>" size="15">
+			<input type="text" name="filter_value_end" value="<?=htmlspecialcharsbx($filter_value_end); ?>" size="15">
+		</td>
+	</tr>
+	<tr>
+		<td><?= GetMessage("DSC_FILTER_USE_COUPONS") ?>:</td>
+		<td>
+			<select name="filter_use_coupons">
+				<option value=""><?=htmlspecialcharsbx("(".GetMessage("DSC_ALL").")"); ?></option>
+				<option value="Y"<?if ($filter_use_coupons=="Y") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("DSC_YES")); ?></option>
+				<option value="N"<?if ($filter_use_coupons=="N") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("DSC_NO")); ?></option>
+			</select>
 		</td>
 	</tr>
 <?

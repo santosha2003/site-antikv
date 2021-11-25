@@ -1,12 +1,21 @@
 <?
+use Bitrix\Main\Localization\Loc;
+
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+
+/**
+ * @global CUser $USER
+ * @global CMain $APPLICATION
+ */
+
 $module_id = "fileman";
+
 //Functions
 function BXCreateSection(&$fileContent, &$sectionFileContent, &$absoluteFilePath, &$sectionPath)
 {
 	//Check quota
 	$quota = new CDiskQuota();
-	if (!$quota->CheckDiskQuota(Array("FILE_SIZE" => strlen($fileContent) + strlen($sectionFileContent))))
+	if (!$quota->CheckDiskQuota(Array("FILE_SIZE" => mb_strlen($fileContent) + mb_strlen($sectionFileContent))))
 	{
 		$GLOBALS["APPLICATION"]->ThrowException($quota->LAST_ERROR, "BAD_QUOTA");
 		return false;
@@ -22,7 +31,7 @@ function BXCreateSection(&$fileContent, &$sectionFileContent, &$absoluteFilePath
 	}
 
 	//Create .section.php
-	$f = $io->GetFile($absoluteFilePath."/.section.php");
+	$io->GetFile($absoluteFilePath."/.section.php");
 	if (!$GLOBALS["APPLICATION"]->SaveFileContent($absoluteFilePath."/.section.php", $sectionFileContent))
 		return false;
 
@@ -51,9 +60,13 @@ function BXCreateSection(&$fileContent, &$sectionFileContent, &$absoluteFilePath
 $createNewFolder = (isset($_REQUEST["newFolder"]) && $_REQUEST["newFolder"] == "Y");
 
 if($createNewFolder)
-	IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/public/folder_new.php");
+{
+	Loc::loadLanguageFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/public/folder_new.php");
+}
 else
-	IncludeModuleLangFile(__FILE__);
+{
+	Loc::loadLanguageFile(__FILE__);
+}
 
 $popupWindow = new CJSPopup(GetMessage("PAGE_NEW_WINDOW_TITLE"), array("SUFFIX"=>($_GET['subdialog'] == 'Y'? 'subdialog':'')));
 
@@ -74,7 +87,7 @@ $io = CBXVirtualIo::GetInstance();
 
 //Page path
 $path = "/";
-if(isset($_REQUEST["path"]) && strlen($_REQUEST["path"]) > 0)
+if(isset($_REQUEST["path"]) && $_REQUEST["path"] <> '')
 	$path = $io->CombinePath("/", $_REQUEST["path"]);
 
 $documentRoot = CSite::GetSiteDocRoot($site);
@@ -100,7 +113,7 @@ if(!$USER->CanDoFileOperation("fm_edit_existent_file", Array($site, $path)))
 	$canEditNewPage = false;
 
 //Lang
-if(!isset($_REQUEST["lang"]) || strlen($_REQUEST["lang"]) <= 0)
+if(!isset($_REQUEST["lang"]) || $_REQUEST["lang"] == '')
 	$lang = LANGUAGE_ID;
 
 //BackUrl
@@ -108,7 +121,7 @@ $back_url = (isset($_REQUEST["back_url"]) ? $_REQUEST["back_url"] : "");
 
 //Template ID
 $templateID = false;
-if(isset($_REQUEST["templateID"]) && strlen($_REQUEST["templateID"]) > 0)
+if(isset($_REQUEST["templateID"]) && $_REQUEST["templateID"] <> '')
 {
 	$obTemplate = CSiteTemplate::GetByID($_REQUEST["templateID"]);
 	if($arSiteTemplate = $obTemplate->Fetch())
@@ -121,7 +134,7 @@ if($templateID === false)
 	$obTemplate = CSite::GetTemplateList($site);
 	while ($arSiteTemplate = $obTemplate->Fetch())
 	{
-		if (strlen($arSiteTemplate["CONDITION"]) <=0 )
+		if ($arSiteTemplate["CONDITION"] == '' )
 		{
 			$templateID = $arSiteTemplate["TEMPLATE"];
 			break;
@@ -133,7 +146,7 @@ if($templateID === false)
 $edit_groups = explode(",", COption::GetOptionString('fileman', 'default_edit_groups', ''));
 $arGroupList = array();
 $arEditGroups = array();
-$gr = CGroup::GetList(($v1="sort"), ($v2="asc"), array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
+$gr = CGroup::GetList("sort", "asc", array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
 while($group = $gr->Fetch())
 {
 	$arGroupList[$group["ID"]] = $group;
@@ -163,7 +176,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]))
 	$absoluteFilePath = $io->CombinePath($documentRoot, $path, $fileName);
 
 	//Check filename
-	if (strlen($fileName) <= 0)
+	if ($fileName == '')
 		$strWarning = GetMessage("PAGE_NEW_FILE_NAME_EMPTY");
 	elseif (!$io->ValidateFilenameString($fileName))
 		$strWarning = GetMessage("PAGE_NEW_FILE_NAME_VALID_SYMBOLS");
@@ -216,7 +229,7 @@ if (IsModuleInstalled("fileman") && $USER->CanDoOperation("fileman_add_element_t
 		$actualDir = $menu->MenuDir;
 		$currentDir = rtrim($path, "/")."/";
 
-		if (strlen($actualDir) > 0)
+		if ($actualDir <> '')
 		{
 			$actualMenuFile = $actualDir.".".$type.".menu.php";
 			$fileOperation = ($io->FileExists($documentRoot.$actualMenuFile) ? "fm_edit_existent_file" : "fm_create_new_file" );
@@ -295,7 +308,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]) && $strWarn
 
 	//Title
 	$strSectionName = "";
-	if (strlen($pageTitle) > 0)
+	if ($pageTitle <> '')
 	{
 		$fileContent = SetPrologTitle($fileContent, $pageTitle);
 		if ($createNewFolder)
@@ -314,7 +327,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]) && $strWarn
 
 			if (preg_match("/[a-zA-Z_-~]+/i", $arProperty["CODE"]))
 			{
-				if ($createNewFolder && strlen($arProperty["VALUE"]) > 0)
+				if ($createNewFolder && $arProperty["VALUE"] <> '')
 				{
 					if($bNeedComma)
 						$strDirProperties .= ",\n";
@@ -331,7 +344,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]) && $strWarn
 	if ($createNewFolder)
 	{
 		$sectionFileContent = "<"."?\n".$strSectionName."\$arDirProperties = Array(\n".$strDirProperties."\n);\n"."?".">";
-		$sectionPath = substr($path, 1).$fileName;
+		$sectionPath = mb_substr($path, 1).$fileName;
 		$success = BXCreateSection($fileContent, $sectionFileContent, $absoluteFilePath, $sectionPath);
 
 		$arUndoParams = array(
@@ -374,7 +387,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]) && $strWarn
 	{
 		if(COption::GetOptionString($module_id, "log_page", "Y")=="Y")
 		{
-			$res_log['path'] = substr($arUndoParams['arContent']['path'], 1);
+			$res_log['path'] = mb_substr($arUndoParams['arContent']['path'], 1);
 			if (!$createNewFolder)
 				CEventLog::Log(
 					"content",
@@ -459,9 +472,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]) && $strWarn
 			if(COption::GetOptionString($module_id, "log_page", "Y")=="Y")
 			{
 				$mt = COption::GetOptionString("fileman", "menutypes", $default_value, $site);
-				$mt = unserialize(str_replace("\\", "", $mt));
+				$mt = unserialize(str_replace("\\", "", $mt), ['allowed_classes' => false]);
 				$res_log['menu_name'] = $mt[$menuType];
-				$res_log['path'] = substr(dirname($arUndoParams['arContent']['path']), 1);
+				$res_log['path'] = mb_substr(dirname($arUndoParams['arContent']['path']), 1);
 				CEventLog::Log(
 					"content",
 					"MENU_EDIT",
@@ -528,7 +541,7 @@ if ($strWarning != "" && isset($_POST["PROPERTY"]) && is_array($_POST["PROPERTY"
 	//Restore post values if error occured
 	foreach ($_POST["PROPERTY"] as $arProperty)
 	{
-		if (isset($arProperty["VALUE"]) && strlen($arProperty["VALUE"]) > 0)
+		if (isset($arProperty["VALUE"]) && $arProperty["VALUE"] <> '')
 			$arDirProperties[$arProperty["CODE"]] = $arProperty["VALUE"];
 	}
 }
@@ -549,7 +562,7 @@ if (!$createNewFolder && IsModuleInstalled("search"))
 	$tagPropertyCode = COption::GetOptionString("search", "page_tag_property","tags");
 	unset($arFilemanProperties[$tagPropertyCode]);
 	unset($arDirProperties[$tagPropertyCode]);
-	unset($arInheritProperties[strtoupper($tagPropertyCode)]);
+	unset($arInheritProperties[mb_strtoupper($tagPropertyCode)]);
 }
 
 $bSearchExists = (isset($tagPropertyCode) && CModule::IncludeModule("search"));
@@ -564,11 +577,11 @@ foreach ($arFilemanProperties as $propertyCode => $propertyDesc)
 		$arGlobalProperties[$propertyCode] = "";
 
 	unset($arDirProperties[$propertyCode]);
-	unset($arInheritProperties[strtoupper($propertyCode)]);
+	unset($arInheritProperties[mb_strtoupper($propertyCode)]);
 }
 
 foreach ($arDirProperties as $propertyCode => $propertyValue)
-	unset($arInheritProperties[strtoupper($propertyCode)]);
+	unset($arInheritProperties[mb_strtoupper($propertyCode)]);
 
 $bPropertyExists = (!empty($arGlobalProperties) || !empty($arDirProperties) || !empty($arInheritProperties));
 
@@ -584,7 +597,7 @@ if (isset($strWarning) && $strWarning != "")
 
 <?if (IsModuleInstalled("fileman")):?>
 	<?if ($createNewFolder):?>
-		<p><a href="/bitrix/admin/fileman_newfolder.php??lang=<?=urlencode($lang)?>&site=<?=urlencode($site)?>&path=<?=urlencode($path)?>&back_url=<?=urlencode($back_url)?>"><?=GetMessage("PAGE_NEW_EDIT_IN_ADMIN")?></a></p>
+		<p><a href="/bitrix/admin/fileman_newfolder.php?lang=<?=urlencode($lang)?>&site=<?=urlencode($site)?>&path=<?=urlencode($path)?>&back_url=<?=urlencode($back_url)?>"><?=GetMessage("PAGE_NEW_EDIT_IN_ADMIN")?></a></p>
 	<?else:?>
 		<p><a href="/bitrix/admin/fileman_html_edit.php?lang=<?=urlencode($lang)?>&site=<?=urlencode($site)?>&path=<?=urlencode($path)?>&new=Y&back_url=<?=urlencode($back_url)?>"><?=GetMessage("PAGE_NEW_EDIT_IN_ADMIN")?></a></p>
 	<?endif?>
@@ -644,7 +657,7 @@ if($bInEditGroups || $bAdmin):
 	<tr>
 		<td class="bx-popup-label bx-width30"></td>
 		<td><input type="checkbox" id="bx_access_limit" name="limitAccess" value="Y" onclick="BXLimitAccess(this.checked)"> <label for="bx_access_limit"><?= GetMessage($createNewFolder ? "PAGE_NEW_LIMIT_ACCESS_SEC" : "PAGE_NEW_LIMIT_ACCESS_PAGE")?></label>
-			<div id="bx_access_limit_row" style="display:none; margin: 4px 0px 0px 24px">
+			<div id="bx_access_limit_row" style="display:none; margin: 4px 0 0 24px">
 <?if($bAdmin):?>
 				<?= GetMessage("PAGE_NEW_LIMIT_ACCESS_LABLE_EX")?><br>
 
@@ -661,7 +674,7 @@ if($bInEditGroups || $bAdmin):
 <?else:?>
 				<input type="hidden" name="limitAccessWho" value="extended" />
 <?endif?>
-				<div id="bx_acc_lim_group_list_row" style="display:<?=(!empty($arEditGroups)? "none":"block")?>; margin:4px 0px 0px 24px;">
+				<div id="bx_acc_lim_group_list_row" style="display:<?=(!empty($arEditGroups)? "none":"block")?>; margin:4px 0 0 24px;">
 					<select id="bx_acc_lim_group_list" name="limitGroupList[]" size="7" multiple="multiple">
 <?foreach($arGroupList as $group):?>
 						<option value="<?= $group['ID']?>"<?if(isset($arEditGroups[$group["ID"]])) echo " selected"?>><?= htmlspecialcharsEx($group['NAME'])?></option>
@@ -744,7 +757,7 @@ foreach ($arGlobalProperties as $propertyCode => $propertyValue):?>
 
 	<tr style="height:30px;">
 		<td class="bx-popup-label bx-width30"><?=(
-			strlen($arFilemanProperties[$propertyCode]) > 0 ?
+			$arFilemanProperties[$propertyCode] <> '' ?
 				htmlspecialcharsEx($arFilemanProperties[$propertyCode]) :
 				htmlspecialcharsEx($propertyCode))
 		?>:</td>
@@ -752,7 +765,7 @@ foreach ($arGlobalProperties as $propertyCode => $propertyValue):?>
 
 		<?$inheritValue = $APPLICATION->GetDirProperty($propertyCode, Array($site, $path));?>
 
-		<?if (strlen($inheritValue) > 0 && strlen($propertyValue) <= 0):
+		<?if ($inheritValue <> '' && $propertyValue == ''):
 			$jsInheritPropIds .= ",".$propertyIndex;
 		?>
 
@@ -866,7 +879,7 @@ window.BXChangeMenuType = function(menuType, onChange)
 		menuItems.options.add(option);
 	}
 
-	var option = selectDocument.createElement("OPTION");
+	option = selectDocument.createElement("OPTION");
 	option.text = "<?=GetMessage("PAGE_NEW_NEW_ITEM")?>";
 	option.value = itemPosition;
 	menuItems.options.add(option);
@@ -876,7 +889,7 @@ window.BXChangeMenuType = function(menuType, onChange)
 		menuItems.selectedIndex = menuItems.options.length - 1;
 	else if (menuItemPosition)
 		menuItems.selectedIndex = menuItemPosition.value;
-}
+};
 
 window.BXFirstStepShow = function(wizard)
 {
@@ -888,7 +901,7 @@ window.BXFirstStepShow = function(wizard)
 		wizard.SetButtonDisabled("finish", true);
 	else if(!bProp)
 		wizard.SetButtonDisabled("next", true);
-}
+};
 
 window.BXFirstStepNext = function(wizard)
 {
@@ -915,7 +928,7 @@ window.BXFirstStepNext = function(wizard)
 
 	if (menuName.value == "" || menuName.disabled)
 		menuName.value = pageTitle.value;
-}
+};
 
 window.BXMenuStepShow = function(wizard)
 {
@@ -927,7 +940,7 @@ window.BXMenuStepShow = function(wizard)
 
 	if(!bProp && !bTemplateWiz)
 		window.bxNewPageWizard.SetButtonDisabled("next", true);
-}
+};
 
 window.BXMenuStepNext = function(wizard)
 {
@@ -935,7 +948,7 @@ window.BXMenuStepNext = function(wizard)
 
 	if(!bTemplateWiz)
 		wizard.SetCurrentStep("bx_new_page_template");
-}
+};
 
 window.BXTemplateStepShow = function(wizard)
 {
@@ -943,7 +956,7 @@ window.BXTemplateStepShow = function(wizard)
 
 	if(!bProp)
 		window.bxNewPageWizard.SetButtonDisabled("next", true);
-}
+};
 
 window.BXTemplateStepPrev = function(wizard)
 {
@@ -951,7 +964,7 @@ window.BXTemplateStepPrev = function(wizard)
 
 	if (!addToMenu || !addToMenu.checked)
 		wizard.SetCurrentStep("bx_new_page_menu");
-}
+};
 
 window.BXPropStepPrev = function(wizard)
 {
@@ -965,7 +978,7 @@ window.BXPropStepPrev = function(wizard)
 		if (!addToMenu || !addToMenu.checked)
 			wizard.SetCurrentStep("bx_new_page_menu");
 	}
-}
+};
 
 window.BXAddMenuStep = function(addStep)
 {
@@ -995,7 +1008,7 @@ window.BXAddMenuStep = function(addStep)
 				window.bxNewPageWizard.SetButtonDisabled("next", true);
 		}
 	}
-}
+};
 
 BXAddMenuStep(<?=($addToMenu ? "true" : "false")?>);
 
@@ -1004,16 +1017,15 @@ window.BXCheckFileName = function(input, createNewFolder)
 	var onSaveCheck = false;
 	if (!input)
 	{
-		var input = BX("bx_new_page_name");
+		input = BX("bx_new_page_name");
 		onSaveCheck = true;
 	}
 
 	if (!input)
 		return false;
 
-	fileName = input.value;
+	var fileName = input.value;
 	var errorBox = BX("bx_error_text");
-//	var validSymbols = /[^a-zA-Z0-9\s\!\$\&\(\)\[\]\{\}\-\.\;\=\@\^_\~]/;
 	var validSymbols = /[\0\\\/:*?\"\'<>|]/;
 
 	var phpExtension = /\.php$/;
@@ -1025,7 +1037,6 @@ window.BXCheckFileName = function(input, createNewFolder)
 		{
 			errorBox.style.display = "block";
 			errorBox.innerHTML = errorText;
-			//errorBox.style.color = "red";
 			errorBox.className = "errortext";
 		}
 	}
@@ -1035,13 +1046,6 @@ window.BXCheckFileName = function(input, createNewFolder)
 		SetError("<?=GetMessage("PAGE_NEW_FILE_NAME_EMPTY")?>");
 		return false;
 	}
-<?if(false):?>
-	else if (!createNewFolder && onSaveCheck && !phpExtension.test(fileName))
-	{
-		SetError("<?=GetMessage("PAGE_NEW_FILE_NAME_PHP_EXT")?>");
-		return false;
-	}
-<?endif?>
 <?if(!$createNewFolder):?>
 	else if (!createNewFolder && fileName != "" && fileName.substr(0,1) == ".")
 	{
@@ -1065,7 +1069,7 @@ window.BXCheckFileName = function(input, createNewFolder)
 		}
 		return true;
 	}
-}
+};
 
 //Save
 window.BXNewPageSave = function(wizard)
@@ -1074,7 +1078,7 @@ window.BXNewPageSave = function(wizard)
 		<?=$popupWindow->jsPopup?>.PostParameters();
 	else
 		wizard.SetCurrentStep("bx_new_page_common");
-}
+};
 
 window.BXFileNameSelect = function()
 {
@@ -1084,7 +1088,7 @@ window.BXFileNameSelect = function()
 		input.focus();
 		input.select();
 	}
-}
+};
 
 BXFileNameSelect();
 
@@ -1103,7 +1107,7 @@ window.BXBlurProperty = function(element, propertyIndex)
 		while (editProperty.firstChild)
 			editProperty.removeChild(editProperty.firstChild);
 	}
-}
+};
 
 window.BXEditProperty = function(propertyIndex)
 {
@@ -1129,7 +1133,7 @@ window.BXEditProperty = function(propertyIndex)
 	editProperty.appendChild(input);
 	input.focus();
 	input.select();
-}
+};
 
 //Create hints
 window.BXFolderEditHint = function()
@@ -1137,12 +1141,12 @@ window.BXFolderEditHint = function()
 	var td = BX("bx_page_prop_name");
 	if (td)
 	{
-		oBXHint = new BXHint("<?=GetMessage("PAGE_NEW_DESCRIPTION")?>");
+		var oBXHint = new BXHint("<?=GetMessage("PAGE_NEW_DESCRIPTION")?>");
 		td.appendChild(oBXHint.oIcon);
 	}
 
 <?if(!$createNewFolder):?>
-	var td = BX("bx_page_tags");
+	td = BX("bx_page_tags");
 	if (td)
 	{
 		oBXHint = new BXHint("<?=GetMessage("PAGE_NEW_TAGS_DESCIPTION")?>");
@@ -1154,7 +1158,7 @@ window.BXFolderEditHint = function()
 
 	for (var index = 0; index < jsInheritProps.length; index++)
 		oBXHint = new BXHint("<?=GetMessage("PAGE_NEW_INHERIT_TITLE")?>", BX("bx_view_property_"+ jsInheritProps[index]), {"width":200});
-}
+};
 window.BXFolderEditHint();
 
 window.BXLimitAccess = function(bCheck)

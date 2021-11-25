@@ -14,23 +14,56 @@ class Xml2Array
 	 */
 	public static function convert($xmlData, $convertCharset = true)
 	{
-		if(strlen($xmlData) <= 0)
+		if($xmlData == '')
 			return array();
 
 		$result = array();
 
+		if($convertCharset && mb_strtolower(SITE_CHARSET) != 'utf-8')
+			$xmlData = \Bitrix\Main\Text\Encoding::convertEncoding($xmlData, SITE_CHARSET, 'UTF-8');
 
-		if($convertCharset && strtolower(SITE_CHARSET) != 'utf-8')
-			$xmlData = \Bitrix\Main\Text\Encoding::convertEncodingArray($xmlData, SITE_CHARSET, 'UTF-8');
+		if(preg_replace('/[[:^print:]]/', '', $xmlData) == "<?xml version='1.0' encoding='UTF-8'?>")
+			return array();
+			
+		//$xmlData = preg_replace('/[[:^print:]]/', '', $xmlData);
+		libxml_use_internal_errors(true);
 
-		//	$xmlData = preg_replace('/[[:^print:]]/', '', $xmlData);
-		$results = new \SimpleXMLElement($xmlData, LIBXML_NOCDATA);
+		try
+		{
+			$results = new \SimpleXMLElement($xmlData, LIBXML_NOCDATA);
+		}
+		catch(\Exception $e)
+		{
+			$logger = new Logger;
+			$logger->addRecord(
+				Logger::LOG_LEVEL_ERROR,
+				'TRADING_PLATFORM_XML2ARRAY_ERROR',
+				'convert',
+				'Can\'t convert xmlData to SimpleXMLElement. Data: ('.$xmlData.'). Error: '.$e->getMessage()
+			);
 
-		if($results && $jsonString = json_encode($results))
+			return array();
+		}
+
+		if(!$results)
+		{
+			$logger = new Logger;
+			$logger->addRecord(
+				Logger::LOG_LEVEL_ERROR,
+				'TRADING_PLATFORM_XML2ARRAY_ERROR',
+				'convert',
+				'Wrong xmlData format. Data: ('.$xmlData.').'
+			);
+
+			return array();
+		}
+		elseif($jsonString = json_encode($results))
+		{
 			$result = json_decode($jsonString, TRUE);
+		}
 
-		if(strtolower(SITE_CHARSET) != 'utf-8')
-			$result = \Bitrix\Main\Text\Encoding::convertEncodingArray($result, 'UTF-8', SITE_CHARSET);
+		if(mb_strtolower(SITE_CHARSET) != 'utf-8')
+			$result = \Bitrix\Main\Text\Encoding::convertEncoding($result, 'UTF-8', SITE_CHARSET);
 
 		return $result;
 	}

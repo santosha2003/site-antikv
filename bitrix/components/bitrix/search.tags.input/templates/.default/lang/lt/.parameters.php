@@ -1,6 +1,0 @@
-<?
-$MESS['SEARCH_SHOW_IFRAME'] = 'Áterpti rëmà á komponento ðablonà';
-$MESS['SEARCH_PAGE_ELEMENTS'] = 'Áraðø skaièius iðpleèiamajame sàraðe';
-$MESS['SEARCH_SORT_BY_CNT'] = 'Rûðiuoti pagal populiarumà';
-$MESS['SEARCH_TEXT'] = 'Papildomos savybës';
-?>

@@ -83,26 +83,22 @@ BXBlockEditorPreview.prototype.show = function(params)
 	params = params || {};
 	BX.addClass(this.shadowNode, 'active');
 	BX.removeClass(this.shadowNode, 'access-denied');
-	var _this = this;
 	this.previewContext.style.display = 'block';
-	BX.ajax({
-		'url': '/bitrix/admin/fileman_block_editor.php?action=set',
-		'method': 'POST',
-		'data': {'sessid': BX.bitrix_sessid(), 'src': params.content},
-		'onsuccess': function()
-		{
-			var randomString = Math.random();
-			var url = _this.url + '&site_id=' + _this.site +'&r=' + randomString;
-			_this.iframePreview.setAttribute('src', url);
-		},
-		'onfailure': function(data)
-		{
-			if(data == 'auth')
-			{
-				BX.addClass(_this.shadowNode, 'access-denied');
-			}
-		}
-	});
+
+	var frameDoc = this.iframePreview.contentDocument;
+	frameDoc.body.innerHTML = '<div style="display: none;">' +
+		'<form method="post">' +
+		'<textarea name="content"></textarea>' +
+		'<input type="hidden" name="sessid" value="' + BX.bitrix_sessid() +'">' +
+		'</form>' +
+		'</div>';
+
+	var input = frameDoc.body.querySelector('textarea');
+	input.textContent = params.content;
+
+	var form = frameDoc.body.querySelector('form');
+	form.action = this.url;
+	BX.submit(form);
 };
 BXBlockEditorPreview.prototype.hide = function()
 {
@@ -230,15 +226,28 @@ BXBlockEditorDialogFileInput.prototype =
 {
 	getImages: function()
 	{
-		var result = [], item;
 		var itemList = this.fileInput.agent.getItems();
 		itemList.reset();
+
+		var item, ids = [];
 		while ((item = itemList.getNext()) && item)
 		{
-			result.push(this.fileList[item.id]);
+			ids.push(item.id);
 		}
 
-		return result;
+		return ids.map(function (id) {
+			var filtered = this.fileList.filter(function (file) {
+				return (file.id == id && file.url);
+			});
+			if (filtered.length > 0)
+			{
+				return filtered[filtered.length - 1].url;
+			}
+			else
+			{
+				return null;
+			}
+		}, this);
 	},
 
 	setImages: function(pathList)
@@ -317,21 +326,38 @@ BXBlockEditorDialogFileInput.prototype =
 			this.semaphoreOnQueueIsChanged = false;
 		}, this));
 
+
 		this.onFileIsCreated = function(id, item)
 		{
 			this.semaphoreOnQueueIsChanged = true;
 			if(item.file['tmp_url'])
 			{
-				this.fileList[id] = item.file['tmp_url'];
+				this.fileList.push({
+					'id': id,
+					'url': item.file['tmp_url'],
+					'path': item.file['tmp_url']
+				});
+			}
+
+			if(BX.util.in_array(item['type'], ['image/filedialog', 'image/medialib']))
+			{
+				BX.addCustomEvent(this.fileInput.agent, "onFileIsInited", BX.delegate(function()
+				{
+					this.onAgentChange(ctrlImage);
+				}, this));
 			}
 
 			BX.addCustomEvent(item, 'onUploadDone', BX.delegate(function(item, data)
 			{
-				if(data['file'] && data.file['path'])
-				{
-					this.fileList[data.file.id] = data.file.path + '?' + Math.random();
-					this.onAgentChange(ctrlImage);
-				}
+				var url = data.file.files.default.url;
+				url += (url.indexOf('?') > 0 ? '&' : '?') + 'r=' + Math.random();
+
+				this.fileList.push({
+					'id': data.file.id,
+					'url': url,
+					'path': data.file.files.default.path
+				});
+				this.onAgentChange(ctrlImage);
 			}, this));
 		};
 		BX.addCustomEvent(this.fileInput.agent, "onFileIsCreated", BX.delegate(this.onFileIsCreated, this));
@@ -351,11 +377,20 @@ BXBlockEditorDialogFileInput.prototype =
 			if(inputList[i] && inputList[i].getAttribute)
 			{
 				var paramName = inputList[i].getAttribute('name');
-				postData[inputList[i].getAttribute('name')] = inputList[i].value;
+				var paramValue = inputList[i].value;
+				postData[inputList[i].getAttribute('name')] = paramValue;
 
 				if(paramName.indexOf('tmp_name') > -1)
 				{
-					isNeedToDoRequest = true;
+
+					var isSaved = this.fileList.filter(function (file) {
+						return (paramValue == file.path && file.saved);
+					}).length > 0;
+
+					if (!isSaved)
+					{
+						isNeedToDoRequest = true;
+					}
 				}
 			}
 		}
@@ -366,7 +401,7 @@ BXBlockEditorDialogFileInput.prototype =
 		}
 
 		BX.ajax({
-			'url': '/bitrix/admin/fileman_block_editor.php?action=save_file',
+			'url': this.caller.saveFileUrl,
 			'method': 'POST',
 			'data': postData,
 			'dataType': 'json',
@@ -375,7 +410,7 @@ BXBlockEditorDialogFileInput.prototype =
 		});
 	},
 
-	onImagesSaved: function(data)
+	onImagesSaved: function(answer)
 	{
 		for(var tabCode in this.caller.tabList)
 		{
@@ -390,18 +425,28 @@ BXBlockEditorDialogFileInput.prototype =
 				continue;
 			}
 
-			for(var fileTmp in data)
-			{
-				if(!fileTmp)
-				{
-					continue;
-				}
+			answer.data.list.forEach(function (savedFileData) {
+				var filtered = this.fileList.filter(function (file) {
+					if (!file.path && file.url)
+					{
+						return file.url.indexOf(savedFileData.tmp) >= 0;
+					}
 
-				var fileNew = data[fileTmp];
-				item.ctrl.value = item.ctrl.value.replace(fileTmp, fileNew);
-			}
+					return savedFileData.tmp == file.path;
+				});
+				
+				filtered.forEach(function (file) {
+					item.ctrl.value = item.ctrl.value.replace(file.url, savedFileData.path);
+					file.saved = true;
+				});
+			}, this);
 
 			BX.onCustomEvent(item.ctrl, 'onSettingChangeValue');
+		}
+
+		if (answer.error)
+		{
+			alert(answer.errorText);
 		}
 	}
 };
@@ -469,6 +514,21 @@ BXBlockEditorEditDialogColumn.prototype =
 		this.switchDefaultColumn(container);
 	},
 
+	hideAllColumns: function(container)
+	{
+		var columnList = this.getColumnList(container);
+		for(var i in columnList)
+		{
+			if (!columnList.hasOwnProperty(i))
+			{
+				continue;
+			}
+
+			var column = columnList[i];
+			column.style.display = 'none';
+		}
+	},
+
 	switchDefaultColumn: function(container)
 	{
 		var columnNumList = this.getColumnList(container);
@@ -480,6 +540,7 @@ BXBlockEditorEditDialogColumn.prototype =
 
 	onLoadSetting: function(eventParams)
 	{
+		this.hideAllColumns(eventParams.container.container);
 		this.switchDefaultColumn(eventParams.container.container);
 	},
 
@@ -574,15 +635,15 @@ BXBlockEditorSocial.prototype =
 		var href = this.getItemControl(item, 'href');
 		var name = this.getItemControl(item, 'name');
 
-		href.value = elementSelect.value;
-		name.value = elementSelect.options[elementSelect.selectedIndex].text;
+		href.value =  elementSelect.value;
+		name.value =  elementSelect.options[elementSelect.selectedIndex].text;
 	},
 
 	addItem: function(href, name)
 	{
 		var html = this.templateItem.innerHTML;
-		html = html.replace('#href#', href);
-		html = html.replace('#name#', name);
+		html = html.replace('#href#', BX.util.htmlspecialchars(href));
+		html = html.replace('#name#', BX.util.htmlspecialchars(name));
 
 		var div = BX.create('div', {
 			'attrs': {'data-bx-block-editor-social-item': 'item'},
@@ -670,6 +731,7 @@ BXBlockEditorEditDialog.prototype =
 
 		this.caller = params.caller;
 		this.callerContext = params.context;
+		this.saveFileUrl = params.saveFileUrl;
 		this.context = this.callerContext.querySelector('.edit-panel');
 
 		this.contextTools = this.context.querySelector('.block-edit-cont');
@@ -820,64 +882,59 @@ BXBlockEditorEditDialog.prototype =
 		}, this));
 	},
 
-	initColorPicker: function(node)
+	initColorPicker: function()
 	{
-		this.picker = new window.BXColorPicker({'id': "picker", 'name': 'picker'});
-		this.picker.Create();
+		this.picker = new BX.ColorPicker({'popupOptions': {
+			'offsetLeft': 15,
+			'offsetTop': 5
+		}});
 
-		var _this = this;
+		BX.addCustomEvent(this, "onHide", this.picker.close.bind(this.picker));
 
-		BX.addCustomEvent(this, "onHide", function(){
-			_this.picker.Close();
-		});
-		var clickHandler = function ()
+		var changeHandler = function(inputNode, iconNode)
 		{
-			var element = this;
-			element.parentNode.appendChild(_this.picker.pCont);
-			_this.picker.oPar.OnSelect = BX.proxy(function (color)
+			var color = inputNode.value;
+			if (!color)
 			{
-				if(!color)
-					color = '';
-
-				element.value = color;
-				var colorBox = BX.nextSibling(element);
-				if(colorBox)
-				{
-					colorBox.style.background = color;
-				}
-				BX.fireEvent(element, 'change');
-			}, _this);
-
-			_this.picker.pCont.style.display = '';
-			_this.picker.Close();
-			_this.picker.Open(element);
-			_this.picker.pCont.style.display = 'none';
-
-		};
-
-		var changeHandler = function()
-		{
-			var colorBox = BX.nextSibling(this);
-			if (colorBox)
-			{
-				colorBox.style.background = this.value;
+				return;
 			}
+
+			iconNode.style.background = inputNode.value;
 		};
 
-
-		var inputList = BX.findChildren(this.context, {'className': 'bx-editor-color-picker'}, true);
-		for(var i in inputList)
+		var clickHandler = function (inputNode, iconNode)
 		{
-			var inputCtrl = inputList[i];
-			var colorBox = BX.nextSibling(inputCtrl);
+			if (!this.picker)
+			{
+				return;
+			}
 
-			BX.bind(colorBox, 'click', BX.proxy(clickHandler, inputCtrl));
-			BX.bind(inputCtrl, 'click', clickHandler);
-			BX.bind(inputCtrl, "focus", clickHandler);
+			this.picker.close();
+			this.picker.open({
+				'defaultColor': '',
+				'allowCustomColor': true,
+				'bindElement': iconNode,
+				'onColorSelected': function (color) {
+					inputNode.value = color;
+					BX.fireEvent(inputNode, 'change');
+				}
+			});
+		};
 
-			BX.addCustomEvent(inputCtrl, "onSettingLoadValue", BX.delegate(changeHandler, inputCtrl));
-			BX.bind(inputCtrl, "bxchange", BX.delegate(changeHandler, inputCtrl));
-		}
+		var inputs = this.context.querySelectorAll('.bx-editor-color-picker');
+		inputs = BX.convert.nodeListToArray(inputs);
+		inputs.forEach(function (inputNode) {
+			var iconNode = BX.nextSibling(inputNode);
+			var textNode = BX.nextSibling(iconNode);
+
+			var onClick = clickHandler.bind(this, inputNode, iconNode);
+			var onChange = changeHandler.bind(this, inputNode, iconNode);
+			BX.bind(iconNode, 'click', onClick);
+			BX.bind(textNode, 'click', onClick);
+
+			BX.addCustomEvent(inputNode, "onSettingLoadValue", onChange);
+			BX.bind(inputNode, "bxchange", onChange);
+		}, this);
 	},
 
 	initBorderControl: function()
@@ -1153,6 +1210,7 @@ BXBlockEditorEditDialog.prototype =
 			contextVisual.style.width = (context.offsetWidth - contextTools.offsetWidth) + 'px';
 		}
 		contextTools.style.right = '0';
+		contextTools.style.visibility = 'visible';
 	},
 
 	hide: function(callbackFunction)
@@ -1179,7 +1237,8 @@ BXBlockEditorEditDialog.prototype =
 			else
 			{
 				contextTools.style.right = "-100%";
-				contextTools.style.display = 'none';
+				contextTools.style.display = 'block';
+				contextTools.style.visibility = 'hidden';
 				contextVisual.style.width = '100%';
 			}
 		}
@@ -1376,6 +1435,83 @@ BXBlockEditorCssParser.prototype.mergeStyles = function(arr1, arr2)
 
 	return arr1;
 };
+BXBlockEditorCssParser.prototype.diffStylesAll = function(arr1, arr2)
+{
+	var arr = {};
+	var diff;
+
+	for(var media in arr2)
+	{
+		if(!arr2[media])
+		{
+			continue;
+		}
+
+		if(!arr1[media])
+		{
+			arr[media] = arr2[media];
+		}
+		else
+		{
+			diff = this.diffStyles(arr1[media], arr2[media]);
+			if(BX.util.object_keys(diff).length > 0)
+			{
+				arr[media] = diff;
+			}
+		}
+	}
+	
+	if(BX.util.object_keys(arr).length > 0)
+	{
+		return arr;
+	}
+	else
+	{
+		return null
+	}
+};
+BXBlockEditorCssParser.prototype.diffStyles = function(arr1, arr2)
+{
+	var arr = {};
+
+	for(var selector in arr2)
+	{
+		if(!arr2[selector])
+		{
+			continue;
+		}
+
+		var declarations = arr2[selector];
+
+		if(!arr1[selector] && BX.util.object_keys(declarations).length > 0)
+		{
+			arr[selector] = declarations;
+		}
+		else if(!BX.type.isString(declarations))
+		{
+			for(var rule in declarations)
+			{
+				if(!declarations[rule])
+				{
+					continue;
+				}
+
+				if(!arr1[selector][rule] || arr1[selector][rule] != declarations[rule])
+				{
+					if(!arr[selector])
+					{
+						arr[selector] = {};
+					}
+
+					arr[selector][rule] = declarations[rule];
+				}
+			}
+		}
+
+	}
+
+	return arr;
+};
 BXBlockEditorCssParser.prototype.parseTag = function(str)
 {
 	var result = '';
@@ -1538,6 +1674,7 @@ function BXBlockEditorStatusManager(params)
 
 	BX.addCustomEvent(this.caller, 'onBlockCreateAfter', BX.delegate(this.setBlockStatusContent, this.caller));
 	BX.addCustomEvent(this.caller, 'onBlockMoveAfter', BX.delegate(this.setBlockStatusContent, this.caller));
+	BX.addCustomEvent(this.caller, 'onBlockRemoveAfter', BX.delegate(this.onBlockRemoveAfter, this));
 	BX.addCustomEvent(this.caller, 'onBlockClone', BX.delegate(this.setBlockStatusContent, this.caller));
 	BX.addCustomEvent(this.caller, 'onBlockEditEnd', BX.delegate(this.onBlockEditEnd, this.caller));
 }
@@ -1565,6 +1702,10 @@ BXBlockEditorStatusManager.prototype.setBlockStatusContent = function(block)
 {
 	block.node.setAttribute(this.CONST_ATTR_BLOCK_STATUS, 'content');
 };
+BXBlockEditorStatusManager.prototype.onBlockRemoveAfter = function(placeNode)
+{
+	this.onPlaceInitBlocksContent.call(this.caller, placeNode, true);
+};
 BXBlockEditorStatusManager.prototype.onBlockEditEnd = function(block, hasChanges)
 {
 	if(hasChanges)
@@ -1586,10 +1727,7 @@ BXBlockEditorStatusManager.prototype.onPlaceInitBlocksContent = function(placeNo
 	for(var i in blockNodeList)
 	{
 		var blockNode = blockNodeList[i];
-		if(!blockNode.hasAttribute(this.CONST_ATTR_BLOCK_STATUS))
-		{
-			blockNode.setAttribute(this.CONST_ATTR_BLOCK_STATUS, status);
-		}
+		blockNode.setAttribute(this.CONST_ATTR_BLOCK_STATUS, status);
 	}
 
 };
@@ -1626,3 +1764,163 @@ BX.addCustomEvent('GetControlsMap', function(controlsMap){
 		}
 	}
 });
+
+(function (window)
+{
+
+	function Content(params)
+	{
+		this.textarea = params.textarea;
+		this.caller = params.caller;
+
+		var content = this.getRaw();
+		this.converter = new SliceConverter();
+
+		/*
+		if (!content || JsonConverter.isValid(content))
+		{
+			this.converter = new JsonConverter();
+		}
+		else
+		{
+			this.converter = new SliceConverter();
+		}
+		*/
+	}
+	Content.prototype.getRaw = function()
+	{
+		return this.textarea.value;
+	};
+	Content.prototype.setRaw = function(value)
+	{
+		this.textarea.value = value;
+	};
+	Content.prototype.getString = function(list)
+	{
+		return this.converter.toString(list);
+	};
+	Content.prototype.getList = function()
+	{
+		var content = this.getRaw();
+		if (content)
+		{
+			return this.converter.toArray(content);
+		}
+
+		return [];
+	};
+	Content.prototype.getStyles = function()
+	{
+		return this.getList().filter(function (item) {
+			return item && item.type === 'STYLES';
+		})
+	};
+	Content.prototype.getBlocks = function()
+	{
+		return this.getList().filter(function (item) {
+			return item && item.type === 'BLOCKS';
+		})
+	};
+
+	function JsonConverter()
+	{
+	}
+	JsonConverter.isValid = function(value)
+	{
+		try
+		{
+			var result = JSON.parse(value);
+			return BX.type.isPlainObject(result) || BX.type.isArray(result);
+		}
+		catch (e)
+		{
+			return false;
+		}
+	};
+	JsonConverter.prototype.toArray = function(value)
+	{
+		try
+		{
+			return JSON.parse(value);
+		}
+		catch (e)
+		{
+			return [];
+		}
+
+	};
+	JsonConverter.prototype.toString = function(list)
+	{
+		list = list.map(function (item) {
+			var newItem = {
+				'type': item.type,
+				'place': item.place,
+				'value': item.value
+			};
+			if (item.block)
+			{
+				newItem.block = item.block;
+			}
+
+			return newItem;
+		});
+
+		try
+		{
+			return JSON.stringify(list);
+		}
+		catch (e)
+		{
+			return '';
+		}
+	};
+
+
+	function SliceConverter()
+	{
+		this.sectionId = 'BX_BLOCK_EDITOR_EDITABLE_SECTION';
+	}
+	SliceConverter.prototype.toArray = function(content)
+	{
+		var result = [];
+		var pattern = "<!--START "
+			+ this.sectionId + "\/([\\w]+?)\/([\\w]*?)\/-->"
+			+ "([\\s\\S,\\n]*?)"
+			+ "<!--END " + this.sectionId + "[\/\\w]+?-->";
+
+		var sliceRegExp = new RegExp(pattern, "g");
+		var matches;
+		while(matches = sliceRegExp.exec(content))
+		{
+			var section = matches[1].trim();
+			var item = matches[2].trim();
+			var value = matches[3].trim();
+
+			result.push({
+				'type': section,
+				'place': item,
+				'value': value
+			});
+		}
+
+		return result;
+	};
+	SliceConverter.prototype.toString = function(list)
+	{
+		return list.map(this.getItemString, this).join('\n');
+	};
+	SliceConverter.prototype.getItemString = function(item)
+	{
+		var path = [item.type, item.place];
+		var content = item.value;
+
+		var tag = [this.sectionId].concat(path).join('/') + '/';
+		return '<!--START %TAG%-->\n%CONTENT%\n<!--END %TAG%-->'
+			.replace('%TAG%', tag)
+			.replace('%TAG%', tag)
+			.replace('%CONTENT%', content);
+	};
+
+	BX.namespace('BX.BlockEditor');
+	BX.BlockEditor.Content = Content;
+})(window);

@@ -422,6 +422,10 @@ class DemoSiteTemplate extends CWizardTemplate
 
 			CAjaxForm.prototype.AjaxHandler = function()
 			{
+				//opera triggers onload event even on empty iframe
+				if(this.iframe.contentWindow && this.iframe.contentWindow.location.href.indexOf('http') != 0)
+					return;
+
 				if (this.iframe.contentDocument)
 					var iframeDocument = this.iframe.contentDocument;
 				else

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 <?
-=======
-<?php
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
 $module_id = "fileman";
 $dicsRelPath = '/bitrix/modules/fileman/dictionaries';
 $gzDicsRelPath = BX_PERSONAL_ROOT.'/tmp/dics';
@@ -15,7 +11,7 @@ if (!$USER->CanDoOperation('fileman_view_all_settings'))
 
 function isValidLang($lang)
 {
-	$rsLang = CLanguage::GetList($by="sort", $order="desc");
+	$rsLang = CLanguage::GetList("sort", "desc");
 	$is_valid_lang = false;
 	while ($arLang = $rsLang->Fetch())
 	{
@@ -28,10 +24,10 @@ function isValidLang($lang)
 	return $is_valid_lang;
 }
 
-if ($REQUEST_METHOD=="GET" && $USER->CanDoOperation('fileman_edit_all_settings') && strlen($RestoreDefaults)>0 && check_bitrix_sessid())
+if ($REQUEST_METHOD=="GET" && $USER->CanDoOperation('fileman_edit_all_settings') && $RestoreDefaults <> '' && check_bitrix_sessid())
 {
 	COption::RemoveOption("fileman");
-	$z = CGroup::GetList($v1="id",$v2="asc", array("ACTIVE" => "Y", "ADMIN" => "N"));
+	$z = CGroup::GetList("id", "asc", array("ACTIVE" => "Y", "ADMIN" => "N"));
 	while($zr = $z->Fetch())
 		$APPLICATION->DelGroupRight($module_id, array($zr["ID"]));
 }
@@ -43,7 +39,7 @@ IncludeModuleLangFile(__FILE__);
 //Default file extensions;
 $script_files_default = "php,php3,php4,php5,php6,phtml,pl,asp,aspx,cgi,exe,ico,shtm,shtml";
 
-if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('fileman_edit_all_settings') && check_bitrix_sessid())
+if($REQUEST_METHOD == "POST" && $Update <> '' && $USER->CanDoOperation('fileman_edit_all_settings') && check_bitrix_sessid())
 {
 	if($default_edit!="html" && $default_edit!="php")
 		$default_edit="text";
@@ -192,8 +188,11 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 
 
 	//Entities
-	COption::SetOptionString($module_id, "ar_entities", count($ar_entities) <= 0 ? 'none' : implode(',',$ar_entities));
-
+	if (isset($_POST['ar_entities']))
+	{
+		$ar_entities = is_array($_POST['ar_entities']) ? $_POST['ar_entities'] : [];
+		COption::SetOptionString($module_id, "ar_entities", count($ar_entities) <= 0 ? 'none' : implode(',', $ar_entities));
+	}
 	COption::SetOptionString($module_id, "editor_body_id", htmlspecialcharsbx($editor_body_id));
 	COption::SetOptionString($module_id, "editor_body_class", htmlspecialcharsbx($editor_body_class));
 
@@ -220,8 +219,8 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 	$arMLExt_ = array();
 	for ($i = 0, $l = count($arMLExt); $i < $l; $i++)
 	{
-		$ext = strtolower(trim($arMLExt[$i], ' .'));
-		if (strlen($ext) > 0)
+		$ext = mb_strtolower(trim($arMLExt[$i], ' .'));
+		if ($ext <> '')
 			$arMLExt_[] = $ext;
 	}
 	$medialib_ext = implode(',', $arMLExt_);
@@ -285,8 +284,8 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 	$arAvExt = array();
 	for ($i = 0, $l = count($arExt_); $i < $l; $i++)
 	{
-		$ext = strtolower(trim($arExt_[$i], ' .'));
-		if (strlen($ext) > 0 && !in_array($ext, $arAvExt))
+		$ext = mb_strtolower(trim($arExt_[$i], ' .'));
+		if ($ext <> '' && !in_array($ext, $arAvExt))
 			$arAvExt[] = $ext;
 	}
 	$strAvExt = implode(',', $arAvExt);
@@ -305,7 +304,7 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 	}
 	$addError = false;
 
-	$siteList_ID = unserialize($mSiteList);
+	$siteList_ID = unserialize($mSiteList, ['allowed_classes' => false]);
 
 	if(isset($dif_settings))
 	{
@@ -320,14 +319,14 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 			$armt = Array();
 			for($i=0; $i<${"menutypes_".$siteList_ID[$j]["ID"]."_count"}; $i++)
 			{
-				if(strlen(${"menutypes_".$siteList_ID[$j]["ID"]."_".$i."_type"})>0)
+				if(${"menutypes_".$siteList_ID[$j]["ID"]."_".$i."_type"} <> '')
 					$armt[${"menutypes_".$siteList_ID[$j]["ID"]."_".$i."_type"}] = ${"menutypes_".$siteList_ID[$j]["ID"]."_".$i."_name"};
 			}
 
-			if(strlen(${"menutypes_".$siteList_ID[$j]["ID"]."_new_type"})>0 && $USER->CanDoOperation('fileman_edit_menu_types'))
+			if(${"menutypes_".$siteList_ID[$j]["ID"]."_new_type"} <> '' && $USER->CanDoOperation('fileman_edit_menu_types'))
 				$armt[${"menutypes_".$siteList_ID[$j]["ID"]."_new_type"}] = ${"menutypes_".$siteList_ID[$j]["ID"]."_new_name"};
 
-			if (strlen(addslashes(serialize($armt))) <= 2000)
+			if (mb_strlen(addslashes(serialize($armt))) <= 2000)
 				SetMenuTypes($armt, $siteList_ID[$j]["ID"]);
 			else
 				$addError = GetMessage("FILEMAN_OPTION_ADD_ERROR_MENU").'<br />';
@@ -335,10 +334,10 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 			$arPT = Array();
 			for($i=0; $i<${"propstypes_".$siteList_ID[$j]["ID"]."_count"}; $i++)
 			{
-				if(strlen(${"propstypes_".$siteList_ID[$j]["ID"]."_".$i."_type"})>0)
+				if(${"propstypes_".$siteList_ID[$j]["ID"]."_".$i."_type"} <> '')
 					$arPT[${"propstypes_".$siteList_ID[$j]["ID"]."_".$i."_type"}] = ${"propstypes_".$siteList_ID[$j]["ID"]."_".$i."_name"};
 			}
-			if(strlen(${"propstypes_".$siteList_ID[$j]["ID"]."_new_type"})>0)
+			if(${"propstypes_".$siteList_ID[$j]["ID"]."_new_type"} <> '')
 				$arPT[${"propstypes_".$siteList_ID[$j]["ID"]."_new_type"}] = ${"propstypes_".$siteList_ID[$j]["ID"]."_new_name"};
 
 			if(!CFileMan::SetPropstypes($arPT, false, $siteList_ID[$j]["ID"]))
@@ -355,13 +354,13 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 		$menutypes = "";
 		for($i=0; $i<$menutypes_count; $i++)
 		{
-			if(strlen(${"menutypes_".$i."_type"})>0)
+			if(${"menutypes_".$i."_type"} <> '')
 				$armt[${"menutypes_".$i."_type"}] = ${"menutypes_".$i."_name"};
 		}
-		if(strlen($menutypes_new_type)>0 && $USER->CanDoOperation('fileman_edit_menu_types'))
+		if($menutypes_new_type <> '' && $USER->CanDoOperation('fileman_edit_menu_types'))
 			$armt[$menutypes_new_type] = $menutypes_new_name;
 
-		if (strlen(addslashes(serialize($armt))) <= 2000)
+		if (mb_strlen(addslashes(serialize($armt))) <= 2000)
 			SetMenuTypes($armt, $siteList_ID[$j]["ID"]);
 		else
 			$addError = GetMessage("FILEMAN_OPTION_ADD_ERROR_MENU").'<br />';
@@ -370,10 +369,10 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 		$arPT = Array();
 		for($i=0; $i<$propstypes_count; $i++)
 		{
-			if(strlen(${"propstypes_".$i."_type"})>0)
+			if(${"propstypes_".$i."_type"} <> '')
 				$arPT[${"propstypes_".$i."_type"}] = ${"propstypes_".$i."_name"};
 		}
-		if(strlen($propstypes_new_type)>0)
+		if($propstypes_new_type <> '')
 			$arPT[$propstypes_new_type] = $propstypes_new_name;
 
 		if(!CFileMan::SetPropstypes($arPT))
@@ -391,37 +390,38 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 	}
 
 	// Search
-	$search_max_open_file_size = intVal($_POST['search_max_open_file_size']);
+	$search_max_open_file_size = intval($_POST['search_max_open_file_size']);
 	if ($search_max_open_file_size <= 0)
 		$search_max_open_file_size = 1024;
 	COption::SetOptionString($module_id, "search_max_open_file_size", $search_max_open_file_size);
 
-	$search_max_res_count = intVal($_POST['search_max_res_count']);
+	$search_max_res_count = intval($_POST['search_max_res_count']);
 	if ($search_max_res_count <= 0)
 		$search_max_res_count = '';
 	COption::SetOptionString($module_id, "search_max_res_count", $search_max_res_count);
 
-	$search_time_step = intVal($_POST['search_time_step']);
+	$search_time_step = intval($_POST['search_time_step']);
+
 	if ($search_time_step <= 0)
 		$search_time_step = 5;
+
 	COption::SetOptionString($module_id, "search_time_step", $search_time_step);
 
 	$search_mask = $_POST['search_mask'];
+
 	if ($search_mask == "")
 		$search_mask = "*.php";
+
 	COption::SetOptionString($module_id, "search_mask", $search_mask);
-
 	COption::SetOptionString($module_id, "show_inc_icons", (isset($_POST['show_inc_icons']) ? 'Y' : 'N'));
-
-
 	COption::SetOptionString($module_id, "hide_physical_struc", (isset($_POST['hide_physical_struc'])));
 	COption::SetOptionString($module_id, "use_translit", (isset($_POST['use_translit'])));
 	COption::SetOptionString($module_id, "use_translit_google", (isset($_POST['use_translit_google'])));
 	COption::SetOptionString($module_id, "log_menu", (isset($_POST['log_menu']) ? 'Y' : 'N'));
 	COption::SetOptionString($module_id, "log_page", (isset($_POST['log_page']) ? 'Y' : 'N'));
 	COption::SetOptionString($module_id, "use_code_editor", (isset($_POST['use_code_editor']) ? 'Y' : 'N'));
-
-
+	COption::SetOptionString($module_id, "google_map_api_key", isset($_POST['google_map_api_key']) ? $_POST['google_map_api_key'] : '');
+	COption::SetOptionString($module_id, "yandex_map_api_key", isset($_POST['yandex_map_api_key']) ? $_POST['yandex_map_api_key'] : '');
 
 	//default groups
 	$sGroups = '';
@@ -430,7 +430,7 @@ if($REQUEST_METHOD == "POST" && strlen($Update)>0 && $USER->CanDoOperation('file
 			$sGroups .= ($sGroups <> ''? ',':'').intval($gr);
 	COption::SetOptionString('fileman', 'default_edit_groups', $sGroups);
 
-	$archive_step_time = intVal($_POST['archive_step_time']);
+	$archive_step_time = intval($_POST['archive_step_time']);
 	if ($archive_step_time <= 0)
 		$archive_step_time = 30;
 	COption::SetOptionString($module_id, "archive_step_time", $archive_step_time);
@@ -465,7 +465,7 @@ if($USER->isAdmin())
 	$aTabs[] = $rightsTab;
 }
 	$siteList = array();
-	$rsSites = CSite::GetList($by="sort", $order="asc", Array());
+	$rsSites = CSite::GetList();
 	$i = 0;
 	while($arRes = $rsSites->Fetch())
 	{
@@ -549,7 +549,7 @@ if($USER->isAdmin())
 			<?= GetMessage('FILEMAN_OPTION_SCRIPT_FILES')?>:
 		</td>
 		<td>
-			<input type="text" name="script_files" id="script_files" size="40" value="<?echo COption::GetOptionString($module_id, "~script_files", $script_files_default);?>">
+			<input type="text" name="script_files" id="script_files" size="40" value="<?= htmlspecialcharsbx(COption::GetOptionString($module_id, "~script_files", $script_files_default));?>">
 		</td>
 	</tr>
 	<tr>
@@ -557,7 +557,7 @@ if($USER->isAdmin())
 			<?= GetMessage('FILEMAN_OPTION_ALLOWED_COMPONENTS')?>:
 		</td>
 		<td>
-			<textarea cols="30" rows="4" name="allowed_components"><?echo COption::GetOptionString($module_id, "~allowed_components", '');?></textarea>
+			<textarea cols="30" rows="4" name="allowed_components"><?= htmlspecialcharsbx(COption::GetOptionString($module_id, "~allowed_components", ''));?></textarea>
 		</td>
 	</tr>
 	<?endif;?>
@@ -598,10 +598,41 @@ if($USER->isAdmin())
 	</tr>
 
 	</tr>
-		<tr>
+	<tr>
 		<td valign="top" width="40%"><label for="use_code_editor"><?= GetMessage('FILEMAN_OPTION_USE_CODE_EDITOR')?>:</label></td>
 		<td valign="top" width="60%">
 		<input type="checkbox" name="use_code_editor" id="use_code_editor" <? if(COption::GetOptionString($module_id, "use_code_editor", "Y") == "Y") echo " checked";?>>
+		</td>
+	</tr>
+	<tr>
+		<td valign="top"><label for="google_map_api_key"><?= GetMessage('FILEMAN_OPTION_GOOGLE_MAP_API_KEY')?>:</label></td>
+		<td valign="top">
+			<a name="google_api_key"></a>
+			<input type="text" size="40" name="google_map_api_key" id="google_map_api_key" value="<?=htmlspecialcharsbx(COption::GetOptionString($module_id, "google_map_api_key", ""));?>">
+			<?=BeginNote();?>
+				<?=GetMessage(
+					"FILEMAN_OPTION_GOOGLE_MAP_API_KEY_NOTE",
+					array(
+						"#A#" => '<a href="https://developers.google.com/maps/documentation/javascript/get-api-key">https://developers.google.com/maps/documentation/javascript/get-api-key</a>'
+					)
+				)?>
+			<?=EndNote();?>
+		</td>
+	</tr>
+
+	<tr>
+		<td valign="top"><label for="yandex_map_api_key"><?= GetMessage('FILEMAN_OPTION_YANDEX_MAP_API_KEY')?>:</label></td>
+		<td valign="top">
+			<a name="yandex_api_key"></a>
+			<input type="text" size="40" name="yandex_map_api_key" id="yandex_map_api_key" value="<?=htmlspecialcharsbx(COption::GetOptionString($module_id, "yandex_map_api_key", ""));?>">
+			<?=BeginNote();?>
+			<?=GetMessage(
+				"FILEMAN_OPTION_YANDEX_MAP_API_KEY_NOTE",
+				array(
+					"#A#" => '<a href="https://tech.yandex.ru/developer-help/doc/#new-key">https://tech.yandex.ru/developer-help/doc/#new-key</a>'
+				)
+			)?>
+			<?=EndNote();?>
 		</td>
 	</tr>
 
@@ -826,14 +857,14 @@ if($USER->isAdmin())
 	</tr>
 	<tr>
 		<td><label for="search_mask"><?= GetMessage("FILEMAN_SEARCH_MASK_DEF")?>:</label></td>
-		<td><input type="text" name="search_mask" id="search_mask" value="<?= COption::GetOptionString($module_id, "search_mask", "*.php"); ?>"></td>
+		<td><input type="text" name="search_mask" id="search_mask" value="<?= htmlspecialcharsbx(COption::GetOptionString($module_id, "search_mask", "*.php"))?>"></td>
 	</tr>
 	<tr class="heading">
 		<td colspan="2"><?= GetMessage("FILEMAN_ARCHIVE_TITLE")?></td>
 	</tr>
 	<tr>
 		<td><label for="archive_step_time"><?= GetMessage("FILEMAN_ARCHIVE_STEP_TIME")?>:</label></td>
-		<td><input type="text" name="archive_step_time" id="archive_step_time" value="<?= COption::GetOptionString($module_id, "archive_step_time", "30")?>"></td>
+		<td><input type="text" name="archive_step_time" id="archive_step_time" value="<?= htmlspecialcharsbx(COption::GetOptionString($module_id, "archive_step_time", "30"))?>"></td>
 	</tr>
 	</tr>
 	<!--end of archive-->
@@ -1032,8 +1063,8 @@ $aMess = array_keys($aMess);
 IncludeModuleLangFile($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/fileman/admin/fileman_js.php');
 $l = count($aMess);
 for($i = 0; $i < $l; $i++)
-	if(substr($aMess[$i], 0, strlen("FILEMAN_JS_"))=="FILEMAN_JS_")
-		$sMess .= "'".substr($aMess[$i], strlen("FILEMAN_JS_"))."': '".CUtil::addslashes(GetMessage($aMess[$i]))."',";
+	if(mb_substr($aMess[$i], 0, mb_strlen("FILEMAN_JS_")) == "FILEMAN_JS_")
+		$sMess .= "'".mb_substr($aMess[$i], mb_strlen("FILEMAN_JS_"))."': '".CUtil::addslashes(GetMessage($aMess[$i]))."',";
 
 $sMess = rtrim($sMess,',');
 
@@ -1442,13 +1473,13 @@ new BXButtonConfig();
 	<tr>
 		<td><? echo GetMessage("FILEMAN_OPTION_USER_DIC_DIR");?></td>
 		<td>
-			<input type="text" name="user_dics_path" style="width: 100%" value="<? echo COption::GetOptionString($module_id, "user_dics_path", "/bitrix/modules/fileman/u_dics")?>">
+			<input type="text" name="user_dics_path" style="width: 100%" value="<?= htmlspecialcharsbx(COption::GetOptionString($module_id, "user_dics_path", "/bitrix/modules/fileman/u_dics"))?>">
 		</td>
 	</tr>
 	<tr>
-		<td><label for="use_separeted_dics"><?echo GetMessage("FILEMAN_OPTION_USE_SEP_DICS");?></label></td>
+		<td><label for="use_separeted_dics"><?= GetMessage("FILEMAN_OPTION_USE_SEP_DICS");?></label></td>
 		<td>
-			<input type="checkbox" name="use_separeted_dics" id="use_separeted_dics" value="Y" <?echo (COption::GetOptionString($module_id, "use_separeted_dics", "Y")=="Y") ? "checked" : "";?>>
+			<input type="checkbox" name="use_separeted_dics" id="use_separeted_dics" value="Y" <?= (COption::GetOptionString($module_id, "use_separeted_dics", "Y")=="Y") ? "checked" : "";?>>
 		</td>
 	</tr>
 	<?else:
@@ -1472,7 +1503,7 @@ $tabControl->BeginNextTab();
 
 function _MLGetTypeHTML($type = array())
 {
-	$name = "ML_TYPE[".$type["id"]."]";
+	$name = htmlspecialcharsbx("ML_TYPE[".$type["id"]."]");
 	ob_start();
 ?>
 <div class="bx-ml-type"  id="type_cont_<?= $type["id"]?>">
@@ -1481,14 +1512,12 @@ function _MLGetTypeHTML($type = array())
 		<input type="hidden" name="<?= $name."[NEW]"?>" value="Y" />
 	<?endif;?>
 
-	<? /* <input id="type_real_name_inp_<?= $type["id"]?>" type="hidden" name="<?= $name."[NAME]"?>" value="<?= $type["name"]?>" />  */?>
 	<input type="hidden" name="<?= $name."[SYS]"?>" value="<?= $type["system"] ? "Y" : "N"?>" />
 
 	<? if($type["system"]):?>
 		<div><?= htmlspecialcharsex($type["name"])?></div>
 	<? else:?>
 		<div id="type_name_<?= $type["id"]?>" class="bx-ml-editable"><?= htmlspecialcharsex($type["name"])?></div>
-		<? /*<input id="type_name_inp_<?= $type["id"]?>" type="text" size="30" value="<?= $type["name"]?>" style="display: none;" /> */ ?>
 	<?endif;?>
 
 	<? if($type["code"] != "image" || !$type["system"]):?>
@@ -1512,38 +1541,38 @@ function _MLGetTypeHTML($type = array())
 		</td><td class="adm-detail-content-cell-r" width="60%">
 			<? if($type["system"]):?>
 				<span class="bx-sys-value"><?= htmlspecialcharsex($type["name"])?></span>
-				<input type="hidden" id="type_name_inp_<?= $type["id"]?>" value="<?= $type["name"]?>" />
+				<input type="hidden" id="type_name_inp_<?= $type["id"]?>" value="<?= htmlspecialcharsbx($type["name"])?>" />
 
 			<? else:?>
-				<input type="text"  name="<?= $name."[NAME]"?>" id="type_name_inp_<?= $type["id"]?>" value="<?= $type["name"]?>" size="40" />
+				<input type="text"  name="<?= $name."[NAME]"?>" id="type_name_inp_<?= htmlspecialcharsbx($type["id"])?>" value="<?= htmlspecialcharsbx($type["name"])?>" size="40" />
 			<?endif;?>
 		</td></tr>
 
 		<tr<?if(!$type["system"]):?> class="adm-detail-content-cell-l adm-detail-required-field"<?endif;?>><td class="bx-ml-td-left" width="40%">
 			<input type="hidden" name="<?= $name."[CODE]"?>" value="<?= $type["code"]?>" />
-			<label for="type_code_inp_<?= $type["id"]?>"><?= GetMessage('FILEMAN_ML_ADD_TYPE_CODE')?><? if(!$type["system"]):?><span class="required"><sup>1</sup></span><?endif;?>:</label>
+			<label for="type_code_inp_<?= htmlspecialcharsbx($type["id"])?>"><?= GetMessage('FILEMAN_ML_ADD_TYPE_CODE')?><? if(!$type["system"]):?><span class="required"><sup>1</sup></span><?endif;?>:</label>
 		</td><td class="adm-detail-content-cell-r" width="60%">
 			<? if($type["system"]):?>
 				<span class="bx-sys-value"><?= htmlspecialcharsex($type["code"])?></span>
-				<input type="hidden" name="<?= $name."[CODE]"?>" value="<?= $type["code"]?>" />
+				<input type="hidden" name="<?= $name."[CODE]"?>" value="<?= htmlspecialcharsbx($type["code"])?>" />
 			<? else:?>
-				<input type="text" name="<?= $name."[CODE]"?>" id="type_code_inp_<?= $type["id"]?>" value="<?= $type["code"]?>" size="40" />
+				<input type="text" name="<?= $name."[CODE]"?>" id="type_code_inp_<?= htmlspecialcharsbx($type["id"])?>" value="<?= htmlspecialcharsbx($type["code"])?>" size="40" />
 			<?endif;?>
 		</td></tr>
 
 		<tr class="adm-detail-required-field"><td class="adm-detail-content-cell-l bx-ml-td-left" width="40%">
-			<label for="type_ext_inp_<?= $type["id"]?>"><?= GetMessage('FILEMAN_ML_ADD_TYPE_EXT')?><span class="required"><sup>1</sup></span>:</label>
+			<label for="type_ext_inp_<?= htmlspecialcharsbx($type["id"])?>"><?= GetMessage('FILEMAN_ML_ADD_TYPE_EXT')?><span class="required"><sup>1</sup></span>:</label>
 		</td><td class="adm-detail-content-cell-r" width="60%">
-			<input type="text" name="<?= $name."[EXT]"?>" id="type_ext_inp_<?= $type["id"]?>" value="<?= $type["ext"]?>" size="40" />
+			<input type="text" name="<?= $name."[EXT]"?>" id="type_ext_inp_<?= htmlspecialcharsbx($type["id"])?>" value="<?= $type["ext"]?>" size="40" />
 		</td></tr>
 		<tr><td class="adm-detail-content-cell-l bx-ml-td-left" width="40%">
-			<label for="type_desc_inp_<?= $type["id"]?>"><?= GetMessage('FILEMAN_ML_ADD_TYPE_DESC')?>:</label>
+			<label for="type_desc_inp_<?= htmlspecialcharsbx($type["id"])?>"><?= GetMessage('FILEMAN_ML_ADD_TYPE_DESC')?>:</label>
 		</td><td class="adm-detail-content-cell-r" style="height: 50px;" width="60%">
 			<? if($type["system"]):?>
 				<input name="<?= $name."[DESC]"?>" type="hidden" value="<?= htmlspecialcharsbx($type["desc"])?>" />
-				<span><?= $type["desc"]?></span>
+				<span><?= htmlspecialcharsbx($type["desc"])?></span>
 			<? else:?>
-				<textarea name="<?= $name."[DESC]"?>" id="type_desc_inp_<?= $type["id"]?>" style="width: 260px;" rows="2" cols="30"><?= htmlspecialcharsbx($type["desc"])?></textarea>
+				<textarea name="<?= $name."[DESC]"?>" id="type_desc_inp_<?= htmlspecialcharsbx($type["id"])?>" style="width: 260px;" rows="2" cols="30"><?= htmlspecialcharsbx($type["desc"])?></textarea>
 			<?endif;?>
 		</td></tr>
 	</table>
@@ -1573,11 +1602,11 @@ function _MLGetTypeHTML($type = array())
 	</tr>
 	<tr <?= $displ?> class="bx-ml-hidden-row">
 		<td><label for="medialib_ext"><?= GetMessage("FILEMAN_MEDIA_EXT")?>:</label></td>
-		<td><input type="text" value="<?= COption::GetOptionString($module_id, "ml_media_extentions", CMedialib::GetDefaultMediaExtentions())?>" size="40" id="medialib_ext" name="medialib_ext"/></td>
+		<td><input type="text" value="<?= htmlspecialcharsbx(COption::GetOptionString($module_id, "ml_media_extentions", CMedialib::GetDefaultMediaExtentions()))?>" size="40" id="medialib_ext" name="medialib_ext"/></td>
 	</tr>
 	<tr <?= $displ?> class="bx-ml-hidden-row">
 		<td><label for="medialib_max_width"><?= GetMessage("FILEMAN_MEDIALIB_MAX_SIZE")?>:</label></td>
-		<td><input type="text" name="medialib_max_width" id="medialib_max_width" value="<?= COption::GetOptionInt($module_id, "ml_max_width", 1024)?>" size="6"/> x <input type="text" name="medialib_max_height" value="<?= COption::GetOptionInt($module_id, "ml_max_height", 1024)?>" size="6"/></td>
+		<td><input type="text" name="medialib_max_width" id="medialib_max_width" value="<?= COption::GetOptionInt($module_id, "ml_max_width", 1024)?>" size="6"/> x <input type="text" name="medialib_max_height" value="<?= intval(COption::GetOptionInt($module_id, "ml_max_height", 1024))?>" size="6"/></td>
 	</tr>
 	<tr <?= $displ?> class="bx-ml-hidden-row">
 		<td><label for="medialib_use_default"><?= GetMessage("FILEMAN_MEDIA_USE_DEF")?>:</label></td>
@@ -1732,7 +1761,7 @@ function InitEventForType(id)
 		<td>
 <?
 $arGroups = explode(",", COption::GetOptionString('fileman', 'default_edit_groups', ''));
-$gr = CGroup::GetList(($v1="sort"), ($v2="asc"), array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
+$gr = CGroup::GetList("sort", "asc", array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
 $sOptions = '';
 $sSel = '';
 while($group = $gr->Fetch())

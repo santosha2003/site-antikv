@@ -2,14 +2,17 @@
 
 namespace Bitrix\Sale\Internals\Input;
 
-use	Bitrix\Main\EventManager,
-	Bitrix\Main\SystemException,
+use Bitrix\Location\Service\FormatService;
+use Bitrix\Main\Event;
+use	Bitrix\Main\SystemException,
 	Bitrix\Main\Localization\Loc;
+use Bitrix\Main\EventResult;
+use Bitrix\Main\Loader;
+use Bitrix\Main\Web\Json;
 
 Loc::loadMessages(__FILE__);
 
 // TODO integrate with input.js on adding multiple item
-
 class Manager
 {
 	static function initJs()
@@ -20,8 +23,15 @@ class Manager
 		{
 			$done = true;
 
+			if (Loader::includeModule('location'))
+			{
+				\Bitrix\Main\UI\Extension::load('sale.address');
+			}
+
 			\CJSCore::RegisterExt('input', array(
-				'js'   => '/bitrix/js/sale/input.js',
+				'js'   => [
+					'/bitrix/js/sale/input.js'
+				],
 				'lang' => '/bitrix/modules/sale/lang/'.LANGUAGE_ID.'/lib/internals/input.php',
 			));
 			\CJSCore::Init(array('input'));
@@ -121,6 +131,28 @@ class Manager
 			throw new SystemException('invalid input type in '.print_r($input, true), 0, __FILE__, __LINE__);
 	}
 
+	/**
+	 * @param array $input
+	 * @param $value
+	 *
+	 * @return mixed
+	 * @throws SystemException
+	 */
+	static function getRequiredError(array $input, $value)
+	{
+		if (! static::$initialized)
+			static::initialize();
+
+		if ($type = static::$types[$input['TYPE']])
+		{
+			return call_user_func(array($type['CLASS'], __FUNCTION__), $input, $value);
+		}
+		else
+		{
+			throw new SystemException('invalid input type in '.print_r($input, true), 0, __FILE__, __LINE__);
+		}
+	}
+
 	/** Get normalized user input value (for example to save to database).
 	 * Before saving to database check value for errors with Manager::getError!
 	 * @param array $input - input settings values
@@ -188,12 +220,37 @@ class Manager
 		foreach (static::$types as $k => $v)
 			$typeOptions[$k] = $v['NAME']." [$k]";
 
-		return array(
+		$hasMultipleSupport = true;
+		if (isset(static::$types[$input['TYPE']]))
+		{
+			/** @var Base $typeClass */
+			$typeClass = static::$types[$input['TYPE']]['CLASS'];
+
+			if (!$typeClass::hasMultipleValuesSupport())
+			{
+				$hasMultipleSupport = false;
+			}
+		}
+
+		$multiple = array('TYPE' => 'Y/N' , 'LABEL' => Loc::getMessage('INPUT_MULTIPLE'));
+
+		if (!$hasMultipleSupport)
+		{
+			$multiple['DISABLED_YN'] = 'N';
+		}
+		else
+		{
+			$multiple['ONCLICK'] = $reload;
+		}
+
+		$result = [
 			'TYPE'     => array('TYPE' => 'ENUM', 'LABEL' => Loc::getMessage('INPUT_TYPE'), 'OPTIONS' => $typeOptions, 'REQUIRED' => 'Y', 'ONCHANGE' => $reload),
 			'REQUIRED' => array('TYPE' => 'Y/N' , 'LABEL' => Loc::getMessage('INPUT_REQUIRED')),
-			'MULTIPLE' => array('TYPE' => 'Y/N' , 'LABEL' => Loc::getMessage('INPUT_MULTIPLE'), 'ONCLICK' => $reload),
+			'MULTIPLE' => $multiple,
 			'VALUE'    => array('LABEL' => Loc::getMessage('INPUT_VALUE'), 'REQUIRED' => 'N') + $input,
-		);
+		];
+
+		return $result;
 	}
 
 	/** Get all registered types.
@@ -217,26 +274,50 @@ class Manager
 	 */
 	static function register($name, array $type)
 	{
-		if (static::$types[$name])
+		if (isset(static::$types[$name]))
+		{
 			throw new SystemException('duplicate type '.$name, 0, __FILE__, __LINE__);
+		}
 
 		if (! class_exists($type['CLASS']))
+		{
 			throw new SystemException('undefined CLASS in '.print_r($type, true), 0, __FILE__, __LINE__);
+		}
 
 		if (! is_subclass_of($type['CLASS'], __NAMESPACE__.'\Base'))
+		{
 			throw new SystemException($type['CLASS'].' does not implement Input\Base', 0, __FILE__, __LINE__);
+		}
 
 		static::$types[$name] = $type;
 	}
 
 	protected static $initialized;
 
-	protected function initialize()
+	protected static function initialize()
 	{
 		static::$initialized = true;
 
-		foreach (EventManager::getInstance()->findEventHandlers('sale', 'registerInputTypes') as $handler)
-			ExecuteModuleEventEx($handler); // TODO modern api
+		/** @var Event $event */
+		$event = new Event('sale', 'registerInputTypes', static::$types);
+		$event->send();
+
+		if ($event->getResults())
+		{
+			foreach($event->getResults() as $eventResult)
+			{
+				if ($eventResult->getType() != EventResult::SUCCESS)
+					continue;
+
+				if ($params = $eventResult->getParameters())
+				{
+					if(!empty($params) && is_array($params))
+					{
+						static::$types = array_merge(static::$types, $params);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -279,7 +360,7 @@ abstract class Base
 	{
 		if (static::isMultiple($value))
 		{
-			return array_filter($value); // TODO maybe??
+			return array_diff($value, array("", NULL, false));
 		}
 		else
 		{
@@ -287,7 +368,7 @@ abstract class Base
 		}
 	}
 
-	static function getViewHtml(array $input, $value = null)
+	public static function getViewHtml(array $input, $value = null)
 	{
 		if ($value === null)
 			$value = $input['VALUE'];
@@ -295,7 +376,7 @@ abstract class Base
 		if ($input['MULTIPLE'] == 'Y')
 		{
 			$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
-			list ($startTag, $endTag) = $tag ? array("<$tag>", "</$tag>") : array('', '');
+			[$startTag, $endTag] = $tag ? array("<$tag>", "</$tag>") : array('', '');
 
 			$html = '';
 
@@ -310,63 +391,80 @@ abstract class Base
 		}
 	}
 
-	protected static function getViewHtmlSingle(array $input, $value)
+	public static function getViewHtmlSingle(array $input, $value)
 	{
-		return htmlspecialcharsbx($value);
+		$output = $valueText = htmlspecialcharsbx($value);
+		if ($input['IS_EMAIL'] == 'Y')
+		{
+			$output = '<a href="mailto:'.$valueText.'">'.$valueText.'</a>';
+		}
+
+		return $output;
 	}
 
-	static function getEditHtml($name, array $input, $value = null)
+	public static function getEditHtml($name, array $input, $value = null)
 	{
 		$name = htmlspecialcharsbx($name);
 
 		if ($value === null)
 			$value = $input['VALUE'];
 
+		$html = '';
+
 		if ($input['HIDDEN'] == 'Y')
-			return static::getHiddenRecursive($name
+		{
+			$html .= static::getHiddenRecursive($name
 				, $input['MULTIPLE'] == 'Y' ? static::asMultiple($value) : static::asSingle($value)
 				, static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>''), false));
-
-		if ($input['MULTIPLE'] == 'Y')
-		{
-			$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
-			list ($startTag, $endTag) = $tag ? array("<$tag>", "</$tag>") : array('', '');
-
-			$html = '';
-
-			$index = -1;
-
-			foreach (static::asMultiple($value) as $value)
-			{
-				$namix = $name.'['.(++$index).']';
-				$html .= $startTag
-					.static::getEditHtmlSingle($namix, $input, $value)
-					.static::getEditHtmlSingleDelete($namix, $input)
-					.$endTag;
-			}
-
-			$replace = '##INPUT##NAME##';
-
-			if ($input['DISABLED'] !== 'Y') // TODO
-				$html .= static::getEditHtmlInsert($tag, $replace, $name
-					, static::getEditHtmlSingle($replace, $input, null).static::getEditHtmlSingleDelete($replace, $input)
-					, static::getEditHtmlSingleAfterInsert());
-
-			return $html;
 		}
 		else
 		{
-			return static::getEditHtmlSingle($name, $input, static::asSingle($value));
+			if ($input['MULTIPLE'] == 'Y')
+			{
+				$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
+				[$startTag, $endTag] = $tag ? array("<$tag>", "</$tag>") : array('', '');
+
+				$index = -1;
+
+				foreach (static::asMultiple($value) as $value)
+				{
+					$namix = $name.'['.(++$index).']';
+					$html .= $startTag
+						.static::getEditHtmlSingle($namix, $input, $value)
+						.static::getEditHtmlSingleDelete($namix, $input)
+						.$endTag;
+				}
+
+				$replace = '##INPUT##NAME##';
+
+				if ($input['DISABLED'] !== 'Y') // TODO
+					$html .= static::getEditHtmlInsert($tag, $replace, $name
+						, static::getEditHtmlSingle($replace, $input, null).static::getEditHtmlSingleDelete($replace, $input)
+						, static::getEditHtmlSingleAfterInsert());
+			}
+			else
+			{
+				$html .= static::getEditHtmlSingle($name, $input, static::asSingle($value));
+			}
 		}
+
+		if ($input['ADDITIONAL_HIDDEN'] === 'Y')
+		{
+			$html .= static::getHiddenRecursive($name
+				, $input['MULTIPLE'] == 'Y' ? static::asMultiple($value) : static::asSingle($value)
+				, static::extractAttributes($input, array(), array('FORM'=>''), false));
+		}
+
+		return $html;
 	}
 
 	/** @return string */
-	protected static function getEditHtmlSingle($name, array $input, $value)
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		throw new SystemException("you must implement [getEditHtmlSingle] or override [getEditHtml] in yor class", 0, __FILE__, __LINE__);
 	}
 
-	protected static function getEditHtmlSingleDelete($name, array $input)
+	public static function getEditHtmlSingleDelete($name, array $input)
 	{
 		return '<label> '.Loc::getMessage('INPUT_DELETE').' <input type="checkbox" onclick="'
 
@@ -375,7 +473,7 @@ abstract class Base
 			.'"> </label>';
 	}
 
-	protected static function getEditHtmlInsert($tag, $replace, $name, $sample, $after)
+	public static function getEditHtmlInsert($tag, $replace, $name, $sample, $after)
 	{
 		$name = \CUtil::JSEscape($name);
 		$sample = \CUtil::JSEscape(htmlspecialcharsbx($sample));
@@ -390,38 +488,67 @@ abstract class Base
 			.$after.'">';
 	}
 
-	protected static function getEditHtmlSingleAfterInsert()
+	public static function getEditHtmlSingleAfterInsert()
 	{
 		return "container.firstChild.focus();";
 	}
 
-	static function getError(array $input, $value)
+	public static function getError(array $input, $value)
 	{
+		$errors = array();
 		if ($value === null)
 			$value = $input['VALUE'];
 
-		$isAdminSection = (defined('ADMIN_SECTION') && ADMIN_SECTION === true);
-
 		if ($input['MULTIPLE'] == 'Y')
 		{
-			$errors = array();
 
 			$index = -1;
 
 			foreach (static::asMultiple($value) as $value)
 			{
-				if ($value === '' || $value === null)
-				{
-					if ($input['REQUIRED'] == 'Y' && !$isAdminSection)
-						$errors[++$index] = array('REQUIRED' => Loc::getMessage('INPUT_REQUIRED_ERROR'));
-				}
-				elseif ($error = static::getErrorSingle($input, $value))
+				if (($value !== '' && $value !== null) && ($error = static::getErrorSingle($input, $value)))
 				{
 					$errors[++$index] = $error;
 				}
 			}
+		}
+		else
+		{
+			$value = static::asSingle($value);
 
-			return $errors;
+			if ($value !== '' && $value !== null)
+			{
+				return static::getErrorSingle($input, $value);
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param array $input
+	 * @param $value
+	 *
+	 * @return bool
+	 */
+	public static function getRequiredError(array $input, $value)
+	{
+		$errors = array();
+
+		if ($value === null)
+			$value = $input['VALUE'];
+
+		if ($input['MULTIPLE'] == 'Y')
+		{
+			$index = -1;
+			foreach (static::asMultiple($value) as $value)
+			{
+				if ($value === '' || $value === null)
+				{
+					if ($input['REQUIRED'] == 'Y')
+						$errors[++$index] = array('REQUIRED' => Loc::getMessage('INPUT_REQUIRED_ERROR'));
+				}
+			}
 		}
 		else
 		{
@@ -429,15 +556,13 @@ abstract class Base
 
 			if ($value === '' || $value === null)
 			{
-				return ($input['REQUIRED'] == 'Y' && !$isAdminSection)
+				return ($input['REQUIRED'] == 'Y')
 					? array('REQUIRED' => Loc::getMessage('INPUT_REQUIRED_ERROR'))
 					: array();
 			}
-			else
-			{
-				return static::getErrorSingle($input, $value);
-			}
 		}
+
+		return $errors;
 	}
 
 	/**
@@ -446,12 +571,12 @@ abstract class Base
 	 *
 	 * @throws SystemException
 	 */
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
 		throw new SystemException("you must implement [getErrorSingle] or override [getError] in yor class", 0, __FILE__, __LINE__);
 	}
 
-	static function getValue(array $input, $value)
+	public static function getValue(array $input, $value)
 	{
 		if ($input['DISABLED'] == 'Y')
 			return null; // TODO maybe??
@@ -478,12 +603,12 @@ abstract class Base
 		}
 	}
 
-	protected static function getValueSingle(array $input, $value)
+	public static function getValueSingle(array $input, $value)
 	{
 		return $value;
 	}
 
-	static function getSettings(array $input, $reload)
+	public static function getSettings(array $input, $reload)
 	{
 		return array(); // no settings
 	}
@@ -523,7 +648,7 @@ abstract class Base
 
 		foreach (array_intersect_key($input, $boolean) as $k => $v)
 			if ($v === 'Y' || $v === true)
-				$string .= ' '.strtolower($k).($boolean[$k] ? '="'.$boolean[$k].'"' : '');
+				$string .= ' '.mb_strtolower($k).($boolean[$k] ? '="'.$boolean[$k].'"' : '');
 
 		// add event attributes with values
 		if ($withGlobal)
@@ -545,7 +670,7 @@ abstract class Base
 
 			foreach ($events as $k => $v)
 				if ($v)
-					$string .= ' '.strtolower($k).'="'.$v.'"';
+					$string .= ' '.mb_strtolower($k).'="'.$v.'"';
 		}
 
 		// add other attributes with values
@@ -561,7 +686,7 @@ abstract class Base
 
 		foreach (array_intersect_key($input, $other) as $k => $v)
 			if ($v)
-				$string .= ' '.strtolower($k).'="'.htmlspecialcharsbx($v).'"';
+				$string .= ' '.mb_strtolower($k).'="'.htmlspecialcharsbx($v).'"';
 
 		// add data attributes
 		if ($withGlobal && is_array($input['DATA']))
@@ -572,6 +697,14 @@ abstract class Base
 
 		return $string;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public static function hasMultipleValuesSupport()
+	{
+		return true;
+	}
 }
 
 /**
@@ -579,7 +712,9 @@ abstract class Base
  */
 class StringInput extends Base // String reserved in php 7
 {
-	protected static function getEditHtmlSingle($name, array $input, $value)
+	protected static $patternDelimiters = array('/', '#', '~');
+
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		if ($input['MULTILINE'] == 'Y')
 		{
@@ -593,7 +728,7 @@ class StringInput extends Base // String reserved in php 7
 		{
 			$attributes = static::extractAttributes($input,
 				array('DISABLED'=>'', 'READONLY'=>'', 'AUTOFOCUS'=>'', 'REQUIRED'=>'', 'AUTOCOMPLETE'=>'on'),
-				array('FORM'=>1, 'MAXLENGTH'=>1, 'PLACEHOLDER'=>1, 'DIRNAME'=>1, 'SIZE'=>1, 'LIST'=>1, 'PATTERN'=>1));
+				array('FORM'=>1, 'MAXLENGTH'=>1, 'PLACEHOLDER'=>1, 'DIRNAME'=>1, 'SIZE'=>1, 'LIST'=>1));
 
 			return '<input type="text" name="'.$name.'" value="'.htmlspecialcharsbx($value).'"'.$attributes.'>';
 		}
@@ -610,20 +745,41 @@ class StringInput extends Base // String reserved in php 7
 		return static::getEditHtmlSingle($name, $input, $value);
 	}
 
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
 		$errors = array();
 
 		$value = trim($value);
 
-		if ($input['MINLENGTH'] && strlen($value) < $input['MINLENGTH'])
+		if ($input['MINLENGTH'] && mb_strlen($value) < $input['MINLENGTH'])
 			$errors['MINLENGTH'] = Loc::getMessage('INPUT_STRING_MINLENGTH_ERROR', array("#NUM#" => $input['MINLENGTH']));
 
-		if ($input['MAXLENGTH'] && strlen($value) > $input['MAXLENGTH'])
+		if ($input['MAXLENGTH'] && mb_strlen($value) > $input['MAXLENGTH'])
 			$errors['MAXLENGTH'] = Loc::getMessage('INPUT_STRING_MAXLENGTH_ERROR', array("#NUM#" => $input['MAXLENGTH']));
 
-		if ($input['PATTERN'] && !preg_match($input['PATTERN'], $value))
-			$errors['PATTERN'] = Loc::getMessage('INPUT_STRING_PATTERN_ERROR');
+
+
+		if (strval(trim($input['PATTERN'])) != "")
+		{
+			$issetDelimiter = false;
+			$pattern = trim($input['PATTERN']);
+
+			if (isset($pattern[0]) && in_array($pattern[0], static::$patternDelimiters) && mb_strrpos($pattern, $pattern[0]) !== false)
+			{
+				$issetDelimiter = true;
+			}
+
+			$matchPattern = $pattern;
+			if (!$issetDelimiter)
+			{
+				$matchPattern = "/".$pattern."/";
+			}
+
+			if (!preg_match($matchPattern, $value))
+				$errors['PATTERN'] = Loc::getMessage('INPUT_STRING_PATTERN_ERROR');
+		}
+
+
 
 		return $errors;
 	}
@@ -649,6 +805,17 @@ class StringInput extends Base // String reserved in php 7
 
 		return $settings;
 	}
+
+	/**
+	 * @param $value
+	 *
+	 * @return bool
+	 */
+	public static function isDeletedSingle($value)
+	{
+		return is_array($value) && $value['DELETE'];
+	}
+
 }
 
 Manager::register('STRING', array(
@@ -661,19 +828,19 @@ Manager::register('STRING', array(
  */
 class Number extends Base
 {
-	protected static function getEditHtmlSingle($name, array $input, $value)
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		// TODO HTML5 from IE10: remove SIZE; Add MIN, MAX, STEP; Change type="number"
 
 		$size = 5;
 
-		if (($s = strlen(strval($input['MIN']))) && $s > $size)
+		if (($s = mb_strlen(strval($input['MIN']))) && $s > $size)
 			$size = $s;
 
-		if (($s = strlen(strval($input['MAX']))) && $s > $size)
+		if (($s = mb_strlen(strval($input['MAX']))) && $s > $size)
 			$size = $s;
 
-		if (($s = strlen(strval($input['STEP']))) && $s > $size)
+		if (($s = mb_strlen(strval($input['STEP']))) && $s > $size)
 			$size = $s;
 
 		$input['SIZE'] = $size;
@@ -696,7 +863,7 @@ class Number extends Base
 		return static::getEditHtmlSingle($name, $input, $value);
 	}
 
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
 		$errors = array();
 
@@ -719,9 +886,9 @@ class Number extends Base
 				if (! ($value / pow(2.0, 53) > $step))
 				{
 					$remainder = (double) abs($value - $step * round($value / $step));
-					$acceptable_error = (double) ($step / pow(2.0, 24));
+					$acceptableError = (double) ($step / pow(2.0, 24));
 
-					if ($acceptable_error < $remainder && ($step - $acceptable_error) > $remainder)
+					if ($acceptableError < $remainder && ($step - $acceptableError) > $remainder)
 						$errors['STEP'] = Loc::getMessage('INPUT_NUMBER_STEP_ERROR', array("#NUM#" => $input['STEP']));
 				}
 			}
@@ -734,7 +901,7 @@ class Number extends Base
 		return $errors;
 	}
 
-	static function getSettings(array $input, $reload)
+	public static function getSettings(array $input, $reload)
 	{
 		return array(
 			'MIN'  => array('TYPE' => 'NUMBER', 'LABEL' => Loc::getMessage('INPUT_NUMBER_MIN' )),
@@ -754,19 +921,27 @@ Manager::register('NUMBER', array(
  */
 class EitherYN extends Base
 {
-	protected static function getViewHtmlSingle(array $input, $value)
+	public static function getViewHtmlSingle(array $input, $value)
 	{
 		return $value == 'Y' ? Loc::getMessage('INPUT_EITHERYN_Y') : Loc::getMessage('INPUT_EITHERYN_N');
 	}
 
-	protected static function getEditHtmlSingle($name, array $input, $value)
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		$hiddenAttributes = static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false);
-
 		$checkboxAttributes = static::extractAttributes($input, array('DISABLED'=>'', 'AUTOFOCUS'=>'', 'REQUIRED'=>''), array('FORM'=>1));
 
-		return '<input type="hidden" name="'.$name.'" value="N"'.$hiddenAttributes.'>'
-			.'<input type="checkbox" name="'.$name.'" value="Y"'.($value == 'Y' ? ' checked' : '').$checkboxAttributes.'>';
+		if (isset($input['DISABLED_YN']))
+		{
+			return '<input type="hidden" name="'.$name.'" value="' . (($input['DISABLED_YN'] == 'Y') ? 'Y' : 'N') . '">'
+				.'<input type="checkbox" '.($input['DISABLED_YN'] == 'Y' ? ' checked' : '').'disabled'.'>';
+		}
+		else
+		{
+			return '<input type="hidden" name="'.$name.'" value="N"'.$hiddenAttributes.'>'
+				.'<input type="checkbox" name="'.$name.'" value="Y"'.($value == 'Y' ? ' checked' : '').$checkboxAttributes.'>';
+		}
+
 	}
 
 	/**
@@ -788,14 +963,17 @@ class EitherYN extends Base
 				</select>';
 	}
 
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
+		if ($input['REQUIRED'] == 'Y' && ($value === '' || $value === null))
+			return array('REQUIRED' => Loc::getMessage('INPUT_REQUIRED_ERROR'));
+
 		return ($value == 'N' || $value == 'Y')
 			? array()
 			: array('INVALID' => Loc::getMessage('INPUT_INVALID_ERROR'));
 	}
 
-	protected static function getValueSingle(array $input, $value)
+	public static function getValueSingle(array $input, $value)
 	{
 		return $value == 'Y' ? 'Y' : 'N';
 	}
@@ -818,15 +996,19 @@ class Enum extends Base
 		foreach ($array as $key => $value)
 		{
 			if (is_array($value))
-				$result = array_merge($result, $value);
+			{
+				$result = $result + $value;
+			}
 			else
+			{
 				$result[$key] = $value;
+			}
 		}
 
 		return $result;
 	}
 
-	protected static function getViewHtmlSingle(array $input, $value) // TODO optimize to getViewHtml
+	public static function getViewHtmlSingle(array $input, $value) // TODO optimize to getViewHtml
 	{
 		$options = $input['OPTIONS'];
 
@@ -852,7 +1034,7 @@ class Enum extends Base
 		return static::getEditHtml($name, $input, $value);
 	}
 
-	static function getEditHtml($name, array $input, $value = null)
+	public static function getEditHtml($name, array $input, $value = null)
 	{
 		$options = $input['OPTIONS'];
 
@@ -866,50 +1048,62 @@ class Enum extends Base
 		if ($value === null && isset($input['VALUE']))
 			$value = $input['VALUE'];
 
-		if ($input['HIDDEN'] == 'Y')
-			return static::getHiddenRecursive($name
-				, $multiple ? static::asMultiple($value) : static::asSingle($value)
-				, static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false));
-
-		if ($value === null)
-			$value = array();
-		else
-			$value = $multiple ? array_flip(static::asMultiple($value)) : array(static::asSingle($value) => true);
-
+		$originalValue = $value;
 		$html = '';
 
-		if ($input['MULTIELEMENT'] == 'Y')
+		if ($input['HIDDEN'] == 'Y')
 		{
-			$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
-			list ($startTag, $endTag) = $tag ? array("<$tag>", "</$tag>") : array('', '');
-
-			$attributes = static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false);
-
-			$type = 'radio';
-
-			if ($multiple)
-			{
-				$type = 'checkbox';
-				$name .= '[]';
-			}
-
-			$html .= self::getEditOptionsHtml($options, $value, ' checked',
-				'<fieldset><legend>{GROUP}</legend>{OPTIONS}</fieldset>',
-				$startTag.'<label><input type="'.$type.'" name="'.$name.'" value="{VALUE}"{SELECTED}'.$attributes.'> {TEXT} </label>'.$endTag
-			);
+			$html .= static::getHiddenRecursive($name
+				, $multiple ? static::asMultiple($value) : static::asSingle($value)
+				, static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false));
 		}
-		else // select
+		else
 		{
-			$attributes = static::extractAttributes($input, array('DISABLED'=>'', 'AUTOFOCUS'=>'', 'REQUIRED'=>''), array('FORM'=>1, 'SIZE'=>1));
+			if ($value === null)
+				$value = array();
+			else
+				$value = $multiple ? array_flip(static::asMultiple($value)) : array(static::asSingle($value) => true);
 
-			$html .= '<select'.$attributes.' name="'.$name.($multiple ? '[]" multiple>' : '">');
+			if ($input['MULTIELEMENT'] == 'Y')
+			{
+				$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
+				[$startTag, $endTag] = $tag ? array("<$tag>", "</$tag>") : array('', '');
 
-			$html .= self::getEditOptionsHtml($options, $value, ' selected',
-				'<optgroup label="{GROUP}">{OPTIONS}</optgroup>',
-				'<option value="{VALUE}"{SELECTED}>{TEXT}</option>'
-			);
+				$attributes = static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false);
 
-			$html .= '</select>';
+				$type = 'radio';
+
+				if ($multiple)
+				{
+					$type = 'checkbox';
+					$name .= '[]';
+				}
+
+				$html .= self::getEditOptionsHtml($options, $value, ' checked',
+					'<fieldset><legend>{GROUP}</legend>{OPTIONS}</fieldset>',
+					$startTag.'<label><input type="'.$type.'" name="'.$name.'" value="{VALUE}"{SELECTED}'.$attributes.'> {TEXT} </label>'.$endTag
+				);
+			}
+			else // select
+			{
+				$attributes = static::extractAttributes($input, array('DISABLED'=>'', 'AUTOFOCUS'=>'', 'REQUIRED'=>''), array('FORM'=>1, 'SIZE'=>1));
+
+				$html .= '<select'.$attributes.' name="'.$name.($multiple ? '[]" multiple>' : '">');
+
+				$html .= self::getEditOptionsHtml($options, $value, ' selected',
+					'<optgroup label="{GROUP}">{OPTIONS}</optgroup>',
+					'<option value="{VALUE}"{SELECTED}>{TEXT}</option>'
+				);
+
+				$html .= '</select>';
+			}
+		}
+
+		if ($input['ADDITIONAL_HIDDEN'] === 'Y')
+		{
+			$html .= static::getHiddenRecursive($name
+				, $multiple ? static::asMultiple($originalValue) : static::asSingle($originalValue)
+				, static::extractAttributes($input, array(), array('FORM'=>1), false));
 		}
 
 		return $html;
@@ -925,7 +1119,7 @@ class Enum extends Base
 				? str_replace(
 					array('{GROUP}', '{OPTIONS}'),
 					array(
-						htmlspecialcharsbx($key),
+						htmlspecialcharsEx($key),
 						self::getEditOptionsHtml($value, $selected, $selector, $group, $option),
 					),
 					$group
@@ -933,9 +1127,9 @@ class Enum extends Base
 				: str_replace(
 					array('{VALUE}', '{SELECTED}', '{TEXT}'),
 					array(
-						htmlspecialcharsbx($key),
+						htmlspecialcharsEx($key),
 						isset($selected[$key]) ? $selector : '',
-						htmlspecialcharsbx($value) ?: htmlspecialcharsbx($key),
+						htmlspecialcharsEx($value) ?: htmlspecialcharsEx($key),
 					),
 					$option
 				);
@@ -944,7 +1138,7 @@ class Enum extends Base
 		return $result;
 	}
 
-	protected static function getErrorSingle(array $input, $value)  // TODO optimize to getError
+	public static function getErrorSingle(array $input, $value)  // TODO optimize to getError
 	{
 		$options = $input['OPTIONS'];
 
@@ -1117,10 +1311,26 @@ class File extends Base
 
 	static function isMultiple($value)
 	{
-		return is_array($value) && ! isset($value['ID']);
+		$isMultiple = false;
+
+		if (isset($value['ID']))
+		{
+			return $isMultiple;
+		}
+
+		if (\is_array($value))
+		{
+			$file = current($value);
+			if (\is_array($file) || ((int)$file > 0))
+			{
+				$isMultiple = true;
+			}
+		}
+
+		return $isMultiple;
 	}
 
-	protected static function getViewHtmlSingle(array $input, $value)
+	public static function getViewHtmlSingle(array $input, $value)
 	{
 		if (! is_array($value))
 			$value = array('ID' => $value);
@@ -1129,14 +1339,21 @@ class File extends Base
 		{
 			$attributes = ' href="'.htmlspecialcharsbx($src).'" title="'.htmlspecialcharsbx(Loc::getMessage('INPUT_FILE_DOWNLOAD')).'"';
 
-			$content = \CFile::IsImage($src, $value['CONTENT_TYPE']) && $value['FILE_SIZE'] < 100000
+			if (\CFile::IsImage($src, $value['CONTENT_TYPE']) && $value['FILE_SIZE'] > 100000)
+			{
+				$previewImage = \CFile::ResizeImageGet($value['ID'], array(200,200), BX_RESIZE_IMAGE_PROPORTIONAL);
+				if (is_array($previewImage))
+					$src = $previewImage['src'];
+			}
+
+			$content = \CFile::IsImage($value['SRC'], $value['CONTENT_TYPE'])
 				? '<img src="'.$src.'" border="0" alt="" style="max-height:100px; max-width:100px">'
-				: $value['ORIGINAL_NAME'];
+				: htmlspecialcharsbx($value['ORIGINAL_NAME']);
 		}
 		else
 		{
 			$attributes = '';
-			$content = $value['ORIGINAL_NAME'];
+			$content = htmlspecialcharsbx($value['ORIGINAL_NAME']);
 		}
 
 		if (! $content)
@@ -1159,7 +1376,7 @@ class File extends Base
 		return static::getEditHtmlSingle($name, $input, $value);
 	}
 
-	protected static function getEditHtmlSingle($name, array $input, $value)
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		if (! is_array($value))
 		{
@@ -1189,23 +1406,23 @@ class File extends Base
 			.'<input type="file" name="'.$name.'" style="position:absolute; visibility:hidden"'.$fileAttributes.'>'
 			.'<input type="button" value="'.Loc::getMessage('INPUT_FILE_BROWSE').'" onclick="this.previousSibling.click()">'
 			.(
-				$input['NO_DELETE']
-					? ''
-					: '<label> '.Loc::getMessage('INPUT_DELETE').' <input type="checkbox" name="'.$name.'[DELETE]" onclick="'
+			$input['NO_DELETE']
+				? ''
+				: '<label> '.Loc::getMessage('INPUT_DELETE').' <input type="checkbox" name="'.$name.'[DELETE]" onclick="'
 
-						."var button = this.parentNode.previousSibling, file = button.previousSibling;"
-						."button.disabled = file.disabled = this.checked;"
+				."var button = this.parentNode.previousSibling, file = button.previousSibling;"
+				."button.disabled = file.disabled = this.checked;"
 
-						.'"'.$otherAttributes.'> </label>'
+				.'"'.$otherAttributes.'> </label>'
 			);
 	}
 
-	protected static function getEditHtmlSingleDelete($name, array $input)
+	public static function getEditHtmlSingleDelete($name, array $input)
 	{
 		return '';
 	}
 
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
 		if (is_array($value))
 		{
@@ -1234,7 +1451,7 @@ class File extends Base
 			{
 				switch ($value['error'])
 				{
-					case UPLOAD_ERR_OK: return array('SECURITY' => 'possible file upload attack');
+					case UPLOAD_ERR_OK: return array();	//file uploaded successfully
 
 					case UPLOAD_ERR_INI_SIZE:
 					case UPLOAD_ERR_FORM_SIZE: return array('MAXSIZE' => Loc::getMessage('INPUT_FILE_MAXSIZE_ERROR'));
@@ -1263,7 +1480,7 @@ class File extends Base
 		}
 	}
 
-	protected static function getValueSingle(array $input, $value)
+	public static function getValueSingle(array $input, $value)
 	{
 		if (is_array($value))
 		{
@@ -1276,7 +1493,7 @@ class File extends Base
 		return is_numeric($value) ? $value : null;
 	}
 
-	static function getSettings(array $input, $reload)
+	public static function getSettings(array $input, $reload)
 	{
 		return array(
 			'MAXSIZE' => array('TYPE' => 'NUMBER', 'LABEL' => Loc::getMessage('INPUT_FILE_MAXSIZE'), 'MIN' => 0, 'STEP' => 1),
@@ -1295,7 +1512,7 @@ Manager::register('FILE', array(
  */
 class Date extends Base
 {
-	protected static function getEditHtmlSingle($name, array $input, $value)
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		$showTime = $input['TIME'] == 'Y';
 
@@ -1324,19 +1541,19 @@ class Date extends Base
 		return static::getEditHtmlSingle($name, $input, $value);
 	}
 
-	protected static function getEditHtmlSingleDelete($name, array $input)
+	public static function getEditHtmlSingleDelete($name, array $input)
 	{
 		return '<label> '.Loc::getMessage('INPUT_DELETE').' <input type="checkbox" onclick="'
 
-		."var disabled = this.checked;"
-		."var button = this.parentNode.previousSibling;"
-		."button.disabled = disabled;"
-		."button.previousSibling.disabled = disabled;"
+			."var disabled = this.checked;"
+			."var button = this.parentNode.previousSibling;"
+			."button.disabled = disabled;"
+			."button.previousSibling.disabled = disabled;"
 
-		.'"> </label>';
+			.'"> </label>';
 	}
 
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
 		return CheckDateTime($value, FORMAT_DATE)
 			? array()
@@ -1362,7 +1579,7 @@ Manager::register('DATE', array(
  */
 class Location extends Base
 {
-	protected static function getViewHtmlSingle(array $input, $value)
+	public static function getViewHtmlSingle(array $input, $value)
 	{
 		if((string) $value == '')
 			return '';
@@ -1398,66 +1615,84 @@ class Location extends Base
 		return static::getEditHtml($name, $input, $value);
 	}
 
-	static function getEditHtml($name, array $input, $value = null)
+	public static function getEditHtml($name, array $input, $value = null)
 	{
 		$name = htmlspecialcharsbx($name);
 
 		if ($value === null)
 			$value = $input['VALUE'];
 
-		if ($input['HIDDEN'] == 'Y')
-			return static::getHiddenRecursive($name
-				, $input['MULTIPLE'] == 'Y' ? static::asMultiple($value) : static::asSingle($value)
-				, static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false));
-
 		$html = '';
 
-		$selector = md5("location input selector $name");
-
-		if ($onChange = $input['ONCHANGE'])
+		if ($input['HIDDEN'] == 'Y')
 		{
-			$functionName = $selector.'OnLocationChange';
-			$html .= "<script>function $functionName (this){ $onChange }</script>";
-			$input['JS_CALLBACK'] = $functionName;
+			$html .= static::getHiddenRecursive($name
+				, $input['MULTIPLE'] == 'Y' ? static::asMultiple($value) : static::asSingle($value)
+				, static::extractAttributes($input, array('DISABLED'=>''), array('FORM'=>1), false));
 		}
 		else
 		{
-			$input['JS_CALLBACK'] = null;
-		}
+			$selector = md5("location input selector $name");
+			$input["LOCATION_SELECTOR"] = $selector;
 
-		if ($input['MULTIPLE'] == 'Y')
-		{
-			$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
-			list ($startTag, $endTag) = $tag ? array("<$tag>", "</$tag>") : array('', '');
+			if ($onChange = $input['ONCHANGE'])
+			{
+				$functionName = 'OnLocationChange'.$selector;
+				$html .= "<script>function $functionName (){ $onChange }; BX.proxy($functionName, this);</script>";
+				$input['JS_CALLBACK'] = $functionName;
+			}
+			else
+			{
+				$input['JS_CALLBACK'] = null;
+			}
 
-			$index = -1;
+			if ($input['MULTIPLE'] == 'Y')
+			{
+				$tag = isset($input['MULTITAG']) ? htmlspecialcharsbx($input['MULTITAG']) : static::MULTITAG;
+				[$startTag, $endTag] = $tag ? array("<$tag>", "</$tag>") : array('', '');
 
-			foreach (static::asMultiple($value) as $value)
-				$html .= $startTag
-					.static::getEditHtmlSingle($name.'['.(++$index).']', $input, $value, $selector)
-					.$endTag;
+				$index = -1;
 
-			$replace = '##INPUT##NAME##';
+				$values = static::asMultiple($value);
+				if (empty($value))
+				{
+					$values = array(null);
+				}
+				foreach ($values as $value)
+					$html .= $startTag
+						.static::getEditHtmlSingle($name.'['.(++$index).']', $input, $value)
+						.$endTag;
 
-			if ($input['DISABLED'] !== 'Y') // TODO
-				$html .= static::getEditHtmlInsert($tag, $replace, $name
-					, static::getEditHtmlSingle($replace, $input, null, $selector)
-					, "var location = BX.locationSelectors['$selector'].spawn(container, {selectedItem: false, useSpawn: false});"
-					."location.clearSelected();"
+				$replace = '##INPUT##NAME##';
+
+				if ($input['DISABLED'] !== 'Y') // TODO
+					$html .= static::getEditHtmlInsert($tag, $replace, $name
+						, static::getEditHtmlSingle($replace, $input, null)
+						, "var location = BX.locationSelectors['$selector'].spawn(container, {selectedItem: false, useSpawn: false});"
+						."location.clearSelected();"
 					//."location.focus();" // TODO
-				);
+					);
+			}
+			else
+			{
+				$html .= static::getEditHtmlSingle($name, $input, static::asSingle($value));
+			}
 		}
-		else
+
+		if ($input['ADDITIONAL_HIDDEN'] === 'Y')
 		{
-			$html .= static::getEditHtmlSingle($name, $input, static::asSingle($value), $selector);
+			$html .= static::getHiddenRecursive($name
+				, $input['MULTIPLE'] == 'Y' ? static::asMultiple($value) : static::asSingle($value)
+				, static::extractAttributes($input, array(), array('FORM'=>1), false));
 		}
 
 		return $html;
 	}
 
-	protected static function getEditHtmlSingle($name, array $input, $value, $selector)
+	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		$filterMode = isset($input['IS_FILTER_FIELD']) && $input['IS_FILTER_FIELD'] === true;
+		$isSearchLine = isset($input['IS_SEARCH_LINE']) && $input['IS_SEARCH_LINE'] === true;
 		$parameters = array(
 			'CODE' => $value,
 			'INPUT_NAME' => $name,
@@ -1466,7 +1701,7 @@ class Location extends Base
 			'FILTER_BY_SITE' => 'N',
 			'SHOW_DEFAULT_LOCATIONS' => 'N',
 			'SEARCH_BY_PRIMARY' => 'N',
-			'JS_CONTROL_GLOBAL_ID' => $selector,
+			'JS_CONTROL_GLOBAL_ID' => $input["LOCATION_SELECTOR"],
 			'JS_CALLBACK' => $input['JS_CALLBACK']
 		);
 
@@ -1480,7 +1715,7 @@ class Location extends Base
 		}
 
 		$GLOBALS['APPLICATION']->IncludeComponent(
-			'bitrix:sale.location.selector.'.($filterMode ? 'search' : \Bitrix\Sale\Location\Admin\Helper::getWidgetAppearance()),
+			'bitrix:sale.location.selector.'.($filterMode || $isSearchLine ? 'search' : \Bitrix\Sale\Location\Admin\Helper::getWidgetAppearance()),
 			'',
 			$parameters,
 			false
@@ -1497,7 +1732,7 @@ class Location extends Base
 		return $html;
 	}
 
-	protected static function getErrorSingle(array $input, $value)
+	public static function getErrorSingle(array $input, $value)
 	{
 		return \Bitrix\Sale\Location\LocationTable::getByCode($value)->fetch()
 			? array()
@@ -1509,3 +1744,132 @@ Manager::register('LOCATION', array(
 	'CLASS' => __NAMESPACE__.'\Location',
 	'NAME' => Loc::getMessage('INPUT_LOCATION'),
 ));
+
+/**
+ * Class Address
+ * @package Bitrix\Sale\Internals\Input
+ */
+class Address extends Base
+{
+	/**
+	 * @inheritdoc
+	 */
+	static function isMultiple($value)
+	{
+		return false;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function hasMultipleValuesSupport()
+	{
+		return false;
+	}
+
+	/**
+	 * @param array $input
+	 * @param \Bitrix\Location\Entity\Address $value
+	 * @return string
+	 */
+	public static function getViewHtml(array $input, $value = null)
+	{
+		if (!is_array($value) || !Loader::includeModule('location'))
+		{
+			return '';
+		}
+
+		$address = \Bitrix\Location\Entity\Address::fromArray($value);
+
+		return $address->toString(
+			FormatService::getInstance()->findDefault(LANGUAGE_ID)
+		);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getFilterEditHtml($name, array $input, $value)
+	{
+		//not implemented
+		return '';
+	}
+
+	/**
+	 * @param array $input
+	 * @param $value
+	 * @return array
+	 */
+	public static function getErrorSingle(array $input, $value)
+	{
+		if ($input['REQUIRED'] == 'Y')
+		{
+			if (!(is_array($value) && !empty($value)))
+			{
+				return ['REQUIRED' => Loc::getMessage('INPUT_REQUIRED_ERROR')];
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * @param array $input
+	 * @param $value
+	 * @return array
+	 */
+	public static function getRequiredError(array $input, $value)
+	{
+		return static::getErrorSingle($input, $value);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getEditHtmlSingle($name, array $input, $value)
+	{
+		if (!Loader::includeModule('location'))
+		{
+			return '';
+		}
+
+		\Bitrix\Main\UI\Extension::load('sale.address');
+
+		ob_start();
+		?>
+		<script>
+			if (BX.Sale.AddressControlConstructor)
+			{
+				new BX.Sale.AddressControlConstructor(
+					{
+						propsData: {
+							name: '<?=$name?>',
+							initValue: <?=($value) ? ("'" . \Bitrix\Location\Entity\Address::fromArray($value)->toJson() . "'") : Json::encode(null)?>,
+							isLocked: <?=($input['DISABLED'] === 'Y') ? Json::encode(true) : Json::encode(false)?>,
+							onChangeCallback: function () {
+								<?if (isset($input['ONCHANGE'])):?>
+								<?=$input['ONCHANGE']?>
+								<?endif;?>
+							}
+						}
+					}
+				).$mount('#<?=$name?>');
+			}
+		</script>
+		<?
+		$script = ob_get_clean();
+
+		return '
+			<div id="' . $name . '"></div>
+			' . $script . '
+		';
+	}
+}
+
+if (Loader::includeModule('location'))
+{
+	Manager::register('ADDRESS', array(
+		'CLASS' => __NAMESPACE__.'\Address',
+		'NAME' => Loc::getMessage('INPUT_ADDRESS'),
+	));
+}

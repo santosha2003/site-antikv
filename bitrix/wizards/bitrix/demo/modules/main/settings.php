@@ -67,7 +67,8 @@ if ($groupID > 0)
 
 //Control panel users
 $dbResult = CGroup::GetList($by, $order, Array("STRING_ID" => "CONTROL_PANEL_USERS"));
-if (!$dbResult->Fetch())
+$arGroup = $dbResult->Fetch();
+if (!$arGroup)
 {
 	$group = new CGroup;
 	$arFields = Array(
@@ -85,6 +86,14 @@ if (!$dbResult->Fetch())
 			CGroup::SetTasks($groupID, Array($editProfileTask), true);
 	}
 }
+else
+{
+	$groupID = $arGroup["ID"];
+}
+
+
+if($groupID > 0 && !strlen(COption::GetOptionString("main", "show_panel_for_users", "")))
+	COption::SetOptionString("main", "show_panel_for_users", serialize(array("G".$groupID)));
 
 //Options
 $server_name = ($_SERVER["HTTP_HOST"] <> ''? $_SERVER["HTTP_HOST"]:$_SERVER["SERVER_NAME"]);
@@ -96,11 +105,11 @@ COption::SetOptionString("main", "upload_dir", "upload");
 COption::SetOptionString("main", "component_cache_on","Y");
 
 COption::SetOptionString("main", "save_original_file_name", "Y");
-COption::SetOptionString("main", "templates_visual_editor", "Y");
 COption::SetOptionString("main", "captcha_registration", "Y");
 COption::SetOptionString("main", "use_secure_password_cookies", "Y");
 COption::SetOptionString("main", "new_user_registration", "Y");
 COption::SetOptionString("main", "auth_comp2", "Y");
+COption::SetOptionString("main", "update_autocheck", "7");
 
 COption::SetOptionString("main", "map_top_menu_type", "top");
 COption::SetOptionString("main", "map_left_menu_type", "left");
@@ -114,7 +123,7 @@ COption::SetOptionString("main", "event_log_password_request", "Y");
 COption::SetOptionString("main", "event_log_password_change", "Y");
 COption::SetOptionString("main", "event_log_user_delete", "Y");
 
-COption::SetOptionString("main", 'CAPTCHA_presets', '2'); 
+COption::SetOptionString("main", 'CAPTCHA_presets', '2');
 COption::SetOptionString("main", 'CAPTCHA_transparentTextPercent', '0');
 COption::SetOptionString("main", 'CAPTCHA_arBGColor_1', 'FFFFFF');
 COption::SetOptionString("main", 'CAPTCHA_arBGColor_2', 'FFFFFF');
@@ -138,8 +147,14 @@ SetMenuTypes(Array("left" => GetMessage("LEFT_MENU_NAME"), "top" => GetMessage("
 COption::SetOptionString("fileman", "default_edit", "html");
 COption::SetOptionString("fileman", "propstypes", serialize(array("description"=>GetMessage("MAIN_OPT_DESCRIPTION"), "keywords"=>GetMessage("MAIN_OPT_KEYWORDS"), "title"=>GetMessage("MAIN_OPT_TITLE"), "keywords_inner"=>GetMessage("MAIN_OPT_KEYWORDS_INNER"))));
 
+if(LANGUAGE_ID!='ru' && COption::GetOptionString('seo', 'counters', '') == '')
+	COption::SetOptionString('seo', 'counters', '<a href="http://www.webdew.ro/utils.php"><img src="http://www.webdew.ro/pagerank/free-pagerank-display.php?a=getCode&amp;s=goo" title="Free PageRank Display Code" border="0px" alt="PageRank" /></a>');
+
 //user options
-DemoSiteUtil::SetUserOption("global", "settings", Array("sound"=>"Y", "start_menu_preload"=>"Y"), $common = true);
+DemoSiteUtil::SetUserOption("global", "settings", array(
+	"start_menu_preload"=>"Y",
+	"start_menu_title" => "N",
+), $common = true);
 
 //Gadgets
 CUserOptions::SetOption('intranet', '~gadgets_holder1', unserialize(GetMessage("MAIN_SETTINGS_GADGETS")), true);
@@ -147,7 +162,7 @@ CUserOptions::SetOption('intranet', '~gadgets_holder1', unserialize(GetMessage("
 //Print template
 $pathToService = str_replace("\\", "/", dirname(__FILE__));
 CopyDirFiles(
-	$wizardPath."/misc/print_template/".LANGUAGE_ID, 
+	$wizardPath."/misc/print_template/".LANGUAGE_ID,
 	$_SERVER["DOCUMENT_ROOT"].BX_PERSONAL_ROOT."/templates/print",
 	$rewrite = true,
 	$recursive = true
@@ -165,5 +180,23 @@ $arTemplates[]= Array("CONDITION" => "\$_GET['print']=='Y'", "SORT" => 150, "TEM
 
 $obSite = new CSite();
 $obSite->Update("s1", Array("TEMPLATE" => $arTemplates, "NAME" => COption::GetOptionString("main", "site_name", $arSite["NAME"])));
+
+//socialservices
+$bRu = (LANGUAGE_ID == 'ru');
+$arServices = array(
+	"VKontakte" => "N",
+	"MyMailRu" => "N",
+	"Twitter" => "N",
+	"Facebook" => "N",
+	"Livejournal" => "Y",
+	"YandexOpenID" => ($bRu? "Y":"N"),
+	"Rambler" => ($bRu? "Y":"N"),
+	"MailRuOpenID" => ($bRu? "Y":"N"),
+	"Liveinternet" => ($bRu? "Y":"N"),
+	"Blogger" => "Y",
+	"OpenID" => "Y",
+	"LiveID" => "N",
+);
+COption::SetOptionString("socialservices", "auth_services", serialize($arServices));
 
 ?>

@@ -63,7 +63,7 @@ else
 
 $strError_tmp = "";
 $arClientModules = CUpdateClientPartner::GetCurrentModules($strError_tmp);
-if (StrLen($strError_tmp) > 0)
+if ($strError_tmp <> '')
 	$errorMessage .= $strError_tmp;
 
 if ($arUpdateList)
@@ -75,7 +75,7 @@ if ($arUpdateList)
 	}
 }
 
-if (strlen($errorMessage) > 0)
+if ($errorMessage <> '')
 	echo CAdminMessage::ShowMessage(Array("DETAILS" => $errorMessage, "TYPE" => "ERROR", "MESSAGE" => GetMessage("SUP_ERROR"), "HTML" => true));
 
 ?>
@@ -125,7 +125,7 @@ $tabControl->Begin();
 <?
 $tabControl->BeginNextTab();
 ?>
-	<?if(strlen($myaddmodule) > 0)
+	<?if($myaddmodule <> '')
 	{
 		?><script>
 		BX.ready(function()
@@ -580,7 +580,7 @@ $tabControl->BeginNextTab();
 											<?if (is_array($arUpdateList) && array_key_exists("CLIENT", $arUpdateList)):?>
 												<tr>
 													<td><?echo GetMessage("SUP_REGISTERED")?>&nbsp;&nbsp;</td>
-													<td><?echo $arUpdateList["CLIENT"][0]["@"]["NAME"]?></td>
+													<td><?echo htmlspecialchars($arUpdateList["CLIENT"][0]["@"]["NAME"])?></td>
 												</tr>
 											<?endif;?>
 
@@ -590,7 +590,7 @@ $tabControl->BeginNextTab();
 											</tr>
 											<tr>
 												<td><?echo GetMessage("SUP_ACTIVE")?>&nbsp;&nbsp;</td>
-												<td><?echo GetMessage("SUP_ACTIVE_PERIOD", array("#DATE_TO#"=>((strlen($arUpdateList["CLIENT"][0]["@"]["DATE_TO"]) > 0) ? $arUpdateList["CLIENT"][0]["@"]["DATE_TO"] : "<i>N/A</i>"), "#DATE_FROM#" => ((strlen($arUpdateList["CLIENT"][0]["@"]["DATE_FROM"]) > 0) ? $arUpdateList["CLIENT"][0]["@"]["DATE_FROM"] : "<i>N/A</i>")));?></td>
+												<td><?echo GetMessage("SUP_ACTIVE_PERIOD", array("#DATE_TO#"=>(($arUpdateList["CLIENT"][0]["@"]["DATE_TO"] <> '') ? $arUpdateList["CLIENT"][0]["@"]["DATE_TO"] : "<i>N/A</i>"), "#DATE_FROM#" => (($arUpdateList["CLIENT"][0]["@"]["DATE_FROM"] <> '') ? $arUpdateList["CLIENT"][0]["@"]["DATE_FROM"] : "<i>N/A</i>")));?></td>
 											</tr>
 											<?if (is_array($arUpdateList) && array_key_exists("CLIENT", $arUpdateList)):?>
 												<tr>
@@ -663,9 +663,9 @@ $tabControl->BeginNextTab();
 							$checked = " checked";
 							$arModuleTmp = $arUpdateList["MODULE"][$i];
 							$arModuleTmp["@"]["ID"] = preg_replace("#[^A-Za-z0-9._-]#", "", $arModuleTmp["@"]["ID"]);
-							if(strlen($myaddmodule) > 0)
+							if($myaddmodule <> '')
 							{
-								if(toLower($myaddmodule) != toLower($arModuleTmp["@"]["ID"]) && strpos(toLower($myaddmodule), toLower($arModuleTmp["@"]["ID"])) === false)
+								if(toLower($myaddmodule) != toLower($arModuleTmp["@"]["ID"]) && mb_strpos(toLower($myaddmodule), toLower($arModuleTmp["@"]["ID"])) === false)
 									$checked = "";
 							}
 							$strTitleTmp = $arModuleTmp["@"]["NAME"]." (".$arModuleTmp["@"]["ID"].")\n".$arModuleTmp["@"]["DESCRIPTION"]."\n";
@@ -696,7 +696,7 @@ $tabControl->BeginNextTab();
 									else
 									{
 										echo GetMessage("SUP_SULL_REF_N");
-										if(toLower($myaddmodule) == toLower($arModuleTmp["@"]["ID"]) || strpos(toLower($myaddmodule), toLower($arModuleTmp["@"]["ID"])) !== false)
+										if(toLower($myaddmodule) == toLower($arModuleTmp["@"]["ID"]) || mb_strpos(toLower($myaddmodule), toLower($arModuleTmp["@"]["ID"])) !== false)
 										{
 											?>
 											<script>
@@ -704,9 +704,9 @@ $tabControl->BeginNextTab();
 											BX("need_license_module").value = '<?=CUtil::JSEscape($arModuleTmp["@"]["ID"]);?>';
 											</script><?
 										}
-										$md = CUtil::JSEscape($arModuleTmp["@"]["ID"]);
+										$md = htmlspecialcharsbx($arModuleTmp["@"]["ID"]);
 										?>
-										<input type="hidden" name="md_name_<?=$md?>" id="md_name_<?=$md?>" value="<?=CUtil::JSEscape(str_replace("#NAME#", htmlspecialcharsbx($arModuleTmp["@"]["NAME"]), GetMessage("SUP_SULL_MODULE")))?>">
+										<input type="hidden" name="md_name_<?=$md?>" id="md_name_<?=$md?>" value="<?=str_replace("#NAME#", htmlspecialcharsbx($arModuleTmp["@"]["NAME"]), GetMessage("SUP_SULL_MODULE"))?>">
 										<input type="hidden" name="md_new_<?=$md?>" id="md_new_<?=$md?>" value="Y">
 										<?
 									}
@@ -1109,18 +1109,20 @@ $tabControl->BeginNextTab();
 
 						var txt = '';
 						txt += '<form name="license_form">';
-						txt += '<iframe name="license_text" src="http://www.1c-bitrix.ru/license.php?module='+name+'&free_module='+freeModule+'&updatesystem=Y" style="width:622px; height:410px; display:block;"></iframe>';
+						txt += '<iframe name="license_text" src="//www.1c-bitrix.ru/license.php?module='+name+'&free_module='+freeModule+'&updatesystem=Y" style="width:622px; height:410px; display:block;"></iframe>';
 						txt += '<input name="agree_license" type="checkbox" value="Y" id="agree_license_id">';
 						txt += '<label for="agree_license_id"><?= GetMessageJS("SUP_SUBT_AGREE") ?></label>';
+						txt += '<br /><input name="agree_license_privacy" type="checkbox" value="Y" id="agree_license_privacy">';
+						txt += '<label for="agree_license_privacy"><?= GetMessageJS("SUP_SUBT_AGREE_PRIVACY") ?></label>';
 						txt += '</form>';
 
-						agrDialog = new BX.CDialog({'content':txt,'width':'650','height':'470', 'title' : '<?=GetMessageJS("SUP_SUBT_LICENCE")?>', buttons : [{name: '<?= GetMessageJS("SUP_APPLY") ?>', value : '<?= GetMessageJS("SUP_APPLY") ?>', id : 'licence_agree_button', onclick : 'AgreeLicence()'}]});
+						agrDialog = new BX.CDialog({'content':txt,'width':'650','height':'485', 'title' : '<?=GetMessageJS("SUP_SUBT_LICENCE")?>', buttons : [{name: '<?= GetMessageJS("SUP_APPLY") ?>', value : '<?= GetMessageJS("SUP_APPLY") ?>', id : 'licence_agree_button', onclick : 'AgreeLicence()'}]});
 						agrDialog.Show();
 					}
 
 					function AgreeLicence()
 					{
-						if(BX('agree_license_id').checked === false)
+						if(BX('agree_license_id').checked === false || BX('agree_license_privacy').checked === false)
 						{
 							BX('id_select_module_'+moduleId).checked = false;
 							ModuleCheckboxClicked(BX('id_select_module_'+moduleId), moduleId, new Array());
@@ -1134,7 +1136,7 @@ $tabControl->BeginNextTab();
 									arModulesList = BX.util.deleteFromArray(arModulesList, is);
 							}
 						}
-						if(isFreeModule && BX('agree_license_id').checked)
+						if(isFreeModule && BX('agree_license_id').checked && BX('agree_license_privacy').checked)
 						{
 							BX('need_license_module').value = '';
 						}

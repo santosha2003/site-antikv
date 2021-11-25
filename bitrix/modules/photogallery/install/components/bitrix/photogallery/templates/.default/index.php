@@ -15,11 +15,11 @@ $URL_NAME_DEFAULT = array(
 
 foreach ($URL_NAME_DEFAULT as $URL => $URL_VALUE)
 {
-	$arParams[strToUpper($URL)."_URL"] = trim($arResult["URL_TEMPLATES"][strToLower($URL)]);
-	if (empty($arParams[strToUpper($URL)."_URL"]))
-		$arParams[strToUpper($URL)."_URL"] = $APPLICATION->GetCurPageParam($URL_VALUE, array("PAGE_NAME", "SECTION_ID", "ELEMENT_ID", "ACTION", "sessid", "edit", "order"));
-	$arParams["~".strToUpper($URL)."_URL"] = $arParams[strToUpper($URL)."_URL"];
-	$arParams[strToUpper($URL)."_URL"] = htmlspecialcharsbx($arParams["~".strToUpper($URL)."_URL"]);
+	$arParams[mb_strtoupper($URL)."_URL"] = trim($arResult["URL_TEMPLATES"][mb_strtolower($URL)]);
+	if (empty($arParams[mb_strtoupper($URL)."_URL"]))
+		$arParams[mb_strtoupper($URL)."_URL"] = $APPLICATION->GetCurPageParam($URL_VALUE, array("PAGE_NAME", "SECTION_ID", "ELEMENT_ID", "ACTION", "sessid", "edit", "order"));
+	$arParams["~".mb_strtoupper($URL)."_URL"] = $arParams[mb_strtoupper($URL)."_URL"];
+	$arParams[mb_strtoupper($URL)."_URL"] = htmlspecialcharsbx($arParams["~".mb_strtoupper($URL)."_URL"]);
 }
 
 $arRes = array();
@@ -28,7 +28,7 @@ if (is_array($arParams["SHOW_LINK_ON_MAIN_PAGE"]))
 	$detail_list = array(
 		"~url" => CComponentEngine::MakePathFromTemplate($arParams["DETAIL_LIST_URL"], array("SECTION_ID" => "all", "ELEMENT_ID" => "all")));
 	$detail_list["url"] = $detail_list["~url"];
-	if (strpos($detail_list["url"], "?") === false)
+	if (mb_strpos($detail_list["url"], "?") === false)
 		$detail_list["url"] .= "?";
 	foreach ($arParams["SHOW_LINK_ON_MAIN_PAGE"] as $key)
 	{
@@ -190,15 +190,15 @@ if ($arParams["PERMISSION"] >= "U" || $arParams["SHOW_TAGS"] == "Y" || !empty($a
 		"UPLOAD_URL" => $arResult["URL_TEMPLATES"]["upload"],
 		"DETAIL_EDIT_URL" => $arResult["URL_TEMPLATES"]["detail_edit"],
 
-		"ALBUM_PHOTO_THUMBS_SIZE"	=>	$arParams["ALBUM_PHOTO_THUMBS_SIZE"],
-		"ALBUM_PHOTO_SIZE"	=>	$arParams["ALBUM_PHOTO_SIZE"],
+		"ALBUM_PHOTO_THUMBS_SIZE" => $arParams["ALBUM_PHOTO_THUMBS_SIZE"],
+		"ALBUM_PHOTO_SIZE" => $arParams["ALBUM_PHOTO_SIZE"],
+		"SECTION_LIST_THUMBNAIL_SIZE" => $arParams["SECTION_LIST_THUMBNAIL_SIZE"],
 		"SET_STATUS_404" => $arParams["SET_STATUS_404"],
 
 		"SET_TITLE"	=>	"N",
 		"SHOW_RATING" => $arParams["USE_RATING"],
 		"SHOW_SHOWS" => $arParams["SHOW_SHOWS"],
 		"SHOW_COMMENTS" => $arParams["USE_COMMENTS"],
-		"SHOW_TAGS" => $arParams["SHOW_TAGS"],
 		"SHOW_DATE" => $arParams["SHOW_DATE"],
 		"SHOW_DESRIPTION" => $arParams["SHOW_DESRIPTION"],
 
@@ -233,7 +233,7 @@ if ($arParams["PERMISSION"] >= "U" || $arParams["SHOW_TAGS"] == "Y" || !empty($a
 	),
 	$component,
 	array("HIDE_ICONS" => "Y")
-);
+)
 ?>
 <script>
 function __photo_check_right_height()

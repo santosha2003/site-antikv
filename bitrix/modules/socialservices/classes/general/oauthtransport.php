@@ -10,7 +10,7 @@ class CSocServOAuthTransport
 	protected $accessTokenExpires = 0;
 	protected $refresh_token = '';
 
-	protected $scope = '';
+	protected $scope = array();
 
 	protected $userId;
 
@@ -88,6 +88,11 @@ class CSocServOAuthTransport
 		return $this->scope;
 	}
 
+	public function getScopeEncode()
+	{
+		return implode(',', array_map('urlencode', array_unique($this->getScope())));
+	}
+
 	public function setCode($code)
 	{
 		$this->code = $code;
@@ -103,20 +108,20 @@ class CSocServOAuthTransport
 		$accessToken = '';
 		if($this->userId > 0)
 		{
-			$dbSocservUser = CSocServAuthDB::GetList(
-				array(),
-				array(
-					'USER_ID' => $this->userId,
-					"EXTERNAL_AUTH_ID" => static::SERVICE_ID
-				), false, false, array("USER_ID", "XML_ID", "OATOKEN", "OATOKEN_EXPIRES", "REFRESH_TOKEN")
-			);
+			$dbSocservUser = \Bitrix\Socialservices\UserTable::getList([
+				'filter' => [
+					'=USER_ID' => $this->userId,
+					"=EXTERNAL_AUTH_ID" => static::SERVICE_ID
+				],
+				'select' => ["USER_ID", "XML_ID", "OATOKEN", "OATOKEN_EXPIRES", "REFRESH_TOKEN", "PERMISSIONS"]
+			]);
 
-			$accessToken = $dbSocservUser->Fetch();
+			$accessToken = $dbSocservUser->fetch();
 		}
 		return $accessToken;
 	}
 
-	protected function deleteStorageTokens()
+	public function deleteStorageTokens()
 	{
 		if($this->userId > 0)
 		{
@@ -138,5 +143,10 @@ class CSocServOAuthTransport
 	public function checkAccessToken()
 	{
 		return (($this->accessTokenExpires - 30) < time()) ? false : true;
+	}
+
+	public function getResult()
+	{
+		return array();
 	}
 }

@@ -48,7 +48,7 @@ if ($RESULT_ID > 0)
 		$title = str_replace("#FORM_ID#","$WEB_FORM_ID",GetMessage("FORM_RESULT_LIST"));
 		require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 		echo "<p><a href='/bitrix/admin/form_result_list.php?lang=".LANGUAGE_ID."&WEB_FORM_ID=".$WEB_FORM_ID."'>".$title."</a></p>";
-		echo ShowError(GetMessage("FORM_RESULT_NOT_FOUND"));
+		ShowError(GetMessage("FORM_RESULT_NOT_FOUND"));
 		require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
 		die();
 	}
@@ -63,14 +63,14 @@ else
 if($WEB_FORM_ID <= 0)
 {
 	require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-	echo ShowError(GetMessage("FORM_NOT_FOUND"));
+	ShowError(GetMessage("FORM_NOT_FOUND"));
 	require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
 	die();
 }
 
 $F_RIGHT = intval(CForm::GetPermission($WEB_FORM_ID)); // form rights
 if ($RESULT_ID > 0)
-	$arrRESULT_PERMISSION = CFormResult::GetPermissions($RESULT_ID, $v=0); // result rights array
+	$arrRESULT_PERMISSION = CFormResult::GetPermissions($RESULT_ID); // result rights array
 else
 {
 	$arrRESULT_PERMISSION = array();
@@ -108,7 +108,7 @@ if ($old_module_version!="Y" && $F_RIGHT>=10)
 if ($old_module_version=="Y")
 {
 	// save chosen template
-	if ($F_RIGHT>=30 && $_SERVER['REQUEST_METHOD']=="GET" && strlen($_REQUEST['save'])>0 && check_bitrix_sessid())
+	if ($F_RIGHT>=30 && $_SERVER['REQUEST_METHOD']=="GET" && $_REQUEST['save'] <> '' && check_bitrix_sessid())
 	{
 		$DB->PrepareFields("b_form");
 		$arFields = array(
@@ -120,16 +120,16 @@ if ($old_module_version=="Y")
 
 	if ($can_edit)
 	{
-		if ($_SERVER['REQUEST_METHOD']=="POST" && intval($WEB_FORM_ID)>0 && (strlen($_REQUEST['web_form_submit'])>0 || strlen($_REQUEST['web_form_apply'])>0) || strlen($_REQUEST['apply'])>0)
+		if ($_SERVER['REQUEST_METHOD']=="POST" && intval($WEB_FORM_ID)>0 && ($_REQUEST['web_form_submit'] <> '' || $_REQUEST['web_form_apply'] <> '') || $_REQUEST['apply'] <> '')
 		{
 			$arrVALUES = $_REQUEST;
 			$error = CForm::Check($WEB_FORM_ID, $arrVALUES, $RESULT_ID);
 
-			if (strlen($error)<=0)
+			if ($error == '')
 			{
 				CFormResult::Update($RESULT_ID, $arrVALUES, $EDIT_ADDITIONAL);
 
-				if (strlen($_REQUEST['web_form_submit'])>0) LocalRedirect("form_result_list.php?lang=".LANGUAGE_ID."&WEB_FORM_ID=".$WEB_FORM_ID);
+				if ($_REQUEST['web_form_submit'] <> '') LocalRedirect("form_result_list.php?lang=".LANGUAGE_ID."&WEB_FORM_ID=".$WEB_FORM_ID);
 			}
 			else $strError .= $error;
 
@@ -143,13 +143,13 @@ $WEB_FORM_ID = intval($WEB_FORM_ID);
 $arForm = CForm::GetByID_admin($WEB_FORM_ID);
 
 // result changes saving
-if ($old_module_version != 'Y' && $_SERVER['REQUEST_METHOD'] == "POST" && intval($WEB_FORM_ID)>0 && (strlen($_REQUEST['save'])>0 || strlen($_REQUEST['apply'])>0) && check_bitrix_sessid())
+if ($old_module_version != 'Y' && $_SERVER['REQUEST_METHOD'] == "POST" && intval($WEB_FORM_ID)>0 && ($_REQUEST['save'] <> '' || $_REQUEST['apply'] <> '') && check_bitrix_sessid())
 {
 	$arrVALUES = $_REQUEST;
 
 	$error = CForm::Check($WEB_FORM_ID, $arrVALUES, $RESULT_ID);
 
-	if (strlen($error)<=0)
+	if ($error == '')
 	{
 		$bUpdate = true;
 		if (!$RESULT_ID)
@@ -169,12 +169,12 @@ if ($old_module_version != 'Y' && $_SERVER['REQUEST_METHOD'] == "POST" && intval
 		}
 
 		// second update needed to set additional fields
-		if ($bUpdate && strlen($strError) <= 0)
+		if ($bUpdate && $strError == '')
 			CFormResult::Update($RESULT_ID, $arrVALUES, $EDIT_ADDITIONAL);
 
-		if (strlen($strError) <= 0)
+		if ($strError == '')
 		{
-			if (strlen($_REQUEST['apply'])>0) LocalRedirect("/bitrix/admin/form_result_edit.php?lang=".LANGUAGE_ID."&WEB_FORM_ID=".$WEB_FORM_ID."&RESULT_ID=".$RESULT_ID);
+			if ($_REQUEST['apply'] <> '') LocalRedirect("/bitrix/admin/form_result_edit.php?lang=".LANGUAGE_ID."&WEB_FORM_ID=".$WEB_FORM_ID."&RESULT_ID=".$RESULT_ID);
 			else LocalRedirect("/bitrix/admin/form_result_list.php?lang=".LANGUAGE_ID."&WEB_FORM_ID=".$WEB_FORM_ID);
 		}
 	}
@@ -239,8 +239,8 @@ $context = new CAdminContextMenu($aMenu);
 $context->Show();
 if ($can_edit) :
 	if ($old_module_version=="Y"):
-		echo ShowError($strError);
-		echo ShowNote($strNote);
+		ShowError($strError);
+		ShowNote($strNote);
 		?>
 		<br />
 		<table cellspacing="0" cellpadding="2">
@@ -386,7 +386,7 @@ if ($can_edit) :
 	}
 
 	// start form output
-	echo ShowError($strError);
+	ShowError($strError);
 
 	$tabControl = new CAdminTabControl("tabControl", $arTabs);
 	$tabControl->Begin();
@@ -500,7 +500,7 @@ if ($can_edit) :
 	{
 		$FIELD_SID = $arQuestion["SID"];
 		$arQuestion['TITLE'] = trim($arQuestion['TITLE']);
-		if (strlen($arQuestion['TITLE']) <= 0)
+		if ($arQuestion['TITLE'] == '')
 			$arQuestion['TITLE'] = $arQuestion['SID'];
 
 		if ($arQuestion['ADDITIONAL'] == 'Y' && ($q++) == 0):
@@ -512,7 +512,7 @@ if ($can_edit) :
 			endif;
 ?>
 	<tr<?=$arQuestion["REQUIRED"] == "Y" ? ' class="adm-detail-required-field"' : ''?>>
-		<td valign="top">
+		<td style="width: 40%; vertical-align: top;">
 <?
 		echo $arQuestion["TITLE_TYPE"] == "html" ? $arQuestion["TITLE"] : nl2br(htmlspecialcharsbx(trim($arQuestion["TITLE"])));
 ?>
@@ -536,12 +536,12 @@ if ($can_edit) :
 						$arAnswer["FIELD_PARAM"] .= " id=\"".$arAnswer['ID']."\"";
 
 						$value = CForm::GetRadioValue($FIELD_SID, $arAnswer, $arrVALUES);
-						if (strlen($strError) > 0 || !$value || $value != $arAnswer["ID"])
+						if ($strError <> '' || !$value || $value != $arAnswer["ID"])
 						{
 							if (
-								strpos(strtolower($arAnswer["FIELD_PARAM"]), "selected")!==false
+								mb_strpos(mb_strtolower($arAnswer["FIELD_PARAM"]), "selected") !== false
 								||
-								strpos(strtolower($arAnswer["FIELD_PARAM"]), "checked")!==false)
+								mb_strpos(mb_strtolower($arAnswer["FIELD_PARAM"]), "checked") !== false)
 								{
 									$arAnswer["FIELD_PARAM"] = preg_replace("/checked|selected/i", "", $arAnswer["FIELD_PARAM"]);
 								}
@@ -554,19 +554,19 @@ if ($can_edit) :
 							$arAnswer["FIELD_PARAM"]);
 
 						echo $input;
-						echo "<label for=\"".$arAnswer['ID']."\">".$arAnswer["MESSAGE"]."</label><br />";
+						echo "<label for=\"".$arAnswer['ID']."\">".htmlspecialcharsbx($arAnswer["MESSAGE"])."</label><br />";
 
 					break;
 					case "checkbox":
 						$arAnswer["FIELD_PARAM"] .= " id=\"".$arAnswer['ID']."\"";
 
 						$value = CForm::GetCheckBoxValue($FIELD_SID, $arAnswer, $arrVALUES);
-						if (strlen($strError) > 0 || !$value)
+						if ($strError <> '' || !$value)
 						{
 							if (
-								strpos(strtolower($arAnswer["FIELD_PARAM"]), "selected")!==false
+								mb_strpos(mb_strtolower($arAnswer["FIELD_PARAM"]), "selected") !== false
 								||
-								strpos(strtolower($arAnswer["FIELD_PARAM"]), "checked")!==false)
+								mb_strpos(mb_strtolower($arAnswer["FIELD_PARAM"]), "checked") !== false)
 								{
 									$arAnswer["FIELD_PARAM"] = preg_replace("/checked|selected/i", "", $arAnswer["FIELD_PARAM"]);
 								}
@@ -578,7 +578,7 @@ if ($can_edit) :
 							$value,
 							$arAnswer["FIELD_PARAM"]);
 
-						echo $input."<label for=\"".$arAnswer['ID']."\">".$arAnswer["MESSAGE"]."</label><br />";
+						echo $input."<label for=\"".$arAnswer['ID']."\">".htmlspecialcharsbx($arAnswer["MESSAGE"])."</label><br />";
 
 					break;
 					case "dropdown":
@@ -611,7 +611,7 @@ if ($can_edit) :
 
 					break;
 					case "text":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						$value = CForm::GetTextValue($arAnswer["ID"], $arAnswer, $arrVALUES);
 						echo CForm::GetTextField(
@@ -622,7 +622,7 @@ if ($can_edit) :
 
 					break;
 					case "hidden":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						$value = CForm::GetHiddenValue($arAnswer["ID"], $arAnswer, $arrVALUES);
 						$input = CForm::GetHiddenField(
@@ -636,7 +636,7 @@ if ($can_edit) :
 
 					break;
 					case "password":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						$value = CForm::GetPasswordValue($arAnswer["ID"], $arAnswer, $arrVALUES);
 						echo CForm::GetPasswordField(
@@ -647,7 +647,7 @@ if ($can_edit) :
 
 					break;
 					case "email":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						$value = CForm::GetEmailValue($arAnswer["ID"], $arAnswer, $arrVALUES);
 						echo CForm::GetEmailField(
@@ -657,7 +657,7 @@ if ($can_edit) :
 							$arAnswer["FIELD_PARAM"]).'<br />';
 					break;
 					case "url":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						$value = CForm::GetUrlValue($arAnswer["ID"], $arAnswer, $arrVALUES);
 						echo CForm::GetUrlField(
@@ -668,7 +668,7 @@ if ($can_edit) :
 
 						break;
 					case "textarea":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						if (intval($arAnswer["FIELD_WIDTH"]) <= 0) $arAnswer["FIELD_WIDTH"] = "40";
 						if (intval($arAnswer["FIELD_HEIGHT"]) <= 0) $arAnswer["FIELD_HEIGHT"] = "5";
@@ -684,7 +684,7 @@ if ($can_edit) :
 
 						break;
 					case "date":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						$value = CForm::GetDateValue($arAnswer["ID"], $arAnswer, $arrVALUES);
 						echo CForm::GetDateField(
@@ -696,7 +696,7 @@ if ($can_edit) :
 
 						break;
 					case "image":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						if ($arFile = CFormResult::GetFileByAnswerID($RESULT_ID, $arAnswer["ID"]))
 						{
@@ -721,7 +721,7 @@ if ($can_edit) :
 
 						break;
 					case "file":
-						echo $arAnswer["MESSAGE"] ? $arAnswer['MESSAGE'].'<br />' : '';
+						echo $arAnswer["MESSAGE"] ? htmlspecialcharsbx($arAnswer['MESSAGE']).'<br />' : '';
 
 						if ($arFile = CFormResult::GetFileByAnswerID($RESULT_ID, $arAnswer["ID"]))
 						{
@@ -800,4 +800,3 @@ else:
 	ShowError(GetMessage("FORM_ACCESS_DENIED_FOR_FORM_RESULTS_EDITING"));
 endif;
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
-?>

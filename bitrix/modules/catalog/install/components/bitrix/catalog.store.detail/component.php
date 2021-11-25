@@ -18,20 +18,18 @@ if ($arParams['STORE'] <= 0)
 	return;
 }
 
-$arParams['MAP_TYPE'] = (isset($arParams['MAP_TYPE']) ? $arParams['MAP_TYPE'] : 'Yandex');
-if ($arParams['MAP_TYPE'] != 'Yandex' && $arParams['MAP_TYPE'] != 'Google')
-	$arParams['MAP_TYPE'] = 'Yandex';
+$arParams['MAP_TYPE'] = (int)(isset($arParams['MAP_TYPE']) ? $arParams['MAP_TYPE'] : 0);
 
 $arParams['SET_TITLE'] = (isset($arParams['SET_TITLE']) && $arParams['SET_TITLE'] == 'Y' ? 'Y' : 'N');
 
 if (!isset($arParams['CACHE_TIME']))
 	$arParams['CACHE_TIME'] = 3600;
 
-if ($this->StartResultCache())
+if ($this->startResultCache())
 {
 	if (!\Bitrix\Main\Loader::includeModule("catalog"))
 	{
-		$this->AbortResultCache();
+		$this->abortResultCache();
 		ShowError(GetMessage("CATALOG_MODULE_NOT_INSTALL"));
 		return;
 	}
@@ -46,21 +44,31 @@ if ($this->StartResultCache())
 		"IMAGE_ID",
 		"PHONE",
 		"SCHEDULE",
+		"SITE_ID"
 	);
-	$dbProps = CCatalogStore::GetList(array('ID' => 'ASC'),array('ID' => $arResult['STORE'], 'ACTIVE' => 'Y'),false,false,$arSelect);
-	$arResult = $dbProps->GetNext();
+	$storeIterator = CCatalogStore::GetList(array('ID' => 'ASC'),array('ID' => $arResult['STORE'], 'ACTIVE' => 'Y'),false,false,$arSelect);
+	$arResult = $storeIterator->GetNext();
+	unset($storeIterator);
 	if (!$arResult)
 	{
-		$this->AbortResultCache();
+		$this->abortResultCache();
 		ShowError(GetMessage("STORE_NOT_EXIST"));
 		return;
 	}
+	$storeSite = (string)$arResult['SITE_ID'];
+	if ($storeSite != '' && $storeSite != SITE_ID)
+	{
+		$this->abortResultCache();
+		ShowError(GetMessage("STORE_NOT_EXIST"));
+		return;
+	}
+	unset($storeSite);
 	if($arResult["GPS_N"] != '' && $arResult["GPS_S"] != '')
-		$this->AbortResultCache();
+		$this->abortResultCache();
 	$arResult["MAP"] = $arParams["MAP_TYPE"];
 	if(isset($arParams["PATH_TO_LISTSTORES"]))
-		$arResult["LIST_URL"] = CComponentEngine::MakePathFromTemplate($arParams["PATH_TO_LISTSTORES"]);
-	$this->IncludeComponentTemplate();
+		$arResult["LIST_URL"] = CComponentEngine::makePathFromTemplate($arParams["PATH_TO_LISTSTORES"]);
+	$this->includeComponentTemplate();
 }
 
 if ($arParams["SET_TITLE"] == "Y")

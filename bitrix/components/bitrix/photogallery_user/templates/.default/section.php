@@ -32,7 +32,7 @@
 	$component
 );?>
 <?
-if ($result && intVal($result["ELEMENTS_CNT"]) > 0)
+if ($result && intval($result["ELEMENTS_CNT"]) > 0)
 {
 if ($arParams["USE_RATING"] == "Y"):
 	$arParams["PROPERTY_CODE"][] = "PROPERTY_vote_count";
@@ -141,7 +141,7 @@ div.photo-page-section div.photo-info-box-photo-list {
 endif;
 }
 // SECTIONS LIST
-if (intVal($result["SECTIONS_CNT"]) > 0)
+if (intval($result["SECTIONS_CNT"]) > 0)
 {
 ?>
 <div class="photo-info-box photo-info-box-section-list">
@@ -171,8 +171,9 @@ if (intVal($result["SECTIONS_CNT"]) > 0)
 		"SECTION_EDIT_ICON_URL" => $arResult["URL_TEMPLATES"]["section_edit_icon"],
 		"DETAIL_URL" => $arResult["URL_TEMPLATES"]["detail"],
 		"UPLOAD_URL" => $arResult["URL_TEMPLATES"]["upload"],
-		"ALBUM_PHOTO_SIZE"	=>	$arParams["ALBUM_PHOTO_SIZE"],
-		"ALBUM_PHOTO_THUMBS_SIZE"	=>	$arParams["ALBUM_PHOTO_THUMBS_SIZE"],
+		"ALBUM_PHOTO_SIZE" => $arParams["ALBUM_PHOTO_SIZE"],
+		"ALBUM_PHOTO_THUMBS_SIZE" => $arParams["ALBUM_PHOTO_THUMBS_SIZE"],
+		"SECTION_LIST_THUMBNAIL_SIZE" => $arParams["SECTION_LIST_THUMBNAIL_SIZE"],
 		"PAGE_ELEMENTS" => $arParams["SECTION_PAGE_ELEMENTS"],
 		"PAGE_NAVIGATION_TEMPLATE" => $arParams["PAGE_NAVIGATION_TEMPLATE"],
 		"DATE_TIME_FORMAT" => $arParams["DATE_TIME_FORMAT_SECTION"],

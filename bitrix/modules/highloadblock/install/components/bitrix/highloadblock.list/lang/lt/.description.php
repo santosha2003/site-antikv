@@ -1,5 +1,0 @@
-<?
-$MESS["HLLIST_COMPONENT_NAME"] = "Áraðai";
-$MESS["HLLIST_COMPONENT_DESCRIPTION"] = "Rodyti highload infobloko áraðø sàraðà";
-$MESS["HLLIST_COMPONENT_CATEGORY_TITLE"] = "Highload informaciniai blokai";
-?>

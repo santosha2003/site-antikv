@@ -1,5 +1,7 @@
 <?
-use \Bitrix\Main\Loader as Loader;
+use Bitrix\Main\Loader as Loader,
+	Bitrix\Iblock;
+
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
 if(!Loader::includeModule("sale") || !Loader::includeModule("iblock") || !Loader::includeModule("catalog"))
@@ -7,6 +9,9 @@ if(!Loader::includeModule("sale") || !Loader::includeModule("iblock") || !Loader
 	ShowError(GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_NEED_REQUIRED_MODULES"));
 	die();
 }
+
+$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
+
 // Prices
 $catalogGroupIterator = CCatalogGroup::getList(array("NAME" => "ASC", "SORT" => "ASC"));
 $catalogGroups = array();
@@ -16,7 +21,7 @@ while ($catalogGroup = $catalogGroupIterator->fetch())
 }
 
 // iblockTypes
-$iblockTypes = CIBlockParameters::getIBlockTypes();
+$iblockTypes = CIBlockParameters::GetIBlockTypes();
 
 $iblockNames = array();
 $iblockIterator = CIBlock::GetList(array("SORT" => "ASC"), array("TYPE" => ($arCurrentValues["IBLOCK_TYPE"] != "-" ? $arCurrentValues["IBLOCK_TYPE"] : "")));
@@ -253,13 +258,21 @@ while ($iblock = $iblockIterator->fetch())
 $catalogs = array();
 $productsCatalogs = array();
 $skuCatalogs = array();
-$catalogIterator = CCatalog::getList(array("IBLOCK_ID" => "ASC"), array("@IBLOCK_ID" => array_keys($iblockMap)));
+$catalogIterator = CCatalog::GetList(
+	array("IBLOCK_ID" => "ASC"),
+	array("@IBLOCK_ID" => array_keys($iblockMap)),
+	false,
+	false,
+	array('IBLOCK_ID', 'PRODUCT_IBLOCK_ID', 'SKU_PROPERTY_ID')
+);
 while($catalog = $catalogIterator->fetch())
 {
 	$isOffersCatalog = (int)$catalog['PRODUCT_IBLOCK_ID'] > 0;
 	if($isOffersCatalog)
 	{
 		$skuCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
+		if (!isset($productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']]))
+			$productsCatalogs[$catalog['PRODUCT_IBLOCK_ID']] = $catalog;
 	}
 	else
 	{
@@ -341,28 +354,34 @@ foreach ($catalogs as $catalog)
 		);
 	}
 
-	$arComponentParameters["PARAMETERS"]['PROPERTY_CODE_' . $iblock['ID']] = array(
-		"PARENT" => $groupId,
-		"NAME" => GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_PROPERTY_DISPLAY"),
-		"TYPE" => "LIST",
-		"MULTIPLE" => "Y",
-		"VALUES" => $allProperties,
-		"ADDITIONAL_VALUES" => "Y",
-		"DEFAULT" => "",
-		"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
-	);
+	if (!$usePropertyFeatures)
+	{
+		$arComponentParameters["PARAMETERS"]['PROPERTY_CODE_'.$iblock['ID']] = array(
+			"PARENT" => $groupId,
+			"NAME" => GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_PROPERTY_DISPLAY"),
+			"TYPE" => "LIST",
+			"MULTIPLE" => "Y",
+			"VALUES" => $allProperties,
+			"ADDITIONAL_VALUES" => "Y",
+			"DEFAULT" => "",
+			"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
+		);
+	}
 
 	// 3. Cart properties
-	$arComponentParameters["PARAMETERS"]['CART_PROPERTIES_' . $iblock['ID']] = array(
-		"PARENT" => $groupId,
-		"NAME" => GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_PROPERTY_ADD_TO_BASKET"),
-		"TYPE" => "LIST",
-		"MULTIPLE" => "Y",
-		"VALUES" => $treeProperties,
-		"ADDITIONAL_VALUES" => "Y",
-		"HIDDEN" => ((isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N') ||
+	if (!$usePropertyFeatures)
+	{
+		$arComponentParameters["PARAMETERS"]['CART_PROPERTIES_'.$iblock['ID']] = array(
+			"PARENT" => $groupId,
+			"NAME" => GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_PROPERTY_ADD_TO_BASKET"),
+			"TYPE" => "LIST",
+			"MULTIPLE" => "Y",
+			"VALUES" => $treeProperties,
+			"ADDITIONAL_VALUES" => "Y",
+			"HIDDEN" => ((isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N') ||
 			!$catalog['VISIBLE'] ? 'Y' : 'N')
-	);
+		);
+	}
 
 	// 2. Additional Image
 	$arComponentParameters["PARAMETERS"]['ADDITIONAL_PICT_PROP_' . $iblock['ID']] = array(
@@ -378,16 +397,19 @@ foreach ($catalogs as $catalog)
 
 	if ((int)$catalog['SKU_PROPERTY_ID'] > 0)
 	{
-		$arComponentParameters["PARAMETERS"]['OFFER_TREE_PROPS_' . $iblock['ID']] = array(
-			"PARENT" => $groupId,
-			"NAME" => GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_PROPERTY_GROUP"),
-			"TYPE" => "LIST",
-			"MULTIPLE" => "Y",
-			"VALUES" => array_merge($defaultListValues, $treeProperties),
-			"ADDITIONAL_VALUES" => "N",
-			"DEFAULT" => "-",
-			"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
-		);
+		if (!$usePropertyFeatures)
+		{
+			$arComponentParameters["PARAMETERS"]['OFFER_TREE_PROPS_'.$iblock['ID']] = array(
+				"PARENT" => $groupId,
+				"NAME" => GetMessage("CATALOG_RECOMMENDED_PRODUCTS_COMPONENT_PROPERTY_GROUP"),
+				"TYPE" => "LIST",
+				"MULTIPLE" => "Y",
+				"VALUES" => array_merge($defaultListValues, $treeProperties),
+				"ADDITIONAL_VALUES" => "N",
+				"DEFAULT" => "-",
+				"HIDDEN" => (!$catalog['VISIBLE'] ? 'Y' : 'N')
+			);
+		}
 	}
 	else
 	{
@@ -428,9 +450,7 @@ if (Loader::includeModule('currency'))
 	if (isset($arCurrentValues['CONVERT_CURRENCY']) && 'Y' == $arCurrentValues['CONVERT_CURRENCY'])
 	{
 		$arCurrencyList = array();
-		$by = 'SORT';
-		$order = 'ASC';
-		$rsCurrencies = CCurrency::GetList($by, $order);
+		$rsCurrencies = CCurrency::GetList('sort', 'asc');
 		while ($arCurrency = $rsCurrencies->Fetch())
 		{
 			$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];

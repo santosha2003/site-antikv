@@ -1,4 +1,6 @@
 <?
+if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
+
 class Finish extends CWizardStep
 {
 	function InitStep()
@@ -64,7 +66,7 @@ class Finish extends CWizardStep
 		"DATE_TIME_FORMAT" => "d.m.Y",
 		"ADDITIONAL_SIGHTS" => array(),
 		"PICTURES_SIGHT" => "",
-		"THUMBS_SIZE" => "120",
+		"THUMBNAIL_SIZE" => "90",
 		"SHOW_PAGE_NAVIGATION" => "none",
 		"SHOW_CONTROLS" => "N",
 		"SHOW_RATING" => "N",
@@ -245,9 +247,8 @@ class Finish extends CWizardStep
 		if (!file_exists($_SERVER["DOCUMENT_ROOT"].$filePath))
 			return false;
 
-		return CIBlockCMLImport::GetIBlockByXML_ID($xmlID);
+		$import = new CIBlockCMLImport();
+
+		return $import->GetIBlockByXML_ID($xmlID);
 	}
-
 }
-
-?>

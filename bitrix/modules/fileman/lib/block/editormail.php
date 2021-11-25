@@ -10,23 +10,31 @@ namespace Bitrix\Fileman\Block;
 use Bitrix\Main\Event;
 use Bitrix\Main\EventResult;
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Main\SiteTable;
-use Bitrix\Main\Application;
 use Bitrix\Main\Mail\EventMessageCompiler;
-use \Bitrix\Main\Web\DOM\StyleInliner;
+use Bitrix\Main\SiteTable;
+use Bitrix\Main\Web\DOM\StyleInliner;
 
 Loc::loadMessages(__FILE__);
 
 class EditorMail
 {
 	/**
-	 * @param array $params
-	 * @return \Bitrix\Fileman\Block\Editor
+	 * Create instance of editor.
+	 *
+	 * @param array $params Parameters.
+	 * @return Editor
 	 */
 	public static function createInstance($params)
 	{
 		$params['componentFilter'] = array('TYPE' => 'mail');
-		$params['previewUrl'] = '/bitrix/admin/fileman_block_editor.php?action=preview_mail';
+		if (!isset($params['previewUrl']))
+		{
+			$params['previewUrl'] = '/bitrix/admin/fileman_block_editor.php?action=preview_mail';
+		}
+		if (!isset($params['saveFileUrl']))
+		{
+			$params['saveFileUrl'] = '/bitrix/admin/fileman_block_editor.php?action=save_file';
+		}
 
 		$editor = new Editor($params);
 
@@ -44,17 +52,59 @@ class EditorMail
 	}
 
 	/**
-	 * @param array $params
+	 * Show editor.
+	 *
+	 * @param array $params Parameters.
 	 * @return string
 	 */
-	public static function show($params)
+	public static function show(array $params)
 	{
-		\Bitrix\Main\Page\Asset::getInstance()->addJs('/bitrix/js/fileman/block_editor/mail_handlers.js');
-		return self::createInstance($params)->show();
+		$result = self::createInstance($params)->show();
+		\CJSCore::RegisterExt('block_editor_mail', array(
+			'js' => array('/bitrix/js/fileman/block_editor/mail_handlers.js'),
+			'rel' => array('core', 'block_editor')
+		));
+		\CJSCore::Init(array('block_editor_mail'));
+
+		return $result;
 	}
 
 	/**
-	 * @param array $params
+	 * Remove php from html.
+	 *
+	 * @param string $html Html.
+	 * @param string $previousHtml Previous html.
+	 * @param bool $canEditPhp Can edit php.
+	 * @param bool $canUseLpa Can use LPA.
+	 * @return string
+	 */
+	public static function removePhpFromHtml($html, $previousHtml = null, $canEditPhp = false, $canUseLpa = false)
+	{
+		if (!$canEditPhp && $canUseLpa)
+		{
+			$html = \LPA::Process($html, $previousHtml);
+		}
+		else if (!$canEditPhp)
+		{
+			$phpList = \PHPParser::ParseFile($html);
+			foreach($phpList as $php)
+			{
+				$surrogate = '<span class="bxhtmled-surrogate" title="">'
+					. htmlspecialcharsbx(Loc::getMessage('BLOCK_EDITOR_BLOCK_DYNAMIC_CONTENT'))
+					.'</span>';
+				$html = str_replace($php[2], $surrogate, $html);
+			}
+
+			$html = str_replace(['<?', '?>'], ['< ?', '? >'], $html);
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Show preview of content.
+	 *
+	 * @param array $params Parameters.
 	 * @return string
 	 */
 	public static function getPreview(array $params)
@@ -70,32 +120,33 @@ class EditorMail
 		{
 			$fields = array();
 		}
-		if(!isset($params['CAN_EDIT_PHP']) || !$params['CAN_EDIT_PHP'])
-		{
-			$html = \LPA::Process($html);
-		}
+
+		$canEditPhp = (isset($params['CAN_EDIT_PHP']) && $params['CAN_EDIT_PHP']);
+		$canUseLpa = (isset($params['CAN_USE_LPA']) && $params['CAN_USE_LPA']);
+		$html = static::removePhpFromHtml($html, null, $canEditPhp, $canUseLpa);
 
 		if(is_object($GLOBALS["USER"]))
 		{
-			/* @var $GLOBALS["USER"] \CUser */
-			$fields['EMAIL_TO'] = $GLOBALS["USER"]->GetEmail();
+			/* @var $GLOBALS["USER"] \CAllUser */
+			$fields['EMAIL_TO'] = htmlspecialcharsbx($GLOBALS["USER"]->GetEmail());
 			$fields['USER_ID'] = $GLOBALS["USER"]->GetID();
-			$fields['NAME'] = $GLOBALS["USER"]->GetFullName();
+			$fields['NAME'] = htmlspecialcharsbx($GLOBALS["USER"]->GetFirstName() ?: $GLOBALS["USER"]->GetLastName());
 		}
 
 		$siteDb = SiteTable::getList(array(
-			'select' => array('SERVER_NAME', 'NAME', 'CULTURE_CHARSET'=>'CULTURE.CHARSET'),
+			'select' => array('LID', 'SERVER_NAME', 'SITE_NAME', 'CULTURE_CHARSET'=>'CULTURE.CHARSET'),
 			'filter' => array('LID' => $site)
 		));
-		if(!$siteRow = $siteDb->fetchRaw())
+		if(!$siteRow = $siteDb->fetch())
 		{
-			$siteRow = array(
-				'NAME' => 'Site name',
-				'SERVER_NAME' => Application::getInstance()->getContext()->getServer()->getHttpHost(),
-				'CULTURE_CHARSET' => Application::getInstance()->getContext()->getCulture()->getCharset()
-			);
+			$siteDb = SiteTable::getList(array(
+				'select' => array('LID', 'SERVER_NAME', 'SITE_NAME', 'CULTURE_CHARSET'=>'CULTURE.CHARSET'),
+				'filter' => array('DEF' => true)
+			));
+			$siteRow = $siteDb->fetch();
 		}
-		$fields['SITE_NAME'] = $siteRow['NAME'];
+
+		$fields['SITE_NAME'] = $siteRow['SITE_NAME'];
 		$fields['SERVER_NAME'] = $siteRow['SERVER_NAME'];
 		$charset = $siteRow['CULTURE_CHARSET'];
 
@@ -106,7 +157,7 @@ class EditorMail
 				'EMAIL_TO' => '#EMAIL_TO#',
 				'MESSAGE' => $html,
 			),
-			'SITE' => $site,
+			'SITE' => $siteRow['LID'],
 			'CHARSET' => $charset,
 		);
 
@@ -130,7 +181,7 @@ class EditorMail
 		$event->send();
 		foreach ($event->getResults() as $eventResult)
 		{
-			if($eventResult->getType() == EventResult::ERROR)
+			if($eventResult->getType() !== EventResult::ERROR)
 			{
 				$eventParams = array_merge($eventParams, $eventResult->getParameters());
 			}
@@ -141,6 +192,8 @@ class EditorMail
 	}
 
 	/**
+	 * Get block list.
+	 *
 	 * @return array
 	 */
 	public static function getBlockList()
@@ -264,21 +317,15 @@ class EditorMail
 									<tbody>
 										<tr>
 											<td valign="top" class="bxBlockPadding bxBlockContentImage">
-												<a href="#">
-													<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
-												</a>
+												<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
 											</td>
 										</tr>
 									</tbody>
-									</table>
-
-									<table align="left" border="0" cellpadding="0" cellspacing="0" width="260">
+									</table><table align="left" border="0" cellpadding="0" cellspacing="0" width="260">
 									<tbody>
 										<tr>
 											<td valign="top" class="bxBlockPadding bxBlockContentImage">
-												<a href="#">
-													<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
-												</a>
+												<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
 											</td>
 										</tr>
 									</tbody>
@@ -446,7 +493,7 @@ class EditorMail
 							<tbody>
 								<tr>
 									<td valign="top" class="bxBlockPadding">
-
+										' . (Editor::isAvailableRussian() ? '
 										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
 										<tbody>
 											<tr>
@@ -461,6 +508,7 @@ class EditorMail
 											</tr>
 										</tbody>
 										</table>
+										' : '') . '
 
 										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
 										<tbody>
@@ -483,6 +531,22 @@ class EditorMail
 												<td valign="top" class="" style="padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; font-size: 12px;">
 													<a
 														class="bxBlockContentSocial"
+														href="http://www.instagram.com/"
+														target="_blank"
+														style="font-weight: bold; color: #626262; letter-spacing: normal;line-height: 100%;text-align: center; text-decoration: underline; font-size: 12px;"
+													>' . Loc::getMessage('BLOCK_EDITOR_BLOCK_SOCIAL_INSTAGRAM') . '</a>
+												</td>
+											</tr>
+										</tbody>
+										</table>
+
+										' . (!Editor::isAvailableRussian() ? '
+										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
+										<tbody>
+											<tr>
+												<td valign="top" class="" style="padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; font-size: 12px;">
+													<a
+														class="bxBlockContentSocial"
 														href="http://twitter.com/"
 														target="_blank"
 														style="font-weight: bold; color: #626262; letter-spacing: normal;line-height: 100%;text-align: center; text-decoration: underline; font-size: 12px;"
@@ -491,6 +555,8 @@ class EditorMail
 											</tr>
 										</tbody>
 										</table>
+										' : '') . '
+										
 									</td>
 								</tr>
 							</tbody>

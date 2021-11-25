@@ -1,5 +1,0 @@
-<?
-$MESS["SONET_LF_UNFOLLOW_IM_MESSAGE"] = "Per daug praneðimø veiklos sraute? Ájunkite protingo sekimo rëþimà, kad matytumëte tik jums svarbius praneðimus. Tik tie praneðimai, kuriø autorius esate jus, jums adresuoti arba kuriuose esate minimi, bus perkelti á veiklos srauto pradþià. Jûs pradësite sekti praneðimà, kai tik pridësite komentarà prie jo.";
-$MESS["SONET_LF_UNFOLLOW_IM_BUTTON_Y"] = "Ájungti protingo sekimo rëþimà";
-$MESS["SONET_LF_UNFOLLOW_IM_BUTTON_N"] = "Aèiû, ne";
-?>

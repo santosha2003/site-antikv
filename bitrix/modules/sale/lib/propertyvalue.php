@@ -1,454 +1,246 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Alexey
- * Date: 09.01.2015
- * Time: 17:41
- */
 
 namespace Bitrix\Sale;
 
-use	Bitrix\Sale\Internals\Input,
-	Bitrix\Sale\Internals\OrderPropsTable,
-	Bitrix\Sale\Internals\OrderPropsValueTable,
-	Bitrix\Sale\Internals\OrderPropsVariantTable,
-	Bitrix\Main\Entity,
-	Bitrix\Main\SystemException,
-	Bitrix\Main\Localization\Loc;
-use Bitrix\Sale\Internals\OrderPropsRelationTable;
+use Bitrix\Sale\Internals\Entity;
+use Bitrix\Main;
 
-class PropertyValue
-	extends Internals\CollectableEntity
+/**
+ * Class PropertyValue
+ * @package Bitrix\Sale
+ */
+class PropertyValue extends PropertyValueBase
 {
-	private $property = array();
-	private $savedValue;
-
-	protected static $mapFields;
-
-	public static function create(PropertyValueCollection $collection, array $property = array())
+	/**
+	 * @param Entity $order
+	 * @return array
+	 * @throws Main\ObjectNotFoundException
+	 */
+	protected static function extractPaySystemIdList(Entity $order)
 	{
-		$propertyValue = new static($property);
-		$propertyValue->setCollection($collection);
-		return $propertyValue;
+		if (!$order instanceof Order)
+		{
+			return [];
+		}
+
+		return $order->getPaySystemIdList();
 	}
 
-	protected function __construct(array $property = null, array $value = null, array $relation = null)
+	/**
+	 * @param Entity $order
+	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 */
+	protected static function extractDeliveryIdList(Entity $order)
 	{
-		if (! $property && ! $value)
-			throw new SystemException('invalid arguments', 0, __FILE__, __LINE__);
-
-		if ($property)
+		if (!$order instanceof Order)
 		{
-			if (is_array($property['SETTINGS']))
-			{
-				$property += $property['SETTINGS'];
-				unset ($property['SETTINGS']);
-			}
-		}
-		else
-		{
-			$property = array(
-				'TYPE' => 'STRING',
-				'PROPS_GROUP_ID' => 0,
-				'NAME' => $value['NAME'],
-				'CODE' => $value['CODE'],
-			);
+			return [];
 		}
 
-		if (! $value)
-		{
-			$value = array(
-				'ORDER_PROPS_ID' => $property['ID'],
-				'NAME' => $property['NAME'],
-				'CODE' => $property['CODE']
-			);
-		}
-
-		if (!empty($relation))
-			$property['RELATION'] = $relation;
-
-		$this->savedValue = $value['VALUE']; //Input\File::getValue($property, $value['VALUE']);
-
-		switch($property['TYPE'])
-		{
-			case 'ENUM':
-
-				if ($propertyId = $property['ID'])
-					$property['OPTIONS'] = static::loadOptions($propertyId);
-
-				break;
-
-			case 'FILE':
-
-				if ($defaultValue = &$property['DEFAULT_VALUE'])
-					$defaultValue = Input\File::loadInfo($defaultValue);
-
-				if ($orderValue = &$value['VALUE'])
-					$orderValue = Input\File::loadInfo($orderValue);
-
-				break;
-		}
-
-		$this->property = $property;
-
-		parent::__construct($value); //TODO field
+		return $order->getDeliveryIdList();
 	}
 
-	public function setValue($value)
+	protected static function constructPropertyFilter(Entity $entity): array
 	{
-		if ($value && $this->property['TYPE'] == 'FILE')
-			$value = Input\File::loadInfo($value);
+		$filter = parent::constructPropertyFilter($entity);
 
-		$this->setField('VALUE', $value);
-	}
-
-	private function getValueForDB($value)
-	{
-		$property = $this->property;
-
-		if ($property['TYPE'] == 'FILE')
+		if ($tpLandingList = static::extractTpLandingIdList($entity))
 		{
-			$value = Input\File::asMultiple($value);
+			$dbRes = Internals\OrderPropsRelationTable::getList([
+				'filter' => [
+					'@ENTITY_ID' => $tpLandingList,
+					'=ENTITY_TYPE' => 'L'
+				],
+				'limit' => 1
+			]);
 
-			foreach ($value as $i => $file)
+			if ($dbRes->fetch())
 			{
-				if (Input\File::isDeletedSingle($file))
-				{
-					unset($value[$i]);
-				}
-				else
-				{
-					if (Input\File::isUploadedSingle($file)
-						&& ($fileId = \CFile::SaveFile(array('MODULE_ID' => 'sale') + $file, 'sale/order/properties'))
-						&& is_numeric($fileId))
-					{
-						$file = $fileId;
-					}
-
-					$value[$i] = Input\File::loadInfoSingle($file);
-				}
-			}
-
-			$this->fields->set('VALUE', $value);
-			$value = Input\File::getValue($property, $value);
-
-			foreach (
-				array_diff(
-					Input\File::asMultiple(Input\File::getValue($property, $this->savedValue         )),
-					Input\File::asMultiple(                                $value                     ),
-					Input\File::asMultiple(Input\File::getValue($property, $property['DEFAULT_VALUE']))
-				)
-				as $fileId)
-			{
-				\CFile::Delete($fileId);
-			}
-		}
-
-		return $value;
-	}
-
-	/** @return Entity\Result */
-	public function save()
-	{
-		$result = new Result();
-		$value = self::getValueForDB($this->fields->get('VALUE'));
-
-		if ($valueId = $this->getId())
-		{
-			if ($value != $this->savedValue)
-			{
-				$r = Internals\OrderPropsValueTable::update($valueId, array('VALUE' => $value));
-
-				if ($r->isSuccess())
-					$this->savedValue = $value;
-				else
-					$result->addErrors($r->getErrors());
-			}
-		}
-		else
-		{
-			if ($value !== null)
-			{
-				$property = $this->property;
-				$r = Internals\OrderPropsValueTable::add(array(
-					'ORDER_ID' => $this->getParentOrderId(),
-					'ORDER_PROPS_ID' => $property['ID'],
-					'NAME' => $property['NAME'],
-					'VALUE' => $value,
-					'CODE' => $property['CODE'],
-				));
-				if ($r->isSuccess())
-				{
-					$this->savedValue = $value;
-					$this->setFieldNoDemand('ID', $r->getId());
-				}
-				else
-				{
-					$result->addErrors($r->getErrors());
-				}
-			}
-		}
-
-		return $result;
-	}
-
-	function setValueFromPost(array $post)
-	{
-		$errorsList = array();
-		$result = new Result();
-		$property = $this->property;
-
-		$key = isset($property["ID"]) ? $property["ID"] : "n".$this->getId();
-		$value = isset($post['PROPERTIES'][$key]) ? $post['PROPERTIES'][$key] : null;
-
-		if (isset($post['PROPERTIES'][$key]))
-			$this->setValue($value);
-		else
-			$value = $this->getValue();
-
-		$error = Input\Manager::getError($property, $value);
-
-		if ($property['IS_EMAIL'] == 'Y' && !check_email($value, true)) // TODO EMAIL TYPE
-		{
-			$error['EMAIL'] = str_replace(
-				array("#EMAIL#", "#NAME#"),
-				array(htmlspecialcharsbx($value), htmlspecialcharsbx($property['NAME'])),
-				Loc::getMessage("SALE_GOPE_WRONG_EMAIL")
-			);
-		}
-
-		foreach ($error as $e)
-		{
-			if (!empty($e) && is_array($e))
-			{
-				foreach ($e as $errorMsg)
-				{
-					if (isset($errorsList[$property['ID']]) && in_array($errorMsg, $errorsList[$property['ID']]))
-						continue;
-
-					$result->addError(new ResultError($property['NAME'].' '.$errorMsg, "PROPERTIES[$key]"));
-
-					$errorsList[$property['ID']][] = $errorMsg;
-				}
+				$filter['@RELATION_TP_LANDING.ENTITY_ID'] = $tpLandingList;
 			}
 			else
 			{
-				if (isset($errorsList[$property['ID']]) && in_array($e, $errorsList[$property['ID']]))
-					continue;
-
-				$result->addError(new ResultError($property['NAME'].' '.$e, "PROPERTIES[$key]"));
-
-				$errorsList[$property['ID']][] = $e;
+				$filter['=RELATION_TP_LANDING.ENTITY_ID'] = null;
 			}
 		}
-
-		return $result;
-	}
-
-	private function getParentOrderId()
-	{
-		/** @var PaymentCollection $collection */
-		$collection = $this->getCollection();
-		$order = $collection->getOrder();
-		return $order->getId();
-	}
-
-	/**
-	 * @return array
-	 */
-	public static function getAvailableFields()
-	{
-		return array('VALUE');
-	}
-
-	/**
-	 * @return array
-	 */
-	public static function getMeaningfulFields()
-	{
-		return array();
-	}
-
-	/**
-	 * @return array
-	 */
-	public static function getAllFields()
-	{
-		if (empty(static::$mapFields))
+		else
 		{
-			static::$mapFields = parent::getAllFieldsByMap(Internals\OrderPropsValueTable::getMap());
-		}
-		return static::$mapFields;
-	}
-
-	function getProperty()
-	{
-		return $this->property;
-	}
-
-	function getViewHtml()
-	{
-		return Input\Manager::getViewHtml($this->property, $this->getValue());
-	}
-
-	function getEditHtml()
-	{
-		$key = isset($this->property["ID"]) ? $this->property["ID"] : "n".$this->getId();
-		return Input\Manager::getEditHtml("PROPERTIES[".$key."]", $this->property, $this->getValue());
-	}
-
-	function getValue()
-	{
-		return $this->getField("VALUE");
-	}
-
-	function getValueId()
-	{
-		return $this->getField('ID');
-	}
-
-	function getPropertyId()
-	{
-		return $this->property['ID'];
-	}
-
-	function getPersonTypeId()
-	{
-		return $this->property['PERSON_TYPE_ID'];
-	}
-
-	function getGroupId()
-	{
-		return $this->property['PROPS_GROUP_ID'];
-	}
-
-	function getName()
-	{
-		return $this->property['NAME'];
-	}
-
-	function getRelations()
-	{
-		return $this->property['RELATIONS'];
-	}
-
-	function getDescription()
-	{
-		return $this->property['DESCRIPTION'];
-	}
-
-	function isRequired()
-	{
-		return $this->property['REQUIRED'] == 'Y';
-	}
-
-	public static function loadForOrder(Order $order)
-	{
-		$objects = array();
-
-		$propertyValues = array();
-		$propertyValuesMap = array();
-		$properties = array();
-
-		if ($order->getId() > 0)
-		{
-			$result = OrderPropsValueTable::getList(array(
-				'select' => array('ID', 'NAME', 'VALUE', 'CODE', 'ORDER_PROPS_ID'),
-				'filter' => array('ORDER_ID' => $order->getId())
-			));
-			while ($row = $result->fetch())
-			{
-				$propertyValues[$row['ID']] = $row;
-				$propertyValuesMap[$row['ORDER_PROPS_ID']] = $row['ID'];
-			}
+			$filter['=RELATION_TP_LANDING.ENTITY_ID'] = null;
 		}
 
-		$filter = array(
-//			'=ACTIVE' => 'Y',
-//			'=UTIL' => 'N',
+		return $filter;
+	}
+
+	protected static function extractTpLandingIdList(Entity $order) : array
+	{
+		if (!$order instanceof Order)
+		{
+			return [];
+		}
+
+		return $order->getTradeBindingCollection()->getTradingPlatformIdList();
+	}
+
+	protected static function getRelationRuntimeFields(): array
+	{
+		$runtime = parent::getRelationRuntimeFields();
+
+		$runtime[] = new Main\Entity\ReferenceField(
+			'RELATION_TP_LANDING',
+			'\Bitrix\Sale\Internals\OrderPropsRelation',
+			[
+				'=this.ID' => 'ref.PROPERTY_ID',
+				'ref.ENTITY_TYPE' => new Main\DB\SqlExpression('?', 'L')
+			],
+			'left_join'
 		);
 
-		if ($order->getPersonTypeId() > 0)
-			$filter[] = array('=PERSON_TYPE_ID' => $order->getPersonTypeId());
-
-		$result = OrderPropsTable::getList(array(
-			'select' => array('ID', 'PERSON_TYPE_ID', 'NAME', 'TYPE', 'REQUIRED', 'DEFAULT_VALUE', 'SORT',
-				'USER_PROPS', 'IS_LOCATION', 'PROPS_GROUP_ID', 'DESCRIPTION', 'IS_EMAIL', 'IS_PROFILE_NAME',
-				'IS_PAYER', 'IS_LOCATION4TAX', 'IS_FILTERED', 'CODE', 'IS_ZIP', 'IS_PHONE', 'IS_ADDRESS',
-				'ACTIVE', 'UTIL', 'INPUT_FIELD_LOCATION', 'MULTIPLE', 'SETTINGS'
-			),
-			'filter' => $filter,
-			'order' => array('SORT' => 'ASC')
-		));
-
-		while ($row = $result->fetch())
-			$properties[$row['ID']] = $row;
-
-		$result = OrderPropsRelationTable::getList(array(
-			'select' => array(
-				'PROPERTY_ID', 'ENTITY_ID', 'ENTITY_TYPE'
-			),
-			'filter' => array(
-				'PROPERTY_ID' => array_keys($properties)
-			)
-		));
-
-		$propRelation = array();
-		while ($row = $result->fetch())
-		{
-			if (empty($row))
-				continue;
-
-			if (!isset($propRelation[$row['PROPERTY_ID']]))
-				$propRelation[$row['PROPERTY_ID']] = array();
-
-			$propRelation[$row['PROPERTY_ID']][] = $row;
-		}
-
-		foreach ($properties as $property)
-		{
-			$id = $property['ID'];
-
-			if (isset($propertyValuesMap[$id]))
-			{
-				$fields = $propertyValues[$propertyValuesMap[$id]];
-				unset($propertyValues[$propertyValuesMap[$id]]);
-				unset($propertyValuesMap[$id]);
-			}
-			else
-			{
-				if ($property['ACTIVE'] == 'N') // || $property['UTIL'] == 'Y')
-					continue;
-
-				$fields = null;
-			}
-			if (isset($propRelation[$id]))
-				$objects[] = new static($property, $fields, $propRelation[$id]);
-			else
-				$objects[] = new static($property, $fields);
-		}
-
-		foreach ($propertyValues as $propertyValue)
-		{
-			$objects[] = new static(null, $propertyValue);
-		}
-
-		return $objects;
+		return $runtime;
 	}
 
-	public function loadOptions($propertyId)
+	/**
+	 * @return Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectNotFoundException
+	 */
+	protected function update()
 	{
-		$options = array();
+		/** @var PropertyValueCollection $propertyCollection */
+		$propertyCollection = $this->getCollection();
 
-		$result = OrderPropsVariantTable::getList(array(
-			'select' => array('VALUE', 'NAME'),
-			'filter' => array('ORDER_PROPS_ID' => $propertyId),
-		));
+		/** @var OrderBase $order */
+		if (!$order = $propertyCollection->getOrder())
+		{
+			throw new Main\ObjectNotFoundException('Entity "Order" not found');
+		}
 
-		while ($row = $result->fetch())
-			$options[$row['VALUE']] = $row['NAME'];
+		$logFields = [];
+		if ($order->getId() > 0)
+		{
+			$logFields = $this->getLogFieldsForUpdate();
+		}
 
-		return $options;
+		$result = parent::update();
+		if ($result->isSuccess())
+		{
+			if ($order->getId() > 0)
+			{
+				$this->addToLog('PROPERTY_UPDATE', $logFields);
+			}
+		}
+
+		return $result;
 	}
 
+	/**
+	 * @return array
+	 */
+	private function getLogFieldsForUpdate()
+	{
+		$logFields = [
+			"NAME" => $this->getField("NAME"),
+			"VALUE" => $this->getField("VALUE"),
+			"CODE" => $this->getField("CODE"),
+		];
+
+		$fields = $this->getFields();
+		$originalValues = $fields->getOriginalValues();
+		if (array_key_exists("NAME", $originalValues))
+			$logFields['OLD_NAME'] = $originalValues["NAME"];
+
+		if (array_key_exists("VALUE", $originalValues))
+			$logFields['OLD_VALUE'] = $originalValues["VALUE"];
+
+		if (array_key_exists("CODE", $originalValues))
+			$logFields['OLD_CODE'] = $originalValues["CODE"];
+
+		return $logFields;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function getLogFieldsForAdd()
+	{
+		$logFields = [
+			"NAME" => $this->getField("NAME"),
+			"VALUE" => $this->getField("VALUE"),
+			"CODE" => $this->getField("CODE"),
+		];
+
+		return $logFields;
+	}
+
+	/**
+	 * @param $type
+	 * @param $fields
+	 * @throws Main\ArgumentException
+	 * @throws Main\ObjectNotFoundException
+	 */
+	private function addToLog($type, $fields)
+	{
+		/** @var PropertyValueCollection $propertyCollection */
+		$propertyCollection = $this->getCollection();
+
+		/** @var OrderBase $order */
+		if (!$order = $propertyCollection->getOrder())
+		{
+			throw new Main\ObjectNotFoundException('Entity "Order" not found');
+		}
+
+		$registry = Registry::getInstance(static::getRegistryType());
+
+		/** @var OrderHistory $orderHistory */
+		$orderHistory = $registry->getOrderHistoryClassName();
+		$orderHistory::addLog(
+			'PROPERTY',
+			$order->getId(),
+			$type,
+			$this->getId(),
+			$this,
+			$fields,
+			$orderHistory::SALE_ORDER_HISTORY_LOG_LEVEL_1
+		);
+	}
+
+	/**
+	 * @return Result
+	 * @throws Main\ObjectNotFoundException
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectNotFoundException
+	 */
+	protected function add()
+	{
+		/** @var PropertyValueCollection $propertyCollection */
+		$propertyCollection = $this->getCollection();
+
+		/** @var OrderBase $order */
+		if (!$order = $propertyCollection->getOrder())
+		{
+			throw new Main\ObjectNotFoundException('Entity "Order" not found');
+		}
+
+		$logFields = [];
+		if ($order->getId() > 0)
+		{
+			$logFields = $this->getLogFieldsForAdd();
+		}
+
+		$result = parent::add();
+		if ($result->isSuccess())
+		{
+			if ($order->getId() > 0)
+			{
+				$this->addToLog('PROPERTY_ADD', $logFields);
+			}
+		}
+
+		return $result;
+	}
 }

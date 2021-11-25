@@ -18,12 +18,25 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.ph
 
 $signer = new \Bitrix\Main\Security\Sign\Signer;
 
-$parameters = $signer->unsign($_POST['parameters'], 'bx.sale.gift.product');
-$template = $signer->unsign($_POST['template'], 'bx.sale.gift.product');
+try
+{
+	$parameters = $signer->unsign($_POST['parameters'], 'bx.sale.gift.product');
+	$template = $signer->unsign($_POST['template'], 'bx.sale.gift.product');
+}
+catch (\Bitrix\Main\Security\Sign\BadSignatureException $e)
+{
+	die();
+}
 
 $APPLICATION->IncludeComponent(
 	"bitrix:sale.gift.product",
 	$template,
-	unserialize(base64_decode($parameters)),
+	unserialize(base64_decode($parameters), ['allowed_classes' => [
+			\Bitrix\Main\Type\DateTime::class,
+			\Bitrix\Main\Type\Date::class,
+			\Bitrix\Main\Web\Uri::class,
+			\DateTime::class,
+			\DateTimeZone::class,
+		]]),
 	false
 );

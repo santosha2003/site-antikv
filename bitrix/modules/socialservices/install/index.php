@@ -9,11 +9,11 @@ class socialservices extends CModule
 	var $MODULE_NAME;
 	var $MODULE_DESCRIPTION;
 
-	function socialservices()
+	public function __construct()
 	{
 		$arModuleVersion = array();
 
-		include(substr(__FILE__, 0,  -10)."/version.php");
+		include(__DIR__.'/version.php');
 
 		$this->MODULE_VERSION = $arModuleVersion["VERSION"];
 		$this->MODULE_VERSION_DATE = $arModuleVersion["VERSION_DATE"];
@@ -29,6 +29,12 @@ class socialservices extends CModule
 		if(!$DB->Query("SELECT 'x' FROM b_socialservices_user", true))
 		{
 			$errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/socialservices/install/db/".$DBType."/install.sql");
+			if (\Bitrix\Main\Entity\CryptoField::cryptoAvailable())
+			{
+				\Bitrix\Main\Config\Option::set("socialservices", "allow_encrypted_tokens", true);
+				\Bitrix\Main\ORM\Data\DataManager::enableCrypto('OATOKEN', 'b_socialservices_user');
+				\Bitrix\Main\ORM\Data\DataManager::enableCrypto('REFRESH_TOKEN', 'b_socialservices_user');
+			}
 		}
 
 		if ($errors !== false)
@@ -40,10 +46,14 @@ class socialservices extends CModule
 		RegisterModule("socialservices");
 
 		RegisterModuleDependences("main", "OnUserDelete", "socialservices", "CSocServAuthDB", "OnUserDelete");
+		RegisterModuleDependences("main", "OnAfterUserLogout", "socialservices", "CSocServEventHandlers", "OnUserLogout");
 		RegisterModuleDependences('timeman', 'OnAfterTMReportDailyAdd', 'socialservices', 'CSocServAuthDB', 'OnAfterTMReportDailyAdd');
 		RegisterModuleDependences('timeman', 'OnAfterTMDayStart', 'socialservices', 'CSocServAuthDB', 'OnAfterTMDayStart');
 		RegisterModuleDependences('timeman', 'OnTimeManShow', 'socialservices', 'CSocServEventHandlers', 'OnTimeManShow');
 		RegisterModuleDependences('main', 'OnFindExternalUser', 'socialservices', 'CSocServAuthDB', 'OnFindExternalUser');
+		RegisterModuleDependences('perfmon', 'OnGetTableSchema', 'socialservices', 'socialservices', 'OnGetTableSchema');
+		RegisterModuleDependences('socialservices', 'OnFindSocialservicesUser', 'socialservices', "CSocServAuthManager", "checkOldUser");
+		RegisterModuleDependences('socialservices', 'OnFindSocialservicesUser', 'socialservices', "CSocServAuthManager", "checkAbandonedUser");
 
 		if(
 			\Bitrix\Main\Loader::includeModule('socialservices')
@@ -72,7 +82,7 @@ class socialservices extends CModule
 
 		if(!array_key_exists("savedata", $arParams) || $arParams["savedata"] != "Y")
 		{
-			$errors = $DB->RunSQLBatch($DOCUMENT_ROOT."/bitrix/modules/socialservices/install/db/".strtolower($DB->type)."/uninstall.sql");
+			$errors = $DB->RunSQLBatch($DOCUMENT_ROOT."/bitrix/modules/socialservices/install/db/".mb_strtolower($DB->type)."/uninstall.sql");
 			if (!empty($errors))
 			{
 				$APPLICATION->ThrowException(implode("", $errors));
@@ -80,13 +90,17 @@ class socialservices extends CModule
 			}
 		}
 		UnRegisterModuleDependences("main", "OnUserDelete", "socialservices", "CSocServAuthDB", "OnUserDelete");
+		UnRegisterModuleDependences("main", "OnAfterUserLogout", "socialservices", "CSocServEventHandlers", "OnUserLogout");
 		UnRegisterModuleDependences('socialnetwork', 'OnFillSocNetLogEvents', 'socialservices', 'CSocServEventHandlers', 'OnFillSocNetLogEvents');
 		UnRegisterModuleDependences('timeman', 'OnAfterTMReportDailyAdd', 'socialservices', 'CSocServAuthDB', 'OnAfterTMReportDailyAdd');
 		UnRegisterModuleDependences('timeman', 'OnAfterTMDayStart', 'socialservices', 'CSocServAuthDB', 'OnAfterTMDayStart');
 		UnRegisterModuleDependences('timeman', 'OnTimeManShow', 'socialservices', 'CSocServEventHandlers', 'OnTimeManShow');
 		UnRegisterModuleDependences('main', 'OnFindExternalUser', 'socialservices', 'CSocServAuthDB', 'OnFindExternalUser');
+		UnRegisterModuleDependences('perfmon', 'OnGetTableSchema', 'socialservices', 'socialservices', 'OnGetTableSchema');
+		UnRegisterModuleDependences('socialservices', 'OnFindSocialservicesUser', 'socialservices', "CSocServAuthManager", "checkOldUser");
+		UnRegisterModuleDependences('socialservices', 'OnFindSocialservicesUser', 'socialservices', "CSocServAuthManager", "checkAbandonedUser");
 
-		$dbSites = CSite::GetList(($b="sort"), ($o="asc"), array("ACTIVE" => "Y"));
+		$dbSites = CSite::GetList("sort", "asc", array("ACTIVE" => "Y"));
 		while ($arSite = $dbSites->Fetch())
 		{
 			$siteId = $arSite['ID'];
@@ -136,7 +150,7 @@ class socialservices extends CModule
 	function DoInstall()
 	{
 		global $DOCUMENT_ROOT, $APPLICATION, $step;
-		$step = IntVal($step);
+		$step = intval($step);
 		if($step<2)
 		{
 			$APPLICATION->IncludeAdminFile(GetMessage("socialservices_install_title_inst"), $DOCUMENT_ROOT."/bitrix/modules/socialservices/install/step1.php");
@@ -152,7 +166,7 @@ class socialservices extends CModule
 	function DoUninstall()
 	{
 		global $DOCUMENT_ROOT, $APPLICATION, $step, $errors;
-		$step = IntVal($step);
+		$step = intval($step);
 		if($step<2)
 		{
 			$APPLICATION->IncludeAdminFile(GetMessage("socialservices_install_title_inst"), $DOCUMENT_ROOT."/bitrix/modules/socialservices/install/unstep1.php");
@@ -170,5 +184,40 @@ class socialservices extends CModule
 			$APPLICATION->IncludeAdminFile(GetMessage("socialservices_install_title_inst"), $DOCUMENT_ROOT."/bitrix/modules/socialservices/install/unstep2.php");
 		}
 	}
+
+	public function migrateToBox()
+	{
+		COption::RemoveOption($this->MODULE_ID);
+	}
+
+	public static function OnGetTableSchema()
+	{
+		return array(
+			"socialservices" => array(
+				"b_socialservices_user" => array(
+					"ID" => array(
+						"b_socialservices_message" => "SOCSERV_USER_ID",
+						"b_socialservices_user_link" => "SOCSERV_USER_ID",
+					),
+				),
+			),
+			"main" => array(
+				"b_user" => array(
+					"ID" => array(
+						"b_socialservices_user" => "USER_ID",
+						"b_socialservices_message" => "USER_ID",
+						"b_socialservices_user_link" => "USER_ID",
+						"b_socialservices_user_link^" => "LINK_USER_ID",
+						"b_socialservices_contact" => "USER_ID",
+						"b_socialservices_contact^" => "CONTACT_USER_ID",
+					)
+				),
+				"b_file" => array(
+					"ID" => array(
+						"b_socialservices_user" => "PERSONAL_PHOTO",
+					)
+				),
+			),
+		);
+	}
 }
-?>

@@ -1,4 +1,6 @@
 <?
+$MESS["SALE_SDL_LOCATION_NOTE"] = "Der Lieferpreis kann evtl. nicht korrekt berechnet werden, weil in den #A1#Einstellungen des Moduls#A2# Onlineshop kein Standort angegeben ist";
+$MESS["SALE_SDL_UPPER_LEVELL"] = "Ohne Gruppe";
 $MESS["SALE_SDL_ERROR_DELETE"] = "Fehler beim Löschen des Lieferservices; es kann sein, dass dieser Lieferservice in einigen Bestellungen verendet wird.<br>";
 $MESS["SALE_SDL_ERROR_UPDATE"] = "Fehler bei Aktualisierung des Lieferservices.";
 $MESS["SALE_SDL_PRLIST"] = "Lieferservices";
@@ -39,4 +41,8 @@ $MESS["SALE_DSE_CHOOSE_GROUP_SAVE"] = "Kopieren";
 $MESS["SALE_SDL_ALLOW_EDIT_SHIPMENT"] = "Editierbare Teillieferungen erlauben";
 $MESS["SALE_SDL_SITES"] = "Websites";
 $MESS["SALE_SDL_FILTER_SITE"] = "Website";
+$MESS["SALE_SDL_MARKETPLACE_ADD_NEW"] = "Aus dem Marketplace installieren";
+$MESS["SALE_SDL_MARKETPLACE_ADD_NEW_ALT"] = "Klicken Sie, um aus dem Marketplace zu installieren";
+$MESS["SALE_SDL_VAT_ID"] = "Steuersatz";
+$MESS["SALE_SDL_NO_VAT"] = "MwSt. inklusive";
 ?>

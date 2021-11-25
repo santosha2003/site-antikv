@@ -348,8 +348,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["is_ajax"] == "Y")
 			
 			if ($DB->TableExists("b_sale_order_props"))
 			{
-				if ($DB->Query("SELECT REQUIED FROM b_sale_order_props WHERE 1=0", true) &&
-					! $DB->Query("SELECT REQUIRED FROM b_sale_order_props WHERE 1=0", true))
+				if ($DB->Query("SELECT REQUIED FROM b_sale_order_props WHERE 1=0", true))
 				{
 					if ($DB->type == "MYSQL")
 					{
@@ -3637,72 +3636,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["is_ajax"] == "Y")
 					'NOTIFY' => 'Y',
 					'LANG'   => $statusLanguages[$deliveryFinalStatus],
 				));
-
-				call_user_func(function() {
-
-					$operations = array(
-							'sale_status_view'      => '',
-							'sale_status_cancel'    => '',
-							'sale_status_mark'      => '',
-							'sale_status_delivery'  => '',
-							'sale_status_deduction' => '',
-							'sale_status_payment'   => '',
-							'sale_status_to'        => '',
-							'sale_status_update'    => '',
-							'sale_status_delete'    => '',
-							'sale_status_from'      => '',
-					);
-
-					$result = Bitrix\Main\Application::getConnection()->query('SELECT * FROM b_operation WHERE MODULE_ID = "sale" AND BINDING = "status"');
-					while ($row = $result->fetch())
-						if (isset($operations[$row['NAME']]))
-							$operations[$row['NAME']] = $row['ID'];
-
-					foreach ($operations as $name => $id)
-						if (! $id)
-						{
-							$result = Bitrix\Main\OperationTable::add(array('MODULE_ID' => 'sale', 'BINDING' => 'status', 'NAME' => $name));
-							if ($result->isSuccess())
-								$operations[$name] = $result->getId();
-						}
-
-					$tasks = array(
-						'sale_status_none' => '',
-						'sale_status_all'  => '',
-					);
-
-					$result = Bitrix\Main\Application::getConnection()->query('SELECT * FROM b_task WHERE MODULE_ID = "sale" AND BINDING = "status"');
-					while ($row = $result->fetch())
-						if (isset($tasks[$row['NAME']]))
-							$tasks[$row['NAME']] = $row['ID'];
-
-					if (! $tasks['sale_status_none'])
-					{
-						$result = Bitrix\Main\TaskTable::add(array('MODULE_ID' => 'sale', 'BINDING' => 'status', 'NAME' => 'sale_status_none', 'SYS' => 'Y', 'LETTER' => 'D'));
-						if ($result->isSuccess())
-							$tasks['sale_status_none'] = $result->getId();
-					}
-
-					if (! $tasks['sale_status_all'])
-					{
-						$result = Bitrix\Main\TaskTable::add(array('MODULE_ID' => 'sale', 'BINDING' => 'status', 'NAME' => 'sale_status_all', 'SYS' => 'Y', 'LETTER' => 'X'));
-						if ($result->isSuccess())
-							$tasks['sale_status_all'] = $result->getId();
-					}
-
-					if ($taskId = $tasks['sale_status_all'])
-					{
-						$taskOperations = array();
-						$result = Bitrix\Main\Application::getConnection()->query('SELECT * FROM b_task_operation WHERE TASK_ID = '.$taskId);
-						while ($row = $result->fetch())
-							$taskOperations[$row['OPERATION_ID']] = true;
-						
-						foreach ($operations as $operationId)
-							if ($operationId && ! $taskOperations[$operationId])
-								Bitrix\Main\TaskOperationTable::add(array('TASK_ID' => $taskId, 'OPERATION_ID' => $operationId));
-					}
-
-				});
 			}
 			catch (Exception $e)
 			{

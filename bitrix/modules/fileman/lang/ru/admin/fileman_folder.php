@@ -26,4 +26,6 @@ $MESS ['FILEMAN_FOLDER_BACK'] = "Каталог";
 $MESS ['FILEMAN_TAB'] = "Свойства каталога";
 $MESS ['FILEMAN_TAB_ALT'] = "Свойства каталога";
 $MESS ['FILEMAN_ACCESS'] = "Доступ";
+$MESS ['FILEMAN_OPTION_PROPS_DESCR'] = "Описание";
+$MESS ['FILEMAN_OPTION_PROPS_KEYW'] = "Ключевые слова";
 ?>

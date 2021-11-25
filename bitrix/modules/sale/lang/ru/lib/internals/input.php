@@ -39,6 +39,7 @@ $MESS['INPUT_ENUM'] = 'Перечисление';
 $MESS['INPUT_ENUM_SIZE'] = 'Количество видимых элементов';
 $MESS['INPUT_ENUM_MULTIELEMENT'] = 'Показывать как список элементов';
 $MESS['INPUT_ENUM_OPTIONS_ERROR'] = 'Не заданы варианты перечисления';
+$MESS['INPUT_ENUM_EMPTY_OPTION'] = 'Не выбрано';
 
 $MESS['INPUT_FILE'] = 'Файл';
 $MESS['INPUT_FILE_MAXSIZE'] = 'Максимальный размер файла в байтах';
@@ -55,3 +56,4 @@ $MESS['INPUT_DATE_SELECT'] = 'Выбрать дату';
 
 $MESS['INPUT_LOCATION'] = 'Местоположение';
 $MESS['INPUT_LOCATION_TEMPLATE'] = 'Шаблон';
+$MESS['INPUT_ADDRESS'] = 'Адрес';

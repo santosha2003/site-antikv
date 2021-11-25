@@ -1,3 +1,0 @@
-<?
-$MESS["LEARNING_COURSE_DESCRIPTION"] = "Opis kursu";
-?>

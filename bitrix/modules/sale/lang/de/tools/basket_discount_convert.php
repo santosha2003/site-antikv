@@ -19,4 +19,5 @@ $MESS["SALE_BASKET_DISCOUNT_FILTER_RANGE_FROM"] = "von";
 $MESS["SALE_BASKET_DISCOUNT_FILTER_RANGE_TO"] = "bis";
 $MESS["SALE_BASKET_DISCOUNT_UPDATE_BTN"] = "Starten";
 $MESS["SALE_BASKET_DISCOUNT_STOP_BTN"] = "Stopp";
+$MESS["SALE_BASKET_DISCOUNT_MESS_ORDERS_ABSENT"] = "Es gibt keine Bestellungen, für welche Gutscheindaten konvertiert werden sollen.";
 ?>

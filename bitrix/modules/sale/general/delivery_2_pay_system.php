@@ -101,78 +101,98 @@ class CSaleDelivery2PaySystem
 		$params["select"] = array(
 			"DELIVERY_ID",
 			"PAYSYSTEM_ID",
-			"DELIVERY_SERVICE_CODE" => "DELIVERY_SERVICE.CODE",
 			"LINK_DIRECTION"
 		);
 
-		$params["runtime"] = array( new \Bitrix\Main\Entity\ReferenceField('DELIVERY_SERVICE', 'Bitrix\Sale\Delivery\Services\Table',
-			array('=this.DELIVERY_ID' => 'ref.ID')
-		));
+		$deliveryChildrenList = self::getDeliveryChildrenList();
 
 		$records = array();
 		$res = DeliveryPaySystemTable::getList($params);
 
-		$reverseOnlyRecords = array(
-			'D' => array(),
-			'P' => array()
+		$restricted = array(
+				'D' => array(),
+				'P' => array()
 		);
 
 		while($record = $res->fetch())
 		{
 			if($record['LINK_DIRECTION'] == 'D')
 			{
-				$reverseOnlyRecords['D'][$record["DELIVERY_SERVICE_CODE"]] = false;
-
-				if($reverseOnlyRecords['P'][$record["PAYSYSTEM_ID"]] !== false)
-					$reverseOnlyRecords['P'][$record["PAYSYSTEM_ID"]] = true;
+				if(!in_array($record["DELIVERY_ID"], $restricted['D']))
+					$restricted['D'][] = $record["DELIVERY_ID"];
 			}
 			elseif($record['LINK_DIRECTION'] == 'P')
 			{
-				$reverseOnlyRecords['P'][$record["PAYSYSTEM_ID"]] = false;
-
-				if($reverseOnlyRecords['D'][$record["DELIVERY_SERVICE_CODE"]] !== false)
-					$reverseOnlyRecords['D'][$record["DELIVERY_SERVICE_CODE"]] = true;
+				if(!in_array($record["DELIVERY_ID"], $restricted['P']))
+					$restricted['P'][] = $record["PAYSYSTEM_ID"];
 			}
 
-			$delivery = CSaleDeliveryHelper::getDeliverySIDAndProfile($record["DELIVERY_SERVICE_CODE"]);
+			$deliveryId = $record["DELIVERY_ID"];
+			$linkDirection = $record["LINK_DIRECTION"];
+			unset($record["LINK_DIRECTION"]);
+			$deliveryCode = \CSaleDelivery::getCodeById($record["DELIVERY_ID"]);
+			$delivery = CSaleDeliveryHelper::getDeliverySIDAndProfile($deliveryCode);
 			$record["DELIVERY_ID"] = $delivery["SID"];
 			$record["DELIVERY_PROFILE_ID"] = isset($delivery["PROFILE"]) ? $delivery["PROFILE"] : null;
-			unset($record["DELIVERY_SERVICE_CODE"]);
-			unset($record["LINK_DIRECTION"]);
 			$records[] = $record;
-		}
 
-		foreach($reverseOnlyRecords['D'] as $deliveryCode => $reverseOnly)
-		{
-			if($reverseOnly)
+			if(!empty($deliveryChildrenList[$deliveryId]))
 			{
-				$delivery = CSaleDeliveryHelper::getDeliverySIDAndProfile($record["DELIVERY_SERVICE_CODE"]);
-				$record["DELIVERY_ID"] = $delivery["SID"];
-				$record["DELIVERY_PROFILE_ID"] = isset($delivery["PROFILE"]) ? $delivery["PROFILE"] : null;
-
-				foreach(self::getFullPaySystemList() as $psId)
+				foreach($deliveryChildrenList[$deliveryId] as $childrenId)
 				{
-					$record["PAYSYSTEM_ID"] = $psId;
+					if($linkDirection == 'D' && !in_array($childrenId, $restricted['D']))
+						$restricted['D'][] = $childrenId;
+
+					$deliveryCode = \CSaleDelivery::getCodeById($childrenId);
+					$delivery = CSaleDeliveryHelper::getDeliverySIDAndProfile($deliveryCode);
+					$record["DELIVERY_ID"] = $delivery["SID"];
+					$record["DELIVERY_PROFILE_ID"] = isset($delivery["PROFILE"]) ? $delivery["PROFILE"] : null;
 					$records[] = $record;
 				}
 			}
 		}
 
-		foreach($reverseOnlyRecords['P'] as $psId => $reverseOnly)
+		foreach(self::getFullDeliveryList() as $dlvId)
 		{
-			if($reverseOnly)
+			if(in_array($dlvId, $restricted['D']))
+				continue;
+
+			$deliveryCode = \CSaleDelivery::getCodeById($dlvId);
+			$delivery = CSaleDeliveryHelper::getDeliverySIDAndProfile($deliveryCode);
+
+			$record = array(
+				"DELIVERY_ID" => $delivery["SID"],
+				"DELIVERY_PROFILE_ID" => isset($delivery["PROFILE"]) ? $delivery["PROFILE"] : null
+			);
+
+			foreach(self::getFullPaySystemList() as $psId)
 			{
-				foreach(self::getFullDeliveryList() as $dlvCodes)
-				{
-					$dlvCodes["PAYSYSTEM_ID"] = $psId;
-					$records[] = $dlvCodes;
-				}
+				if(in_array($psId, $restricted['P']))
+					continue;
+
+				if(self::isRecordExists($record["DELIVERY_ID"], $record["DELIVERY_PROFILE_ID"], $psId, $records))
+					continue;
+
+				$record["PAYSYSTEM_ID"] = $psId;
+				$records[] = $record;
 			}
 		}
 
 		$result = new \CDBResult;
 		$result->InitFromArray($records);
 		return $result;
+	}
+
+	protected static function isRecordExists($dlvId, $profile, $paySystemId, $records)
+	{
+		return in_array(
+			array(
+				"DELIVERY_ID" => $dlvId,
+				"DELIVERY_PROFILE_ID" => $profile,
+				"PAYSYSTEM_ID" => $paySystemId
+			),
+			$records
+		);
 	}
 
 	protected static function getFullDeliveryList()
@@ -184,14 +204,28 @@ class CSaleDelivery2PaySystem
 			$result = array();
 
 			foreach(Delivery\Services\Manager::getActiveList() as $dlvId => $dlvParams)
+				$result[] = $dlvId;
+		}
+
+		return $result;
+	}
+
+	protected static function getDeliveryChildrenList()
+	{
+		static $result = null;
+
+		if($result === null)
+		{
+			$result = array();
+
+			foreach(Delivery\Services\Manager::getActiveList() as $dlvId => $dlvParams)
 			{
-				$rec = array();
-				$delivery = CSaleDeliveryHelper::getDeliverySIDAndProfile(
-					\CSaleDelivery::getCodeById($dlvId)
-				);
-				$rec["DELIVERY_ID"] = $delivery["SID"];
-				$rec["DELIVERY_PROFILE_ID"] = isset($delivery["PROFILE"]) ? $delivery["PROFILE"] : null;
-				$result[] = $rec;
+				$parentId = intval($dlvParams["PARENT_ID"]);
+
+				if(!isset($result[$parentId]))
+					$result[$parentId] = array();
+
+				$result[$parentId][] = $dlvId;
 			}
 		}
 
@@ -217,7 +251,7 @@ class CSaleDelivery2PaySystem
 	}
 	public static function isPaySystemApplicable($paySystemId, $deliveryId)
 	{
-		if(strlen($deliveryId) <= 0)
+		if($deliveryId == '')
 			return true;
 
 		$result = false;
@@ -262,7 +296,7 @@ class CSaleDelivery2PaySystem
 
 	public static function UpdateDelivery($ID, $arFields)
 	{
-		if(!is_array($arFields) || strlen($ID) <= 0)
+		if(!is_array($arFields) || $ID == '')
 			return false;
 
 		$arFilterFields["DELIVERY_ID"] = $ID;
@@ -297,7 +331,7 @@ class CSaleDelivery2PaySystem
 		$ID = trim($ID);
 		$arUpdateFields = array("PAYSYSTEM_ID" => $ID);
 
-		if (strlen($ID) <= 0 || !is_array($arFields) || empty($arFields))
+		if ($ID == '' || !is_array($arFields) || empty($arFields))
 			return false;
 
 		if ($arFields[0] == "")
@@ -332,32 +366,31 @@ class CSaleDelivery2PaySystem
 	public static function Delete($arFilter)
 	{
 		$con = \Bitrix\Main\Application::getConnection();
-		$sqlHelper = $con->getSqlHelper();
 
 		$delParams = "";
 
-		if(isset($arFilter["PAYSYSTEM_ID"]) && strlen($arFilter["PAYSYSTEM_ID"]) > 0)
-				$delParams .= "PAYSYSTEM_ID=".$sqlHelper->forSql($arFilter["PAYSYSTEM_ID"]);
+		if(isset($arFilter["PAYSYSTEM_ID"]) && intval($arFilter["PAYSYSTEM_ID"]) > 0)
+				$delParams .= "PAYSYSTEM_ID=".intval($arFilter["PAYSYSTEM_ID"]);
 
 		$code = "";
 
-		if(isset($arFilter["DELIVERY_ID"]) && strlen($arFilter["DELIVERY_ID"]) > 0)
+		if(isset($arFilter["DELIVERY_ID"]) && $arFilter["DELIVERY_ID"] <> '')
 		{
 			$code .= $arFilter["DELIVERY_ID"];
 
-			if(isset($arFilter["DELIVERY_PROFILE_ID"]) && strlen($arFilter["DELIVERY_PROFILE_ID"]) > 0)
+			if(isset($arFilter["DELIVERY_PROFILE_ID"]) && $arFilter["DELIVERY_PROFILE_ID"] <> '')
 				$code .= ":".$arFilter["DELIVERY_PROFILE_ID"];
 		}
 
 		$deliveryId = 0;
 
-		if(strlen($code) > 0)
+		if($code <> '')
 			$deliveryId = \CSaleDelivery::getIdByCode($code);
 
 		if(intval($deliveryId) > 0)
-			$delParams .= "DELIVERY_ID=".$sqlHelper->forSql($deliveryId);
+			$delParams .= "DELIVERY_ID=".intval($deliveryId);
 
-		if(strlen($delParams) > 0)
+		if($delParams <> '')
 			$con->queryExecute("DELETE FROM ".DeliveryPaySystemTable::getTableName()." WHERE ".$delParams);
 
 		return new CDBResult();
@@ -367,7 +400,7 @@ class CSaleDelivery2PaySystem
 	{
 		if(!isset($arFields["DELIVERY_ID"])
 			||
-			strlen(trim($arFields["DELIVERY_ID"])) <=0
+			trim($arFields["DELIVERY_ID"]) == ''
 			||
 			!isset($arFields["PAYSYSTEM_ID"])
 			||
@@ -377,7 +410,7 @@ class CSaleDelivery2PaySystem
 			return false;
 		}
 
-		if(isset($arFields["DELIVERY_PROFILE_ID"]) && strlen($arFields["DELIVERY_PROFILE_ID"]) > 0)
+		if(isset($arFields["DELIVERY_PROFILE_ID"]) && $arFields["DELIVERY_PROFILE_ID"] <> '')
 		{
 			$arFields["DELIVERY_ID"] .= ":".$arFields["DELIVERY_PROFILE_ID"];
 			unset($arFields["DELIVERY_PROFILE_ID"]);

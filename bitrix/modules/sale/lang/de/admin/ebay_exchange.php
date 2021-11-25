@@ -36,4 +36,5 @@ $MESS["SALE_EBAY_WARNING"] = "Warnung";
 $MESS["SALE_EBAY_EXCHANGE_OK"] = "Datenaustausch wurde erfolgreich abgeschlossen";
 $MESS["SALE_EBAY_EXCHANGE_ERROR"] = "Datenaustausch fehlgeschlagen";
 $MESS["SALE_EBAY_SETTINGS_SAVED"] = "Parameter wurden erfolgreich gespeichert.";
+$MESS["SALE_EBAY_SETTINGS_SAVING_SITE_ERROR"] = "Ein Datenaustausch ist momentan nicht möglich. Sie sollten die Website \"#S#\" #A1#konfigurieren#A2#, damit der Datenaustauch möglich wird.";
 ?>

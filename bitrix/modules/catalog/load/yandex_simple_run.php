@@ -15,18 +15,16 @@ if (!CCatalog::IsUserExists())
 {
 	$bTmpUserCreated = true;
 	if (isset($USER))
-	{
 		$USER_TMP = $USER;
-		unset($USER);
-	}
-
 	$USER = new CUser();
 }
 
 CCatalogDiscountSave::Disable();
+/** @noinspection PhpDeprecationInspection */
 CCatalogDiscountCoupon::ClearCoupon();
 if ($USER->IsAuthorized())
 {
+	/** @noinspection PhpDeprecationInspection */
 	CCatalogDiscountCoupon::ClearCouponsByManage($USER->GetID());
 }
 
@@ -62,7 +60,7 @@ $strExportErrorMessage = '';
 $usedProtocol = (isset($USE_HTTPS) && $USE_HTTPS == 'Y' ? 'https://' : 'http://');
 
 $SETUP_SERVER_NAME = trim($SETUP_SERVER_NAME);
-if (strlen($SETUP_FILE_NAME)<=0)
+if ($SETUP_FILE_NAME == '')
 {
 	$strExportErrorMessage .= GetMessage("CET_ERROR_NO_FILENAME")."<br>";
 }
@@ -89,7 +87,7 @@ if ($strExportErrorMessage == '')
 	}
 	else
 	{
-		if (!@fwrite($fp, '<?if (!isset($_GET["referer1"]) || strlen($_GET["referer1"])<=0) $_GET["referer1"] = "yandext"?>'))
+		if (!@fwrite($fp, '<?if (!isset($_GET["referer1"]) || $_GET["referer1"] == "") $_GET["referer1"] = "yandext"?>'))
 		{
 			$strExportErrorMessage .= str_replace('#FILE#',$_SERVER["DOCUMENT_ROOT"].$SETUP_FILE_NAME, GetMessage('CET_YAND_RUN_ERR_SETUP_FILE_WRITE'))."\n";
 			@fclose($fp);
@@ -97,7 +95,7 @@ if ($strExportErrorMessage == '')
 		else
 		{
 			fwrite($fp, '<? $strReferer1 = htmlspecialchars($_GET["referer1"]); ?>');
-			fwrite($fp, '<?if (!isset($_GET["referer2"]) || strlen($_GET["referer2"]) <= 0) $_GET["referer2"] = "";?>');
+			fwrite($fp, '<?if (!isset($_GET["referer2"]) || $_GET["referer2"] == "") $_GET["referer2"] = "";?>');
 			fwrite($fp, '<? $strReferer2 = htmlspecialchars($_GET["referer2"]); ?>');
 		}
 	}
@@ -108,13 +106,14 @@ if ($strExportErrorMessage == '')
 	fwrite($fp, '<? header("Content-Type: text/xml; charset=windows-1251");?>');
 	fwrite($fp, '<? echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>');
 	fwrite($fp, "\n<!DOCTYPE yml_catalog SYSTEM \"shops.dtd\">\n");
-	fwrite($fp, "<yml_catalog date=\"".Date("Y-m-d H:i")."\">\n");
+	fwrite($fp, "<yml_catalog date=\"".date("Y-m-d H:i")."\">\n");
 	fwrite($fp, "<shop>\n");
 	fwrite($fp, "<name>".$APPLICATION->ConvertCharset(htmlspecialcharsbx(COption::GetOptionString("main", "site_name", "")), LANG_CHARSET, 'windows-1251')."</name>\n");
 	fwrite($fp, "<company>".$APPLICATION->ConvertCharset(htmlspecialcharsbx(COption::GetOptionString("main", "site_name", "")), LANG_CHARSET, 'windows-1251')."</company>\n");
-	fwrite($fp, "<url>".$usedProtocol.htmlspecialcharsbx(strlen($SETUP_SERVER_NAME) > 0 ? $SETUP_SERVER_NAME : COption::GetOptionString("main", "server_name", ""))."</url>\n");
+	fwrite($fp, "<url>".$usedProtocol.htmlspecialcharsbx($SETUP_SERVER_NAME <> '' ? $SETUP_SERVER_NAME : COption::GetOptionString("main", "server_name", ""))."</url>\n");
 	fwrite($fp, "<platform>1C-Bitrix</platform>\n");
 
+	$BASE_CURRENCY = Currency\CurrencyManager::getBaseCurrency();
 	$RUR = 'RUB';
 	$currencyIterator = Currency\CurrencyTable::getList(array(
 		'select' => array('CURRENCY'),
@@ -124,10 +123,10 @@ if ($strExportErrorMessage == '')
 		$RUR = 'RUR';
 	unset($currency, $currencyIterator);
 
-	$allowedCurrency = array('RUR', 'RUB', 'USD', 'EUR', 'UAH', 'BYR', 'KZT');
+	$allowedCurrency = array('RUR', 'RUB', 'USD', 'EUR', 'UAH', 'BYR', 'BYN', 'KZT');
 	$strTmp = "<currencies>\n";
 	$currencyIterator = Currency\CurrencyTable::getList(array(
-		'select' => array('CURRENCY'),
+		'select' => array('CURRENCY', 'SORT'),
 		'filter' => array('@CURRENCY' => $allowedCurrency),
 		'order' => array('SORT' => 'ASC', 'CURRENCY' => 'ASC')
 	));
@@ -142,17 +141,10 @@ if ($strExportErrorMessage == '')
 
 	//*****************************************//
 
-	$arSelect = array("ID", "IBLOCK_ID", "IBLOCK_SECTION_ID", "NAME", "PREVIEW_PICTURE", "PREVIEW_TEXT", "PREVIEW_TEXT_TYPE", "DETAIL_PICTURE", "DETAIL_PAGE_URL", 'CATALOG_AVAILABLE');
-	$db_res = CCatalogGroup::GetGroupsList(array("GROUP_ID" => 2));
-	$arPTypes = array();
-	while ($ar_res = $db_res->Fetch())
-	{
-		if (!in_array($ar_res["CATALOG_GROUP_ID"], $arPTypes))
-		{
-			$arPTypes[] = $ar_res["CATALOG_GROUP_ID"];
-			$arSelect[] = "CATALOG_GROUP_".$ar_res["CATALOG_GROUP_ID"];
-		}
-	}
+	$arSelect = array(
+		"ID", "IBLOCK_ID", "IBLOCK_SECTION_ID", "NAME", "PREVIEW_PICTURE", "PREVIEW_TEXT", "PREVIEW_TEXT_TYPE",
+		"DETAIL_PICTURE", "DETAIL_PAGE_URL", 'CATALOG_AVAILABLE'
+	);
 
 	$strTmpCat = "";
 	$strTmpOff = "";
@@ -181,6 +173,28 @@ if ($strExportErrorMessage == '')
 			if ($yvalue <= 0)
 				continue;
 
+			$arIBlock = CIBlock::GetArrayByID($yvalue);
+			if (empty($arIBlock) || !is_array($arIBlock))
+				continue;
+			if ('Y' != $arIBlock['ACTIVE'])
+				continue;
+			$boolRights = false;
+			if ('E' != $arIBlock['RIGHTS_MODE'])
+			{
+				$arRights = CIBlock::GetGroupPermissions($yvalue);
+				if (!empty($arRights) && isset($arRights[2]) && 'R' <= $arRights[2])
+					$boolRights = true;
+			}
+			else
+			{
+				$obRights = new CIBlockRights($yvalue);
+				$arRights = $obRights->GetGroups(array('section_read', 'element_read'));
+				if (!empty($arRights) && in_array('G2',$arRights))
+					$boolRights = true;
+			}
+			if (!$boolRights)
+				continue;
+
 			$filter = array("IBLOCK_ID" => $yvalue, "ACTIVE" => "Y", "IBLOCK_ACTIVE" => "Y", "GLOBAL_ACTIVE" => "Y");
 			$db_acc = CIBlockSection::GetList(array("LEFT_MARGIN" => "ASC"), $filter, false, array('ID', 'IBLOCK_SECTION_ID', 'NAME'));
 
@@ -205,18 +219,16 @@ if ($strExportErrorMessage == '')
 			while ($arAcc = $res->GetNext())
 			{
 				$cnt++;
-				if (strlen($SETUP_SERVER_NAME) <= 0)
+				if ($SETUP_SERVER_NAME == '')
 				{
 					if (!array_key_exists($arAcc['LID'], $arSiteServers))
 					{
-						$b="sort";
-						$o="asc";
-						$rsSite = CSite::GetList($b, $o, array("LID" => $arAcc["LID"]));
+						$rsSite = CSite::GetList('', '', array("LID" => $arAcc["LID"]));
 						if($arSite = $rsSite->Fetch())
 							$arAcc["SERVER_NAME"] = $arSite["SERVER_NAME"];
-						if(strlen($arAcc["SERVER_NAME"])<=0 && defined("SITE_SERVER_NAME"))
+						if($arAcc["SERVER_NAME"] == '' && defined("SITE_SERVER_NAME"))
 							$arAcc["SERVER_NAME"] = SITE_SERVER_NAME;
-						if(strlen($arAcc["SERVER_NAME"])<=0)
+						if($arAcc["SERVER_NAME"] == '')
 							$arAcc["SERVER_NAME"] = COption::GetOptionString("main", "server_name", "");
 
 						$arSiteServers[$arAcc['LID']] = $arAcc['SERVER_NAME'];
@@ -234,26 +246,21 @@ if ($strExportErrorMessage == '')
 				$str_AVAILABLE = ($arAcc['CATALOG_AVAILABLE'] == 'Y' ? ' available="true"' : ' available="false"');
 
 				$minPrice = 0;
-				$minPriceRUR = 0;
-				$minPriceGroup = 0;
 				$minPriceCurrency = "";
-				for ($i = 0, $intCount = count($arPTypes); $i < $intCount; $i++)
+				if ($arPrice = CCatalogProduct::GetOptimalPrice(
+					$arAcc['ID'],
+					1,
+					array(2), // anonymous
+					'N',
+					array(),
+					$arIBlock['LID'],
+					array()
+				))
 				{
-					if (strlen($arAcc["CATALOG_CURRENCY_".$arPTypes[$i]])<=0) continue;
-
-					$tmpPrice = CCurrencyRates::ConvertCurrency($arAcc["CATALOG_PRICE_".$arPTypes[$i]], $arAcc["CATALOG_CURRENCY_".$arPTypes[$i]], $RUR);
-					if ($minPriceRUR<=0 || $minPriceRUR>$tmpPrice)
-					{
-						$minPriceRUR = $tmpPrice;
-						$minPrice = $arAcc["CATALOG_PRICE_".$arPTypes[$i]];
-						$minPriceGroup = $arPTypes[$i];
-						$minPriceCurrency = $arAcc["CATALOG_CURRENCY_".$arPTypes[$i]];
-						if ($minPriceCurrency!="USD" && $minPriceCurrency!=$RUR)
-						{
-							$minPriceCurrency = $RUR;
-							$minPrice = $tmpPrice;
-						}
-					}
+					$minPrice = $arPrice['DISCOUNT_PRICE'];
+					if ($BASE_CURRENCY != $RUR)
+						$minPrice = CCurrencyRates::ConvertCurrency($minPrice, $BASE_CURRENCY, $RUR);
+					$minPriceCurrency = $RUR;
 				}
 
 				if ($minPrice <= 0) continue;
@@ -307,7 +314,7 @@ if ($strExportErrorMessage == '')
 				}
 
 				$strTmpOff.= "<offer id=\"".$arAcc["ID"]."\"".$str_AVAILABLE.">\n";
-				$strTmpOff.= "<url>".$usedProtocol.$arAcc['SERVER_NAME'].htmlspecialcharsbx($arAcc["~DETAIL_PAGE_URL"]).(strstr($arAcc['DETAIL_PAGE_URL'], '?') === false ? '?' : '&amp;')."r1=<?echo \$strReferer1; ?>&amp;r2=<?echo \$strReferer2; ?></url>\n";
+				$strTmpOff.= "<url>".$usedProtocol.$arAcc['SERVER_NAME'].htmlspecialcharsbx($arAcc["~DETAIL_PAGE_URL"]).(mb_strstr($arAcc['DETAIL_PAGE_URL'], '?') === false ? '?' : '&amp;')."r1=<?echo \$strReferer1; ?>&amp;r2=<?echo \$strReferer2; ?></url>\n";
 
 				$strTmpOff.= "<price>".$minPrice."</price>\n";
 				$strTmpOff.= "<currencyId>".$minPriceCurrency."</currencyId>\n";
@@ -322,7 +329,7 @@ if ($strExportErrorMessage == '')
 					$arPictInfo = CFile::GetFileArray($pictNo);
 					if (is_array($arPictInfo))
 					{
-						if(substr($arPictInfo["SRC"], 0, 1) == "/")
+						if(mb_substr($arPictInfo["SRC"], 0, 1) == "/")
 							$strFile = $usedProtocol.$arAcc['SERVER_NAME'].CHTTP::urnEncode($arPictInfo["SRC"], 'utf-8');
 						else
 							$strFile = $arPictInfo["SRC"];
@@ -336,7 +343,7 @@ if ($strExportErrorMessage == '')
 					yandex_text2xml(TruncateText(
 						($arAcc["PREVIEW_TEXT_TYPE"]=="html"?
 						strip_tags(preg_replace_callback("'&[^;]*;'", "yandex_replace_special", $arAcc["~PREVIEW_TEXT"])) : preg_replace_callback("'&[^;]*;'", "yandex_replace_special", $arAcc["~PREVIEW_TEXT"])),
-						255), true).
+						3000), true).
 					"</description>\n";
 				$strTmpOff.= "</offer>\n";
 				if (100 <= $cnt)
@@ -377,7 +384,6 @@ CCatalogDiscountSave::Enable();
 
 if ($bTmpUserCreated)
 {
-	unset($USER);
 	if (isset($USER_TMP))
 	{
 		$USER = $USER_TMP;

@@ -1,5 +1,0 @@
-<?
-$MESS["CD_BLL_LISTS"] = "Bendri sàraðai";
-$MESS["CD_BLL_NAME"] = "Sàraðas";
-$MESS["CD_BLL_DESCRIPTION"] = "Rodo sàraðø skyrius ir elementus ir suteikia redagavimo ir navigacijos galimybes.";
-?>

@@ -37,4 +37,6 @@ $MESS["SALE_EBAY_AT_DATA_PROCESSOR_ORDER_CHANGE_STATUS_ERROR"] = "Fehler beim Ak
 $MESS["SALE_EBAY_AT_DATA_PROCESSOR_ORDER_SAVE_ERROR"] = "Fehler beim Speichern der Bestellung";
 $MESS["SALE_EBAY_AT_DATA_PROCESSOR_ORDER_CORR_SAVE_ERROR"] = "Fehler beim Speichern der Bestelldokumentation";
 $MESS["SALE_EBAY_AT_DATA_PROCESSOR_SFTPQUEUE_FLUSHING"] = "Daten zum Austausch vorbereitet";
+$MESS["SALE_EBAY_AT_SFTP_TOKEN_EXP"] = "SFTP Token Ist Abgelaufen";
+$MESS["SALE_EBAY_AT_SFTP_TOKEN_EXP_MESSAGE"] = "SFTP Token Ist Abgelaufen. Sie müssen ein neues SFTP Token auf ebay.com generieren.";
 ?>

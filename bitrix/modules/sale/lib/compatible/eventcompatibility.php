@@ -60,6 +60,8 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 	protected static $disableMailSend = false;
 
+	protected static $disableEvent = false;
+
 
 	/**
 	 * @param string $event
@@ -77,6 +79,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSalePayOrder(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -92,30 +99,16 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$id = $order->getId();
 		$value = $order->getField('PAYED');
+
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_PAID, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id, $value));
 		}
+		static::setDisableEvent(false);
 
 		if ($value == "Y")
 		{
-			$orderFields = null;
-
-			/** @var Sale\Result $r */
-			$r = OrderCompatibility::getOrderFields($order);
-			if ($r->isSuccess())
-			{
-				if ($resultOrderFieldsData = $r->getData())
-				{
-					if (!empty($resultOrderFieldsData['ORDER_FIELDS']) && is_array($resultOrderFieldsData['ORDER_FIELDS']))
-					{
-						$orderFields = $resultOrderFieldsData['ORDER_FIELDS'];
-					}
-				}
-			}
-
-			\CSaleMobileOrderPush::send("ORDER_PAYED", array("ORDER" => $orderFields));
-
 			if (Main\Loader::includeModule("statistic"))
 			{
 				\CStatEvent::AddByEvents("eStore", "order_paid", $id, "", $order->getField("STAT_GID"), $order->getPrice(), $order->getCurrency());
@@ -139,6 +132,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleOrderPaidSendMail(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -152,50 +150,15 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			);
 		}
 
-		$id = $order->getId();
 		$value = $order->getField('PAYED');
 
 		if ($value == "Y")
 		{
-			$userEmail = "";
-			/** @var Sale\PropertyValueCollection $propertyCollection */
-			if ($propertyCollection = $order->getPropertyCollection())
-			{
-				if ($propUserEmail = $propertyCollection->getUserEmail())
-					$userEmail = $propUserEmail->getValue();
-			}
+			$registry = Sale\Registry::getInstance($order::getRegistryType());
 
-			if(strval($userEmail) == '')
-			{
-				$resUser = \CUser::GetByID($order->getUserId());
-				if($userData = $resUser->Fetch())
-					$userEmail = $userData["EMAIL"];
-			}
-
-			$fields = Array(
-				"ORDER_ID" => $order->getField("ACCOUNT_NUMBER"),
-				"ORDER_DATE" => $order->getDateInsert()->toString(),
-				"EMAIL" => $userEmail,
-				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"])
-			);
-
-			$eventName = "SALE_ORDER_PAID";
-			$send = true;
-
-			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_PAID_SEND_EMAIL, true) as $oldEvent)
-			{
-				if (ExecuteModuleEventEx($oldEvent, array($id, &$eventName, &$fields)) === false)
-				{
-					$send = false;
-				}
-			}
-
-			if($send)
-			{
-				$event = new \CEvent;
-				$event->Send($eventName, $order->getField('LID'), $fields, "N");
-			}
-
+			/** @var Sale\Notify $notifyClassName */
+			$notifyClassName = $registry->getNotifyClassName();
+			$notifyClassName::sendOrderPaid($order);
 		}
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -207,6 +170,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleOrderCancelSendEmail(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		if (static::$disableMailSend === true)
 		{
 			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
@@ -227,67 +195,14 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$id = $order->getId();
 		$value = $order->getField('CANCELED');
-		$description = $order->getField('REASON_CANCELED');
 
 		if ($value == "Y")
 		{
-			$userEmail = "";
-			/** @var Sale\PropertyValueCollection $propertyCollection */
-			if ($propertyCollection = $order->getPropertyCollection())
-			{
-				if ($propUserEmail = $propertyCollection->getUserEmail())
-					$userEmail = $propUserEmail->getValue();
-			}
+			$registry = Sale\Registry::getInstance($order::getRegistryType());
 
-			if(strval($userEmail) == '')
-			{
-				$resUser = \CUser::GetByID($order->getUserId());
-				if($userData = $resUser->Fetch())
-					$userEmail = $userData["EMAIL"];
-			}
-
-			$fields = Array(
-				"ORDER_ID" => $order->getField("ACCOUNT_NUMBER"),
-				"ORDER_DATE" => $order->getDateInsert()->toString(),
-				"EMAIL" => $userEmail,
-				"ORDER_CANCEL_DESCRIPTION" => $description,
-				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"])
-			);
-
-			$eventName = static::EVENT_COMPATIBILITY_ORDER_CANCEL_SEND_EMAIL_EVENT_NAME;
-			$send = true;
-
-			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_CANCEL_SEND_EMAIL, true) as $oldEvent)
-			{
-				if (ExecuteModuleEventEx($oldEvent, array($id, &$eventName, &$fields)) === false)
-				{
-					$send = false;
-				}
-			}
-
-			if($send)
-			{
-				$event = new \CEvent;
-				$event->Send($eventName, $order->getField('LID'), $fields, "N");
-			}
-
-
-			$orderFields = null;
-
-			/** @var Sale\Result $r */
-			$r = OrderCompatibility::getOrderFields($order);
-			if ($r->isSuccess())
-			{
-				if ($resultOrderFieldsData = $r->getData())
-				{
-					if (!empty($resultOrderFieldsData['ORDER_FIELDS']) && is_array($resultOrderFieldsData['ORDER_FIELDS']))
-					{
-						$orderFields = $resultOrderFieldsData['ORDER_FIELDS'];
-					}
-				}
-			}
-
-			\CSaleMobileOrderPush::send("ORDER_CANCELED", array("ORDER" => $orderFields));
+			/** @var Sale\Notify $notifyClassName */
+			$notifyClassName = $registry->getNotifyClassName();
+			$notifyClassName::sendOrderCancel($order);
 
 			if (Main\Loader::includeModule("statistic"))
 			{
@@ -308,6 +223,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onOrderNewSendEmail(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		if (static::$disableMailSend === true)
 		{
 			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
@@ -335,62 +255,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 		}
 
-		$basketList = '';
-		/** @var Sale\Basket $basket */
-		if ($basket = $order->getBasket())
-		{
-			if ($basketTextList = $basket->getListOfFormatText())
-			{
-				foreach ($basketTextList as $basketItemCode => $basketItemData)
-				{
-					$basketList .= $basketItemData."\n";
-				}
-			}
-		}
+		$registry = Sale\Registry::getInstance($order::getRegistryType());
 
-
-		$userEmail = "";
-		$payerName = "";
-		/** @var Sale\PropertyValueCollection $propertyCollection */
-		if ($propertyCollection = $order->getPropertyCollection())
-		{
-			if ($propUserEmail = $propertyCollection->getUserEmail())
-				$userEmail = $propUserEmail->getValue();
-
-			if ($propPayerName = $propertyCollection->getPayerName())
-				$payerName = $propPayerName->getValue();
-		}
-
-		$fields = Array(
-			"ORDER_ID" => $order->getField("ACCOUNT_NUMBER"),
-			"ORDER_DATE" => $order->getDateInsert()->toString(),
-			"ORDER_USER" => $payerName,
-			"PRICE" => SaleFormatCurrency($order->getPrice(), $order->getCurrency()),
-			"BCC" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
-			"EMAIL" => $userEmail,
-			"ORDER_LIST" => $basketList,
-			"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
-			"DELIVERY_PRICE" => $order->getDeliveryPrice(),
-		);
-
-		$eventName = static::EVENT_COMPATIBILITY_ORDER_NEW_SEND_EMAIL_EVENT_NAME;
-		$send = true;
-
-		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_NEW_SEND_EMAIL, true) as $oldEvent)
-		{
-			if (ExecuteModuleEventEx($oldEvent, array($id, &$eventName, &$fields)) === false)
-			{
-				$send = false;
-			}
-		}
-
-		if($send)
-		{
-			$event = new \CEvent;
-			$event->Send($eventName, $order->getField('LID'), $fields, "N");
-		}
-
-		\CSaleMobileOrderPush::send("ORDER_CREATED", array("ORDER" => OrderCompatibility::convertOrderToArray($order)));
+		/** @var Sale\Notify $notifyClassName */
+		$notifyClassName = $registry->getNotifyClassName();
+		$notifyClassName::sendOrderNew($order);
 
 		$GLOBALS['SALE_NEW_ORDER_SEND'][$id] = true;
 
@@ -405,6 +274,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onBeforeOrderDelete(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -420,16 +294,18 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$id = $order->getId();
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_ORDER_DELETE, true) as $oldEvent)
 		{
 			if (ExecuteModuleEventEx($oldEvent, array($id)) === false)
 			{
 				return new Main\EventResult(
 					Main\EventResult::SUCCESS,
-					array('RETURN' => false),
+					false,
 					'sale');
 			}
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -441,6 +317,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onOrderDelete(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -457,10 +338,12 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 		$deleted = $parameters['VALUE'];
 		$id = $order->getId();
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_DELETED, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id, $deleted));
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -473,6 +356,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleDeliveryOrder(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Shipment $shipment */
@@ -500,10 +388,12 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$id = $order->getId();
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_SHIPMENT_DELIVER, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id, $shipment->getField('ALLOW_DELIVERY')));
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -515,6 +405,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onOrderSave(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -552,6 +447,7 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			}
 		}
 
+		static::setDisableEvent(true);
 		if ($isNew)
 		{
 			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_ADD, true) as $oldEvent)
@@ -566,6 +462,7 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 				ExecuteModuleEventEx($oldEvent, array($id, $orderFields));
 			}
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -576,6 +473,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onOrderSaved(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -613,10 +515,12 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			}
 		}
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_SAVE, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id, $fields, $orderFields, $isNew));
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -627,6 +531,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onOrderAdd(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -664,10 +573,12 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			}
 		}
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_ADD, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id, $orderFields));
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -678,6 +589,13 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	public static function onOrderBeforeSaved(Main\Event $event)
 	{
 		global $APPLICATION;
+
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -710,8 +628,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			}
 		}
 
+		$currentOrderFields = $orderFields;
+
 		if ($order->isNew())
 		{
+			static::setDisableEvent(true);
 			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_ORDER_ADD, true) as $oldEvent)
 			{
 				if (ExecuteModuleEventEx($oldEvent, array(&$orderFields)) === false)
@@ -727,24 +648,42 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 				}
 			}
+
+			static::setDisableEvent(false);
+
+			$allowFields = OrderCompatibility::getAvailableFields();
+
+			foreach ($orderFields as $orderFieldName => $orderFieldValue)
+			{
+				if (in_array($orderFieldName, $allowFields)
+					&& (array_key_exists($orderFieldName, $currentOrderFields) && $orderFieldValue != $currentOrderFields[$orderFieldName]))
+				{
+					/** @var Sale\Result $r */
+					$order->setFieldNoDemand($orderFieldName, $orderFieldValue);
+				}
+			}
 		}
 		else
 		{
+			static::setDisableEvent(true);
 			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_ORDER_UPDATE, true) as $oldEvent)
 			{
 				if (ExecuteModuleEventEx($oldEvent, array($id, $orderFields)) === false)
 				{
+					$error = null;
 					if ($ex = $APPLICATION->GetException())
 					{
-
-						return new Main\EventResult(
-							Main\EventResult::ERROR,
-							new Sale\ResultError($ex->GetString(), $ex->GetID()),
-							'sale'
-						);
+						$error = new Sale\ResultError($ex->GetString(), $ex->GetID());
 					}
+
+					return new Main\EventResult(
+						Main\EventResult::ERROR,
+						$error,
+						'sale'
+					);
 				}
 			}
+			static::setDisableEvent(false);
 		}
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
@@ -757,6 +696,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleBeforeCancelOrder(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -773,16 +717,18 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 		$id = $order->getId();
 		$value = $order->getField('CANCELED');;
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_ORDER_CANCELED, true) as $oldEvent)
 		{
 			if (ExecuteModuleEventEx($oldEvent, array($id, $value)) === false)
 			{
 				return new Main\EventResult(
 					Main\EventResult::SUCCESS,
-					array('RETURN' => false),
+					false,
 					'sale');
 			}
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -794,6 +740,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleCancelOrder(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $order */
@@ -811,11 +762,13 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 		$id = $order->getId();
 		$description = $order->getField('REASON_CANCELED');
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_CANCELED, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id, $canceled, $description));
 			$order->setField('REASON_CANCELED', $description);
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -828,6 +781,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onBasketItemBeforeChange(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\BasketItem $basketItem */
@@ -848,32 +806,41 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$basketFields = array();
 
-
-		if (!empty($oldValues) && is_array($oldValues))
+		if ($isNew)
 		{
-			foreach ($oldValues as $oldValueKey => $oldValueData)
+			$basketFields = $currentBasketFields;
+		}
+		else
+		{
+			if (!empty($oldValues) && is_array($oldValues))
 			{
-				if (array_key_exists($oldValueKey, $currentBasketFields))
+				foreach ($oldValues as $oldValueKey => $oldValueData)
 				{
-					$basketFields[$oldValueKey] = $currentBasketFields[$oldValueKey];
+					if (array_key_exists($oldValueKey, $currentBasketFields))
+					{
+						$basketFields[$oldValueKey] = $currentBasketFields[$oldValueKey];
+					}
 				}
 			}
 		}
 
 		if (array_key_exists('QUANTITY', $oldValues) && ($currentBasketFields['QUANTITY'] - $oldValues['QUANTITY']) > 0)
 		{
-			if (!empty($currentBasketFields['PROPS']) && is_array($currentBasketFields['PROPS']))
+			if (empty($basketFields['ID']) && !empty($currentBasketFields['ID']))
 			{
-				$basketFields['PROPS'] = $currentBasketFields['PROPS'];
+				$basketFields['ID'] = $currentBasketFields['ID'];
 			}
 
 			$basketFields['QUANTITY'] = $currentBasketFields['QUANTITY'] - $oldValues['QUANTITY'];
+
+			static::setDisableEvent(true);
 			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_BASKET_ITEM_ADD, true) as $oldEvent)
 			{
 				ExecuteModuleEventEx($oldEvent, array(&$basketFields));
 			}
+			static::setDisableEvent(false);
 
-			$basketFields['QUANTITY'] = $currentBasketFields['QUANTITY'];
+			$basketFields['QUANTITY'] = $oldValues['QUANTITY'] + $basketFields['QUANTITY'];
 		}
 
 		if (empty($basketFields) && !empty($oldValues) && is_array($oldValues))
@@ -889,10 +856,12 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		if (!$isNew)
 		{
+			static::setDisableEvent(true);
 			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_BASKET_ITEM_UPDATE, true) as $oldEvent)
 			{
 				ExecuteModuleEventEx($oldEvent, array($basketItem->getId(), &$basketFields));
 			}
+			static::setDisableEvent(false);
 		}
 
 
@@ -971,6 +940,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onBasketItemChange(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\BasketItem $basketItem */
@@ -988,6 +962,7 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$basketFields = BasketCompatibility::convertBasketItemToArray($basketItem);
 
+		static::setDisableEvent(true);
 		if (!$isNew)
 		{
 			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BASKET_ITEM_UPDATE, true) as $oldEvent)
@@ -1004,6 +979,8 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			}
 		}
 
+		static::setDisableEvent(false);
+
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
 
@@ -1015,6 +992,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onShipmentTrackingNumberChange(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Shipment $basketItem */
@@ -1041,59 +1023,22 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			throw new Main\ObjectNotFoundException('Entity "Order" not found');
 		}
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_TRACKING_NUMBER_CHANGE, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, Array($order->getId(), $shipment->getField('TRACKING_NUMBER')));
 		}
+		static::setDisableEvent(false);
 
 		if (array_key_exists('TRACKING_NUMBER', $oldValues) && strval($shipment->getField('TRACKING_NUMBER')) != ''
 			&& $oldValues["TRACKING_NUMBER"] != $shipment->getField('TRACKING_NUMBER'))
 		{
-			$accountNumber = $order->getField("ACCOUNT_NUMBER");
-			$userId =  $order->getField("USER_ID");
 
-			$payerName = "";
-			$payerEMail = '';
+			$registry = Sale\Registry::getInstance($shipment::getRegistryType());
 
-			/** @var Sale\PropertyValueCollection $propertyCollection */
-			if ($propertyCollection = $order->getPropertyCollection())
-			{
-				if ($propUserEmail = $propertyCollection->getUserEmail())
-					$payerEMail = $propUserEmail->getValue();
-
-				if ($propPayerName = $propertyCollection->getPayerName())
-					$payerName = $propPayerName->getValue();
-			}
-
-			if (empty($payerName) || empty($payerEMail))
-			{
-				$userRes = \CUser::getByID($userId);
-				if ($userData = $userRes->fetch())
-				{
-					if (empty($payerName))
-					{
-						$payerName = $userData["NAME"].((strval($userData["NAME"]) == '' || strval($userData["LAST_NAME"]) == '') ? "" : " ").$userData["LAST_NAME"];
-					}
-
-					if (empty($payerEMail))
-					{
-						$payerEMail = $userData["EMAIL"];
-					}
-				}
-			}
-
-			$emailFields = Array(
-				"ORDER_ID" => $accountNumber,
-				"ORDER_DATE" => $order->getDateInsert()->toString(),
-				"ORDER_USER" => $payerName,
-				"ORDER_TRACKING_NUMBER" => $shipment->getField('TRACKING_NUMBER'),
-				"BCC" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER['SERVER_NAME']),
-				"EMAIL" => $payerEMail,
-				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER['SERVER_NAME'])
-			);
-
-			$event = new \CEvent;
-			$event->send("SALE_ORDER_TRACKING_NUMBER", $order->getField("LID"), $emailFields, "N");
+			/** @var Sale\Notify $notifyClassName */
+			$notifyClassName = $registry->getNotifyClassName();
+			$notifyClassName::sendShipmentTrackingNumberChange($shipment);
 		}
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
@@ -1107,6 +1052,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onShipmentAllowDelivery(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Shipment $shipment */
@@ -1137,46 +1087,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			&& $oldValues["ALLOW_DELIVERY"] != $shipment->getField('ALLOW_DELIVERY'))
 		{
 
-			$userEmail = "";
-			/** @var Sale\PropertyValueCollection $propertyCollection */
-			if ($propertyCollection = $order->getPropertyCollection())
-			{
-				if ($propUserEmail = $propertyCollection->getUserEmail())
-					$userEmail = $propUserEmail->getValue();
-			}
+			$registry = Sale\Registry::getInstance($shipment::getRegistryType());
 
-			if (empty($userEmail))
-			{
-				$userRes = \CUser::getByID($order->getUserId());
-				if ($userData = $userRes->fetch())
-					$userEmail = $userData["EMAIL"];
-			}
-
-			$fields = Array(
-				"ORDER_ID" => $order->getField("ACCOUNT_NUMBER"),
-				"ORDER_DATE" => $order->getDateInsert()->toString(),
-				"EMAIL" => $userEmail,
-				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
-			);
-
-			$eventName = static::EVENT_COMPATIBILITY_ORDER_DELIVER_SEND_EMAIL_EVENT_NAME;
-			$send = true;
-
-			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_DELIVER_SEND_EMAIL, true) as $oldEvent)
-			{
-				if (ExecuteModuleEventEx($oldEvent, array($order->getId(), &$eventName, &$fields)) === false)
-				{
-					$send = false;
-				}
-			}
-
-			if($send)
-			{
-				$event = new \CEvent;
-				$event->Send($eventName, $order->getField('LID'), $fields, "N");
-			}
-
-			\CSaleMobileOrderPush::send("ORDER_DELIVERY_ALLOWED", array("ORDER" => OrderCompatibility::convertOrderToArray($order)));
+			/** @var Sale\Notify $notifyClassName */
+			$notifyClassName = $registry->getNotifyClassName();
+			$notifyClassName::sendShipmentAllowDelivery($shipment);
 		}
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
@@ -1190,6 +1105,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleStatusOrderChange(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $basketItem */
@@ -1205,10 +1125,12 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			);
 		}
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_ORDER_STATUS_CHANGE, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($order->getId(), $value));
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -1221,6 +1143,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleOrderStatusChangeSendEmail(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $basketItem */
@@ -1236,103 +1163,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			);
 		}
 
-		$orderFields = array();
+		$registry = Sale\Registry::getInstance($order::getRegistryType());
 
-		/** @var Sale\Result $resultOrderFields */
-		$resultOrderFields = OrderCompatibility::getOrderFields($order);
-		if ($resultOrderFields->isSuccess())
-		{
-			if ($orderFieldsResultData = $resultOrderFields->getData())
-			{
-				if (!empty($orderFieldsResultData['ORDER_FIELDS']) && is_array($orderFieldsResultData['ORDER_FIELDS']))
-				{
-					$orderFields = $orderFieldsResultData['ORDER_FIELDS'];
-				}
-			}
-		}
-
-		\CSaleMobileOrderPush::send(static::EVENT_COMPATIBILITY_MOBILE_PUSH_ORDER_STATUS_CHANGE, array("ORDER" => $orderFields));
-
-
-		$propertyCollection = $order->getPropertyCollection();
-
-		$userEmail = "";
-
-		/** @var Sale\PropertyValue $userEmailProperty */
-		if ($userEmailProperty = $propertyCollection->getUserEmail())
-		{
-			$userEmail = $userEmailProperty->getValue();
-		}
-
-		if(strval(trim($userEmail)) == '')
-		{
-			$userRes = \CUser::GetByID($order->getUserId());
-			if($userData = $userRes->fetch())
-				$userEmail = $userData["EMAIL"];
-		}
-
-		static $cacheSiteData = array();
-
-		if (!isset($cacheSiteData[$order->getSiteId()]))
-		{
-			$siteRes = \CSite::GetByID($order->getSiteId());
-			$siteData = $siteRes->Fetch();
-		}
-		else
-		{
-			$siteData = $cacheSiteData[$order->getSiteId()];
-		}
-
-		if (($statusData = \CSaleStatus::GetByID($order->getField("STATUS_ID"), $siteData['LANGUAGE_ID'])) && $statusData['NOTIFY'] == "Y")
-		{
-			$fields = Array(
-				"ORDER_ID" => $order->getField("ACCOUNT_NUMBER"),
-				"ORDER_DATE" => $order->getField("DATE_INSERT")->toString(),
-				"ORDER_STATUS" => $statusData["NAME"],
-				"EMAIL" => $userEmail,
-				"ORDER_DESCRIPTION" => $statusData["DESCRIPTION"],
-				"TEXT" => "",
-				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"])
-			);
-
-			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ORDER_STATUS_EMAIL, true) as $oldEvent)
-			{
-				$fields["TEXT"] = ExecuteModuleEventEx($oldEvent, array($order->getId(), $statusData["ID"]));
-			}
-
-			$eventName = "SALE_STATUS_CHANGED_".$order->getField("STATUS_ID");
-
-
-			$isSend = true;
-			foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ORDER_STATUS_SEND_EMAIL, true) as $oldEvent)
-			{
-				if (ExecuteModuleEventEx($oldEvent, Array($order->getId(), &$eventName, &$fields, $order->getField("STATUS_ID")))===false)
-				{
-					$isSend = false;
-				}
-			}
-
-			if($isSend)
-			{
-				$b = '';
-				$o = '';
-				$eventMessage = new \CEventMessage;
-				$eventMessageRes = $eventMessage->GetList(
-					$b,
-					$o,
-					array(
-						"EVENT_NAME" => $eventName,
-						"SITE_ID" => $order->getSiteId(),
-						'ACTIVE' => 'Y'
-					)
-				);
-				if (!($eventMessageData = $eventMessageRes->Fetch()))
-					$eventName = "SALE_STATUS_CHANGED";
-				unset($o, $b);
-				$event = new \CEvent;
-				$event->Send($eventName, $order->getSiteId(), $fields, "N");
-			}
-		}
+		/** @var Sale\Notify $notifyClassName */
+		$notifyClassName = $registry->getNotifyClassName();
+		$notifyClassName::sendOrderStatusChange($order);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -1346,6 +1181,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onCallOrderNewSendEmail($id, $eventName, $fields)
 	{
+		if (static::$disableMailSend === true)
+		{
+			return true;
+		}
+
 		if (!empty($GLOBALS['SALE_NEW_ORDER_SEND'][$id]))
 		{
 			return false;
@@ -1363,6 +1203,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onCallOrderCancelSendEmail($id, $eventName, $fields)
 	{
+		if (static::$disableMailSend === true)
+		{
+			return true;
+		}
+
 		if (!empty($GLOBALS['SALE_ORDER_CANCEL_SEND'][$id]))
 		{
 			return false;
@@ -1379,6 +1224,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onSaleBeforeStatusOrderChange(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\Order $basketItem */
@@ -1394,10 +1244,17 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 			);
 		}
 
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_ORDER_STATUS_CHANGE, true) as $oldEvent)
 		{
-			ExecuteModuleEventEx($oldEvent, array($order->getId(), $value));
+			if (ExecuteModuleEventEx($oldEvent, array($order->getId(), $value)) === false)
+			{
+				static::setDisableEvent(false);
+				return new Main\EventResult( Main\EventResult::ERROR, null, 'sale');
+			}
 		}
+
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -1409,6 +1266,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onBeforeBasketDelete(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\BasketItem $basketItem */
@@ -1423,16 +1285,19 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 		}
 
 		$id = $basketItem->getId();
+
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BEFORE_BASKET_DELETE, true) as $oldEvent)
 		{
 			if (ExecuteModuleEventEx($oldEvent, array($id)) === false)
 			{
 				return new Main\EventResult(
 						Main\EventResult::SUCCESS,
-						array('RETURN' => false),
+						false,
 						'sale');
 			}
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -1444,24 +1309,41 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function onBasketDelete(Main\Event $event)
 	{
+		if (static::$disableEvent === true)
+		{
+			return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
+		}
+
 		$parameters = $event->getParameters();
 
 		/** @var Sale\BasketItem $basketItem */
-		$basketItem = $parameters['ENTITY'];
-		if (!$basketItem instanceof Sale\BasketItem)
+		$values = $parameters['VALUES'];
+		if (empty($values) || !is_array($values))
 		{
 			return new Main\EventResult(
 					Main\EventResult::ERROR,
-					new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_EVENT_COMPATIBILITY_WRONG_BASKET_ITEM'), 'SALE_EVENT_COMPATIBILITY_BASKET_ITEM_DELETE_WRONG_BASKET_ITEM'),
+					new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_EVENT_COMPATIBILITY_WRONG_VALUES'), 'SALE_EVENT_COMPATIBILITY_BASKET_ITEM_DELETE_WRONG_VALUES'),
 					'sale'
 			);
 		}
 
-		$id = $basketItem->getId();
+		if (empty($values['ID']))
+		{
+			return new Main\EventResult(
+					Main\EventResult::ERROR,
+					new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_EVENT_COMPATIBILITY_WRONG_ID'), 'SALE_EVENT_COMPATIBILITY_BASKET_ITEM_DELETE_WRONG_ID'),
+					'sale'
+			);
+		}
+
+		$id = $values['ID'];
+
+		static::setDisableEvent(true);
 		foreach(GetModuleEvents("sale", static::EVENT_COMPATIBILITY_ON_BASKET_DELETED, true) as $oldEvent)
 		{
 			ExecuteModuleEventEx($oldEvent, array($id));
 		}
+		static::setDisableEvent(false);
 
 		return new Main\EventResult( Main\EventResult::SUCCESS, null, 'sale');
 	}
@@ -1471,7 +1353,23 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 	 */
 	public static function setDisableMailSend($value)
 	{
-		static::$disableMailSend = ($value == "Y");
+		static::$disableMailSend = ($value === true || $value == "Y");
+	}
+
+	/**
+	 * @param $value
+	 */
+	protected static function setDisableEvent($value)
+	{
+		static::$disableEvent = ($value === true);
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected static function isDisableEvent()
+	{
+		return static::$disableEvent;
 	}
 
 	/**
@@ -1489,15 +1387,15 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderDeleted', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderDelete');
 
-		$eventManager->registerEventHandler('sale', 'OnSaleShipmentDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleDeliveryOrder');
+		$eventManager->registerEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleDeliveryOrder');
 
 		$eventManager->registerEventHandler('sale', 'OnSaleBeforeOrderCanceled', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleBeforeCancelOrder');
 
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderCanceled', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleCancelOrder');
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderPaidSendMail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderPaidSendMail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderPaidSendMail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderPaidSendMail', 500);
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderCancelSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderCancelSendEmail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderCancelSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderCancelSendEmail', 500);
 
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderEntitySaved', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderSave');
 
@@ -1513,11 +1411,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->registerEventHandler('sale', 'OnSaleStatusOrderChange', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleStatusOrderChange');
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderStatusChangeSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderStatusChangeSendEmail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderStatusChangeSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderStatusChangeSendEmail', 500);
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderNewSendEmail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderNewSendEmail', 500);
 
-		RegisterModuleDependences("sale", "OnOrderNewSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderNewSendEmail");
+		RegisterModuleDependences("sale", "OnOrderNewSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderNewSendEmail", 500);
 
 		$eventManager->registerEventHandler('sale', 'OnBeforeSaleBasketItemEntityDeleted', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'OnBeforeBasketDelete');
 
@@ -1525,7 +1423,27 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->registerEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onShipmentAllowDelivery');
 
-		RegisterModuleDependences("sale", "OnOrderCancelSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderCancelSendEmail");
+		RegisterModuleDependences("sale", "OnOrderCancelSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderCancelSendEmail", 500);
+
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleOrderAddEvent');
+		
+		$eventManager->registerEventHandler('sale', 'OnSaleStatusOrderChange', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleStatusOrderHandlerEvent');
+		
+		$eventManager->registerEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleDeliveryOrderHandlerEvent');
+		
+		$eventManager->registerEventHandler('sale', 'OnShipmentDeducted', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleDeductOrderHandlerEvent');
+		
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderCanceled', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleCancelOrderHandlerEvent');
+		
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderPaid', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSalePayOrderHandlerEvent');
+		
+		UnRegisterModuleDependences("sale", "OnBasketOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleOrderAdd", 100);
+		UnRegisterModuleDependences("sale", "OnSaleStatusOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleStatusOrderHandler", 100);
+		UnRegisterModuleDependences("sale", "OnSaleDeliveryOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleDeliveryOrderHandler", 100);
+		UnRegisterModuleDependences("sale", "OnSaleDeductOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleDeductOrderHandler", 100);
+		UnRegisterModuleDependences("sale", "OnSaleCancelOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleCancelOrderHandler", 100);
+		UnRegisterModuleDependences("sale", "OnSalePayOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSalePayOrderHandler", 100);
+
 	}
 
 	/**
@@ -1543,7 +1461,7 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->unRegisterEventHandler('sale', 'OnSaleOrderDeleted', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderDelete');
 
-		$eventManager->unRegisterEventHandler('sale', 'OnSaleShipmentDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleDeliveryOrder');
+		$eventManager->unRegisterEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleDeliveryOrder');
 
 		$eventManager->unRegisterEventHandler('sale', 'OnSaleBeforeOrderCanceled', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleBeforeCancelOrder');
 
@@ -1580,6 +1498,26 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 		$eventManager->unRegisterEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onShipmentAllowDelivery');
 
 		UnRegisterModuleDependences("sale", "OnOrderCancelSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderCancelSendEmail");
+
+		$eventManager->unRegisterEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleOrderAddEvent');
+
+		$eventManager->unRegisterEventHandler('sale', 'OnSaleStatusOrderChange', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleStatusOrderHandlerEvent');
+
+		$eventManager->unRegisterEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleDeliveryOrderHandlerEvent');
+
+		$eventManager->unRegisterEventHandler('sale', 'OnShipmentDeducted', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleDeductOrderHandlerEvent');
+
+		$eventManager->unRegisterEventHandler('sale', 'OnSaleOrderCanceled', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleCancelOrderHandlerEvent');
+
+		$eventManager->unRegisterEventHandler('sale', 'OnSaleOrderPaid', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSalePayOrderHandlerEvent');
+		
+		RegisterModuleDependences("sale", "OnBasketOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleOrderAdd", 100);
+		RegisterModuleDependences("sale", "OnSaleStatusOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleStatusOrderHandler", 100);
+		RegisterModuleDependences("sale", "OnSaleDeliveryOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleDeliveryOrderHandler", 100);
+		RegisterModuleDependences("sale", "OnSaleDeductOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleDeductOrderHandler", 100);
+		RegisterModuleDependences("sale", "OnSaleCancelOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSaleCancelOrderHandler", 100);
+		RegisterModuleDependences("sale", "OnSalePayOrder", "sale", "\\Bitrix\\Sale\\Product2ProductTable", "onSalePayOrderHandler", 100);
+
 	}
 
 }

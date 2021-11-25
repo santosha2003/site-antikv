@@ -21,12 +21,15 @@ class Tools
 		$lastModificationHash = Option::get("mobileapp","mobile_core_modification","");
 		$coreMobileFileList = array(
 			"/bitrix/js/main/core/core.js",
+			"/bitrix/js/main/core/core_promise.js",
 			"/bitrix/js/main/core/core_ajax.js",
+			"/bitrix/js/main/core/core_db.js",
 			"/bitrix/js/mobileapp/bitrix_mobile.js",
 			"/bitrix/js/mobileapp/mobile_lib.js"
 		);
 
 		$modificationHash = self::getArrayFilesHash($coreMobileFileList);
+
 		$coreFile = new File(Application::getDocumentRoot().self::$jsMobileCorePath);
 
 		if($modificationHash == $lastModificationHash && $coreFile->isExists())
@@ -61,11 +64,12 @@ class Tools
 		foreach ($fileList as $item)
 		{
 			$file = new File(Application::getDocumentRoot().$item);
+			$fileModificationString .= $item."|";
 			if($file->isExists())
 			{
 				$file->getModificationTime();
 				$fileModificationString .= "|".$file->getModificationTime();
-			}
+			}	
 		}
 
 		return md5($fileModificationString);

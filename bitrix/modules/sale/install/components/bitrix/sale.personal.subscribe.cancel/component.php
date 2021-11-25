@@ -1,6 +1,8 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
+$this->setFramemode(false);
+
 if (!CModule::IncludeModule("sale"))
 {
 	ShowError(GetMessage("SALE_MODULE_NOT_INSTALL"));
@@ -33,7 +35,7 @@ if ($ID > 0 && $_REQUEST["CANCEL_SUBSCRIBE"] == "Y" && check_bitrix_sessid())
 			array("ID" => "DESC"),
 			array(
 					"ID" => $ID,
-					"USER_ID" => IntVal($USER->GetID())
+					"USER_ID" => intval($USER->GetID())
 				),
 			false,
 			false,
@@ -53,7 +55,7 @@ $dbRecurring = CSaleRecurring::GetList(
 		array("ID" => "DESC"),
 		array(
 				"ID" => $ID,
-				"USER_ID" => IntVal($GLOBALS["USER"]->GetID())
+				"USER_ID" => intval($GLOBALS["USER"]->GetID())
 			),
 		false,
 		false,

@@ -3,9 +3,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 	include(GetLangFileName(dirname(__FILE__)."/", "/result_rec.php"));
 
-	$cs1 = IntVal($_POST["order_id"]);
+	$cs1 = intval($_POST["order_id"]);
 	if($cs1 <= 0)
-		$cs1 = IntVal($_POST["cs1"]);
+		$cs1 = intval($_POST["cs1"]);
 	$bCorrectPayment = True;
 	$techMessage = "";
 	if(!($arOrder = CSaleOrder::GetByID($cs1)))
@@ -14,14 +14,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		$techMessage = GetMessage("SALE_CHR_REC_ORDER");
 	}
 
+	if ($bCorrectPayment)
+		CSalePaySystemAction::InitParamArrays($arOrder, $arOrder["ID"]);
+
 	$sharedsecB = CSalePaySystemAction::GetParamValue("SHARED");
 
-	if(strlen($sharedsecB) <= 0)
+	if($sharedsecB == '')
 		$bCorrectPayment = False;
 
 	if ($bCorrectPayment)
 	{
-		CSalePaySystemAction::InitParamArrays($arOrder, $arOrder["ID"]);
 		$productIdB = CSalePaySystemAction::GetParamValue("PRODUCT_ID");
 		$orderIdB = CSalePaySystemAction::GetParamValue("ORDER_ID");
 		$product_priceB = number_format(CSalePaySystemAction::GetParamValue("SHOULD_PAY"), 2, '.', '');

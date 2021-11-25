@@ -22,9 +22,6 @@ $MESS["BT_SALE_DISCOUNT_SECTIONS_COND_ADD"] = "Additional conditions";
 $MESS["BT_SALE_DISCOUNT_SECTIONS_APP"] = "Actions";
 $MESS["BT_SALE_DISCOUNT_EDIT_ERR_ADD"] = "Error in adding rule";
 $MESS["BT_SALE_DISCOUNT_EDIT_ERR_UPDATE"] = "Error in changing rule with ID #ID#";
-$MESS["BT_SALE_DISCOUNT_ACTIONS_SELECT_CONTROL"] = "Choose an action";
-$MESS["BT_SALE_DISCOUNT_ACTIONS_ADD_CONTROL"] = "Add action";
-$MESS["BT_SALE_DISCOUNT_ACTIONS_DELETE_CONTROL"] = "Delete action";
 $MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_SORT"] = "Sorting index (for rules with equal priority)";
 $MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_DESCR"] = "(discounts with lower index apply first)";
 $MESS["BT_SALE_DISCOUNT_EDIT_MESS_ADD_DISCOUNT"] = "Create new rule";
@@ -48,4 +45,7 @@ $MESS["BX_SALE_DISCOUNT_EDIT_FIELDS_COUPON_TYPE"] = "Coupon type:";
 $MESS["BX_SALE_DISCOUNT_EDIT_FIELDS_COUPON_MAX_USE"] = "Maximum uses:";
 $MESS["BX_SALE_DISCOUNT_EDIT_ERR_COUPONS_COUNT"] = "The number of coupons to create is not specified";
 $MESS["BX_SALE_DISCOUNT_EDIT_ERR_MODULE_CATALOG_IS_ABSENT"] = "Failed to load the Commercial Catalog module. Cannot access the shopping cart rule conditions and actions API's.";
+$MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_LAST_LEVEL_DISCOUNT"] = "Don't apply discounts beyond current priority level";
+$MESS["BT_SALE_DISCOUNT_EDIT_FIELDS_SORT_2"] = "Sort index inside priority level";
+$MESS["BT_SALE_DISCOUNT_SECTION_PRIORITY"] = "Priority settings";
 ?>

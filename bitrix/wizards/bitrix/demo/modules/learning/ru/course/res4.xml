@@ -1,52 +1,182 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<content type="LES"><id>1279</id>
-<timestamp_x>1209554475</timestamp_x>
-<date_create>1209553492</date_create>
-<created_by>6104</created_by>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>874</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>300</sort>
+<timestamp_x>1406636850</timestamp_x>
+<date_create>1406636850</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
 <active>Y</active>
-<course_id>1</course_id>
-<chapter_id></chapter_id>
-<name>����� ��������������</name>
-<sort>30</sort>
+<name>Видеоматериалы</name>
 <preview_picture></preview_picture>
 <preview_text></preview_text>
 <preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p>На данной странице представлены доступные для скачивания учебные видеоматериалы, которые помогут Вам быстро освоить систему <b>1С-Битрикс: Управление сайтом</b>. Видеоролики демонстрируют основные функциональные возможности продукта.</p>
+
+<p><div class="hint"><b>Примечание</b>: Некоторые видеоролики созданы на примере интерфейса до версии 9.5 (до интерфейса <b>Эрмитаж</b>). Эти материалы помечены: <b>*</b>. Принципиально работа продукта в разных интерфейсах не меняется, но возможны расхождения в названиях команд, расположении кнопок и некоторые другие несовпадения.</div></p>
+
+
+<table cellspacing=0 cellpadding=0>        
+  <tbody> 
+    <tr bgcolor="white">
+    <td bgcolor="#8C8C8C"> 
+
+<table cellspacing="1" cellpadding="5">
+   <tbody>
+      <tr bgcolor="#eeeeee">
+        <td><b>Название видеоролика</b></td>
+        <td><b>Размер файла, Мб</b></td>
+        <td><b>Длительность, мин:сек</b></td>
+      </tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Интерфейс продукта</b></td></tr>
+          
+      <tr bgcolor="#eeeeee">
+        <td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/View_1.flv">Режим просмотра</a> <b>*</b></td>
+        <td align="center">14.34</td>
+        <td align="center">4:07</td>
+      </tr>
+  
+      <tr bgcolor="#ffffff">
+        <td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/mode_edit.flv">Режим редактирования</a> <b>*</b></td>
+        <td align="center">15.66</td>
+        <td align="center">3:59</td>
+      </tr>
+
+      <tr bgcolor="#eeeeee">
+        <td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/mode_razr.flv">Режим разработки</a> <b>*</b></td>
+        <td align="center">12.11</td>
+        <td align="center">2:39</td>
+      </tr>
+  
+      <tr bgcolor="#ffffff">
+        <td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/custom_interface.flv">Управление настройками интерфейса</a> <b>*</b></td>
+        <td align="center">12.01</td>
+        <td align="center">2:32</td>
+      </tr>
+
+       <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/ad_iface.flv">Интерфейс административного раздела</a> <b>*</b></td><td align="center">8.11</td><td align="center">2:16</td></tr>
+
+     <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/hermitage.mp4">Интерфейс Эрмитаж</a></td><td align="center">14.59</td><td align="center">11:44</td></tr>
+
+     <tr bgcolor="#eeeeee"><td><a href="/images/curs_b24/group/wiki/general_form_of_a_wiki_page/story.html">Общий вид вики-страницы</a></td><td align="center">интерактивный видеоролик</td><td align="center">интерактивный видеоролик</td></tr>
+
+
+
+<tr bgcolor="#8C8C8C"><td><b>Работа с элементами</b></td></tr>
+
+ <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/element_list.flv">Список элементов</a> <b>*</b></td><td align="center">17.83</td><td align="center">4:38</td></tr>
+
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/elem_list.flv">Работа со списком элементов</a></td><td align="center">8.76</td><td align="center">3:32</td></tr>
+
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/elevent_form.flv">Форма редактирования элемента</a> <b>*</b></td><td align="center">4.9</td><td align="center">1:02</td></tr>
+
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/edit_form.flv">Работа с формой редактирования</a></td><td align="center">6.17</td><td align="center">1:48</td></tr>
+
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/filter.flv">Работа с формой фильтра</a></td><td align="center">3.54</td><td align="center">1:44</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Работа с контентом</b></td></tr>
+
+ <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/page_new.flv">Создание новой страницы</a> <b>*</b></td><td align="center">10.54</td><td align="center">4:26</td></tr>
+
+ <tr bgcolor="#eeeeee"><td><a href="/images/curs_b24/group/wiki/create_first_page/story.html">Создание страницы в Wiki</a></td><td align="center">интерактивный видеоролик</td><td align="center">интерактивный видеоролик</td></tr>
+
+
+ <tr bgcolor="#ffffff"><td><a href="/images/curs_b24/group/wiki/category/story.html">Работа с разделами Wiki</a></td><td align="center">интерактивный видеоролик</td><td align="center">интерактивный видеоролик</td></tr>
+
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/page_edit.flv">Редактирование страницы</a> <b>*</b></td><td align="center">9.86</td><td align="center">2:52</td></tr>
+
+  <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/images/integration_course/menu/menu_types.swf">Типы меню</a> <b>*</b></td><td align="center">flash</td><td align="center">flash</td></tr>
+
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/menu_edit.flv">Редактирование меню</a> <b>*</b></td><td align="center">5.6</td><td align="center">1:50</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Модули и компоненты</b></td></tr>
+
+ <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/photogal.wmv">Фотогалерея</a></td><td align="center">14.87</td><td align="center">4:53</td></tr>
+
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/calendar.flv">Календарь</a> <b>*</b></td><td align="center">22.31</td><td align="center">8:41</td></tr>
+
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/web_form.flv">Размещение веб-формы на сайте</a> <b>*</b></td><td align="center">7.41</td><td align="center">2:20</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/cms/seo.flv">Модуль Поисковая оптимизация</a> <b>*</b></td><td align="center">35.43</td><td align="center">8:12</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/adv_camp.flv">Анализ эффективности рекламной компании</a></td><td align="center">8.44</td><td align="center">3:36</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Визуальный HTML-редактор. Режимы работы</b></td></tr>
+
+<tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/4-1.flv">Режимы работы редактора. Редактирование страницы</a> <b>*</b></td><td align="center">10.46</td><td align="center">3:03</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/4-2.flv">Режим редактирования. Редактирование текстовых описаний</a> <b>*</b></td><td align="center">10.68</td><td align="center">1:48</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/4-3.flv">Режим редактирования. Редактирование шаблона</a> <b>*</b></td><td align="center">14.34</td><td align="center">4:07</td></tr>
+
+
+<tr bgcolor="#8C8C8C"><td><b>Визуальный HTML-редактор. Интерфейс</b></td></tr>
+
+<tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/5-1.flv">Внешний вид редактора. Часть первая</a> <b>*</b></td><td align="center">7.86</td><td align="center">2:17</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/5-2.flv">Внешний вид редактора. Часть вторая</a> <b>*</b></td><td align="center">7.67</td><td align="center">2:01</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/5-3.flv">Настройка внешнего вида редактора</a> <b>*</b></td><td align="center">7.09</td><td align="center">2:28</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Визуальный HTML-редактор. Работа с текстом</b></td></tr>
+
+<tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-1.flv">Текст. Форматирование. Часть первая</a> <b>*</b></td><td align="center">15.45</td><td align="center">3:24</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-2.flv">Текст. Форматирование.Часть вторая</a> <b>*</b></td><td align="center">9.78</td><td align="center">3:14</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-3.flv">Текст. Копирование и вставка. Часть первая</a> <b>*</b></td><td align="center">12.01</td><td align="center">3:01</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-4.flv">Текст. Копирование и вставка.Часть вторая</a> <b>*</b></td><td align="center">5.05</td><td align="center">1:51</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="https://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-5.flv">Текст. Проверка орфографии. Часть первая</a> <b>*</b></td><td align="center">17.59</td><td align="center">2:02</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-6.flv">Текст. Проверка орфографии. Часть вторая</a> <b>*</b></td><td align="center">6.99</td><td align="center">1:04</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/6-7.flv">Текст. Добавление спецсимволов</a> <b>*</b></td><td align="center">2.55</td><td align="center">0:29</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Визуальный HTML-редактор. Загрузка графики</b></td></tr>
+
+ <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/7-1.flv">Загрузка и размещение изображения. Часть первая</a> <b>*</b></td><td align="center">6.08</td><td align="center">4:07</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/7-2.flv">Загрузка и размещение изображения. Часть вторая</a> <b>*</b></td><td align="center">7.75</td><td align="center">2:07</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/7-3.flv">Загрузка и размещение изображения. Часть третья</a> <b>*</b></td><td align="center">6.7</td><td align="center">2:38</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/7-4.flv">Загрузка видеоролика</a> <b>*</b></td><td align="center">5.32</td><td align="center">1:36</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Визуальные компоненты</b></td></tr>
+
+ <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/8-1.flv">Работа с гиперссылками. Часть первая</a> <b>*</b></td><td align="center">9.75</td><td align="center">2:48</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/8-2.flv">Работа с гиперссылками. Часть вторая</a> <b>*</b></td><td align="center">12.56</td><td align="center">2:07</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/9-1.flv">Работа с таблицами</a> <b>*</b></td><td align="center">7.74</td><td align="center">2:46</td></tr>
+
+<tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/images/components2/manage_params_public.swf" >Управление параметрами компонента из публичной части</a> <b>*</b></td><td align="center">flash</td><td align="center">flash</td></tr>
+
+
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/10-1.flv">Панель задач. Компоненты 2.0. Часть первая</a> <b>*</b></td><td align="center">10.73</td><td align="center">2:46</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/10-2.flv">Панель задач. Компоненты 2.0. Часть вторая</a> <b>*</b></td><td align="center">11.62</td><td align="center">2:14</td></tr>
+
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/images/components2/components.swf">Пример использования простых и комплексных компонентов</a> <b>*</b></td><td align="center">flash</td><td align="center">flash</td></tr>
+
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/10-3.flv">Панель задач. Сниппеты. Часть первая</a> <b>*</b></td><td align="center">7.28</td><td align="center">2:05</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/10-4.flv">Панель задач. Сниппеты. Часть вторая</a> <b>*</b></td><td align="center">12.93</td><td align="center">2:37</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/10-5.flv">Панель задач. Работа с PHP-скриптом</a> <b>*</b></td><td align="center">8.89</td><td align="center">2:08</td></tr>
+
+<tr bgcolor="#8C8C8C"><td><b>Визуальный HTML-редактор. Дополнительные возможности</b></td></tr>
+
+ <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/11-1.flv">Дополнительные возможности. Разбиение страниц</a> <b>*</b></td><td align="center">5.22</td><td align="center">1:05</td></tr>
+    <tr bgcolor="#eeeeee"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/11-2.flv">Дополнительные возможности. Редактирование шаблона</a> <b>*</b></td><td align="center">6.56</td><td align="center">1:42</td></tr>
+    <tr bgcolor="#ffffff"><td><a href="http://dev.1c-bitrix.ru/download/files/video/learning/teachvideo/11-3.flv">Дополнительные возможности. Управление и настройка</a> <b>*</b></td><td align="center">11.53</td><td align="center">3:42</td></tr>
+   </tbody>
+</table>
+   </td></tr>
+
+  </tbody>
+</table>
+
+
+<p><div class="hint"><b>Примечание</b>: ролики по Визуальному редактору подготовлены компанией <a href="http://www.teachvideo.ru">Teachvideo</a>.</div></p>]]></detail_text>
 <detail_picture></detail_picture>
-<detail_text><![CDATA[<p>����� <b>��������������</b> ������ ���������� ��� ��������� ���������� ������� � �������� �� �����. ����� ������������� ��� ����� ����� ������� �����������, ��� ����� <b>���������</b>. </p>
-
-<p>��������, ������� �������� ����� ��� � ������� ������� �� ���������� �������, ��� � � ���������������� ����� � ������� ������������ ����� �������������� ��������.</p>
-
-<p><img src="cid:resources/res4/FKyeH.new_page_admin.png" width="329" height="133" border="0"/></p>
-
-<p>����� �������������� ����� ���������:</p>
-
-<ul>
-   <li>��������� �������� � ������� �������� ��� ������� �� ��������� �����:
- <br/><br /><img src="cid:resources/res4/m1Lek.access_opt.png" width="117" height="77" border="0"/>
-</li>
-   <li>������� ������� ��������: <img src="cid:resources/res4/2cSMT.delete_button_opt.png" width="75" height="24" border="0"/></li>
-   <li>�������, �������� ��� ����������� ������� ��������� ������� �������� ����� ���������������:
-<br /><br />
-<img src="cid:resources/res4/FursU.workflow_opt.png" width="217" height="101" border="0"/>
-</li>
-   <li>��������� ����� ��������:
-<br /><br />
-<img src="cid:resources/res4/ymd9o.cash_opt.png" width="204" height="80" border="0"/>
-
-</li>
-
-</ul>
-
-<p>� ������ �������������� ��� ���� �����������, �������������� �� ��������, ������� ����� �������� �� ���������� �����������:</p>
-<p><img src="cid:resources/res4/ZETuu.comp_buttons_opt.png" width="339" height="190" border="0"/>
-</p>
-<p>��������, ���� �������� ����������, ���������� ��������� �������� ��������� <i>������� �������</i>, �������� ����� ��������:</p>
-
-<p><img src="cid:resources/res4/lvzu5.add_element_opt.png" width="161" height="76" border="0"/>
-</p>
-<p>��� ������ �������� <b>�������� �������</b> ������������ ����� �������������� �������� � ��������� �����:</p>
-<p><img src="cid:resources/res4/QkaFe.add_element_form_sm.png" style="CURSOR: pointer" height="250" alt="������� �� �������, ����� ���������" width="350" border="0"/></p>
-
-<p>����� ���������� ������� ����� �������� � ����������� � ��������� �����.</p>]]></detail_text>
 <detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>300</edge_sort>
+<id>874</id>
 </content>

@@ -1,29 +1,20 @@
 <?php
+use Bitrix\Catalog;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/general/store.php");
 
-class CCatalogStore
-	extends CAllCatalogStore
+class CCatalogStore extends CAllCatalogStore
 {
 	/** Add new store in table b_catalog_store,
 	 * @static
 	 * @param $arFields
 	 * @return bool|int
 	 */
-	static function Add($arFields)
+	public static function Add($arFields)
 	{
 		/** @global CDataBase $DB */
 
 		global $DB;
-
-		if(!CBXFeatures::IsFeatureEnabled('CatMultiStore'))
-		{
-			$dbResultList = CCatalogStore::GetList(array(), array(), false, array('NAV_PARAMS' => array("nTopCount" => "1")), array("ID"));
-			if($arResult = $dbResultList->Fetch())
-			{
-				$GLOBALS["APPLICATION"]->ThrowException(GetMessage("CS_ALREADY_HAVE_STORE"));
-				return false;
-			}
-		}
 
 		foreach (GetModuleEvents("catalog", "OnBeforeCatalogStoreAdd", true) as $arEvent)
 		{
@@ -51,16 +42,18 @@ class CCatalogStore
 			return false;
 		$lastId = intval($DB->LastID());
 
+		Catalog\StoreTable::getEntity()->cleanCache();
+
 		foreach(GetModuleEvents("catalog", "OnCatalogStoreAdd", true) as $arEvent)
 			ExecuteModuleEventEx($arEvent, array($lastId, $arFields));
 
 		return $lastId;
 	}
 
-	static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
-		
+
 		if (empty($arSelectFields))
 			$arSelectFields = array(
 				"ID",
@@ -81,8 +74,8 @@ class CCatalogStore
 				"EMAIL",
 				"ISSUING_CENTER",
 				"SHIPPING_CENTER",
-				"SITE_ID"
-				/*, "BASE"*/
+				"SITE_ID",
+				"CODE"
 			);
 
 		$keyForDelete = array_search("PRODUCT_AMOUNT", $arSelectFields);
@@ -131,9 +124,27 @@ class CCatalogStore
 			"ISSUING_CENTER" => array("FIELD" => "CS.ISSUING_CENTER", "TYPE" => "char"),
 			"SHIPPING_CENTER" => array("FIELD" => "CS.SHIPPING_CENTER", "TYPE" => "char"),
 			"SITE_ID" => array("FIELD" => "CS.SITE_ID", "TYPE" => "string"),
+			"CODE" => array("FIELD" => "CS.CODE", "TYPE" => "string"),
 			"PRODUCT_AMOUNT" => array("FIELD" => "CP.AMOUNT", "TYPE" => "double", "FROM" => "LEFT JOIN b_catalog_store_product CP ON (CS.ID = CP.STORE_ID AND CP.PRODUCT_ID IN ".$productID.")"),
 			"ELEMENT_ID" => array("FIELD" => "CP.PRODUCT_ID", "TYPE" => "int")
 		);
+
+		if (!is_array($arOrder))
+		{
+			$arOrder = [];
+		}
+		if (!empty($arOrder))
+		{
+			$arOrder = array_change_key_case($arOrder, CASE_UPPER);
+			foreach (array_keys($arOrder) as $field)
+			{
+				$arOrder[$field] = strtoupper($arOrder[$field]);
+				if ($arOrder[$field] !== 'DESC')
+				{
+					$arOrder[$field] = 'ASC';
+				}
+			}
+		}
 
 		$userField = new CUserTypeSQL();
 		$userField->SetEntity("CAT_STORE", "CS.ID");
@@ -142,7 +153,7 @@ class CCatalogStore
 		$userField->SetOrder($arOrder);
 
 		$strUfFilter = $userField->GetFilter();
-		$strSqlUfFilter = (strlen($strUfFilter) > 0) ? " (".$strUfFilter.") " : "";
+		$strSqlUfFilter = ($strUfFilter <> '') ? " (".$strUfFilter.") " : "";
 
 
 		$strSqlUfOrder = "";
@@ -152,11 +163,10 @@ class CCatalogStore
 			if (empty($field))
 				continue;
 
-			if (strlen($strSqlUfOrder) > 0)
+			if ($strSqlUfOrder <> '')
 				$strSqlUfOrder .= ', ';
 			$strSqlUfOrder .= $field." ".$by;
 		}
-
 
 		$arSqls = CCatalog::PrepareSql($arFields, $arOrder, $arFilter, $arGroupBy, $arSelectFields);
 		$arSqls["SELECT"] = str_replace("%%_DISTINCT_%%", "", $arSqls["SELECT"]);
@@ -167,11 +177,10 @@ class CCatalogStore
 			if (!empty($arSqls["WHERE"]))
 				$strSql .= " WHERE ".$arSqls["WHERE"]." ";
 
-			if (strlen($arSqls["WHERE"]) > 0 && strlen($strSqlUfFilter) > 0)
+			if ($arSqls["WHERE"] <> '' && $strSqlUfFilter <> '')
 				$strSql .= " AND ".$strSqlUfFilter." ";
-			elseif (strlen($arSqls["WHERE"]) == 0 && strlen($strSqlUfFilter) > 0)
+			elseif ($arSqls["WHERE"] == '' && $strSqlUfFilter <> '')
 				$strSql .= " WHERE ".$strSqlUfFilter." ";
-
 
 			if (!empty($arSqls["GROUPBY"]))
 				$strSql .= " GROUP BY ".$arSqls["GROUPBY"];
@@ -186,9 +195,9 @@ class CCatalogStore
 		if (!empty($arSqls["WHERE"]))
 			$strSql .= " WHERE ".$arSqls["WHERE"]." ";
 
-		if (strlen($arSqls["WHERE"]) > 0 && strlen($strSqlUfFilter) > 0)
+		if ($arSqls["WHERE"] <> '' && $strSqlUfFilter <> '')
 			$strSql .= " AND ".$strSqlUfFilter." ";
-		elseif (strlen($arSqls["WHERE"]) <= 0 && strlen($strSqlUfFilter) > 0)
+		elseif ($arSqls["WHERE"] == '' && $strSqlUfFilter <> '')
 			$strSql .= " WHERE ".$strSqlUfFilter." ";
 
 		if (!empty($arSqls["GROUPBY"]))
@@ -196,9 +205,8 @@ class CCatalogStore
 
 		if (!empty($arSqls["ORDERBY"]))
 			$strSql .= " ORDER BY ".$arSqls["ORDERBY"];
-		elseif (strlen($arSqls["ORDERBY"]) <= 0 && strlen($strSqlUfOrder) > 0)
+		elseif ($arSqls["ORDERBY"] == '' && $strSqlUfOrder <> '')
 			$strSql .= " ORDER BY ".$strSqlUfOrder;
-
 
 		$intTopCount = 0;
 		$boolNavStartParams = (!empty($arNavStartParams) && is_array($arNavStartParams));
@@ -211,9 +219,9 @@ class CCatalogStore
 			if (!empty($arSqls["WHERE"]))
 				$strSql_tmp .= " WHERE ".$arSqls["WHERE"];
 
-			if (strlen($arSqls["WHERE"]) > 0 && strlen($strSqlUfFilter) > 0)
+			if ($arSqls["WHERE"] <> '' && $strSqlUfFilter <> '')
 				$strSql_tmp .= " AND ".$strSqlUfFilter." ";
-			elseif (strlen($arSqls["WHERE"]) <= 0 && strlen($strSqlUfFilter) > 0)
+			elseif ($arSqls["WHERE"] == '' && $strSqlUfFilter <> '')
 				$strSql_tmp .= " WHERE ".$strSqlUfFilter." ";
 
 			if (!empty($arSqls["GROUPBY"]))

@@ -48,6 +48,7 @@ $APPLICATION->SetTitle(GetMessage("DEMO_IBLOCK_ESTORE_BOOKS_TITLE"));
 	"FILTER_PRICE_CODE" => array(
 	),
 	"USE_REVIEW" => "#MODULE.INSTALLED(ID=forum)#",
+	"REVIEW_AJAX_POST" => "Y",
 	"MESSAGES_PER_PAGE" => "5",
 	"USE_CAPTCHA" => "Y",
 	"PATH_TO_SMILE" => "/bitrix/images/forum/smile/",

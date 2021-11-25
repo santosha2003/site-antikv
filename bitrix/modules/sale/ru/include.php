@@ -7,9 +7,11 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 	$currency = (string)$currency;
 	if ($currency == '' || $currency == 'RUR')
 		$currency = 'RUB';
+	else if ($currency == 'BYR')
+		$currency = 'BYN';
 	if ($IS_MONEY == 'Y')
 	{
-		if ($currency != 'RUB' && $currency != 'UAH')
+		if ($currency != 'RUB' && $currency != 'UAH' && $currency != 'KZT' && $currency != 'BYN')
 			return $result;
 	}
 
@@ -82,6 +84,74 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 			"b" => "миллиардов ",
 			"k" => " копеек",
 		),
+		"BYN" => array(
+			"zero" => "ноль",
+			"1c" => "сто ",
+			"2c" => "двести ",
+			"3c" => "триста ",
+			"4c" => "четыреста ",
+			"5c" => "пятьсот ",
+			"6c" => "шестьсот ",
+			"7c" => "семьсот ",
+			"8c" => "восемьсот ",
+			"9c" => "девятьсот ",
+			"1d0e" => "десять ",
+			"1d1e" => "одиннадцать ",
+			"1d2e" => "двенадцать ",
+			"1d3e" => "тринадцать ",
+			"1d4e" => "четырнадцать ",
+			"1d5e" => "пятнадцать ",
+			"1d6e" => "шестнадцать ",
+			"1d7e" => "семнадцать ",
+			"1d8e" => "восемнадцать ",
+			"1d9e" => "девятнадцать ",
+			"2d" => "двадцать ",
+			"3d" => "тридцать ",
+			"4d" => "сорок ",
+			"5d" => "пятьдесят ",
+			"6d" => "шестьдесят ",
+			"7d" => "семьдесят ",
+			"8d" => "восемьдесят ",
+			"9d" => "девяносто ",
+			"5e" => "пять ",
+			"6e" => "шесть ",
+			"7e" => "семь ",
+			"8e" => "восемь ",
+			"9e" => "девять ",
+			"1et" => "одна тысяча ",
+			"2et" => "две тысячи ",
+			"3et" => "три тысячи ",
+			"4et" => "четыре тысячи ",
+			"1em" => "один миллион ",
+			"2em" => "два миллиона ",
+			"3em" => "три миллиона ",
+			"4em" => "четыре миллиона ",
+			"1eb" => "один миллиард ",
+			"2eb" => "два миллиарда ",
+			"3eb" => "три миллиарда ",
+			"4eb" => "четыре миллиарда ",
+			"1e." => "один белорусский рубль ",
+			"2e." => "два белорусских рубля ",
+			"3e." => "три белорусских рубля ",
+			"4e." => "четыре белорусских рубля ",
+			"1e" => "один ",
+			"2e" => "два ",
+			"3e" => "три ",
+			"4e" => "четыре ",
+			"11k" => "11 копеек",
+			"12k" => "12 копеек",
+			"13k" => "13 копеек",
+			"14k" => "14 копеек",
+			"1k" => "1 копейка",
+			"2k" => "2 копейки",
+			"3k" => "3 копейки",
+			"4k" => "4 копейки",
+			"." => "белорусских рублей ",
+			"t" => "тысяч ",
+			"m" => "миллионов ",
+			"b" => "миллиардов ",
+			"k" => " копеек",
+		),
 		"UAH" => array(
 			"zero" => "нyль",
 			"1c" => "сто ",
@@ -92,7 +162,7 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 			"6c" => "шістсот ",
 			"7c" => "сімсот ",
 			"8c" => "вісімсот ",
-			"9c" => "дев'ятьсот ",
+			"9c" => "дев'ятсот ",
 			"1d0e" => "десять ",
 			"1d1e" => "одинадцять ",
 			"1d2e" => "дванадцять ",
@@ -116,12 +186,12 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 			"7e" => "сім ",
 			"8e" => "вісім ",
 			"9e" => "дев'ять ",
-			"1e." => "один гривня ",
-			"2e." => "два гривні ",
+			"1e." => "одна гривня ",
+			"2e." => "дві гривні ",
 			"3e." => "три гривні ",
 			"4e." => "чотири гривні ",
-			"1e" => "один ",
-			"2e" => "два ",
+			"1e" => "одна ",
+			"2e" => "дві ",
 			"3e" => "три ",
 			"4e" => "чотири ",
 			"1et" => "одна тисяча ",
@@ -149,6 +219,74 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 			"m" => "мільйонів ",
 			"b" => "мільярдів ",
 			"k" => " копійок",
+		),
+		"KZT" => array(
+			"zero" => "ноль",
+			"1c" => "сто ",
+			"2c" => "двести ",
+			"3c" => "триста ",
+			"4c" => "четыреста ",
+			"5c" => "пятьсот ",
+			"6c" => "шестьсот ",
+			"7c" => "семьсот ",
+			"8c" => "восемьсот ",
+			"9c" => "девятьсот ",
+			"1d0e" => "десять ",
+			"1d1e" => "одиннадцать ",
+			"1d2e" => "двенадцать ",
+			"1d3e" => "тринадцать ",
+			"1d4e" => "четырнадцать ",
+			"1d5e" => "пятнадцать ",
+			"1d6e" => "шестнадцать ",
+			"1d7e" => "семнадцать ",
+			"1d8e" => "восемнадцать ",
+			"1d9e" => "девятнадцать ",
+			"2d" => "двадцать ",
+			"3d" => "тридцать ",
+			"4d" => "сорок ",
+			"5d" => "пятьдесят ",
+			"6d" => "шестьдесят ",
+			"7d" => "семьдесят ",
+			"8d" => "восемьдесят ",
+			"9d" => "девяносто ",
+			"5e" => "пять ",
+			"6e" => "шесть ",
+			"7e" => "семь ",
+			"8e" => "восемь ",
+			"9e" => "девять ",
+			"1et" => "одна тысяча ",
+			"2et" => "две тысячи ",
+			"3et" => "три тысячи ",
+			"4et" => "четыре тысячи ",
+			"1em" => "один миллион ",
+			"2em" => "два миллиона ",
+			"3em" => "три миллиона ",
+			"4em" => "четыре миллиона ",
+			"1eb" => "один миллиард ",
+			"2eb" => "два миллиарда ",
+			"3eb" => "три миллиарда ",
+			"4eb" => "четыре миллиарда ",
+			"1e." => "один тенге ",
+			"2e." => "два тенге ",
+			"3e." => "три тенге ",
+			"4e." => "четыре тенге ",
+			"1e" => "один ",
+			"2e" => "два ",
+			"3e" => "три ",
+			"4e" => "четыре ",
+			"11k" => "11 тиын",
+			"12k" => "12 тиын",
+			"13k" => "13 тиын",
+			"14k" => "14 тиын",
+			"1k" => "1 тиын",
+			"2k" => "2 тиын",
+			"3k" => "3 тиын",
+			"4k" => "4 тиын",
+			"." => "тенге ",
+			"t" => "тысяч ",
+			"m" => "миллионов ",
+			"b" => "миллиардов ",
+			"k" => " тиын",
 		)
 	);
 
@@ -156,7 +294,7 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 	if ($IS_MONEY == "Y")
 	{
 		$source = (string)((float)$source);
-		$dotpos = strpos($source, ".");
+		$dotpos = mb_strpos($source, ".");
 		if ($dotpos === false)
 		{
 			$ipart = $source;
@@ -164,19 +302,19 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 		}
 		else
 		{
-			$ipart = substr($source, 0, $dotpos);
-			$fpart = substr($source, $dotpos + 1);
+			$ipart = mb_substr($source, 0, $dotpos);
+			$fpart = mb_substr($source, $dotpos + 1);
 			if ($fpart === false)
 				$fpart = '';
 		}
 		;
-		if (strlen($fpart) > 2)
+		if (mb_strlen($fpart) > 2)
 		{
-			$fpart = substr($fpart, 0, 2);
+			$fpart = mb_substr($fpart, 0, 2);
 			if ($fpart === false)
 				$fpart = '';
 		}
-		$fillLen = 2 - strlen($fpart);
+		$fillLen = 2 - mb_strlen($fpart);
 		if ($fillLen > 0)
 			$fpart .= str_repeat('0', $fillLen);
 		unset($fillLen);
@@ -193,12 +331,12 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 	}
 
 	$ipart1 = strrev($ipart);
-	$ipart1Len = strlen($ipart1);
+	$ipart1Len = mb_strlen($ipart1);
 	$ipart = "";
 	$i = 0;
 	while ($i < $ipart1Len)
 	{
-		$ipart_tmp = substr($ipart1, $i, 1);
+		$ipart_tmp = mb_substr($ipart1, $i, 1);
 		// t - thousands; m - millions; b - billions;
 		// e - units; d - scores; c - hundreds;
 		if ($i % 3 == 0)
@@ -226,7 +364,7 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 			$result = $arNumericLang[$currency]['zero'];
 	}
 
-	if (substr($result, 0, 1) == ".")
+	if (mb_substr($result, 0, 1) == ".")
 		$result = $arNumericLang[$currency]['zero']." ".$result;
 
 	$result = str_replace("0c0d0et", "", $result);
@@ -314,7 +452,7 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 
 	if ($IS_MONEY == "Y")
 	{
-		if (substr($result, 0, 1) == ".")
+		if (mb_substr($result, 0, 1) == ".")
 			$result = $arNumericLang[$currency]['zero']." ".$result;
 
 		$result = str_replace(".", $arNumericLang[$currency]["."], $result);
@@ -327,5 +465,5 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 	if ($IS_MONEY == "Y")
 		$result = str_replace("k", $arNumericLang[$currency]["k"], $result);
 
-	return (ToUpper(substr($result, 0, 1)).substr($result, 1));
+	return (ToUpper(mb_substr($result, 0, 1)).mb_substr($result, 1));
 }

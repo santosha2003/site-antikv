@@ -1,5 +1,0 @@
-<?
-$MESS['SPSL_DEFAULT_TEMPLATE_NAME'] = 'Prenumeratø sàraðas dabartiniam vartotojui';
-$MESS['SPSL_DEFAULT_TEMPLATE_DESCRIPTION'] = 'Rodo prenumeratø sàraðà dabartiniam vartotojui';
-$MESS['SPSL_NAME'] = 'Prenumeratø sàraðas dabartiniam vartotojui';
-?>

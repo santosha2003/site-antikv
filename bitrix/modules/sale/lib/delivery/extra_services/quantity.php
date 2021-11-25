@@ -2,7 +2,6 @@
 
 namespace Bitrix\Sale\Delivery\ExtraServices;
 
-use Bitrix\Main\SystemException;
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
@@ -18,14 +17,14 @@ class Quantity extends Base
 		$this->params["TYPE"] = "STRING";
 	}
 
-	public function getClassTitle()
+	public static function getClassTitle()
 	{
 		return Loc::getMessage("DELIVERY_EXTRA_SERVICE_QUANTITY_TITLE");
 	}
 
 	public function setValue($value)
 	{
-		$this->value = intval($value);
+		$this->value = intval($value) >= 0 ? intval($value) : 0;
 	}
 
 	public function getCost()
@@ -40,7 +39,12 @@ class Quantity extends Base
 
 	public static function getAdminParamsControl($name, array $params = array(), $currency = "")
 	{
-		return '<input type="text" name="'.$name.'[PARAMS][PRICE]" value="'.$params["PARAMS"]["PRICE"].'">'.(strlen($currency) > 0 ? " (".$currency.")" : "");
+		if(!empty($params["PARAMS"]["PRICE"]))
+			$price = roundEx(floatval($params["PARAMS"]["PRICE"]), SALE_VALUE_PRECISION);
+		else
+			$price = 0;
+
+		return '<input type="text" name="'.$name.'[PARAMS][PRICE]" value="'.$price.'">'.($currency <> '' ? " (".htmlspecialcharsbx($currency).")" : "");
 	}
 
 	public function setOperatingCurrency($currency)
@@ -51,6 +55,7 @@ class Quantity extends Base
 
 	protected function createJSOnchange($id, $price)
 	{
+		$price = roundEx(floatval($price), SALE_VALUE_PRECISION);
 		return "BX.onCustomEvent('onDeliveryExtraServiceValueChange', [{'id' : '".$id."', 'value': this.value, 'price': this.value*parseFloat('".$price."')}]);";
 	}
 }

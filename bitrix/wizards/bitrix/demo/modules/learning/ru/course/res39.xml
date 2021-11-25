@@ -1,2 +1,39 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE39"><presentation><material><mattext>Поле «Очистить все настройки по умолчанию», расположенное на странице настроек интерфейса, позволяет:</mattext></material><response_lid ident="LID39" rcardinality="Single"><render_choice><response_label ident="ANS963"><material><mattext>отменить персональные настройки интерфейса для всех пользователей</mattext></material></response_label><response_label ident="ANS964"><material><mattext>отменить персональные настройки интерфейса для текущего пользователя</mattext></material></response_label><response_label ident="ANS965"><material><mattext>отменить настройки интерфейса, установленные для всех пользователей по умолчанию</mattext></material></response_label><response_label ident="ANS966"><material><mattext>установить для всех пользователей настройки интерфейса по умолчанию</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID39">ANS965</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>909</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>650</sort>
+<timestamp_x>1406636852</timestamp_x>
+<date_create>1406636852</date_create>
+<created_user_name>(admin) РРІР°РЅ РРІР°РЅРѕРІ</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Р—Р°РіСЂСѓР·РєР° С„Р°Р№Р»РѕРІ РЅР° СЃР°Р№С‚</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p>Р—Р°РіСЂСѓР¶Р°С‚СЊ Р»СЋР±С‹Рµ С„Р°Р№Р»С‹ РЅР° СЃР°Р№С‚ РјРѕР¶РЅРѕ РёР· Р°РґРјРёРЅРёСЃС‚СЂР°С‚РёРІРЅРѕРіРѕ СЂР°Р·РґРµР»Р° РІ СЃРїРµС†РёР°Р»СЊРЅРѕР№ С„РѕСЂРјРµ. РЈС‡С‚РёС‚Рµ, С‡С‚Рѕ РЅР°СЃС‚СЂРѕР№РєР°РјРё СЃР°Р№С‚Р° РјРѕРіСѓС‚ РЅР°РєР»Р°РґС‹РІР°С‚СЊСЃСЏ РѕРіСЂР°РЅРёС‡РµРЅРёСЏ РЅР° СЂР°Р·РјРµСЂ Р·Р°РіСЂСѓР¶Р°РµРјС‹С… С„Р°Р№Р»РѕРІ. Р Р°Р·РјРµСЂ СЌС‚РёС… РѕРіСЂР°РЅРёС‡РµРЅРёР№ РјРѕР¶РЅРѕ СѓР·РЅР°С‚СЊ Сѓ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° СЃР°Р№С‚Р°. РЎ РЅРёРј Р¶Рµ Рё РЅСѓР¶РЅРѕ СЂРµС€Р°С‚СЊ РІРѕРїСЂРѕСЃС‹ СѓРІРµР»РёС‡РµРЅРёСЏ, РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё, СЌС‚РѕРіРѕ РѕРіСЂР°РЅРёС‡РµРЅРёСЏ.</p>
+
+<div class="hint"><b>РџСЂРёРјРµС‡Р°РЅРёРµ!</b> РЎРёСЃС‚РµРјР° РїРѕРґРґРµСЂР¶РёРІР°РµС‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ С„Р°Р№Р»РѕРІ СЃ РёРјРµРЅР°РјРё РєР°Рє РЅР° Р»Р°С‚РёРЅРёС†Рµ, С‚Р°Рє Рё РЅР° РєРёСЂРёР»Р»РёС†Рµ, Р±РµР· РѕРіСЂР°РЅРёС‡РµРЅРёР№ РїРѕ СЂРµРіРёСЃС‚СЂСѓ. РќРµРґРѕРїСѓСЃС‚РёРјРѕ С‚РѕР»СЊРєРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ СЃРїРµС†СЃРёРјРІРѕР»РѕРІ: \ / ? * < > " '.</div>
+ 
+<p>РџРѕРґСЂРѕР±РЅРµРµ РїСЂРѕ Р·Р°РіСЂСѓР·РєСѓ С„Р°Р№Р»РѕРІ СЃРјРѕС‚СЂРёС‚Рµ РІ РєСѓСЂСЃРµ <b>РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ. Р‘Р°Р·РѕРІС‹Р№</b>, СѓСЂРѕРє <a href="/learning/course/index.php?COURSE_ID=35&amp;LESSON_ID=1932" >Р—Р°РіСЂСѓР·РєР° С„Р°Р№Р»РѕРІ РЅР° СЃР°Р№С‚</a>.</p>
+ 
+<p>Р•СЃР»Рё РЅРµРѕР±С…РѕРґРёРјРѕ Р·Р°РіСЂСѓР·РёС‚СЊ С„Р°Р№Р»С‹ РјСѓР»СЊС‚РёРјРµРґРёР°, С‚Рѕ Р»СѓС‡С€Рµ РІРѕСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РњРµРґРёР°Р±РёР±Р»РёРѕС‚РµРєРѕР№. РџРѕРґСЂРѕР±РЅРµРµ РѕР± СЌС‚РѕРј СЃРјРѕС‚СЂРёС‚Рµ РІ СЂР°Р·РґРµР»Рµ <a href="/learning/course/index.php?COURSE_ID=34&amp;CHAPTER_ID=648" target="_blank" >РњРµРґРёР°Р±РёР±Р»РёРѕС‚РµРєР°</a>.</p>
+<br>]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>650</edge_sort>
+<id>909</id>
+</content>

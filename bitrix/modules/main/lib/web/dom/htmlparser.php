@@ -1,11 +1,8 @@
 <?php
 namespace Bitrix\Main\Web\DOM;
 
-<<<<<<< HEAD
-use \Bitrix\Main\Text\String;
-=======
-use \Bitrix\Main\Text\TString;
->>>>>>> 4bb3e4deb359749a96a02a5e4d7c22ab1399e137
+use \Bitrix\Main\Text\HtmlFilter;
+
 class HtmlParser extends Parser
 {
 	public $debugTime = 0;
@@ -17,12 +14,14 @@ class HtmlParser extends Parser
 
 	protected static $objectCounter = 0;
 	protected $currentObjectNumber;
+	protected $storedItemCounter;
 	protected $storedPHP = array();
 
 	public function __construct()
 	{
 		static::$objectCounter++;
 		$this->currentObjectNumber = static::$objectCounter;
+		$this->storedItemCounter = 0;
 
 		$this->setConfig(new HtmlParserConfig);
 	}
@@ -57,7 +56,7 @@ class HtmlParser extends Parser
 				}
 				else
 				{
-					$source = String::htmlEncode($node->getNodeValue());
+					$source = HtmlFilter::encode($node->getNodeValue(), ENT_QUOTES);
 				}
 
 				break;
@@ -84,12 +83,12 @@ class HtmlParser extends Parser
 
 	protected function getSourceAttr(Attr $node)
 	{
-		return $node->getName() . '="' . String::htmlEncode($node->getValue()) . '"';
+		return $node->getName() . '="' . HtmlFilter::encode($node->getValue()) . '"';
 	}
 
 	protected function getSourceElement(Element $node)
 	{
-		$nodeName = strtolower($node->getNodeName());
+		$nodeName = mb_strtolower($node->getNodeName());
 		$source = '<' . $nodeName;
 		if($node->hasAttributes())
 		{
@@ -154,11 +153,7 @@ class HtmlParser extends Parser
 		}
 
 		$isCharOpen = true;
-		$isCharClose = false;
 		$buffer = '';
-
-		$text = trim($text);
-		$char = $charPrev = $charNext = '';
 
 		$textLength = strlen($text);
 		for($i = 0; $i < $textLength; $i++)
@@ -166,26 +161,18 @@ class HtmlParser extends Parser
 			$char = substr($text, $i, 1);
 			if($char === '<')
 			{
-				//echo $buffer;
 				$node = $this->getNextNode($buffer, $node);
-
-				$buffer = '';
-				$buffer .= $char;
-
+				$buffer = $char;
 				$isCharOpen = true;
-				$isCharClose = false;
 			}
 			elseif($char === '>')
 			{
 				$buffer .= $char;
 				if($isCharOpen)
 				{
-					//echo $buffer . "\n";
 					$node = $this->getNextNode($buffer, $node);
 					$buffer = '';
 				}
-
-				$isCharClose = true;
 				$isCharOpen = false;
 			}
 			else
@@ -199,6 +186,11 @@ class HtmlParser extends Parser
 			}
 		}
 
+		if($buffer != '')
+		{
+			$node = $this->getNextNode($buffer, $node);
+		}
+
 		return $node;
 	}
 
@@ -206,19 +198,16 @@ class HtmlParser extends Parser
 	{
 		$result = array('NAME' => '', 'ATTRIBUTES' => array());
 
-		//TODO: appends tabs and new strings
-		$list = explode(' ', $text);
-
-		if($list[0])
+		if(preg_match('/[ \t\r\n]/S', $text, $matches, PREG_OFFSET_CAPTURE))
 		{
-			$result['NAME'] = strtoupper($list[0]);
-		}
-
-		if($list[1])
-		{
-			unset($list[0]);
-			$textAttr = implode(' ', $list);
+			$delimiterPosition = $matches[0][1];
+			$result['NAME'] = mb_strtoupper(mb_substr($text, 0, $delimiterPosition));
+			$textAttr = mb_substr($text, $delimiterPosition + 1);
 			$result['ATTRIBUTES'] = $this->parseAttributes($textAttr);
+		}
+		else
+		{
+			$result['NAME'] = mb_strtoupper($text);
 		}
 
 		return $result;
@@ -248,19 +237,19 @@ class HtmlParser extends Parser
 		$attributes = array();
 		if ($text !== "")
 		{
-			preg_match_all("/(\\S+)\\s*=\\s*[\"](.*?)[\"]/s", $text, $attrTmp);
-			if(strpos($text, "&")===false)
+			preg_match_all("/(?'name'[\w\-_:?&]+)(?'eq'\s*=\s*)?(?(eq)([\"'])(?'val'.*?)\g{-2})/s", $text, $attrTmp);
+			if(mb_strpos($text, "&") === false)
 			{
-				foreach($attrTmp[1] as $i => $attrTmp1)
+				foreach($attrTmp['name'] as $i => $attrName)
 				{
-					$attributes[$attrTmp1] = $attrTmp[2][$i];
+					$attributes[$attrName] = $attrTmp['val'][$i];
 				}
 			}
 			else
 			{
-				foreach($attrTmp[1] as $i => $attrTmp1)
+				foreach($attrTmp['name'] as $i => $attrName)
 				{
-					$attributes[$attrTmp1] = preg_replace($search, $replace, $attrTmp[2][$i]);
+					$attributes[$attrName] = preg_replace($search, $replace, $attrTmp['val'][$i]);
 				}
 			}
 		}
@@ -296,25 +285,21 @@ class HtmlParser extends Parser
 		$node = null;
 		$isSingleTag = true;
 
-		$tagsWithoutClose = array('INPUT', 'IMG', 'BR', 'HR', 'META');
+		static $tagsWithoutClose = array('INPUT'=>1, 'IMG'=>1, 'BR'=>1, 'HR'=>1, 'META'=>1, 'AREA'=>1, 'BASE'=>1, 'COL'=>1, 'EMBED'=>1, 'KEYGEN'=>1, 'LINK'=>1, 'PARAM'=>1, 'SOURCE'=>1, 'TRACK'=>1, 'WBR'=>1);
 		$tagsCantHaveNestedTags = array();
 
-//echo 'taaaag: '.$tag."\n\n";
 		$document = $parentNode->getOwnerDocument();
 
 		if($parentNode->getNodeType() === Node::COMMENT_NODE)
 		{
-			//echo "COMMENT PART: $tag***\n";
-			$commentClosePosition = strpos($tag, '-->');
+			$commentClosePosition = mb_strpos($tag, '-->');
 			if($commentClosePosition !== false)
 			{
-				//echo "COMMENT FIND CLOSE: $tag***\n";
-				$clean = substr($tag, 0, $commentClosePosition);
+				$clean = mb_substr($tag, 0, $commentClosePosition);
 				$parentNode->setNodeValue($parentNode->getNodeValue() . $clean);
 				$parentNode->bxNodeFoundCloseTag = true;
 
-				$tag = substr($tag, $commentClosePosition + 3);
-				//echo "COMMENT END BUT HAVE CONTENT: ".var_dump($tag)."***\n";
+				$tag = mb_substr($tag, $commentClosePosition + 3);
 				if(!$tag)
 				{
 					return $parentNode->getParentNode();
@@ -323,8 +308,6 @@ class HtmlParser extends Parser
 				{
 					$parentNode = $parentNode->getParentNode();
 				}
-
-				//echo "NOT COMMENT TAG: $tag***\n";
 			}
 			else
 			{
@@ -334,7 +317,7 @@ class HtmlParser extends Parser
 		}
 		elseif(in_array($parentNode->getNodeName(), $this->tagsMustBeClosed))
 		{
-			if(strtoupper(substr($tag, -9)) == '</' . $parentNode->getNodeName() . '>')
+			if(mb_strtoupper(mb_substr($tag, -9)) == '</'.$parentNode->getNodeName().'>')
 			{
 				$parentNode->bxNodeFoundCloseTag = true;
 				$parentNode = $parentNode->getParentNode();
@@ -356,11 +339,11 @@ class HtmlParser extends Parser
 			}
 		}
 
-		if(substr($tag, 0, 2) === '</')
+		if(mb_substr($tag, 0, 2) === '</')
 		{
 			// closed tag
 			//TODO: find closest opened parent with same nodeName and return it
-			$cleaned = strtoupper(substr($tag, 2, -strlen('>') ));
+			$cleaned = mb_strtoupper(mb_substr($tag, 2, -mb_strlen('>')));
 			$searchableNode = $parentNode;
 			$isSearchableNodeFound = false;
 
@@ -408,18 +391,21 @@ class HtmlParser extends Parser
 				}
 				else
 				{
-					$parentNode->getParentNode()->bxNodeFoundCloseTag = true;
+					if ($parentNode->getParentNode())
+					{
+						$parentNode->getParentNode()->bxNodeFoundCloseTag = true;
+					}
 					return $parentNode;
 				}
 			}
 		}
-		elseif(substr($tag, 0, 4) === '<!--')
+		elseif(mb_substr($tag, 0, 4) === '<!--')
 		{
 			// Comment
-			$cleaned = substr($tag, 4);
-			if(substr($tag, -3) == '-->')
+			$cleaned = mb_substr($tag, 4);
+			if(mb_substr($tag, -3) == '-->')
 			{
-				$cleaned = substr($cleaned, 0, -3);
+				$cleaned = mb_substr($cleaned, 0, -3);
 				$parentNode->bxNodeFoundCloseTag = true;
 			}
 			else
@@ -431,29 +417,29 @@ class HtmlParser extends Parser
 			//$parentNode->bxNodeFoundCloseTag = false;
 			$node = $document->createComment($cleaned);
 		}
-		elseif(substr($tag, 0, 1) === '<')
+		elseif(mb_substr($tag, 0, 1) === '<')
 		{
 
 			// Element
-			if(substr($tag, -2) === '/>')
+			if(mb_substr($tag, -2) === '/>')
 			{
 				// empty tag
-				$cleaned = substr($tag, 1, -2);
+				$cleaned = mb_substr($tag, 1, -2);
 				$bxNodeWithCloseTag = false;
 				$isSingleTag = true;
 			}
 			else
 			{
-				$cleaned = substr($tag, 1, -1);
+				$cleaned = mb_substr($tag, 1, -1);
 				$isSingleTag = false;
 				$bxNodeWithCloseTag = true;
 			}
 
 			$list = $this->parseElement($cleaned);
 
-			$isDocType = substr($list['NAME'], 0, strlen('!DOCTYPE')) === '!DOCTYPE';
+			$isDocType = mb_substr($list['NAME'], 0, mb_strlen('!DOCTYPE')) === '!DOCTYPE';
 
-			if(in_array($list['NAME'], $tagsWithoutClose) || $isDocType)
+			if(isset($tagsWithoutClose[$list['NAME']]) || $isDocType)
 			{
 				$bxNodeWithCloseTag = false;
 				$isSingleTag = true;
@@ -478,10 +464,8 @@ class HtmlParser extends Parser
 		else
 		{
 			// Text
-			$cleaned = String::htmlDecode($tag);
-			$startTime = getmicrotime();
+			$cleaned = html_entity_decode($tag, ENT_QUOTES, (defined("BX_UTF") ? "UTF-8" : "ISO-8859-1"));
 			$node = $document->createTextNode($cleaned);
-			$this->debugTime += getmicrotime() - $startTime;
 		}
 
 		if($node && $parentNode)
@@ -517,7 +501,8 @@ class HtmlParser extends Parser
 			$prefix = 'BX_DOM_DOCUMENT_PHP_SLICE_PLACEHOLDER_' . $this->currentObjectNumber . '_';
 			foreach($matches as $key => $value)
 			{
-				$this->storedPHP['<!--' . $prefix . (string) $key . '-->'] = $value[0];
+				$this->storedItemCounter++;
+				$this->storedPHP['<!--' . $prefix . $this->storedItemCounter . '-->'] = $value[0];
 			}
 
 			$replaceFrom = array_values($this->storedPHP);

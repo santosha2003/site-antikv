@@ -13,7 +13,9 @@ if(!is_array($arParams)) $arParams = array();
 if(strlen($arParams["site_id"]) <= 0)
 	$arParams["site_id"] = "s1";
 
-$_SESSION["DEMO_IBLOCK_1C_CATALOG"] = CIBlockCMLImport::GetIBlockByXML_ID("FUTURE-1C-CATALOG");
+$import = new CIBlockCMLImport();
+
+$_SESSION["DEMO_IBLOCK_1C_CATALOG"] = $import->GetIBlockByXML_ID("FUTURE-1C-CATALOG");
 //Import XML
 if($_SESSION["DEMO_IBLOCK_1C_CATALOG"] === false)
 {
@@ -24,8 +26,7 @@ if($_SESSION["DEMO_IBLOCK_1C_CATALOG"] === false)
 		$rsLanguages = CLanguage::GetList(($b="sort"), ($o="asc"));
 		while($arLang = $rsLanguages->Fetch())
 		{
-			$file = dirname(__FILE__)."/lang/".$arLang["LANGUAGE_ID"]."/xmlcatalog-1c.php";
-			include($file);
+			__IncludeLang(GetLangFileName(dirname(__FILE__)."/lang/", "/xmlcatalog-1c.php", $arLang["LANGUAGE_ID"]));
 			$arLabels[$arLang["LANGUAGE_ID"]] = GetMessage("DEMO_IBLOCK_ESTORE_XMLCATALOG_BROWSER_TITLE");
 		}
 

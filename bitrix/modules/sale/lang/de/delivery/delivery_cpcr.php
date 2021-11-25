@@ -32,4 +32,5 @@ $MESS["SALE_DH_CPCR_PELICAN_DESCRIPTION"] = "Lieferung von Frachtgütern von 1 b
 $MESS["SALE_DH_CPCR_FRAXT_TITLE"] = "FRACHT";
 $MESS["SALE_DH_CPCR_FRAXT_DESCRIPTION"] = "Lieferung von schweren oder sperrigen Gütern bis zu 68 kg innerhalb von Zeitrahmen, die mit Kunden extra abgestimmt werden.";
 $MESS["SALE_DH_CPCR_DAYS"] = "Tage";
+$MESS["SALE_DH_DEPRECATED_MESSAGE"] = "Dieser Lieferservice ist veraltet und wird nicht mehr unterstützt. Nutzen Sie bitte den #A1#neuen SPSR-Handler#A2#";
 ?>

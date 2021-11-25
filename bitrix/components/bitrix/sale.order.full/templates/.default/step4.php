@@ -48,7 +48,7 @@
 							<label for="ID_PAY_SYSTEM_ID_<?= $arPaySystem["ID"] ?>">
 								<b><?= $arPaySystem["PSA_NAME"] ?></b><br />
 									<?
-									if (strlen($arPaySystem["DESCRIPTION"])>0)
+									if ($arPaySystem["DESCRIPTION"] <> '')
 										echo $arPaySystem["DESCRIPTION"]."<br />";
 									?>
 							</label>

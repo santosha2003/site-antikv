@@ -56,4 +56,6 @@ $MESS["SI_DEDUCTED_ORD"] = "Bestelllieferung";
 $MESS["SI_MARKED"] = "Problem bei der Bestellung";
 $MESS["SI_MARKED_ORD"] = "Problem bei der Bestellung";
 $MESS["SALE_TYPE_FILE"] = "Datei";
+$MESS["SALE_PAYSYSTEM_CONVERT_ERROR"] = "Ein Fehler ist aufgetreten, Zahlungssysteme wurden nicht konvertiert. Zur Konvertierung klicken Sie <a href='/bitrix/admin/sale_pay_system_convert.php?lang=#LANG#'>hier</a>";
+$MESS["SI_AFFILIATE"] = "Affiliate";
 ?>

@@ -1,5 +1,5 @@
 <?
-$MESS["BIZVAL_PAGE_TITLE"] = "Настройка типов плательшиков для бизнес-смыслов";
+$MESS["BIZVAL_PAGE_TITLE"] = "Настройка типов плательщиков для бизнес-смыслов";
 $MESS["BIZVAL_PAGE_ERRORS"] = "Были обнаружены ошибки";
 //$MESS["BIZVAL_PAGE_DOMAIN"] = "Значения типов плательщиков";
 $MESS["BIZVAL_PAGE_PTYPES"] = "Типы плательщиков";

@@ -20,13 +20,14 @@ class CurrencyManager
 	const CACHE_BASE_CURRENCY_ID = 'currency_base_currency';
 	const CACHE_CURRENCY_LIST_ID = 'currency_currency_list';
 	const CACHE_CURRENCY_SHORT_LIST_ID = 'currency_short_list_';
+	const CACHE_CURRENCY_SYMBOL_LIST_ID = 'currency_symbol_list_';
+	const CACHE_CURRENCY_NAME_LIST_ID = 'currency_name_list_';
 
 	const EVENT_ON_AFTER_UPDATE_BASE_RATE = 'onAfterUpdateCurrencyBaseRate';
 	const EVENT_ON_UPDATE_BASE_CURRENCY = 'onUpdateBaseCurrency';
 	const EVENT_ON_AFTER_UPDATE_BASE_CURRENCY = 'onAfterUpdateBaseCurrency';
 
 	protected static $baseCurrency = '';
-	protected static $datetimeTemplate = null;
 
 	/**
 	 * Check currency id.
@@ -37,7 +38,7 @@ class CurrencyManager
 	public static function checkCurrencyID($currency)
 	{
 		$currency = (string)$currency;
-		return ($currency === '' || strlen($currency) > 3 ? false : $currency);
+		return ($currency === '' || mb_strlen($currency) > 3 ? false : $currency);
 	}
 
 	/**
@@ -49,7 +50,7 @@ class CurrencyManager
 	public static function checkLanguage($language)
 	{
 		$language = (string)$language;
-		return ($language === '' || strlen($language) > 2 ? false : $language);
+		return ($language === '' || mb_strlen($language) > 2 ? false : $language);
 	}
 
 	/**
@@ -80,7 +81,7 @@ class CurrencyManager
 			{
 				$currencyIterator = CurrencyTable::getList(array(
 					'select' => array('CURRENCY'),
-					'filter' => array('=BASE' => 'Y', 'AMOUNT' => 1)
+					'filter' => array('=BASE' => 'Y', '=AMOUNT' => 1)
 				));
 				if ($currency = $currencyIterator->fetch())
 				{
@@ -119,7 +120,7 @@ class CurrencyManager
 		{
 			$currencyList = array();
 			$currencyIterator = CurrencyTable::getList(array(
-				'select' => array('CURRENCY', 'FULL_NAME' => 'CURRENT_LANG_FORMAT.FULL_NAME'),
+				'select' => array('CURRENCY', 'FULL_NAME' => 'CURRENT_LANG_FORMAT.FULL_NAME', 'SORT'),
 				'order' => array('SORT' => 'ASC', 'CURRENCY' => 'ASC')
 			));
 			while ($currency = $currencyIterator->fetch())
@@ -131,6 +132,127 @@ class CurrencyManager
 			$managedCache->set($cacheId, $currencyList);
 		}
 		return $currencyList;
+	}
+
+	/**
+	 * Returns currency symbol list.
+	 *
+	 * @return array
+	 * @throws \Bitrix\Main\ArgumentException
+	 */
+	public static function getSymbolList(): array
+	{
+		$currencyTableName = CurrencyTable::getTableName();
+		$managedCache = Application::getInstance()->getManagedCache();
+
+		$cacheTime = defined('CURRENCY_CACHE_TIME') ? (int)CURRENCY_CACHE_TIME : CURRENCY_CACHE_DEFAULT_TIME;
+		$cacheId = self::CACHE_CURRENCY_SYMBOL_LIST_ID.LANGUAGE_ID;
+
+		if ($managedCache->read($cacheTime, $cacheId, $currencyTableName))
+		{
+			$currencyList = $managedCache->get($cacheId);
+		}
+		else
+		{
+			$currencyList = [];
+			$currencyIterator = CurrencyTable::getList([
+				'select' => [
+					'CURRENCY',
+					'FORMAT_STRING' => 'CURRENT_LANG_FORMAT.FORMAT_STRING',
+					'SORT'
+				],
+				'order' => [
+					'SORT' => 'ASC',
+					'CURRENCY' => 'ASC'
+				]
+			]);
+			while ($currency = $currencyIterator->fetch())
+			{
+				$showValue = $currency['CURRENCY'];
+				$currencyFormat = (string)$currency['FORMAT_STRING'];
+				if ($currencyFormat !== '')
+				{
+					$symbol = \CCurrencyLang::applyTemplate('', $currencyFormat);
+					if (is_string($symbol))
+					{
+						$symbol = trim($symbol);
+						if ($symbol !== '')
+						{
+							$showValue = $symbol;
+						}
+					}
+				}
+				$currencyList[$currency['CURRENCY']] = $showValue;
+			}
+
+			$managedCache->set($cacheId, $currencyList);
+		}
+
+		return $currencyList;
+	}
+
+	/**
+	 * Returns currency name list.
+	 *
+	 * @return array
+	 * @throws \Bitrix\Main\ArgumentException
+	 */
+	public static function getNameList(): array
+	{
+		$currencyTableName = CurrencyTable::getTableName();
+		$managedCache = Application::getInstance()->getManagedCache();
+
+		$cacheTime = defined('CURRENCY_CACHE_TIME') ? (int)CURRENCY_CACHE_TIME : CURRENCY_CACHE_DEFAULT_TIME;
+		$cacheId = self::CACHE_CURRENCY_NAME_LIST_ID.LANGUAGE_ID;
+
+		if ($managedCache->read($cacheTime, $cacheId, $currencyTableName))
+		{
+			$currencyList = $managedCache->get($cacheId);
+		}
+		else
+		{
+			$currencyList = [];
+			$currencyIterator = CurrencyTable::getList([
+				'select' => [
+					'CURRENCY',
+					'FULL_NAME' => 'CURRENT_LANG_FORMAT.FULL_NAME',
+					'SORT'
+				],
+				'order' => [
+					'SORT' => 'ASC',
+					'CURRENCY' => 'ASC'
+				]
+			]);
+			while ($currency = $currencyIterator->fetch())
+			{
+				$fullName = (string)$currency['FULL_NAME'];
+				if ($fullName === '')
+				{
+					$fullName = $currency['CURRENCY'];
+				}
+
+				$currencyList[$currency['CURRENCY']] = $fullName;
+			}
+
+			$managedCache->set($cacheId, $currencyList);
+		}
+
+		return $currencyList;
+	}
+
+	/**
+	 * Verifying the existence of the currency by its code.
+	 *
+	 * @param string $currency		Currency code.
+	 * @return bool
+	 */
+	public static function isCurrencyExist($currency)
+	{
+		$currency = static::checkCurrencyID($currency);
+		if ($currency === false)
+			return false;
+		$currencyList = static::getCurrencyList();
+		return isset($currencyList[$currency]);
 	}
 
 	/**
@@ -159,34 +281,29 @@ class CurrencyManager
 
 			if (!$bitrix24 && $languageID == 'ru')
 			{
-				$searched = false;
+				$languageList = array();
 				$languageIterator = LanguageTable::getList(array(
 					'select' => array('ID'),
-					'filter' => array('=ID' => 'kz')
+					'filter' => array('@ID' => array('kz', 'by', 'ua'), '=ACTIVE' => 'Y')
 				));
-				if ($oneLanguage = $languageIterator->fetch())
-				{
-					$searched = true;
+				while ($language = $languageIterator->fetch())
+					$languageList[$language['ID']] = $language['ID'];
+				unset($language, $languageIterator);
+				if (isset($languageList['kz']))
 					$languageID = 'kz';
-				}
-				unset($oneLanguage, $languageIterator);
-				if (!$searched)
-				{
-					$languageIterator = LanguageTable::getList(array(
-						'select' => array('ID'),
-						'filter' => array('=ID' => 'ua')
-					));
-					if ($oneLanguage = $languageIterator->fetch())
-					{
-						$languageID = 'ua';
-					}
-					unset($oneLanguage, $languageIterator);
-				}
+				elseif (isset($languageList['by']))
+					$languageID = 'by';
+				elseif (isset($languageList['ua']))
+					$languageID = 'ua';
+				unset($languageList);
 			}
 			unset($bitrix24);
 
 			switch ($languageID)
 			{
+				case 'br':
+					$currencyList = array('BYN', 'RUB', 'USD', 'EUR');
+					break;
 				case 'ua':
 					$currencyList = array('UAH', 'RUB', 'USD', 'EUR');
 					break;
@@ -194,7 +311,7 @@ class CurrencyManager
 					$currencyList = array('KZT', 'RUB', 'USD', 'EUR');
 					break;
 				case 'ru':
-					$currencyList = array('RUB', 'USD', 'EUR', 'UAH', 'BYR');
+					$currencyList = array('RUB', 'USD', 'EUR', 'UAH', 'BYN');
 					break;
 				case 'de':
 				case 'en':
@@ -237,6 +354,8 @@ class CurrencyManager
 			{
 				$managedCache->clean(self::CACHE_CURRENCY_LIST_ID.'_'.$oneLanguage['ID'], $currencyTableName);
 				$managedCache->clean(self::CACHE_CURRENCY_SHORT_LIST_ID.$oneLanguage['ID'], $currencyTableName);
+				$managedCache->clean(self::CACHE_CURRENCY_SYMBOL_LIST_ID.$oneLanguage['ID'], $currencyTableName);
+				$managedCache->clean(self::CACHE_CURRENCY_NAME_LIST_ID.$oneLanguage['ID'], $currencyTableName);
 			}
 			unset($oneLanguage, $languageIterator);
 		}
@@ -244,6 +363,8 @@ class CurrencyManager
 		{
 			$managedCache->clean(self::CACHE_CURRENCY_LIST_ID.'_'.$language, $currencyTableName);
 			$managedCache->clean(self::CACHE_CURRENCY_SHORT_LIST_ID.$language, $currencyTableName);
+			$managedCache->clean(self::CACHE_CURRENCY_SYMBOL_LIST_ID.$language, $currencyTableName);
+			$managedCache->clean(self::CACHE_CURRENCY_NAME_LIST_ID.$language, $currencyTableName);
 		}
 		$managedCache->clean(self::CACHE_BASE_CURRENCY_ID, $currencyTableName);
 
@@ -261,45 +382,12 @@ class CurrencyManager
 	 */
 	public static function clearTagCache($currency)
 	{
-		if (defined('BX_COMP_MANAGED_CACHE'))
-		{
-			$currency = (string)$currency;
-			if ($currency !== '')
-			{
-				$taggedCache = Application::getInstance()->getTaggedCache();
-				$taggedCache->clearByTag('currency_id_'.$currency);
-			}
-		}
-	}
-
-	/**
-	 * Return datetime template for old api emulation.
-	 *
-	 * @return string
-	 */
-	public static function getDatetimeExpressionTemplate()
-	{
-		if (self::$datetimeTemplate === null)
-		{
-			$helper = Application::getConnection()->getSqlHelper();
-			$format = Context::getCurrent()->getCulture()->getDateTimeFormat();
-			$datetimeFieldName = '#FIELD#';
-			$datetimeField = $datetimeFieldName;
-			if (\CTimeZone::enabled())
-			{
-				$diff = \CTimeZone::getOffset();
-				if ($diff <> 0)
-					$datetimeField = $helper->addSecondsToDateTime($diff, $datetimeField);
-				unset($diff);
-			}
-			self::$datetimeTemplate = str_replace(
-				array('%', $datetimeFieldName),
-				array('%%', '%1$s'),
-				$helper->formatDate($format, $datetimeField)
-			);
-			unset($datetimeField, $datetimeFieldName, $format, $helper);
-		}
-		return self::$datetimeTemplate;
+		if (!defined('BX_COMP_MANAGED_CACHE'))
+			return;
+		$currency = static::checkCurrencyID($currency);
+		if ($currency === false)
+			return;
+		Application::getInstance()->getTaggedCache()->clearByTag('currency_id_'.$currency);
 	}
 
 	/**

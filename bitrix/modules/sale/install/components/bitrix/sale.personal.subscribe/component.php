@@ -10,6 +10,7 @@ $arDefaultVariableAliases = array();
 $arComponentVariables = array("ID");
 $componentPage = "";
 $arVariables = array();
+$this->setFramemode(false);
 
 if ($arParams["SEF_MODE"] == "Y")
 {
@@ -45,7 +46,7 @@ else
 	$arVariableAliases = CComponentEngine::MakeComponentVariableAliases($arDefaultVariableAliases404, $arParams["VARIABLE_ALIASES"]);
 	CComponentEngine::InitComponentVariables(false, $arComponentVariables, $arVariableAliases, $arVariables);
 
-	if (IntVal($_REQUEST["ID"]) > 0)
+	if (intval($_REQUEST["ID"]) > 0)
 		$componentPage = "cancel";
 	else
 		$componentPage = "list";

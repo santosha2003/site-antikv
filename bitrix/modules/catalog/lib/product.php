@@ -40,13 +40,30 @@ Loc::loadMessages(__FILE__);
  * <li> AVAILABLE string(1) optional
  * <li> BUNDLE string(1) optional
  * <li> IBLOCK_ELEMENT reference to {@link \Bitrix\Iblock\ElementTable}
+ * <li> TRIAL_IBLOCK_ELEMENT reference to {@link \Bitrix\Iblock\ElementTable}
+ * <li> TRIAL_PRODUCT reference to {@link \Bitrix\Catalog\ProductTable}
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Product_Query query()
+ * @method static EO_Product_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Product_Result getById($id)
+ * @method static EO_Product_Result getList(array $parameters = array())
+ * @method static EO_Product_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_Product createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_Product_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_Product wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_Product_Collection wakeUpCollection($rows)
+ */
 
 class ProductTable extends Main\Entity\DataManager
 {
+	const USER_FIELD_ENTITY_ID = 'PRODUCT';
+
 	const STATUS_YES = 'Y';
 	const STATUS_NO = 'N';
 	const STATUS_DEFAULT = 'D';
@@ -58,9 +75,24 @@ class ProductTable extends Main\Entity\DataManager
 	const TYPE_FREE_OFFER = 5;
 	const TYPE_EMPTY_SKU = 6;
 
-	protected static $defaultProductSettings = array();
+	const PAYMENT_TYPE_SINGLE = 'S';
+	const PAYMENT_TYPE_REGULAR = 'R';
+	const PAYMENT_TYPE_TRIAL = 'T';
 
-	protected static $existProductCache = array();
+	const PAYMENT_PERIOD_HOUR = 'H';
+	const PAYMENT_PERIOD_DAY = 'D';
+	const PAYMENT_PERIOD_WEEK = 'W';
+	const PAYMENT_PERIOD_MONTH = 'M';
+	const PAYMENT_PERIOD_QUART = 'Q';
+	const PAYMENT_PERIOD_SEMIYEAR = 'S';
+	const PAYMENT_PERIOD_YEAR = 'Y';
+	const PAYMENT_PERIOD_DOUBLE_YEAR = 'T';
+
+	const PRICE_MODE_SIMPLE = 'S';
+	const PRICE_MODE_QUANTITY = 'Q';
+	const PRICE_MODE_RATIO = 'R';
+
+	protected static $defaultProductSettings = array();
 
 	/**
 	 * Returns DB table name for entity.
@@ -107,43 +139,45 @@ class ProductTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('PRODUCT_ENTITY_WEIGHT_FIELD')
 			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function()
+					{
+						return new Main\Type\DateTime();
+					},
 				'title' => Loc::getMessage('PRODUCT_ENTITY_TIMESTAMP_X_FIELD')
 			)),
-			'PRICE_TYPE' => array(
-				'data_type' => 'string',
-				'validation' => array(__CLASS__, 'validatePriceType'),
-				'title' => Loc::getMessage('PRODUCT_ENTITY_PRICE_TYPE_FIELD'),
-			),
-			'RECUR_SCHEME_LENGTH' => array(
-				'data_type' => 'integer',
-				'title' => Loc::getMessage('PRODUCT_ENTITY_RECUR_SCHEME_LENGTH_FIELD'),
-			),
-			'RECUR_SCHEME_TYPE' => array(
-				'data_type' => 'string',
-				'validation' => array(__CLASS__, 'validateRecurSchemeType'),
-				'title' => Loc::getMessage('PRODUCT_ENTITY_RECUR_SCHEME_TYPE_FIELD'),
-			),
-			'TRIAL_PRICE_ID' => array(
-				'data_type' => 'integer',
-				'title' => Loc::getMessage('PRODUCT_ENTITY_TRIAL_PRICE_ID_FIELD'),
-			),
-			'WITHOUT_ORDER' => array(
-				'data_type' => 'boolean',
-				'values' => array('N', 'Y'),
+			'PRICE_TYPE' => new Main\Entity\EnumField('PRICE_TYPE', array(
+				'values' => self::getPaymentTypes(false),
+				'default_value' => self::PAYMENT_TYPE_SINGLE,
+				'title' => Loc::getMessage('PRODUCT_ENTITY_PRICE_TYPE_FIELD')
+			)),
+			'RECUR_SCHEME_LENGTH' => new Main\Entity\IntegerField('RECUR_SCHEME_LENGTH', array(
+				'default_value' => 0,
+				'title' => Loc::getMessage('PRODUCT_ENTITY_RECUR_SCHEME_LENGTH_FIELD')
+			)),
+			'RECUR_SCHEME_TYPE' => new Main\Entity\EnumField('RECUR_SCHEME_TYPE', array(
+				'values' => self::getPaymentPeriods(false),
+				'default_value' => self::PAYMENT_PERIOD_DAY,
+				'title' => Loc::getMessage('PRODUCT_ENTITY_RECUR_SCHEME_TYPE_FIELD')
+			)),
+			'TRIAL_PRICE_ID' => new Main\Entity\IntegerField('TRIAL_PRICE_ID', array(
+				'title' => Loc::getMessage('PRODUCT_ENTITY_TRIAL_PRICE_ID_FIELD')
+			)),
+			'WITHOUT_ORDER' => new Main\Entity\BooleanField('WITHOUT_ORDER', array(
+				'values' => array(self::STATUS_NO, self::STATUS_YES),
+				'default_value' => self::STATUS_NO,
 				'title' => Loc::getMessage('PRODUCT_ENTITY_WITHOUT_ORDER_FIELD'),
-			),
-			'SELECT_BEST_PRICE' => array(
-				'data_type' => 'boolean',
-				'values' => array('N', 'Y')
-			),
+			)),
+			'SELECT_BEST_PRICE' => new Main\Entity\BooleanField('SELECT_BEST_PRICE', array(
+				'values' => array(self::STATUS_NO, self::STATUS_YES),
+				'default_value' => self::STATUS_YES
+			)),
 			'VAT_ID' => new Main\Entity\IntegerField('VAT_ID', array(
 				'default_value' => 0,
 				'title' => Loc::getMessage('PRODUCT_ENTITY_VAT_ID_FIELD')
 			)),
 			'VAT_INCLUDED' => new Main\Entity\BooleanField('VAT_INCLUDED', array(
-				'values' => array('N', 'Y'),
-				'default_value' => 'N',
+				'values' => array(self::STATUS_NO, self::STATUS_YES),
+				'default_value' => self::STATUS_NO,
 				'title' => Loc::getMessage('PRODUCT_ENTITY_VAT_INCLUDED_FIELD')
 			)),
 			'CAN_BUY_ZERO' => new Main\Entity\EnumField('CAN_BUY_ZERO', array(
@@ -186,8 +220,8 @@ class ProductTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('PRODUCT_ENTITY_PURCHASING_CURRENCY_FIELD')
 			)),
 			'BARCODE_MULTI' => new Main\Entity\BooleanField('BARCODE_MULTI', array(
-				'values' => array('N', 'Y'),
-				'default_value' => 'N',
+				'values' => array(self::STATUS_NO, self::STATUS_YES),
+				'default_value' => self::STATUS_NO,
 				'title' => Loc::getMessage('PRODUCT_ENTITY_BARCODE_MULTI_FIELD')
 			)),
 			'QUANTITY_RESERVED' => new Main\Entity\FloatField('QUANTITY_RESERVED', array(
@@ -234,40 +268,63 @@ class ProductTable extends Main\Entity\DataManager
 			)),
 			'IBLOCK_ELEMENT' => new Main\Entity\ReferenceField(
 				'IBLOCK_ELEMENT',
-				'Bitrix\Iblock\Element',
+				'\Bitrix\Iblock\Element',
 				array('=this.ID' => 'ref.ID'),
+				array('join_type' => 'LEFT')
+			),
+			'TRIAL_IBLOCK_ELEMENT' => new Main\Entity\ReferenceField(
+				'TRIAL_IBLOCK_ELEMENT',
+				'\Bitrix\Iblock\Element',
+				array('=this.TRIAL_PRICE_ID' => 'ref.ID'),
+				array('join_type' => 'LEFT')
+			),
+			'TRIAL_PRODUCT' => new Main\Entity\ReferenceField(
+				'TRIAL_PRODUCT',
+				'\Bitrix\Catalog\Product',
+				array('=this.TRIAL_PRICE_ID' => 'ref.ID'),
 				array('join_type' => 'LEFT')
 			)
 		);
 	}
 
 	/**
+	 * Returns user fields entity id.
+	 *
+	 * @return string
+	 */
+	public static function getUfId()
+	{
+		return self::USER_FIELD_ENTITY_ID;
+	}
+
+	/**
 	 * Returns validators for PRICE_TYPE field.
 	 *
+	 * @deprecated deprecated since catalog 16.5.0 - no longer needed.
+	 * @internal
 	 * @return array
 	 */
 	public static function validatePriceType()
 	{
-		return array(
-			new Main\Entity\Validator\Length(null, 1),
-		);
+		return array();
 	}
 
 	/**
 	 * Returns validators for RECUR_SCHEME_TYPE field.
 	 *
+	 * @deprecated deprecated since catalog 16.5.0 - no longer needed.
+	 * @internal
 	 * @return array
 	 */
 	public static function validateRecurSchemeType()
 	{
-		return array(
-			new Main\Entity\Validator\Length(null, 1),
-		);
+		return array();
 	}
 
 	/**
 	 * Returns validators for TMP_ID field.
 	 *
+	 * @internal
 	 * @return array
 	 */
 	public static function validateTmpId()
@@ -279,6 +336,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Returns validators for PURCHASING_CURRENCY field.
 	 *
+	 * @internal
 	 * @return array
 	 */
 	public static function validatePurchasingCurrency()
@@ -291,6 +349,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Returns fetch modificators for QUANTITY_TRACE field.
 	 *
+	 * @internal
 	 * @return array
 	 */
 	public static function modifyQuantityTrace()
@@ -303,6 +362,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Returns fetch modificators for CAN_BUY_ZERO field.
 	 *
+	 * @internal
 	 * @return array
 	 */
 	public static function modifyCanBuyZero()
@@ -315,6 +375,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Returns fetch modificators for NEGATIVE_AMOUNT_TRACE field.
 	 *
+	 * @internal
 	 * @return array
 	 */
 	public static function modifyNegativeAmountTrace()
@@ -327,6 +388,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Returns fetch modificators for SUBSCRIBE field.
 	 *
+	 * @internal
 	 * @return array
 	 */
 	public static function modifySubscribe()
@@ -339,6 +401,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Convert default QUANTITY_TRACE into real from module settings.
 	 *
+	 * @internal
 	 * @param string $value			QUANTITY_TRACE original value.
 	 * @return string
 	 */
@@ -356,6 +419,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Convert default CAN_BUY_ZERO into real from module settings.
 	 *
+	 * @internal
 	 * @param string $value			CAN_BUY_ZERO original value.
 	 * @return string
 	 */
@@ -373,6 +437,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Convert default NEGATIVE_AMOUNT_TRACE into real from module settings.
 	 *
+	 * @internal
 	 * @param string $value			NEGATIVE_AMOUNT_TRACE original value.
 	 * @return string
 	 */
@@ -390,6 +455,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Convert default SUBSCRIBE into real from module settings.
 	 *
+	 * @internal
 	 * @param string $value			SUBSCRIBE original value.
 	 * @return string
 	 */
@@ -406,6 +472,8 @@ class ProductTable extends Main\Entity\DataManager
 
 	/**
 	 * Return is exist product.
+	 * @deprecated deprecated since catalog 20.100.0
+	 * @see \Bitrix\Catalog\Model\Product::getCacheItem()
 	 *
 	 * @param int $product				Product id.
 	 * @return bool
@@ -416,39 +484,22 @@ class ProductTable extends Main\Entity\DataManager
 		$product = (int)$product;
 		if ($product <= 0)
 			return false;
-		if (!isset(self::$existProductCache[$product]))
-		{
-			self::$existProductCache[$product] = false;
-			$existProduct = self::getList(array(
-				'select' => array('ID'),
-				'filter' => array('=ID' => $product)
-			))->fetch();
-			if (!empty($existProduct))
-				self::$existProductCache[$product] = true;
-			unset($existProduct);
-		}
-		return self::$existProductCache[$product];
+		$existProduct = self::getList(array(
+			'select' => array('ID'),
+			'filter' => array('=ID' => $product)
+		))->fetch();
+		return (!empty($existProduct));
 	}
 
 	/**
 	 * Clear product cache.
+	 * @deprecated deprecated since catalog 20.100.0
+	 * @see \Bitrix\Catalog\Model\Product::clearCacheItem()
 	 *
 	 * @param int $product			Product id or zero (clear all cache).
 	 * @return void
 	 */
-	public static function clearProductCache($product = 0)
-	{
-		$product = (int)$product;
-		if ($product > 0)
-		{
-			if (isset(self::$existProductCache[$product]))
-				unset(self::$existProductCache[$product]);
-		}
-		else
-		{
-			self::$existProductCache = array();
-		}
-	}
+	public static function clearProductCache($product = 0) {}
 
 	/**
 	 * Returns ratio and measure for products.
@@ -487,7 +538,6 @@ class ProductTable extends Main\Entity\DataManager
 			{
 				$item['ID'] = (int)$item['ID'];
 				$item['MEASURE'] = (int)$item['MEASURE'];
-				self::$existProductCache[$item['ID']] = true;
 				$existProduct[] = $item['ID'];
 				$result[$item['ID']] = $defaultRow;
 				if ($item['MEASURE'] > 0)
@@ -545,7 +595,6 @@ class ProductTable extends Main\Entity\DataManager
 	 *
 	 * @param array $fields					Product data.
 	 * @return string
-	 * @throws Main\ArgumentNullException
 	 */
 	public static function calculateAvailable($fields)
 	{
@@ -577,6 +626,7 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Load default product settings from module options.
 	 *
+	 * @internal
 	 * @return void
 	 */
 	public static function loadDefaultProductSettings()
@@ -592,18 +642,18 @@ class ProductTable extends Main\Entity\DataManager
 	/**
 	 * Return product type list.
 	 *
-	 * @param bool $withDescr			With description.
+	 * @param bool $descr			With description.
 	 * @return array
 	 */
-	public static function getProductTypes($withDescr = false)
+	public static function getProductTypes($descr = false)
 	{
-		$withDescr = ($withDescr === true);
-		if ($withDescr)
+		if ($descr)
 		{
 			return array(
 				self::TYPE_PRODUCT => Loc::getMessage('PRODUCT_ENTITY_TYPE_PRODUCT'),
 				self::TYPE_SET => Loc::getMessage('PRODUCT_ENTITY_TYPE_SET'),
 				self::TYPE_SKU => Loc::getMessage('PRODUCT_ENTITY_TYPE_SKU'),
+				self::TYPE_EMPTY_SKU => Loc::getMessage('PRODUCT_ENTITY_TYPE_EMPTY_SKU'),
 				self::TYPE_OFFER => Loc::getMessage('PRODUCT_ENTITY_TYPE_OFFER'),
 				self::TYPE_FREE_OFFER => Loc::getMessage('PRODUCT_ENTITY_TYPE_FREE_OFFER')
 			);
@@ -613,7 +663,62 @@ class ProductTable extends Main\Entity\DataManager
 			self::TYPE_SET,
 			self::TYPE_SKU,
 			self::TYPE_OFFER,
-			self::TYPE_FREE_OFFER
+			self::TYPE_FREE_OFFER,
+			self::TYPE_EMPTY_SKU
+		);
+	}
+
+	/**
+	 * Return payment type list.
+	 *
+	 * @param bool $descr			With description.
+	 * @return array
+	 */
+	public static function getPaymentTypes($descr = false)
+	{
+		if ($descr)
+		{
+			return array(
+				self::PAYMENT_TYPE_SINGLE => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_TYPE_SINGLE'),
+				self::PAYMENT_TYPE_REGULAR => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_TYPE_REGULAR'),
+				self::PAYMENT_TYPE_TRIAL => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_TYPE_TRIAL')
+			);
+		}
+		return array(
+			self::PAYMENT_TYPE_SINGLE,
+			self::PAYMENT_TYPE_REGULAR,
+			self::PAYMENT_TYPE_TRIAL
+		);
+	}
+
+	/**
+	 * Return payment period list.
+	 *
+	 * @param bool $descr			With description.
+	 * @return array
+	 */
+	public static function getPaymentPeriods($descr = false)
+	{
+		if ($descr)
+		{
+			return array(
+				self::PAYMENT_PERIOD_HOUR => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_HOUR'),
+				self::PAYMENT_PERIOD_DAY => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_DAY'),
+				self::PAYMENT_PERIOD_WEEK => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_WEEK'),
+				self::PAYMENT_PERIOD_MONTH => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_MONTH'),
+				self::PAYMENT_PERIOD_QUART => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_QUART'),
+				self::PAYMENT_PERIOD_SEMIYEAR => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_SEMIYEAR'),
+				self::PAYMENT_PERIOD_YEAR => Loc::getMessage('PRODUCT_ENTITY_PAYMENT_PERIOD_YEAR')
+			);
+		}
+		return array(
+			self::PAYMENT_PERIOD_HOUR,
+			self::PAYMENT_PERIOD_DAY,
+			self::PAYMENT_PERIOD_WEEK,
+			self::PAYMENT_PERIOD_MONTH,
+			self::PAYMENT_PERIOD_QUART,
+			self::PAYMENT_PERIOD_SEMIYEAR,
+			self::PAYMENT_PERIOD_YEAR
 		);
 	}
 

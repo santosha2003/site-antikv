@@ -1,4 +1,7 @@
 <?
+use Bitrix\Main\Loader;
+use Bitrix\Catalog;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 global $APPLICATION;
@@ -6,9 +9,13 @@ global $DB;
 global $USER;
 global $USER_FIELD_MANAGER;
 
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."cat_store_list.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
 if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_store')))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-CModule::IncludeModule("catalog");
+Loader::includeModule("catalog");
 $bReadOnly = !$USER->CanDoOperation('catalog_store');
 
 if($ex = $APPLICATION->GetException())
@@ -24,10 +31,9 @@ $id = (isset($_REQUEST['ID']) ? (int)$_REQUEST['ID'] : 0);
 if ($id < 0)
 	$id = 0;
 
-if(!CBXFeatures::IsFeatureEnabled('CatMultiStore'))
+if(!Catalog\Config\Feature::isMultiStoresEnabled())
 {
-	$dbResultList = CCatalogStore::GetList(array());
-	if(($arResult = $dbResultList->Fetch()) && $id != $arResult["ID"])
+	if (Catalog\Config\State::isExceededStoreLimit())
 	{
 		require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 		ShowError(GetMessage("CAT_FEATURE_NOT_ALLOW"));
@@ -44,10 +50,12 @@ $bVarsFromForm = false;
 
 $userId = (int)$USER->GetID();
 
-$entityId = "CAT_STORE";
+$entityId = Catalog\StoreTable::getUfId();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && strlen($_REQUEST["Update"]) > 0 && !$bReadOnly && check_bitrix_sessid())
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Update"] <> '' && !$bReadOnly && check_bitrix_sessid())
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
 	$arPREVIEW_PICTURE = $_FILES["IMAGE_ID"];
 	$arPREVIEW_PICTURE["del"] = $IMAGE_ID_del;
 	$arPREVIEW_PICTURE["MODULE_ID"] = "catalog";
@@ -59,11 +67,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && strlen($_REQUEST["Update"]) > 0 && !
 	if (trim($ADDRESS) == '')
 		$errorMessage .= GetMessage("ADDRESS_EMPTY")."<br>";
 
-	if (strlen($isImage) == 0 && (strlen($arPREVIEW_PICTURE["name"]) > 0 || strlen($arPREVIEW_PICTURE["del"]) > 0))
+	if ($isImage == '' && ($arPREVIEW_PICTURE["name"] <> '' || $arPREVIEW_PICTURE["del"] <> ''))
 	{
 		$fileId = CFile::SaveFile($arPREVIEW_PICTURE, "catalog");
 	}
-	elseif (strlen($isImage) > 0)
+	elseif ($isImage <> '')
 	{
 		$errorMessage .= $isImage."<br>";
 	}
@@ -74,8 +82,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && strlen($_REQUEST["Update"]) > 0 && !
 		"ACTIVE" => (isset($_POST['ACTIVE']) && $_POST['ACTIVE'] == 'Y' ? 'Y' : 'N'),
 		"ADDRESS" => (isset($_POST['ADDRESS']) ? $_POST['ADDRESS'] : ''),
 		"DESCRIPTION" => (isset($_POST['DESCRIPTION']) ? $_POST['DESCRIPTION'] : ''),
-		"GPS_N" => (isset($_POST['GPS_N']) ? $_POST['GPS_N'] : ''),
-		"GPS_S" => (isset($_POST['GPS_S']) ? $_POST['GPS_S'] : ''),
+		"GPS_N" => (isset($_POST['GPS_N']) ? str_replace(',', '.', $_POST['GPS_N']) : ''),
+		"GPS_S" => (isset($_POST['GPS_S']) ? str_replace(',', '.', $_POST['GPS_S']) : ''),
 		"PHONE" => (isset($_POST['PHONE']) ? $_POST['PHONE'] : ''),
 		"SCHEDULE" => (isset($_POST['SCHEDULE']) ? $_POST['SCHEDULE'] : ''),
 		"XML_ID" => (isset($_POST['XML_ID']) ? $_POST['XML_ID'] : ''),
@@ -84,7 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && strlen($_REQUEST["Update"]) > 0 && !
 		"EMAIL" => (isset($_POST["EMAIL"]) ? $_POST["EMAIL"] : ''),
 		"ISSUING_CENTER" => $ISSUING_CENTER,
 		"SHIPPING_CENTER" => $SHIPPING_CENTER,
-		"SITE_ID" => $_POST["SITE_ID"]
+		"SITE_ID" => $_POST["SITE_ID"],
+		"CODE" => isset($_POST['CODE']) ? $_POST['CODE'] : false
 	);
 
 	$USER_FIELD_MANAGER->EditFormAddFields($entityId, $arFields);
@@ -124,15 +133,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && strlen($_REQUEST["Update"]) > 0 && !
 	{
 		$DB->Commit();
 
-		if (strlen($_REQUEST["apply"]) <= 0)
-			LocalRedirect("/bitrix/admin/cat_store_list.php?lang=".LANGUAGE_ID."&".GetFilterParams("filter_", false));
+		if ($_REQUEST["apply"] == '')
+		{
+			$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $id));
+			$adminSidePanelHelper->localRedirect($listUrl);
+			LocalRedirect($listUrl);
+		}
 		else
-			LocalRedirect("/bitrix/admin/cat_store_edit.php?lang=".LANGUAGE_ID."&ID=".$id."&".GetFilterParams("filter_", false));
+		{
+			$applyUrl = $selfFolderUrl."cat_store_edit.php?lang=".LANGUAGE_ID."&ID=".$id;
+			$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+			$adminSidePanelHelper->sendSuccessResponse("apply", array("reloadUrl" => $applyUrl));
+			LocalRedirect($applyUrl);
+		}
 	}
 	else
 	{
 		$bVarsFromForm = true;
 		$DB->Rollback();
+		$adminSidePanelHelper->sendJsonErrorResponse($errorMessage);
 	}
 }
 
@@ -164,6 +183,7 @@ if($id > 0)
 		"ISSUING_CENTER",
 		"SHIPPING_CENTER",
 		"SITE_ID",
+		"CODE"
 	);
 
 	$dbResult = CCatalogStore::GetList(array(), array('ID' => $id), false, false, $arSelect);
@@ -181,24 +201,47 @@ $aMenu = array(
 	array(
 		"TEXT" => GetMessage("STORE_LIST"),
 		"ICON" => "btn_list",
-		"LINK" => "/bitrix/admin/cat_store_list.php?lang=".LANG."&".GetFilterParams("filter_", false)
+		"LINK" => $listUrl
 	)
 );
 
 if ($id > 0 && !$bReadOnly)
 {
-	$aMenu[] = array("SEPARATOR" => "Y");
+	$aMenu[] = ["SEPARATOR" => "Y"];
 
-	$aMenu[] = array(
-		"TEXT" => GetMessage("STORE_NEW"),
-		"ICON" => "btn_new",
-		"LINK" => "/bitrix/admin/cat_store_edit.php?lang=".LANG."&".GetFilterParams("filter_", false)
-	);
-
+	if (Catalog\Config\State::isAllowedNewStore())
+	{
+		$addUrl = $selfFolderUrl."cat_store_edit.php?lang=".LANGUAGE_ID;
+		$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
+		$aMenu[] = [
+			"TEXT" => GetMessage("STORE_NEW"),
+			"ICON" => "btn_new",
+			"LINK" => $addUrl
+		];
+		unset($addUrl);
+	}
+	else
+	{
+		$helpLink = Catalog\Config\Feature::getMultiStoresHelpLink();
+		if (!empty($helpLink))
+		{
+			$aMenu[] = [
+				"TEXT" => GetMessage("STORE_NEW"),
+				"ICON" => "btn_lock",
+				$helpLink['TYPE'] => $helpLink['LINK'],
+			];
+		}
+		unset($helpLink);
+	}
+	$deleteUrl = $selfFolderUrl."cat_store_list.php?action=delete&ID[]=".$id."&lang=".LANGUAGE_ID."&".bitrix_sessid_get()."#tb";
+	if ($adminSidePanelHelper->isPublicFrame())
+	{
+		$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl);
+	}
 	$aMenu[] = array(
 		"TEXT" => GetMessage("STORE_DELETE"),
 		"ICON" => "btn_delete",
-		"LINK" => "javascript:if(confirm('".GetMessage("STORE_DELETE_CONFIRM")."')) window.location='/bitrix/admin/cat_store_list.php?action=delete&ID[]=".$id."&lang=".LANG."&".bitrix_sessid_get()."#tb';",
+		"LINK" => "javascript:if(confirm('".GetMessage("STORE_DELETE_CONFIRM")."')) top.window.location='".$deleteUrl."';",
 		"WARNING" => "Y"
 	);
 }
@@ -206,7 +249,7 @@ $context = new CAdminContextMenu($aMenu);
 $context->Show();
 $arSitesShop = array();
 $arSitesTmp = array();
-$rsSites = CSite::GetList($_REQUEST["by"] = "id", $_REQUEST["order"] = "asc", Array("ACTIVE" => "Y"));
+$rsSites = CSite::GetList("id", "asc", Array("ACTIVE" => "Y"));
 while($arSite = $rsSites->GetNext())
 {
 	$site = COption::GetOptionString("sale", "SHOP_SITE_".$arSite["ID"], "");
@@ -223,33 +266,35 @@ if ($rsCount <= 0)
 	$arSitesShop = $arSitesTmp;
 	$rsCount = count($arSitesShop);
 }
+
+CAdminMessage::ShowMessage($errorMessage);?>
+
+<?
+$actionUrl = $APPLICATION->GetCurPage();
+$actionUrl = $adminSidePanelHelper->setDefaultQueryParams($actionUrl);
+
+$userFieldUrl = $selfFolderUrl."userfield_edit.php?lang=".LANGUAGE_ID."&ENTITY_ID=".$entityId;
+$userFieldUrl = $adminSidePanelHelper->editUrlToPublicPage($userFieldUrl);
+$userFieldUrl .= "&back_url=".urlencode($APPLICATION->GetCurPageParam('', array('bxpublic'))."&tabControl_active_tab=user_fields_tab");
 ?>
-
-<?CAdminMessage::ShowMessage($errorMessage);?>
-
-<form enctype="multipart/form-data" method="POST" action="<?echo $APPLICATION->GetCurPage()?>?" name="store_edit">
+<form enctype="multipart/form-data" method="POST" action="<?=$actionUrl?>" name="store_edit">
 	<?echo GetFilterHiddens("filter_");?>
 	<input type="hidden" name="Update" value="Y">
-	<input type="hidden" name="lang" value="<?echo LANG ?>">
+	<input type="hidden" name="lang" value="<?echo LANGUAGE_ID; ?>">
 	<input type="hidden" name="ID" value="<?echo $id ?>">
-	<?=bitrix_sessid_post()?>
-
-	<?
+	<?=bitrix_sessid_post()?><?
 	$aTabs = array(
 		array("DIV" => "edit1", "TAB" => GetMessage("STORE_TAB"), "ICON" => "catalog", "TITLE" => GetMessage("STORE_TAB_DESCR")),
 	);
 
 	$tabControl = new CAdminTabControl("tabControl", $aTabs);
 	$tabControl->Begin();
-	?>
 
-	<?
 	$tabControl->BeginNextTab();
 	?>
-
-	<tr colspan="2">
-		<td align="left">
-			<a href="/bitrix/admin/userfield_edit.php?lang=<?=LANGUAGE_ID;?>&amp;ENTITY_ID=<?=$entityId;?>&amp;back_url=<?echo urlencode($APPLICATION->GetCurPageParam('', array('bxpublic'))."&tabControl_active_tab=user_fields_tab")?>"><?=GetMessage("STORE_E_USER_FIELDS_ADD_HREF");?></a>
+	<tr>
+		<td align="left" colspan="2">
+			<a href="<?=$userFieldUrl?>"><?=GetMessage("STORE_E_USER_FIELDS_ADD_HREF");?></a>
 		</td>
 	</tr>
 	<?if ($id > 0):?>
@@ -279,12 +324,12 @@ if ($rsCount <= 0)
 	<tr>
 		<td><?= GetMessage("STORE_SITE_ID") ?>:</td>
 		<td>
-			<select id="SITE_ID" style="max-width: 300px; width: 300px;" name="SITE_ID" <?=($bReadOnly) ? " disabled" : ""?> />
+			<select id="SITE_ID" style="max-width: 300px; width: 300px;" name="SITE_ID" <?=($bReadOnly) ? " disabled" : ""?>>
 			<option value=""><?=GetMessage("STORE_SELECT_SITE_ID")?></option>
 			<? foreach($arSitesShop as $key => $val)
 			{
 				$selected = ($val['ID'] == $str_SITE_ID) ? 'selected' : '';
-				echo"<option ".$selected." value=".$val['ID'].">".$val["NAME"]." (".$val["ID"].")"."</option>";
+				echo "<option ".$selected." value=".htmlspecialcharsbx($val['ID']).">".htmlspecialcharsbx($val["NAME"]." (".$val["ID"].")")."</option>";
 			}
 			?>
 			</select>
@@ -296,16 +341,22 @@ if ($rsCount <= 0)
 			<input type="text" style="width:300px" name="TITLE" value="<?=$str_TITLE?>" />
 		</td>
 	</tr>
+	<tr>
+		<td><?= GetMessage("STORE_CODE") ?>:</td>
+		<td>
+			<input type="text" style="width:300px" name="CODE" value="<?=$str_CODE?>">
+		</td>
+	</tr>
 	<tr class="adm-detail-required-field">
 		<td  class="adm-detail-valign-top"><?= GetMessage("STORE_ADDRESS") ?>:</td>
 		<td>
-			<textarea cols="35" rows="3" class="typearea" name="ADDRESS" wrap="virtual"><?= $str_ADDRESS ?></textarea>
+			<textarea cols="35" rows="3" class="typearea" name="ADDRESS"><?= $str_ADDRESS ?></textarea>
 		</td>
 	</tr>
 	<tr>
 		<td  class="adm-detail-valign-top"><?= GetMessage("STORE_DESCR") ?>:</td>
 		<td>
-			<textarea cols="35" rows="3" class="typearea" name="DESCRIPTION" wrap="virtual"><?= $str_DESCRIPTION ?></textarea>
+			<textarea cols="35" rows="3" class="typearea" name="DESCRIPTION"><?= $str_DESCRIPTION ?></textarea>
 		</td>
 	</tr>
 	<tr>
@@ -338,10 +389,9 @@ if ($rsCount <= 0)
 
 	</tr>
 	<tr>
-		<td>XML_ID:</td>
+		<td><?= GetMessage("STORE_XML_ID") ?>:</td>
 		<td><input type="text" name="XML_ID" value="<?=$str_XML_ID?>" size="45" />
 		</td>
-
 	</tr>
 	<tr>
 		<td width="40%"><?= GetMessage("CSTORE_SORT") ?>:</td>
@@ -377,18 +427,13 @@ if ($rsCount <= 0)
 			elseif($arUserField["USER_TYPE"]["BASE_TYPE"]=="file")
 				$form_value = $GLOBALS[$arUserField["FIELD_NAME"]."_old_id"];
 		}
-	?>
-	<?echo
-$tabControl->EndTab();
 
-	$tabControl->Buttons(
-		array(
-			"disabled" => $bReadOnly,
-			"back_url" => "/bitrix/admin/cat_store_list.php?lang=".LANG."&".GetFilterParams("filter_", false)
-		)
-	);
+	$tabControl->EndTab();
+	$tabControl->Buttons(array("disabled" => $bReadOnly, "back_url" => $listUrl));
 	$tabControl->End();
 	?>
 </form>
-
-<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");?>
+<?
+Catalog\Config\Feature::initUiHelpScope();
+?>
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

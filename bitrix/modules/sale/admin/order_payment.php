@@ -11,7 +11,7 @@ Loader::includeModule('sale');
 Loader::includeModule('currency');
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
-if ($saleModulePermissions < "U")
+if ($saleModulePermissions == "D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 IncludeModuleLangFile(__FILE__);
@@ -21,10 +21,30 @@ $tableId = "b_sale_order_payment";
 $curPage = Application::getInstance()->getContext()->getCurrent()->getRequest()->getRequestUri();
 $lang    = Application::getInstance()->getContext()->getLanguage();
 
+$arUserGroups = $USER->GetUserGroupArray();
+
+$arAccessibleSites = array();
+$dbAccessibleSites = CSaleGroupAccessToSite::GetList(
+	array(),
+	array("GROUP_ID" => $arUserGroups),
+	false,
+	false,
+	array("SITE_ID")
+);
+while ($arAccessibleSite = $dbAccessibleSites->Fetch())
+{
+	if (!in_array($arAccessibleSite["SITE_ID"], $arAccessibleSites))
+	{
+		$arAccessibleSites[] = $arAccessibleSite["SITE_ID"];
+	}
+}
+
 $sAdmin = new CAdminSorting($tableId, "ORDER_ID", "DESC");
 $lAdmin = new CAdminList($tableId, $sAdmin);
 
 $filter = array(
+	'filter_payment_id_from',
+	'filter_payment_id_to',
 	'filter_order_id_from',
 	'filter_order_id_to',
 	'filter_date_paid_from',
@@ -45,38 +65,101 @@ $filter = array(
 $lAdmin->InitFilter($filter);
 
 $arFilter = array();
+$runtimeFields = array();
 
 $filter_order_id_from = intval($filter_order_id_from);
 $filter_order_id_to = intval($filter_order_id_to);
 $filter_sum_from = intval($filter_sum_from);
 $filter_sum_to = intval($filter_sum_to);
 
+if ($filter_payment_id_from > 0 && $filter_payment_id_to > 0)
+	$arFilter['><ID'] = array($filter_payment_id_from, $filter_payment_id_to);
 if ($filter_order_id_from > 0 && $filter_order_id_to > 0)
 	$arFilter['><ORDER_ID'] = array($filter_order_id_from, $filter_order_id_to);
-if (strlen($filter_order_paid) > 0 && $filter_order_paid != 'NOT_REF')
+if ($filter_order_paid <> '' && $filter_order_paid != 'NOT_REF')
 	$arFilter['PAID'] = $filter_order_paid;
-if (strlen($filter_site_id) > 0 && $filter_site_id != 'NOT_REF')
+if ($filter_site_id <> ''
+	&& $filter_site_id != 'NOT_REF'
+	&& ($saleModulePermissions >= "W" || in_array($filter_site_id, $arAccessibleSites))
+)
+{
 	$arFilter['ORDER.LID'] = $filter_site_id;
+}
+elseif ($saleModulePermissions < "W")
+{
+	$arFilter['ORDER.LID'] = $arAccessibleSites;
+}
 if (is_array($filter_pay_system_id) && count($filter_pay_system_id) > 0 && $filter_pay_system_id[0] != 'NOT_REF')
 	$arFilter['PAY_SYSTEM_ID'] = $filter_pay_system_id;
-if (strlen($filter_company_id) > 0 && $filter_company_id != 'NOT_REF')
+if ($filter_company_id <> '' && $filter_company_id != 'NOT_REF')
 	$arFilter['COMPANY_ID'] = $filter_company_id;
-if (strlen($filter_account_num) > 0)
+if ($filter_account_num <> '')
 	$arFilter['ORDER.ACCOUNT_NUMBER'] = $filter_account_num;
-if ($filter_sum_from > 0 && $filter_sum_to > 0)
-	$arFilter['><SUM'] = array($filter_sum_from, $filter_sum_to);
-if (strlen($filter_currency) > 0 && $filter_currency != 'NOT_REF')
+if (floatval($filter_sum_from)>0)
+	$arFilter[">=SUM"] = floatval($filter_sum_from);
+if (floatval($filter_sum_to)>0)
+	$arFilter["<=SUM"] = floatval($filter_sum_to);
+if ($filter_currency <> '' && $filter_currency != 'NOT_REF')
 	$arFilter['CURRENCY'] = $filter_currency;
-if (strlen($filter_pay_voucher_num) > 0)
+if ($filter_pay_voucher_num <> '')
 	$arFilter['PAY_VOUCHER_NUM'] = $filter_pay_voucher_num;
-if (strlen($filter_date_paid_from) > 0 && strlen($filter_date_paid_to) > 0)
-	$arFilter['><DATE_PAID'] = array($filter_date_paid_from, $filter_date_paid_to);
-if (strlen($filter_user_login)>0)
+if ($filter_user_login <> '')
 	$arFilter["ORDER.USER.LOGIN"] = trim($filter_user_login);
-if (strlen($filter_user_email)>0)
+if ($filter_user_email <> '')
 	$arFilter["ORDER.USER.EMAIL"] = trim($filter_user_email);
-if (IntVal($filter_user_id)>0)
-	$arFilter["ORDER.USER_ID"] = IntVal($filter_user_id);
+if (intval($filter_user_id)>0)
+	$arFilter["ORDER.USER_ID"] = intval($filter_user_id);
+if($filter_date_paid_from <> '') $arFilter[">=DATE_PAID"] = trim($filter_date_paid_from);
+if($filter_date_paid_to <> '')
+{
+	if($arDate = ParseDateTime($filter_date_paid_to, CSite::GetDateFormat("FULL", SITE_ID)))
+	{
+		if(mb_strlen($filter_date_paid_to) < 11)
+		{
+			$arDate["HH"] = 23;
+			$arDate["MI"] = 59;
+			$arDate["SS"] = 59;
+		}
+
+		$filter_date_paid_to = date($DB->DateFormatToPHP(CSite::GetDateFormat("FULL", SITE_ID)), mktime($arDate["HH"], $arDate["MI"], $arDate["SS"], $arDate["MM"], $arDate["DD"], $arDate["YYYY"]));
+		$arFilter["<=DATE_PAID"] = $filter_date_paid_to;
+	}
+	else
+	{
+		$filter_date_paid_to = "";
+	}
+}
+
+$allowedStatusesView = \Bitrix\Sale\OrderStatus::getStatusesUserCanDoOperations($USER->GetID(), array('view'));
+$allowedStatusesUpdate = \Bitrix\Sale\OrderStatus::getStatusesUserCanDoOperations($USER->GetID(), array('update'));
+
+if($saleModulePermissions == "P")
+{
+	$userCompanyList = \Bitrix\Sale\Services\Company\Manager::getUserCompanyList($USER->GetID());
+
+	$arFilter[] = array(
+		'LOGIC' => 'OR',
+		'=COMPANY_ID' => $userCompanyList,
+		'=ORDER.RESPONSIBLE_ID' => intval($USER->GetID()),
+		'=ORDER.COMPANY_ID' => $userCompanyList,
+		'=RESPONSIBLE_ID' => intval($USER->GetID())
+	);
+}
+
+
+if($saleModulePermissions < "W")
+{
+	$statusList = array();
+	if (!empty($allowedStatusesView) && is_array($allowedStatusesView))
+	{
+		$statusList = $allowedStatusesView;
+	}
+	if (!empty($allowedStatusesUpdate) && is_array($allowedStatusesUpdate))
+	{
+		$statusList = array_merge($statusList, $allowedStatusesUpdate);
+	}
+	$arFilter["=ORDER.STATUS_ID"] = array_unique($statusList);
+}
 
 if (($ids = $lAdmin->GroupAction()) && !$bReadOnly)
 {
@@ -90,15 +173,32 @@ if (($ids = $lAdmin->GroupAction()) && !$bReadOnly)
 		'select' => $select,
 		'filter' => array_merge($arFilter, array('ID' => $ids)),
 		'order'  => array($by => $order),
-		'limit'  => 1000
+		'limit'  => 1000,
+		'runtime' => $runtimeFields
 	);
 
 	$dbResultList = PaymentTable::getList($params);
 
 	$payments = $dbResultList->fetchAll();
-	foreach ($payments as $payment)
+	foreach ($payments as $item)
 	{
-		if ($payment['ID'] <= 0 || $payment['ORDER_ID'] <= 0)
+		if ($item['ID'] <= 0 || $item['ORDER_ID'] <= 0)
+			continue;
+
+		$registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
+
+		/** @var Order $orderClass */
+		$orderClass = $registry->getOrderClassName();
+
+		/** @var \Bitrix\Sale\Order $currentOrder */
+		$currentOrder = $orderClass::load($item['ORDER_ID']);
+
+		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $currentOrder->getPaymentCollection();
+
+		/** @var \Bitrix\Sale\Payment $payment */
+		$payment = $paymentCollection->getItemById($item['ID']);
+		if (!$payment)
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -106,28 +206,25 @@ if (($ids = $lAdmin->GroupAction()) && !$bReadOnly)
 			case "delete":
 				@set_time_limit(0);
 
-				Application::getConnection()->startTransaction();
-				/** @var \Bitrix\Sale\Order $ord */
-				$ord = Order::load($payment['ORDER_ID']);
-
-				/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
-				$paymentCollection = $ord->getPaymentCollection();
-				$item = $paymentCollection->getItemById($payment['ID']);
-				$result = $item->delete();
+				$result = $payment->delete();
+				if ($result->isSuccess())
+					$result = $currentOrder->save();
 
 				if (!$result->isSuccess())
-				{
-					Application::getConnection()->rollbackTransaction();
 					$lAdmin->AddGroupError(implode('\n', $result->getErrorMessages()));
-				}
-				else
-				{
-					$result = $ord->save();
-					if ($result->isSuccess())
-						Application::getConnection()->commitTransaction();
-					else
-						$lAdmin->AddGroupError(implode('\n', $result->getErrorMessages()));
-				}
+
+				break;
+			case "paid":
+			case "paid_n":
+				@set_time_limit(0);
+				$paid = $_REQUEST['action'] === 'paid' ? 'Y' : 'N';
+				$result = $payment->setPaid($paid);
+				if ($result->isSuccess())
+					$result = $currentOrder->save();
+
+				if (!$result->isSuccess())
+					$lAdmin->AddGroupError(implode('\n', $result->getErrorMessages()));
+
 				break;
 		}
 	}
@@ -278,14 +375,16 @@ $select = array(
 	'ORDER_USER_LOGIN' => 'ORDER.USER.LOGIN',
 	'ORDER_USER_NAME' => 'ORDER.USER.NAME',
 	'ORDER_USER_LAST_NAME' => 'ORDER.USER.LAST_NAME',
-	'ORDER_USER_ID' => 'ORDER.USER_ID'
+	'ORDER_USER_ID' => 'ORDER.USER_ID',
+	'ORDER_RESPONSIBLE_ID' => 'ORDER.RESPONSIBLE_ID',
 );
+
 $params = array(
 	'select' => $select,
 	'filter' => $arFilter,
 	'order'  => array($by => $order),
+	'runtime' => $runtimeFields
 );
-
 
 $usePageNavigation = true;
 $navyParams = array();
@@ -316,6 +415,10 @@ if ($usePageNavigation)
 	$countQuery = new \Bitrix\Main\Entity\Query(PaymentTable::getEntity());
 	$countQuery->addSelect(new \Bitrix\Main\Entity\ExpressionField('CNT', 'COUNT(1)'));
 	$countQuery->setFilter($params['filter']);
+
+	foreach ($params['runtime'] as $key => $field)
+		$countQuery->registerRuntimeField($key, clone $field);
+
 	$totalCount = $countQuery->setLimit(null)->setOffset(null)->exec()->fetch();
 	unset($countQuery);
 	$totalCount = (int)$totalCount['CNT'];
@@ -360,12 +463,14 @@ $visibleHeaders = $lAdmin->GetVisibleHeaderColumns();
 
 while ($payment = $dbResultList->Fetch())
 {
+
 	if ($payment['ORDER_USER_NAME'] || $payment['ORDER_USER_LAST_NAME'])
 		$userName = htmlspecialcharsbx($payment['ORDER_USER_NAME'])." ".htmlspecialcharsbx($payment['ORDER_USER_LAST_NAME']);
 	else
 		$userName = htmlspecialcharsbx($payment['ORDER_USER_LOGIN']);
 
 	$row =& $lAdmin->AddRow($payment['ID'], $payment);
+
 	$row->AddField("ID", "<a href=\"sale_order_payment_edit.php?order_id=".$payment['ORDER_ID']."&payment_id=".$payment['ID']."&lang=".$lang.GetFilterParams("filter_")."\">".$payment['ID']."</a>");
 	$row->AddField("ORDER_ID", "<a href=\"sale_order_edit.php?ID=".$payment['ORDER_ID']."&lang=".$lang.GetFilterParams("filter_")."\">".$payment['ORDER_ID']."</a>");
 	$row->AddField("ACCOUNT_NUMBER", "<a href=\"sale_order_edit.php?ID=".$payment['ORDER_ID']."&lang=".$lang.GetFilterParams("filter_")."\">".htmlspecialcharsbx($payment['ORDER_ACCOUNT_NUMBER'])."</a>");
@@ -390,6 +495,8 @@ while ($payment = $dbResultList->Fetch())
 $lAdmin->AddGroupActionTable(
 	array(
 		"delete" => GetMessage("MAIN_ADMIN_LIST_DELETE"),
+		"paid" => GetMessage("SALE_ORDER_PAYMENT_PAID"),
+		"paid_n" => GetMessage("SALE_ORDER_PAYMENT_PAID_N"),
 	)
 );
 
@@ -439,6 +546,22 @@ $oFilter = new CAdminFilter(
 $oFilter->Begin();
 ?>
 <tr>
+	<td>ID:</td>
+	<td>
+		<script type="text/javascript">
+			function changeFilterPaymentIdFrom()
+			{
+				if (document.find_form.filter_payment_id_to.value.length<=0)
+					document.find_form.filter_payment_id_to.value = document.find_form.filter_payment_id_from.value;
+			}
+		</script>
+		<?=GetMessage("PAYMENT_ORDER_ID_FROM");?>
+		<input type="text" name="filter_payment_id_from" onchange="changeFilterPaymentIdFrom()" value="<?=(intval($filter_payment_id_from)>0)?intval($filter_payment_id_from):""?>" size="10">
+		<?=GetMessage("PAYMENT_ORDER_ID_TO");?>
+		<input type="text" name="filter_payment_id_to" value="<?=(intval($filter_payment_id_to)>0)?intval($filter_payment_id_to):""?>" size="10">
+	</td>
+</tr>
+<tr>
 	<td><?=GetMessage("PAYMENT_ORDER_ID");?>:</td>
 	<td>
 		<script type="text/javascript">
@@ -471,10 +594,15 @@ $oFilter->Begin();
 	</td>
 </tr>
 <?
-	$res = CSite::GetList($bySite="sort", $orderSite="asc");
+	$res = CSite::GetList();
 	$siteInfo = array();
 	while ($site = $res->Fetch())
-		$siteInfo[$site['ID']] = $site['SITE_NAME'];
+	{
+		if ($saleModulePermissions >= "W" || in_array($site['ID'], $arAccessibleSites))
+		{
+			$siteInfo[$site['ID']] = $site['SITE_NAME'];
+		}
+	}
 ?>
 <tr>
 	<td><?=GetMessage("PAYMENT_SITE_ID");?>:</td>
@@ -515,7 +643,7 @@ $oFilter->Begin();
 				$dbRestRes = \Bitrix\Sale\Services\PaySystem\Restrictions\Manager::getList(array(
 					'select' => array('PARAMS'),
 					'filter' => array(
-						'=CLASS_NAME' => '\Bitrix\Sale\Services\PaySystem\Restrictions\PersonType',
+						'=CLASS_NAME' => '\\'.\Bitrix\Sale\Services\PaySystem\Restrictions\PersonType::class,
 						'SERVICE_ID' => $paySystem['ID']
 					)
 				));
@@ -526,7 +654,7 @@ $oFilter->Begin();
 				{
 					$psPt = array();
 					foreach ($ptParams['PARAMS']['PERSON_TYPE_ID'] as $id)
-						$psPt[] = ((strlen($personTypes[$id]['NAME']) > 15) ? substr($personTypes[$id]['NAME'], 0, 6)."...".substr($personTypes[$id]['NAME'], -7) : $personTypes[$id]['NAME'])."/".$personTypes[$id]["LID"]."";
+						$psPt[] = ((mb_strlen($personTypes[$id]['NAME']) > 15) ? mb_substr($personTypes[$id]['NAME'], 0, 6)."...".mb_substr($personTypes[$id]['NAME'], -7) : $personTypes[$id]['NAME'])."/".$personTypes[$id]["LID"]."";
 					if ($psPt)
 						$personTypeString = ' ('.join(', ', $psPt).')';
 				}
@@ -580,13 +708,13 @@ $oFilter->Begin();
 <tr>
 	<td><?echo \Bitrix\Main\Localization\Loc::getMessage("SALE_PAYMENT_F_USER_LOGIN");?>:</td>
 	<td>
-		<input type="text" name="filter_user_login" value="<?echo htmlspecialcharsEx($filter_user_login)?>" size="40">
+		<input type="text" name="filter_user_login" value="<?echo htmlspecialcharsbx($filter_user_login)?>" size="40">
 	</td>
 </tr>
 <tr>
 	<td><?echo \Bitrix\Main\Localization\Loc::getMessage("SALE_PAYMENT_F_USER_EMAIL");?>:</td>
 	<td>
-		<input type="text" name="filter_user_email" value="<?echo htmlspecialcharsEx($filter_user_email)?>" size="40">
+		<input type="text" name="filter_user_email" value="<?echo htmlspecialcharsbx($filter_user_email)?>" size="40">
 	</td>
 </tr>
 

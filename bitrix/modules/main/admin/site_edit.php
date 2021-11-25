@@ -99,7 +99,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 	{
 		if (!array_key_exists("START_SITE_WIZARD_REWRITE", $_POST) || $_POST["START_SITE_WIZARD_REWRITE"] != "Y")
 		{
-			if (strlen($arFields["DOC_ROOT"]) > 0)
+			if ($arFields["DOC_ROOT"] <> '')
 				$sr = Rel2Abs($_SERVER["DOCUMENT_ROOT"], $arFields["DOC_ROOT"]);
 			else
 				$sr = rtrim($_SERVER["DOCUMENT_ROOT"], "/\\");
@@ -120,7 +120,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 		}
 		else
 		{
-			$res = (strlen($langs->Add($arFields))>0);
+			$res = ($langs->Add($arFields) <> '');
 		}
 	}
 
@@ -133,7 +133,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 		$em = new CEventMessage;
 		if($_POST["SITE_MESSAGE_LINK"] == "C" && $_POST["SITE_MESSAGE_LINK_C_SITE"] <> '')
 		{
-			$db_msg = CEventMessage::GetList($o = "", $b = "", array("SITE_ID"=>$_POST["SITE_MESSAGE_LINK_C_SITE"]));
+			$db_msg = CEventMessage::GetList('', '', array("SITE_ID"=>$_POST["SITE_MESSAGE_LINK_C_SITE"]));
 			while($ar_msg = $db_msg->Fetch())
 			{
 				unset($ar_msg["TIMESTAMP_X"]);
@@ -143,7 +143,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 		}
 		elseif($_POST["SITE_MESSAGE_LINK"] == "E" && $_POST["SITE_MESSAGE_LINK_E_SITE"] <> '')
 		{
-			$db_msg = CEventMessage::GetList($o = "", $b = "", array("SITE_ID"=>$_POST["SITE_MESSAGE_LINK_E_SITE"]));
+			$db_msg = CEventMessage::GetList('', '', array("SITE_ID"=>$_POST["SITE_MESSAGE_LINK_E_SITE"]));
 			while($ar_msg = $db_msg->Fetch())
 			{
 				$msg_id = $ar_msg["ID"];
@@ -162,21 +162,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 
 		if ($bNew && $_POST["START_SITE_WIZARD"] == "Y")
 		{
-			$rsSite = CSite::GetList($by="sort", $order="asc", array("ID" => $LID));
+			$rsSite = CSite::GetList("sort", "asc", array("ID" => $LID));
 			$arSite = $rsSite->GetNext();
 
 			$siteDir = "/".ltrim(rtrim($arSite["DIR"], "/")."/", "/");
 			$p = CSite::GetSiteDocRoot($LID).$siteDir;
 			CheckDirPath($p);
 
-			$indexContent = '<'.'?'.
-				'define("B_PROLOG_INCLUDED", true);'.
-				'define("WIZARD_DEFAULT_SITE_ID", "'.$LID.'");'.
-				'define("WIZARD_DEFAULT_TONLY", true);'.
-				'define("PRE_LANGUAGE_ID","'.$arSite["LANGUAGE_ID"].'");'.
-				'define("PRE_INSTALL_CHARSET","'.$arSite["CHARSET"].'");'.
-				'include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/install/wizard/wizard.php");'.
-				'?'.'>';
+			$indexContent = '<'.'?
+				define("B_PROLOG_INCLUDED", true);
+				define("WIZARD_DEFAULT_SITE_ID", "'.$LID.'");
+				define("WIZARD_DEFAULT_TONLY", true);
+				define("PRE_LANGUAGE_ID","'.$arSite["LANGUAGE_ID"].'");
+				define("PRE_INSTALL_CHARSET","'.$arSite["CHARSET"].'");
+				include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/install/wizard/wizard.php");
+				?'.'>';
 
 			$handler = fopen($p."index.php", "wb");
 			fwrite($handler, $indexContent);
@@ -233,7 +233,7 @@ require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_af
 if($bNew)
 {
 	$sites_cnt = 0;
-	$r = CSite::GetList($o1, $b1, array("ACTIVE"=>"Y"));
+	$r = CSite::GetList('', '', array("ACTIVE"=>"Y"));
 	while($r->Fetch())
 		$sites_cnt++;
 }

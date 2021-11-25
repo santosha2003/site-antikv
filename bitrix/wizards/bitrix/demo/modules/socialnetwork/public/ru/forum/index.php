@@ -50,6 +50,9 @@ $APPLICATION->SetTitle("Блог-лента");
 		"PAGE_NAVIGATION_TEMPLATE" => "", 
 		"HIDE_USER_ACTION" => "N", 
 		"bxpiwidth" => "691", 
+		"SHOW_RATING" => "Y",
+		"RATING_TYPE" => "like",
+		"RATING_ID" => array("3","4"),
 		"SEF_URL_TEMPLATES" => Array(
 			"index" => "index.php",
 			"list" => "forum#FID#/",

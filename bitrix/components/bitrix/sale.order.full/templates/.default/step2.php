@@ -6,7 +6,7 @@ if (!function_exists('PrintPropsForm'))
 	{
 		if (!empty($arSource))
 		{
-			if (strlen($PRINT_TITLE) > 0)
+			if ($PRINT_TITLE <> '')
 			{
 				?>
 				<b><?= $PRINT_TITLE ?></b><br /><br />
@@ -144,7 +144,7 @@ if (!function_exists('PrintPropsForm'))
 							}
 						}
 
-						if (strlen($arProperties["DESCRIPTION"]) > 0)
+						if ($arProperties["DESCRIPTION"] <> '')
 						{
 							?><br /><small><?echo $arProperties["DESCRIPTION"] ?></small><?
 						}
@@ -215,7 +215,7 @@ if (!function_exists('PrintPropsForm'))
 								foreach($arUserProfiles["USER_PROPS_VALUES"] as $arUserPropsValues)
 								{
 
-									if (strlen($arUserPropsValues["VALUE_FORMATED"]) > 0)
+									if ($arUserPropsValues["VALUE_FORMATED"] <> '')
 									{
 										?>
 										<tr>

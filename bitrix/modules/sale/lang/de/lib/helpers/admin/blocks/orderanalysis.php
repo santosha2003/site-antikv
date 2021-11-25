@@ -18,4 +18,6 @@ $MESS["SALE_OANALYSIS_SHIPMENT_CANCELED"] = "Storniert";
 $MESS["SALE_OANALYSIS_SHIPMENT_ALLOWED"] = "Auslieferung freigegeben";
 $MESS["SALE_OANALYSIS_CREATED_AT"] = "Erstellt am";
 $MESS["SALE_OANALYSIS_RESPONSIBLE"] = "Verantwortlich";
+$MESS["SALE_OANALYSIS_HIDDEN"] = "[Ausgeblendet]";
+$MESS["SALE_OANALYSIS_DELIVERY_REQUEST"] = "Transportbestellung ##REQUEST_ID#";
 ?>

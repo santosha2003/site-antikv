@@ -33,10 +33,24 @@ Loc::loadMessages(__FILE__);
  * <li> ISSUING_CENTER bool optional default 'Y'
  * <li> SHIPPING_CENTER bool optional default 'Y'
  * <li> SITE_ID string(2) optional
+ * <li> CODE string(255) optional
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Store_Query query()
+ * @method static EO_Store_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Store_Result getById($id)
+ * @method static EO_Store_Result getList(array $parameters = array())
+ * @method static EO_Store_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_Store createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_Store_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_Store wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_Store_Collection wakeUpCollection($rows)
+ */
 class StoreTable extends Main\Entity\DataManager
 {
 	/**
@@ -95,11 +109,11 @@ class StoreTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('STORE_ENTITY_LOCATION_ID_FIELD')
 			)),
 			'DATE_MODIFY' => new Main\Entity\DatetimeField('DATE_MODIFY', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('STORE_ENTITY_DATE_MODIFY_FIELD')
 			)),
 			'DATE_CREATE' => new Main\Entity\DatetimeField('DATE_CREATE', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('STORE_ENTITY_DATE_CREATE_FIELD')
 			)),
 			'USER_ID' => new Main\Entity\IntegerField('USER_ID', array(
@@ -143,6 +157,10 @@ class StoreTable extends Main\Entity\DataManager
 			'SITE_ID' => new Main\Entity\StringField('SITE_ID', array(
 				'validation' => array(__CLASS__, 'validateSiteId'),
 				'title' => Loc::getMessage('STORE_ENTITY_SITE_ID_FIELD')
+			)),
+			'CODE' => new Main\Entity\StringField('CODE', array(
+				'validation' => array(__CLASS__, 'validateCode'),
+				'title' => Loc::getMessage('STORE_ENTITY_CODE_FIELD')
 			))
 		);
 	}
@@ -168,6 +186,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 75),
 		);
 	}
+
 	/**
 	 * Returns validators for ADDRESS field.
 	 *
@@ -179,6 +198,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 245),
 		);
 	}
+
 	/**
 	 * Returns validators for GPS_N field.
 	 *
@@ -190,6 +210,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 15),
 		);
 	}
+
 	/**
 	 * Returns validators for GPS_S field.
 	 *
@@ -201,6 +222,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 15),
 		);
 	}
+
 	/**
 	 * Returns validators for IMAGE_ID field.
 	 *
@@ -212,6 +234,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 45),
 		);
 	}
+
 	/**
 	 * Returns validators for PHONE field.
 	 *
@@ -223,6 +246,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 45),
 		);
 	}
+
 	/**
 	 * Returns validators for SCHEDULE field.
 	 *
@@ -234,6 +258,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 255),
 		);
 	}
+
 	/**
 	 * Returns validators for XML_ID field.
 	 *
@@ -245,6 +270,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 255),
 		);
 	}
+
 	/**
 	 * Returns validators for EMAIL field.
 	 *
@@ -256,6 +282,7 @@ class StoreTable extends Main\Entity\DataManager
 			new Main\Entity\Validator\Length(null, 255),
 		);
 	}
+
 	/**
 	 * Returns validators for SITE_ID field.
 	 *
@@ -265,6 +292,18 @@ class StoreTable extends Main\Entity\DataManager
 	{
 		return array(
 			new Main\Entity\Validator\Length(null, 2),
+		);
+	}
+
+	/**
+	 * Returns validators for CODE field.
+	 *
+	 * @return array
+	 */
+	public static function validateCode()
+	{
+		return array(
+			new Main\Entity\Validator\Length(null, 255),
 		);
 	}
 }

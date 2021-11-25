@@ -1,4 +1,4 @@
-<?
+<?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 /** @global CMain $APPLICATION */
@@ -9,7 +9,7 @@ global $USER;
 $APPLICATION->SetAdditionalCSS('/bitrix/gadgets/bitrix/admin_security/styles.css');
 
 $aGlobalOpt = CUserOptions::GetOption("global", "settings", array());
-$bShowSecurity = (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/security/install/index.php") && $aGlobalOpt['messages']['security'] <> 'N');
+$bShowSecurity = (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/security/install/index.php") && ($aGlobalOpt['messages']['security'] ?? 'Y') <> 'N');
 
 if (!$bShowSecurity)
 	return false;
@@ -59,7 +59,7 @@ if($bSecModuleInstalled){
 	$bSecurityFilter = false;
 	$securityEventsCount = 0;
 }
-if(!$bSecurityFilter || !$isScanNeeded || !isset($lastResult["results"]) || !empty($lastResult["results"])) {
+if(!$bSecurityFilter || $isScanNeeded || !isset($lastResult["results"]) || !empty($lastResult["results"])) {
 	$shieldClassColor = "red";
 } else {
 	$shieldClassColor = "blue";

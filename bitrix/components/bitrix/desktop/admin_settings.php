@@ -23,10 +23,8 @@ global $USER;
 
 if (false == check_bitrix_sessid() || !$USER->IsAuthorized())
 {
-
-	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin_after.php");
 	die();
 }
 
@@ -41,7 +39,7 @@ if (
 	$desktop_page = intval($_REQUEST['desktop_page']);
 	$action = $_REQUEST['action'];
 
-	if ($_REQUEST['desktop_backurl'] && strpos($_REQUEST['desktop_backurl'], "/") === 0)
+	if ($_REQUEST['desktop_backurl'] && mb_strpos($_REQUEST['desktop_backurl'], "/") === 0)
 		$desktop_backurl = $_REQUEST['desktop_backurl'];
 	else
 		$desktop_backurl = "";
@@ -120,7 +118,7 @@ if ($_POST["type"] == "desktop")
 		{
 			?>
 			top.BX.closeWait(); top.BX.WindowManager.Get().AllowClose(); top.BX.WindowManager.Get().Close();
-			top.location.href = '<?=htmlspecialcharsbx(CUtil::JSEscape($desktop_backurl)).(strpos($desktop_backurl, "?") === false ? "?" : "&")."dt_page=".$desktop_page?>';
+			top.location.href = '<?=htmlspecialcharsbx(CUtil::JSEscape($desktop_backurl)).(mb_strpos($desktop_backurl, "?") === false ? "?" : "&")."dt_page=".$desktop_page?>';
 			<?
 		}
 		else
@@ -190,10 +188,12 @@ if ($_POST["type"] == "desktop")
 elseif ($_POST["type"] == "gadget")
 {
 	$gdid = $_POST['gid'];
-	$p = strpos($gdid, "@");
+	$gdid = preg_replace("/[^a-z0-9@_]/i", "", $gdid);
+
+	$p = mb_strpos($gdid, "@");
 	if($p !== false)
 	{
-		$gadget_id = substr($gdid, 0, $p);
+		$gadget_id = mb_substr($gdid, 0, $p);
 		$arGadget = BXGadget::GetById($gadget_id, true);
 
 		if($arGadget)
@@ -204,10 +204,10 @@ elseif ($_POST["type"] == "gadget")
 
 				foreach($_POST as $key => $value)
 				{
-					if (strpos($key, "GP_") !== 0)
+					if (mb_strpos($key, "GP_") !== 0)
 						continue;
 
-					$key = substr($key, 3);
+					$key = mb_substr($key, 3);
 					$arSettings[$key] = $value;
 				}
 
@@ -247,8 +247,8 @@ elseif ($_POST["type"] == "gadget")
 
 				if ($_REQUEST["refresh"] == "Y")
 					foreach($_REQUEST as $key => $value)
-						if (strpos($key, "GP_") === 0)
-							$arFormGadgetParams[substr($key, 3)]["VALUE"] = $value;
+						if (mb_strpos($key, "GP_") === 0)
+							$arFormGadgetParams[mb_substr($key, 3)]["VALUE"] = $value;
 
 				$arGadget = BXGadget::GetById($gadget_id, true, $arFormGadgetParams);
 				$arGadgetParams = $arGadget["USER_PARAMETERS"];
@@ -272,7 +272,7 @@ elseif ($_POST["type"] == "gadget")
 				<input type="hidden" name="type" value="gadget">
 				<input type="hidden" name="desktop_page" value="<?=$desktop_page?>">
 				<input type="hidden" name="save_gadget" value="Y">
-				<input type="hidden" name="gid" value="<?=$gdid?>">
+				<input type="hidden" name="gid" value="<?=htmlspecialcharsbx($gdid)?>">
 				<table class="edit-table" width="100%"><tbody>
 				<?
 				foreach($arGadgetParams as $param_id => $arGadgetParam)
@@ -285,9 +285,9 @@ elseif ($_POST["type"] == "gadget")
 
 						if($arGadgetParam["TYPE"] == "STRING")
 						{
-							if ($_REQUEST['refresh'] == "Y" && strlen($_REQUEST["GP_".$input_id]) > 0)
+							if ($_REQUEST['refresh'] == "Y" && $_REQUEST["GP_".$input_id] <> '')
 								$val_tmp = $_REQUEST["GP_".$input_id];
-							elseif (strlen($arGadgetParam["VALUE"]) > 0)
+							elseif ($arGadgetParam["VALUE"] <> '')
 								$val_tmp = $arGadgetParam["VALUE"];
 							else
 								$val_tmp = $arGadgetParam["DEFAULT"];
@@ -309,11 +309,11 @@ elseif ($_POST["type"] == "gadget")
 							}
 							else
 							{
-								if ($_REQUEST['refresh'] == "Y" && strlen($_REQUEST["GP_".$input_id]) > 0)
+								if ($_REQUEST['refresh'] == "Y" && $_REQUEST["GP_".$input_id] <> '')
 									$val_tmp = $_REQUEST["GP_".$input_id];
-								elseif (strlen($arGadgetParam["VALUE"]) > 0)
+								elseif ($arGadgetParam["VALUE"] <> '')
 									$val_tmp = $arGadgetParam["VALUE"];
-								elseif (strlen($arGadgetParam["DEFAULT"]) > 0)
+								elseif ($arGadgetParam["DEFAULT"] <> '')
 									$val_tmp = $arGadgetParam["DEFAULT"];
 							}
 
@@ -338,9 +338,9 @@ elseif ($_POST["type"] == "gadget")
 						}
 						elseif($arGadgetParam["TYPE"] == "CHECKBOX")
 						{
-							if ($_REQUEST['refresh'] == "Y" && strlen($_REQUEST["GP_".$input_id]) > 0)
+							if ($_REQUEST['refresh'] == "Y" && $_REQUEST["GP_".$input_id] <> '')
 								$val_tmp = $_REQUEST["GP_".$input_id];
-							elseif (strlen($arGadgetParam["VALUE"]) > 0)
+							elseif ($arGadgetParam["VALUE"] <> '')
 								$val_tmp = $arGadgetParam["VALUE"];
 							else
 								$val_tmp = $arGadgetParam["DEFAULT"];

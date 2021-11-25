@@ -1,5 +1,5 @@
 <?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
-//echo "<pre>"; print_R($arResult["ITEMS"]);
+
 if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["ShowSubscribe"]=="Y" || $arResult["ShowNotAvail"]=="Y")
 {
 	foreach ($arResult["GRID"]["HEADERS"] as $id => $arHeader):
@@ -7,7 +7,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 		if ($arHeader["name"] == '')
 		{
 			$arResult["GRID"]["HEADERS"][$id]["name"] = GetMessage("SALE_".$arHeader["id"]);
-			if(strlen($arResult["GRID"]["HEADERS"][$id]["name"])==0)
+			if($arResult["GRID"]["HEADERS"][$id]["name"] == '')
 				$arResult["GRID"]["HEADERS"][$id]["name"] = GetMessage("SALE_".str_replace("_FORMATED", "", $arHeader["id"]));
 		}
 	endforeach;
@@ -38,6 +38,10 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 					else if(in_array($arHeader['id'], array("PRICE_FORMATED")))
 					{
 						?><?= $arHeader['name']?>:&nbsp;<b><?echo $v[$arHeader['id']]?></b><br /><?
+					}
+					else if(in_array($arHeader['id'], ["DETAIL_PICTURE", "PREVIEW_PICTURE"]) && !empty($v[$arHeader['id']."_SRC"]))
+					{
+						?><?= $arHeader['name']?>:&nbsp;<br/><img src="<?echo $v[$arHeader['id']."_SRC"]?>"><br/><?
 					}
 					else
 					{
@@ -88,6 +92,10 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 					{
 						?><?= $arHeader['name']?>:&nbsp;<b><?echo $v[$arHeader['id']]?></b><br /><?
 					}
+					else if(in_array($arHeader['id'], ["DETAIL_PICTURE", "PREVIEW_PICTURE"]) && !empty($v[$arHeader['id']."_SRC"]))
+					{
+						?><?= $arHeader['name']?>:&nbsp;<br/><img src="<?echo $v[$arHeader['id']."_SRC"]?>"><br/><?
+					}
 					else
 					{
 						?><?= $arHeader['name']?>:&nbsp;<?echo $v[$arHeader['id']]?><br /><?
@@ -131,6 +139,10 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 					{
 						?><?= $arHeader['name']?>:&nbsp;<b><?echo $v[$arHeader['id']]?></b><br /><?
 					}
+					else if(in_array($arHeader['id'], ["DETAIL_PICTURE", "PREVIEW_PICTURE"]) && !empty($v[$arHeader['id']."_SRC"]))
+					{
+						?><?= $arHeader['name']?>:&nbsp;<br/><img src="<?echo $v[$arHeader['id']."_SRC"]?>"><br/><?
+					}
 					else
 					{
 						?><?= $arHeader['name']?>:&nbsp;<?echo $v[$arHeader['id']]?><br /><?
@@ -168,6 +180,10 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 					else if(in_array($arHeader['id'], array("PRICE_FORMATED")))
 					{
 						?><?= $arHeader['name']?>:&nbsp;<b><?echo $v[$arHeader['id']]?></b><br /><?
+					}
+					else if(in_array($arHeader['id'], ["DETAIL_PICTURE", "PREVIEW_PICTURE"]) && !empty($v[$arHeader['id']."_SRC"]))
+					{
+						?><?= $arHeader['name']?>:&nbsp;<br/><img src="<?echo $v[$arHeader['id']."_SRC"]?>"><br/><?
 					}
 					else
 					{

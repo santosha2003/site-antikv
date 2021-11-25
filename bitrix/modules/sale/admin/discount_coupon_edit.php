@@ -8,6 +8,10 @@ use Bitrix\Main,
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/sale/prolog.php');
 
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."sale_discount_coupons.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
 $subWindow = defined('BX_PUBLIC_MODE') && BX_PUBLIC_MODE == 1;
 $prefix = ($subWindow ? 'COUPON_' : '');
 
@@ -60,7 +64,7 @@ if (!$subWindow)
 	if ($rawReturnUrl != '')
 	{
 		$currentUrl = $APPLICATION->GetCurPage();
-		if (strtolower(substr($rawReturnUrl, strlen($currentUrl))) != strtolower($currentUrl))
+		if (mb_strtolower(mb_substr($rawReturnUrl, mb_strlen($currentUrl))) != mb_strtolower($currentUrl))
 			$returnUrl = $rawReturnUrl;
 	}
 	unset($rawReturnUrl);
@@ -81,17 +85,17 @@ $tabList = array(
 $couponFormID = '';
 if ($subWindow)
 {
-	$arPostParams = array(
-		'bxpublic' => 'Y',
-		'DISCOUNT_ID' => $discountID,
-		'sessid' => bitrix_sessid()
-	);
-	$listUrl = array(
+	$subFormListUrl = [
 		'LINK' => $APPLICATION->GetCurPageParam(),
-		'POST_PARAMS' => $arPostParams,
-	);
+		'POST_PARAMS' => [
+			'bxpublic' => 'Y',
+			'DISCOUNT_ID' => $discountID,
+			'sessid' => bitrix_sessid()
+		]
+	];
 	$couponFormID = 'saleSubCouponControl';
-	$control = new CAdminSubForm($couponFormID, $tabList, false, true, $listUrl, false);
+	$control = new CAdminSubForm($couponFormID, $tabList, false, true, $subFormListUrl, false);
+	unset($subFormListUrl);
 }
 else
 {
@@ -119,6 +123,7 @@ if (
 	&& (string)$request->getPost('Update') == 'Y'
 )
 {
+	$adminSidePanelHelper->decodeUriComponent($request);
 	$rawData = $request->getPostList();
 	if ($multiCoupons)
 	{
@@ -129,9 +134,9 @@ if (
 		);
 
 		if (!empty($rawData[$prefix.'ACTIVE_FROM']))
-			$fields['COUPON']['ACTIVE_FROM'] = new Main\Type\DateTime($rawData[$prefix.'ACTIVE_FROM']);
+			$fields['COUPON']['ACTIVE_FROM'] = Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_FROM']);
 		if (!empty($rawData[$prefix.'ACTIVE_TO']))
-			$fields['COUPON']['ACTIVE_TO'] = new Main\Type\DateTime($rawData[$prefix.'ACTIVE_TO']);
+			$fields['COUPON']['ACTIVE_TO'] = Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_TO']);
 		if (isset($rawData[$prefix.'TYPE']))
 			$fields['COUPON']['TYPE'] = $rawData[$prefix.'TYPE'];
 		if (isset($fields['COUPON']['TYPE']) && $fields['COUPON']['TYPE'] == Internals\DiscountCouponTable::TYPE_MULTI_ORDER)
@@ -173,10 +178,8 @@ if (
 			$fields['COUPON'] = $rawData['COUPON'];
 		if (!empty($rawData[$prefix.'ACTIVE']))
 			$fields['ACTIVE'] = $rawData[$prefix.'ACTIVE'];
-		if (isset($rawData[$prefix.'ACTIVE_FROM']))
-			$fields['ACTIVE_FROM'] = (!empty($rawData[$prefix.'ACTIVE_FROM']) ? new Main\Type\DateTime($rawData[$prefix.'ACTIVE_FROM']) : null);
-		if (isset($rawData[$prefix.'ACTIVE_TO']))
-			$fields['ACTIVE_TO'] = (!empty($rawData[$prefix.'ACTIVE_TO']) ? new Main\Type\DateTime($rawData[$prefix.'ACTIVE_TO']) : null);
+		$fields['ACTIVE_FROM'] = (!empty($rawData[$prefix.'ACTIVE_FROM']) ? Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_FROM']) : null);
+		$fields['ACTIVE_TO'] = (!empty($rawData[$prefix.'ACTIVE_TO']) ? Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_TO']) : null);
 		if (isset($rawData[$prefix.'TYPE']))
 			$fields['TYPE'] = $rawData[$prefix.'TYPE'];
 		if (isset($fields['TYPE']) && $fields['TYPE'] == Internals\DiscountCouponTable::TYPE_MULTI_ORDER)
@@ -210,26 +213,61 @@ if (
 	{
 		if ($subWindow)
 		{
-			?><script type="text/javascript">
-top.BX.closeWait(); top.BX.WindowManager.Get().AllowClose(); top.BX.WindowManager.Get().Close();
-top.ReloadSubList();
-</script><?
+			?>
+			<script type="text/javascript">
+				var currentWindow = top.window;
+				if (top.BX.SidePanel && top.BX.SidePanel.Instance && top.BX.SidePanel.Instance.getTopSlider())
+				{
+					currentWindow = top.BX.SidePanel.Instance.getTopSlider().getWindow();
+				}
+				currentWindow.BX.closeWait();
+				currentWindow.BX.WindowManager.Get().AllowClose();
+				currentWindow.BX.WindowManager.Get().Close();
+				currentWindow.ReloadSubList();
+			</script>
+			<?
 			die();
 		}
 		else
 		{
+			if ($adminSidePanelHelper->isAjaxRequest())
+			{
+				$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $couponID));
+			}
 			if ((string)$request->getPost('apply') != '')
-				LocalRedirect('sale_discount_coupon_edit.php?lang='.LANGUAGE_ID.'&ID='.$couponID.GetFilterParams('filter_', false));
+			{
+				$applyUrl = $selfFolderUrl.'sale_discount_coupon_edit.php?lang='.LANGUAGE_ID.'&ID='.$couponID.'&'.$control->ActiveTabParam();
+				$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+				LocalRedirect($applyUrl);
+			}
 			else
-				LocalRedirect('sale_discount_coupons.php?lang='.LANGUAGE_ID.'&'.$control->ActiveTabParam().GetFilterParams('filter_', false));
+			{
+				$adminSidePanelHelper->localRedirect($listUrl);
+				LocalRedirect($listUrl);
+			}
 		}
+	}
+	else
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse(implode("; ", $errors));
 	}
 }
 elseif ($subWindow)
 {
 	if ((string)$request->get('dontsave') != '')
 	{
-		?><script type="text/javascript">top.BX.closeWait(); top.BX.WindowManager.Get().AllowClose(); top.BX.WindowManager.Get().Close();</script><?
+		?>
+		<script type="text/javascript">
+			var currentWindow = top.window;
+			if (top.BX.SidePanel.Instance && top.BX.SidePanel.Instance.getTopSlider())
+			{
+				currentWindow = top.BX.SidePanel.Instance.getTopSlider().getWindow();
+			}
+			currentWindow.BX.closeWait();
+			currentWindow.BX.WindowManager.Get().AllowClose();
+			currentWindow.BX.WindowManager.Get().Close();
+		</script>
+		<?
 		die();
 	}
 }
@@ -254,7 +292,7 @@ $contextMenuItems = array(
 	array(
 		'ICON' => 'btn_list',
 		'TEXT' => Loc::getMessage('BX_SALE_DISCOUNT_COUPONT_CONTEXT_COUPON_LIST'),
-		'LINK' => 'sale_discount_coupons.php?lang='.LANGUAGE_ID.GetFilterParams('filter_')
+		'LINK' => $listUrl
 	)
 );
 
@@ -262,21 +300,35 @@ if (!$subWindow && !$readOnly && $couponID > 0)
 {
 	if (!$copy)
 	{
-		$contextMenuItems[] = array('SEPARATOR' => 'Y');
+		$addUrl = $selfFolderUrl."sale_discount_coupon_edit.php?lang=".LANGUAGE_ID;
+		$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
+		if (!$adminSidePanelHelper->isPublicFrame())
+			$addUrl = $adminSidePanelHelper->setDefaultQueryParams($addUrl);
 		$contextMenuItems[] = array(
 			'ICON' => 'btn_new',
 			'TEXT' => Loc::getMessage('BX_SALE_DISCOUNT_COUPONT_CONTEXT_NEW'),
-			'LINK' => 'sale_discount_coupon_edit.php?lang='.LANGUAGE_ID.GetFilterParams('filter_')
+			'LINK' => $addUrl
 		);
+		$copyUrl = $selfFolderUrl."sale_discount_coupon_edit.php?lang=".LANGUAGE_ID."&ID=".$discountID."&action=copy";
+		$copyUrl = $adminSidePanelHelper->editUrlToPublicPage($copyUrl);
+		if (!$adminSidePanelHelper->isPublicFrame())
+			$copyUrl = $adminSidePanelHelper->setDefaultQueryParams($copyUrl);
 		$contextMenuItems[] = array(
 			'ICON' => 'btn_copy',
 			'TEXT' => Loc::getMessage('BX_SALE_DISCOUNT_COUPONT_CONTEXT_COPY'),
-			'LINK' => 'sale_discount_coupon_edit.php?lang='.LANGUAGE_ID.'&ID='.$couponID.'&action=copy'.GetFilterParams('filter_')
+			'LINK' => $copyUrl
 		);
+		$deleteUrl = $selfFolderUrl."sale_discount_coupons.php?lang=".LANGUAGE_ID."&ID=".$couponID."&action=delete&".bitrix_sessid_get();
+		$buttonAction = "LINK";
+		if ($adminSidePanelHelper->isPublicFrame())
+		{
+			$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl);
+			$buttonAction = "ONCLICK";
+		}
 		$contextMenuItems[] = array(
 			'ICON' => 'btn_delete',
 			'TEXT' => Loc::getMessage('BX_SALE_DISCOUNT_COUPON_CONTEXT_DELETE'),
-			'LINK' => "javascript:if(confirm('".CUtil::JSEscape(Loc::getMessage('BX_SALE_DISCOUNT_COUPON_CONTEXT_DELETE_CONFIRM'))."')) window.location='/bitrix/admin/sale_discount_coupons.php?lang=".LANGUAGE_ID."&ID=".$couponID."&action=delete&".bitrix_sessid_get()."';",
+			$buttonAction => "javascript:if(confirm('".CUtil::JSEscape(Loc::getMessage('BX_SALE_DISCOUNT_COUPON_CONTEXT_DELETE_CONFIRM'))."')) top.window.location.href='".$deleteUrl."';",
 			'WARNING' => 'Y',
 		);
 	}
@@ -313,7 +365,8 @@ if (!$multiCoupons)
 		'MAX_USE' => 0,
 		'USE_COUNT' => 0,
 		'USER_ID' => 0,
-		'DESCRIPTION' => ''
+		'DESCRIPTION' => '',
+		'DATE_APPLY' => null
 	);
 	$selectFields = array('ID', 'DISCOUNT_NAME' => 'DISCOUNT.NAME');
 	$selectFields = array_merge($selectFields, array_keys($defaultValues));
@@ -322,7 +375,7 @@ else
 {
 	$defaultValues = array(
 		'COUNT' => '',
-		array(
+		'COUPON' => array(
 			'DISCOUNT_ID' => '',
 			'ACTIVE_FROM' => null,
 			'ACTIVE_TO' => null,
@@ -390,9 +443,9 @@ if (!empty($returnUrl))
 }
 echo bitrix_sessid_post();
 $control->EndEpilogContent();
-$control->Begin(array(
-	'FORM_ACTION' => 'sale_discount_coupon_edit.php?lang='.LANGUAGE_ID
-));
+$formActionUrl = $selfFolderUrl.'sale_discount_coupon_edit.php?lang='.LANGUAGE_ID;
+$formActionUrl = $adminSidePanelHelper->setDefaultQueryParams($formActionUrl);
+$control->Begin(array('FORM_ACTION' => $formActionUrl));
 $control->BeginNextFormTab();
 if ($multiCoupons)
 {
@@ -429,13 +482,58 @@ if ($multiCoupons)
 		Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_TYPE'),
 		true,
 		$couponTypes,
-		$coupon['COUPON']['TYPE']
+		$coupon['COUPON']['TYPE'],
+		array('id="'.$prefix.'TYPE'.'"', 'size="3"')
 	);
-	$control->AddEditField($prefix.'MAX_USE', Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_MAX_USE'), false, array(), ($coupon['COUPON']['MAX_USE'] > 0 ? $coupon['COUPON']['MAX_USE'] : ''));
+	$control->AddEditField(
+		$prefix.'MAX_USE',
+		Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_MAX_USE'),
+		false,
+		array('id' => $prefix.'MAX_USE'),
+		($coupon['COUPON']['MAX_USE'] > 0 ? $coupon['COUPON']['MAX_USE'] : '')
+	);
 	$control->Buttons(false, '');
 	$control->Show();
 ?>
-<script type="text/javascript">top.BX.WindowManager.Get().adjustSizeEx();</script>
+<script type="text/javascript">
+	var couponType = BX('<?=$prefix.'TYPE'; ?>'),
+		maxUse = BX('<?=$prefix.'MAX_USE'; ?>'),
+		rowMaxUse;
+
+	rowMaxUse = BX.findParent(maxUse, { 'tagName': 'tr' });
+
+	BX.ready(function(){
+		BX.style(
+			rowMaxUse,
+			'display',
+			(couponType.value == '<?=Internals\DiscountCouponTable::TYPE_MULTI_ORDER; ?>' ? 'table-row' : 'none')
+		);
+		BX.bind(couponType, 'change', function ()
+		{
+			BX.style(
+				rowMaxUse,
+				'display',
+				(couponType.value == '<?=Internals\DiscountCouponTable::TYPE_MULTI_ORDER; ?>' ? 'table-row' : 'none')
+			);
+			if (top.BX.WindowManager.Get())
+			{
+				top.BX.WindowManager.Get().adjustSizeEx();
+			}
+			else
+			{
+				BX.WindowManager.Get().adjustSizeEx();
+			}
+		});
+		if (top.BX.WindowManager.Get())
+		{
+			top.BX.WindowManager.Get().adjustSizeEx();
+		}
+		else
+		{
+			BX.WindowManager.Get().adjustSizeEx();
+		}
+	});
+</script>
 <?
 }
 else
@@ -445,9 +543,11 @@ else
 	$control->AddCheckBoxField($prefix.'ACTIVE', Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_ACTIVE'), true, array('Y', 'N'), $coupon['ACTIVE'] == 'Y');
 	if ($couponID > 0)
 	{
-		$discountName = '<a href="sale_discount_edit.php?lang='.LANGUAGE_ID.'&ID='.$coupon['DISCOUNT_ID'].'">['.$coupon['DISCOUNT_ID'].']</a>';
+		$discountEditUrl = $selfFolderUrl."sale_discount_edit.php?lang=".LANGUAGE_ID."&ID=".$coupon['DISCOUNT_ID'];
+		$discountEditUrl = $adminSidePanelHelper->editUrlToPublicPage($discountEditUrl);
+		$discountName = '<a href="'.$discountEditUrl.'">['.$coupon['DISCOUNT_ID'].']</a>';
 		if ($coupon['DISCOUNT_NAME'] !== '')
-			$discountName .= ' '.$coupon['DISCOUNT_NAME'];
+			$discountName .= ' '.htmlspecialcharsbx($coupon['DISCOUNT_NAME']);
 		$discountName .= '<input type="hidden" name="DISCOUNT_ID" value="'.$coupon['DISCOUNT_ID'].'">';
 		$control->AddViewField('DISCOUNT_ID', Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_DISCOUNT'), $discountName, true);
 	}
@@ -479,7 +579,8 @@ else
 		else
 		{
 			$control->BeginCustomField('DISCOUNT_ID', Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_DISCOUNT'), true);
-			$discountEditPath = 'sale_discount_edit.php?lang='.LANGUAGE_ID.'&return_url='.urlencode($APPLICATION->GetCurPageParam());
+			$discountEditPath = $selfFolderUrl.'sale_discount_edit.php?lang='.LANGUAGE_ID.'&return_url='.urlencode($APPLICATION->GetCurPageParam());
+			$discountEditPath = $adminSidePanelHelper->editUrlToPublicPage($discountEditPath);
 			?><tr id="tr_DISCOUNT_ID">
 			<td width="40%"><? echo $control->GetCustomLabelHTML(); ?></td>
 			<td width="60%">
@@ -502,14 +603,20 @@ else
 	$control->EndCustomField('COUPON',
 		'<input type="hidden" name="COUPON" value="'.htmlspecialcharsbx($coupon['COUPON']).'">'
 	);
-	if ($couponID == 0 || $coupon['USE_COUNT'] == 0 || !isset($couponTypes[$coupon['TYPE']]))
+	$showTypeSelect = (
+		$couponID == 0
+		|| !isset($couponTypes[$coupon['TYPE']])
+		|| $coupon['DATE_APPLY'] == null
+	);
+	if ($showTypeSelect)
 	{
 		$control->AddDropDownField(
 			$prefix.'TYPE',
 			Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_TYPE'),
 			true,
 			$couponTypes,
-			$coupon['TYPE']
+			$coupon['TYPE'],
+			array('id="'.$prefix.'TYPE'.'"', 'size="3"')
 		);
 	}
 	else
@@ -517,7 +624,7 @@ else
 		$control->AddViewField(
 			$prefix.'TYPE',
 			Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_TYPE'),
-			$couponTypes[$coupon['TYPE']],
+			$couponTypes[$coupon['TYPE']].'<input type="hidden" name="'.htmlspecialcharsbx($prefix.'TYPE').'" value="'.htmlspecialcharsbx($coupon['TYPE']).'">',
 			true
 		);
 	}
@@ -561,27 +668,46 @@ else
 		?></td>
 	</tr><?
 	$control->EndCustomField($prefix.'USER_ID');
-	$control->AddEditField($prefix.'MAX_USE', Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_MAX_USE'), false, array(), ($coupon['MAX_USE'] > 0 ? $coupon['MAX_USE'] : ''));
-	$control->AddTextField($prefix.'DESCRIPTION', Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_DESCRIPTION'), $coupon['DESCRIPTION'], array(), false);
+	if ($showTypeSelect || ($couponID > 0 && $coupon['TYPE'] == Internals\DiscountCouponTable::TYPE_MULTI_ORDER))
+		$control->AddEditField(
+			$prefix.'MAX_USE',
+			Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_MAX_USE'),
+			false,
+			array('id' => $prefix.'MAX_USE'),
+			($coupon['MAX_USE'] > 0 ? $coupon['MAX_USE'] : '')
+		);
+	if ($couponID > 0 && $coupon['TYPE'] == Internals\DiscountCouponTable::TYPE_MULTI_ORDER && $coupon['USE_COUNT'] > 0)
+		$control->AddViewField(
+			$prefix.'USE_COUNT',
+			Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_USE_COUNT'),
+			$coupon['USE_COUNT'],
+			false
+		);
+	$control->AddTextField(
+		$prefix.'DESCRIPTION',
+		Loc::getMessage('BX_SALE_DISCOUNT_COUPON_FIELD_DESCRIPTION'),
+		$coupon['DESCRIPTION'],
+		array(),
+		false
+	);
 	if ($subWindow)
 	{
 		$control->Buttons(false, '');
 	}
 	else
 	{
-		$control->Buttons(
-			array(
-				'disabled' => $readOnly,
-				'back_url' => "sale_discount_coupons.php?lang=".LANGUAGE_ID.GetFilterParams('filter_')
-			)
-		);
+		$control->Buttons(array('disabled' => $readOnly, 'back_url' => $listUrl));
 	}
 	$control->Show();
 ?>
 <script type="text/javascript">
 BX.ready(function(){
 	var obCouponValue = BX('COUPON'),
-		obCouponBtn = BX('COUPON_GENERATE');
+		obCouponBtn = BX('COUPON_GENERATE'),
+		couponType = BX('<?=$prefix.'TYPE'; ?>'),
+		maxUse,
+		rowMaxUse;
+
 	if (!!obCouponValue && !!obCouponBtn)
 	{
 		BX.bind(obCouponBtn, 'click', function(){
@@ -650,11 +776,51 @@ BX.ready(function(){
 				});
 		});
 	}
+	if (!!couponType)
+	{
+		maxUse = BX('<?=$prefix.'MAX_USE'; ?>');
+		rowMaxUse = BX.findParent(maxUse, { 'tagName': 'tr' });
+
+		BX.style(
+			rowMaxUse,
+			'display',
+			(couponType.value == '<?=Internals\DiscountCouponTable::TYPE_MULTI_ORDER; ?>' ? 'table-row' : 'none')
+		);
+		BX.bind(couponType, 'change', function ()
+		{
+			BX.style(
+				rowMaxUse,
+				'display',
+				(couponType.value == '<?=Internals\DiscountCouponTable::TYPE_MULTI_ORDER; ?>' ? 'table-row' : 'none')
+			);
+			<?
+			if ($subWindow)
+			{
+			?>if (top.BX.WindowManager.Get())
+			{
+				top.BX.WindowManager.Get().adjustSizeEx();
+			}
+			else
+			{
+				BX.WindowManager.Get().adjustSizeEx();
+			}
+			<?
+			}
+			?>
+		});
+	}
 });
 <?
 if ($subWindow)
 {
-?>top.BX.WindowManager.Get().adjustSizeEx();
+?>if (top.BX.WindowManager.Get())
+{
+	top.BX.WindowManager.Get().adjustSizeEx();
+}
+else
+{
+	BX.WindowManager.Get().adjustSizeEx();
+}
 <?
 }
 ?></script><?

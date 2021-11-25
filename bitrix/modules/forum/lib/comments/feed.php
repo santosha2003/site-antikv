@@ -2,15 +2,8 @@
 
 namespace Bitrix\Forum\Comments;
 
-use Bitrix\Forum\Internals\Error\ErrorCollection;
 use \Bitrix\Main\Localization\Loc;
 use \Bitrix\Forum\Internals\Error\Error;
-use \Bitrix\Forum\Comments\ForumEntity;
-use \Bitrix\Forum\Comments\TaskEntity;
-use \Bitrix\Main\Loader;
-use \Bitrix\Main\Event;
-use \Bitrix\Main\ArgumentTypeException;
-use \Bitrix\Main\ArgumentException;
 
 Loc::loadMessages(__FILE__);
 
@@ -34,8 +27,7 @@ class Feed extends BaseObject
 	 */
 	public function canAdd()
 	{
-		global $USER;
-		return $this->entity->canAdd();
+		return $this->getEntity()->canAdd($this->getUser()->getId());
 	}
 
 	/**
@@ -44,7 +36,7 @@ class Feed extends BaseObject
 	 */
 	public function canRead()
 	{
-		return $this->entity->canRead();
+		return $this->getEntity()->canRead($this->getUser()->getId());
 	}
 
 	/**
@@ -53,7 +45,7 @@ class Feed extends BaseObject
 	 */
 	public function canEdit()
 	{
-		return $this->entity->canEdit();
+		return $this->getEntity()->canEdit($this->getUser()->getId());
 	}
 
 	/**
@@ -71,7 +63,7 @@ class Feed extends BaseObject
 	 */
 	public function canDelete()
 	{
-		return $this->entity->canEdit();
+		return $this->getEntity()->canEdit($this->getUser()->getId());
 	}
 
 	/**
@@ -88,8 +80,14 @@ class Feed extends BaseObject
 	 */
 	public function canModerate()
 	{
-		global $USER;
-		return $this->entity->canModerate();
+		return $this->getEntity()->canModerate($this->getUser()->getId());
+	}
+	/**
+	 * @return bool
+	 */
+	public function canEditOwn()
+	{
+		return $this->getEntity()->canEditOwn($this->getUser()->getId());
 	}
 
 	/**
@@ -177,7 +175,44 @@ class Feed extends BaseObject
 		}
 		return false;
 	}
-
+	/**
+	 * Render comment through the component and send into pull
+	 * @param integer $id Message id.
+	 * @param array $params Params for component including.
+	 * @return bool
+	 */
+	public function send($id, array $params)
+	{
+		ob_start();
+		try{
+			global $APPLICATION;
+			$APPLICATION->IncludeComponent(
+				"bitrix:forum.comments",
+				"bitrix24",
+				[
+					"FORUM_ID" => $this->getForum()["ID"],
+					"ENTITY_TYPE" => $this->getEntity()->getType(),
+					"ENTITY_ID" => $this->getEntity()->getId(),
+					"ENTITY_XML_ID" => $this->getEntity()->getXmlId(),
+					"MID" => $id,
+					"ACTION" => "SEND",
+					"SHOW_POST_FORM" => "N"] + $params + [
+					"SHOW_RATING" => "Y",
+					"URL_TEMPLATES_PROFILE_VIEW" => "",
+					"CHECK_ACTIONS" => "N",
+					"RECIPIENT_ID" => $this->getUser()->getId()],
+				null,
+				array("HIDE_ICONS" => "Y")
+			);
+			$result = true;
+		}
+		catch (\Throwable $e)
+		{
+			$result = false;
+		}
+		ob_get_clean();
+		return $result;
+	}
 	/**
 	 * Mainly this function for forum entity. In this case params have to from the list: A < E < I < M < Q < U < Y
 	 * A - NO ACCESS		E - READ			I - ANSWER
@@ -187,7 +222,8 @@ class Feed extends BaseObject
 	 */
 	public function setPermission($permission)
 	{
-		return $this->entity->setPermission($permission);
+		$this->getEntity()->setPermission($this->getUser()->getId(), $permission);
+		return $this;
 	}
 
 	/**
@@ -196,7 +232,8 @@ class Feed extends BaseObject
 	 */
 	public function setEditOwn($allow)
 	{
-		return $this->entity->setEditOwn($allow);
+		$this->getEntity()->setEditOwn($allow);
+		return $this;
 	}
 
 	/**
@@ -205,6 +242,6 @@ class Feed extends BaseObject
 	 */
 	public function getPermission()
 	{
-		return $this->entity->getPermission();
+		return $this->getEntity()->getPermission($this->getUser()->getId());
 	}
 }

@@ -1,7 +1,7 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 $arComponentDescription = array(
-	"NAME" =>  GetMessage("SBF_PERSONAL_SECTION_TEMPLATE_NAME"),
+	"NAME" =>  GetMessage("SBF_PERSONAL_SECTION_TEMPLATE_NAME_MAIL"),
 	"TYPE" => "mail",
 	"DESCRIPTION" => GetMessage("SBF_PERSONAL_SECTION_TEMPLATE_DESCRIPTION"),
 	"SORT" => 30,

@@ -1,15 +1,16 @@
-<?
+<?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/location.php");
 
 use Bitrix\Sale\Location;
 
 class CSaleLocation extends CAllSaleLocation
 {
-	function GetList($arOrder = array("SORT"=>"ASC", "COUNTRY_NAME_LANG"=>"ASC", "CITY_NAME_LANG"=>"ASC"), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array("SORT"=>"ASC", "COUNTRY_NAME_LANG"=>"ASC", "CITY_NAME_LANG"=>"ASC"), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
-		if (is_string($arGroupBy) && strlen($arGroupBy) == 2)
+		if (is_string($arGroupBy) && mb_strlen($arGroupBy) == 2)
 		{
 			$arFilter["LID"] = $arGroupBy;
 			$arGroupBy = false;
@@ -44,9 +45,9 @@ class CSaleLocation extends CAllSaleLocation
 				"SELECT ".$arSqls["SELECT"]." ".
 				"FROM b_sale_location L ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!1!=".htmlspecialcharsbx($strSql)."<br>";
@@ -62,29 +63,29 @@ class CSaleLocation extends CAllSaleLocation
 			"SELECT ".$arSqls["SELECT"]." ".
 			"FROM b_sale_location L ".
 			"	".$arSqls["FROM"]." ";
-		if (strlen($arSqls["WHERE"]) > 0)
+		if ($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-		if (strlen($arSqls["GROUPBY"]) > 0)
+		if ($arSqls["GROUPBY"] <> '')
 			$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT('x') as CNT ".
 				"FROM b_sale_location L ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql_tmp .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
 
 			$dbRes = $DB->Query($strSql_tmp, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			$cnt = 0;
-			if (strlen($arSqls["GROUPBY"]) <= 0)
+			if ($arSqls["GROUPBY"] == '')
 			{
 				if ($arRes = $dbRes->Fetch())
 					$cnt = $arRes["CNT"];
@@ -103,8 +104,8 @@ class CSaleLocation extends CAllSaleLocation
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])>0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])>0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			//echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -114,14 +115,14 @@ class CSaleLocation extends CAllSaleLocation
 		return $dbRes;
 	}
 
-	function GetByID($ID, $strLang = LANGUAGE_ID)
+	public static function GetByID($ID, $strLang = LANGUAGE_ID)
 	{
 		if(self::isLocationProMigrated())
 			return parent::GetByID($ID, $strLang);
 
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		/*$strSql =
 			"SELECT L.ID, L.COUNTRY_ID, L.CITY_ID, L.SORT, ".
 			"	LC.NAME as COUNTRY_NAME_ORIG, LC.SHORT_NAME as COUNTRY_SHORT_NAME, LCL.NAME as COUNTRY_NAME_LANG, ".
@@ -160,7 +161,7 @@ class CSaleLocation extends CAllSaleLocation
 		return False;
 	}
 
-	function GetCountryList($arOrder = Array("NAME_LANG"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
+	public static function GetCountryList($arOrder = Array("NAME_LANG"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
 	{
 		if(self::isLocationProMigrated())
 			return self::GetLocationTypeList('COUNTRY', $arOrder, $arFilter, $strLang);
@@ -177,12 +178,12 @@ class CSaleLocation extends CAllSaleLocation
 		for($i=0; $i < $countFilterKey; $i++)
 		{
 			$val = $DB->ForSql($arFilter[$filter_keys[$i]]);
-			if (strlen($val)<=0) continue;
+			if ($val == '') continue;
 
 			$key = $filter_keys[$i];
 			if ($key[0]=="!")
 			{
-				$key = substr($key, 1);
+				$key = mb_substr($key, 1);
 				$bInvert = true;
 			}
 			else
@@ -191,7 +192,7 @@ class CSaleLocation extends CAllSaleLocation
 			switch(ToUpper($key))
 			{
 			case "ID":
-				$arSqlSearch[] = "C.ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+				$arSqlSearch[] = "C.ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 				break;
 			case "NAME":
 				$arSqlSearch[] = "C.NAME ".($bInvert?"<>":"=")." '".$val."' ";
@@ -213,7 +214,7 @@ class CSaleLocation extends CAllSaleLocation
 			"FROM b_sale_location_country C ".
 			"	LEFT JOIN b_sale_location_country_lang CL ON (C.ID = CL.COUNTRY_ID AND CL.LID = '".$DB->ForSql($strLang, 2)."') ".
 			(
-				strlen($arOrder["SORT"]) > 0
+				$arOrder["SORT"] <> ''
 				?
 				"	LEFT JOIN b_sale_location SL ON (SL.COUNTRY_ID = C.ID AND (SL.CITY_ID = 0 OR ISNULL(SL.CITY_ID))) "
 				:
@@ -267,7 +268,7 @@ class CSaleLocation extends CAllSaleLocation
 	* @param string $strLang language regions of the sample
 	* @return true false
 	*/
-	function GetRegionList($arOrder = Array("NAME_LANG"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
+	public static function GetRegionList($arOrder = Array("NAME_LANG"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
 	{
 		if(self::isLocationProMigrated())
 			return self::GetLocationTypeList('REGION', $arOrder, $arFilter, $strLang);
@@ -284,12 +285,12 @@ class CSaleLocation extends CAllSaleLocation
 		for($i=0; $i < $countFilterKey; $i++)
 		{
 			$val = $DB->ForSql($arFilter[$filter_keys[$i]]);
-			if (strlen($val)<=0) continue;
+			if ($val == '') continue;
 
 			$key = $filter_keys[$i];
 			if ($key[0]=="!")
 			{
-				$key = substr($key, 1);
+				$key = mb_substr($key, 1);
 				$bInvert = true;
 			}
 			else
@@ -298,7 +299,7 @@ class CSaleLocation extends CAllSaleLocation
 			switch(ToUpper($key))
 			{
 				case "ID":
-					$arSqlSearch[] = "C.ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+					$arSqlSearch[] = "C.ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 					break;
 				case "NAME":
 					$arSqlSearch[] = "C.NAME ".($bInvert?"<>":"=")." '".$val."' ";
@@ -371,7 +372,7 @@ class CSaleLocation extends CAllSaleLocation
 	 * @param string $strLang language regions of the sample
 	 * @return true false
 	 */
-	function GetCityList($arOrder = Array("NAME_LANG"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
+	public static function GetCityList($arOrder = Array("NAME_LANG"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
 	{
 		if(self::isLocationProMigrated())
 			return self::GetLocationTypeList('CITY', $arOrder, $arFilter, $strLang);
@@ -388,12 +389,12 @@ class CSaleLocation extends CAllSaleLocation
 		for($i=0; $i < $countFilterKey; $i++)
 		{
 			$val = $DB->ForSql($arFilter[$filter_keys[$i]]);
-			if (strlen($val)<=0) continue;
+			if ($val == '') continue;
 
 			$key = $filter_keys[$i];
 			if ($key[0]=="!")
 			{
-				$key = substr($key, 1);
+				$key = mb_substr($key, 1);
 				$bInvert = true;
 			}
 			else
@@ -402,7 +403,7 @@ class CSaleLocation extends CAllSaleLocation
 			switch(ToUpper($key))
 			{
 				case "ID":
-					$arSqlSearch[] = "C.ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+					$arSqlSearch[] = "C.ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 					break;
 				case "NAME":
 					$arSqlSearch[] = "C.NAME ".($bInvert?"<>":"=")." '".$val."' ";
@@ -468,7 +469,7 @@ class CSaleLocation extends CAllSaleLocation
 	}
 
 	// have to use old table as a temporal place to store countries, kz add of a country doesn`t mean add of a location
-	function AddCountry($arFields)
+	public static function AddCountry($arFields)
 	{
 		global $DB;
 
@@ -492,11 +493,9 @@ class CSaleLocation extends CAllSaleLocation
 			"VALUES(".$arInsert[1].")";
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
-		$b = "sort";
-		$o = "asc";
-		$db_lang = CLangAdmin::GetList($b, $o, array("ACTIVE" => "Y"));
+		$db_lang = CLangAdmin::GetList('sort', 'asc', array("ACTIVE" => "Y"));
 		while ($arLang = $db_lang->Fetch())
 		{
 			if ($arFields[$arLang['LID']])
@@ -516,7 +515,7 @@ class CSaleLocation extends CAllSaleLocation
 	}
 
 	// have to use old table as a temporal place to store cities, kz we don`t know yet which country\region a newly-created city belongs to
-	function AddCity($arFields)
+	public static function AddCity($arFields)
 	{
 		global $DB;
 
@@ -540,11 +539,9 @@ class CSaleLocation extends CAllSaleLocation
 			"VALUES(".$arInsert[1].")";
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
-		$b = "sort";
-		$o = "asc";
-		$db_lang = CLangAdmin::GetList($b, $o, array("ACTIVE" => "Y"));
+		$db_lang = CLangAdmin::GetList('sort', 'asc', array("ACTIVE" => "Y"));
 		while ($arLang = $db_lang->Fetch())
 		{
 			if ($arFields[$arLang["LID"]])
@@ -564,7 +561,7 @@ class CSaleLocation extends CAllSaleLocation
 	}
 
 	// have to use old table as a temporal place to store region, kz we don`t know yet which country a newly-created region belongs to
-	function AddRegion($arFields)
+	public static function AddRegion($arFields)
 	{
 		global $DB;
 
@@ -588,11 +585,9 @@ class CSaleLocation extends CAllSaleLocation
 			"VALUES(".$arInsert[1].")";
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
-		$b = "sort";
-		$o = "asc";
-		$db_lang = CLangAdmin::GetList($b, $o, array("ACTIVE" => "Y"));
+		$db_lang = CLangAdmin::GetList('sort', 'asc', array("ACTIVE" => "Y"));
 		while ($arLang = $db_lang->Fetch())
 		{
 			if ($arFields[$arLang["LID"]])
@@ -611,7 +606,7 @@ class CSaleLocation extends CAllSaleLocation
 		return $ID;
 	}
 
-	function AddLocation($arFields)
+	public static function AddLocation($arFields)
 	{
 		global $DB;
 
@@ -638,7 +633,7 @@ class CSaleLocation extends CAllSaleLocation
 			"VALUES(".$arInsert[1].")";
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
 		// make IX_B_SALE_LOC_CODE feel happy
 		Location\LocationTable::update($ID, array('CODE' => $ID));

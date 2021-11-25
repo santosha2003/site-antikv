@@ -1,26 +1,39 @@
-<?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
-<?
-if(strlen($arResult["MESSAGE"])>0)
+<?php
+
+if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
+{
+	die();
+}
+
+/**
+ * @var array $arResult
+ * @var array $arParams
+ * @var CMain $APPLICATION
+ * @var string $templateFolder
+ * @var CUser $USER
+ */
+
+if ($arResult["MESSAGE"] <> '')
 {
 	?>
 	<?=$arResult["MESSAGE"]?><br /><br />
 	<?
 }
-if(strlen($arResult["ERROR_MESSAGE"])>0)
+if ($arResult["ERROR_MESSAGE"] <> '')
 {
 	?>
 	<span class='errortext'><?=$arResult["ERROR_MESSAGE"]?></span><br /><br />
 	<?
 }
-if(strlen($arResult["FATAL_MESSAGE"])>0)
+if ($arResult["FATAL_MESSAGE"] <> '')
 {
 	?>
 	<span class='errortext'><?=$arResult["FATAL_MESSAGE"]?></span><br /><br />
 	<?
 }
 else
-{	
-	if($arResult["imageUpload"] == "Y")
+{
+	if ($arResult["imageUpload"] == "Y")
 	{
 		?>
 			<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -49,21 +62,21 @@ else
 				<td class="tablebody"><?=CFile::InputFile("FILE_ID", 20, 0)?></td>
 			</tr>
 			</table>
-		<br />
+			<br />
 		<input type="submit" value="<?=GetMessage("BLOG_P_DO_UPLOAD")?>" name="do_upload">
 		<input type="button" value="<?=GetMessage("BLOG_P_CANCEL")?>" onclick="self.close()">
 		</form>
 		</html>
 		<?
-		if(strlen($_POST["do_upload"])>0)
+		if ($_POST["do_upload"] <> '')
 		{
 			?>
 			<script>
 				<?
-				if(!empty($arResult["Image"]))
+				if (!empty($arResult["Image"]))
 				{?>
 				my_html = '<?=$arResult["ImageModified"]?>' +
-					'<br /><input name=IMAGE_ID_title[<?=$arResult["Image"]["ID"]?>] value="<?=CUtil::JSEscape($arResult["Image"]["TITLE'"])?>" style="width:100px">' +
+					'<br /><input name=IMAGE_ID_title[<?=$arResult["Image"]["ID"]?>] value="<?=htmlspecialcharsbx($arResult["Image"]["TITLE'"])?>" style="width:100px">' +
 					'<br /><input type=checkbox name=IMAGE_ID_del[<?=$arResult["Image"]["ID"]?>] id=img_del_<?=$arResult["Image"]["ID"]?>> <label for=img_del_<?=$arResult["Image"]["ID"]?>><?=GetMessage("BLOG_DELETE")?></label>';
 					
 				if (!opener.document.getElementById('img_TABLE'))
@@ -102,14 +115,14 @@ else
 				oCell.innerHTML = my_html;
 				
 				<?
-				if($_GET["htmlEditor"] == "Y")
+				if ($_GET["htmlEditor"] == "Y")
 				{
 					?>
-					var editorId = '<?=Cutil::JSEscape($_GET["editorId"])?>';		
-					if(editorId)
+					var editorId = '<?=$_GET["editorId"]?>';		
+					if (editorId)
 					{
 						var pMainObj = window.opener.GLOBAL_pMainObj[editorId];
-						if(pMainObj)
+						if (pMainObj)
 						{
 							imageSrc = window.opener.document.getElementById(<?=$arResult["Image"]["ID"]?>).src;
 							_str = '<img __bxtagname="blogImage" __bxcontainer="<?=$arResult["Image"]["ID"]?>" src="'+imageSrc+'">';
@@ -136,14 +149,13 @@ else
 
 		die();
 	}
-	elseif($_REQUEST["load_editor"] == "Y")
+	elseif ($_REQUEST["load_editor"] == "Y")
 	{
 		$APPLICATION->RestartBuffer();
-		if(CModule::IncludeModule("fileman"))
+		if (CModule::IncludeModule("fileman"))
 		{
 			?>
 			<script language="JavaScript">
-			<!--
 			var arImages = Array();
 			var arVideo = Array();
 			var arVideoP = Array();
@@ -151,27 +163,27 @@ else
 			var arVideoH = Array();
 			<?
 			$i = 0;
-			foreach($arResult["Images"] as $aImg)
+			foreach ($arResult["Images"] as $aImg)
 			{
 				?>arImages['<?=$i?>'] = '<?=$aImg["ID"]?>';<?
 				$i++;
 			}
 
 			$i = 0;
-			preg_match_all("#\[video(.+?)\](.+?)\[/video[\s]*\]#ie", $arResult["PostToShow"]["~DETAIL_TEXT"], $matches);
-			if(!empty($matches))
+			preg_match_all("#\[video(.+?)\](.+?)\[/video[\s]*\]#i", $arResult["PostToShow"]["~DETAIL_TEXT"], $matches);
+			if (!empty($matches))
 			{
-				foreach($matches[0] as $key => $value)
+				foreach ($matches[0] as $key => $value)
 				{
-					if(strlen($value) > 0)
+					if ($value <> '')
 					{
-						preg_match("#width=([0-9]+)#ie", $matches[1][$key], $width);
-						preg_match("#height=([0-9]+)#ie", $matches[1][$key], $height);
+						preg_match("#width=([0-9]+)#i", $matches[1][$key], $width);
+						preg_match("#height=([0-9]+)#i", $matches[1][$key], $height);
 						?>
-						arVideo['<?=$i?>'] = '<?=CUtil::JSEscape($matches[0][$key])?>';
-						arVideoP['<?=$i?>'] = '<?=CUtil::JSEscape($matches[2][$key])?>';
-						arVideoW['<?=$i?>'] = '<?=IntVal($width[1])?>';
-						arVideoH['<?=$i?>'] = '<?=IntVal($height[1])?>';
+						arVideo['<?=$i?>'] = '<?=$matches[0][$key]?>';
+						arVideoP['<?=$i?>'] = '<?=$matches[2][$key]?>';
+						arVideoW['<?=$i?>'] = '<?=intval($width[1])?>';
+						arVideoH['<?=$i?>'] = '<?=intval($height[1])?>';
 						<?
 						$i++;
 					}
@@ -187,7 +199,6 @@ else
 				}
 			}
 
-			//-->
 			</script>
 			
 			<?
@@ -195,13 +206,12 @@ else
 			{
 				?>
 				<script>
-				<!--
 				function _blogImageLinkParser(_str)
 				{
 					for(var i=0, cnt = arImages.length; i<cnt; i++)
 					{
 						j = _str.indexOf("[IMG ID="+arImages[i]+"]");
-						while(j > -1)
+						while (j > -1)
 						{
 							imageSrc = document.getElementById(arImages[i]).src;
 							_str = _str.replace("[IMG ID="+arImages[i]+"]", '<img __bxtagname="blogImage" __bxcontainer="'+arImages[i]+'" src="'+imageSrc+'">');
@@ -212,7 +222,7 @@ else
 					for(var i=0, cnt = arVideo.length; i<cnt; i++)
 					{
 						j = _str.indexOf(arVideo[i]);
-						while(j > -1)
+						while (j > -1)
 						{
 							_str = _str.replace(arVideo[i], '<img __bxtagname="blogVideo" src="/bitrix/images/1.gif" style="border: 1px solid rgb(182, 182, 184); background-color: rgb(226, 223, 218); background-image: url('+document.getElementById('videoImg').src+'); background-position: center center; background-repeat: no-repeat; width: '+arVideoW[i]+'px; height: '+arVideoH[i]+'px;" __bxcontainer="'+arVideoP[i]+'" width="'+arVideoW[i]+'" height="'+arVideoH[i]+'" />');
 							j = _str.indexOf(arVideo[i]);
@@ -290,32 +300,36 @@ else
 
 				for(var i=0, cnt = arGlobalToolbar.length; i<cnt; i++)
 				{
-					if(arGlobalToolbar[i][1])
+					if (arGlobalToolbar[i][1])
 					{
-						if(arGlobalToolbar[i][1].id == "image")
-							imageID = i;						
-						else if(arGlobalToolbar[i][1].id == "InsertHorizontalRule")
+						if (arGlobalToolbar[i][1].id == "image")
+						{
+							imageID = i;
+						}
+						else if (arGlobalToolbar[i][1].id == "InsertHorizontalRule")
+						{
 							cutID = i;
+						}
 					}
 				}
 
-				if(imageID > 0)
+				if (imageID > 0)
 				{
 					tmpArray = arGlobalToolbar.slice(0, imageID).concat([arButtons['ImageLink']]);
 					arGlobalToolbar = tmpArray.concat(arGlobalToolbar.slice(imageID));		
 					imageID++;
 					imageID++;
-					
+
 					tmpArray = arGlobalToolbar.slice(0, imageID).concat([arButtons['BlogInputVideo']]);
 					arGlobalToolbar = tmpArray.concat(arGlobalToolbar.slice(imageID));	
 				}
-				if(cutID > 0)
+
+				if (cutID > 0)
 				{
 					tmpArray = arGlobalToolbar.slice(0, cutID).concat([arButtons['BlogCUT']]);
 					arGlobalToolbar = tmpArray.concat(arGlobalToolbar.slice(cutID));					
 				}										
 				
-				//-->
 				</script>
 
 				<?
@@ -354,7 +368,7 @@ else
 	{
 		include($_SERVER["DOCUMENT_ROOT"].$templateFolder."/script.php");
 		
-		if($arResult["preview"] == "Y" && !empty($arResult["PostToShow"])>0)
+		if ($arResult["preview"] == "Y" && !empty($arResult["PostToShow"]))
 		{
 			echo "<span class=\"blogtext\"><b>".GetMessage("BLOG_PREVIEW_TITLE")."</b></span>";
 			?>
@@ -387,16 +401,18 @@ else
 					<?=$arResult["postPreview"]["BlogUser"]["AVATAR_img"]?>
 					<?=$arResult["postPreview"]["textFormated"]?>
 					<br clear="all" />
-					<?if(!empty($arResult["postPreview"]["Category"]))
+					<?if (!empty($arResult["postPreview"]["Category"]))
 					{
 						?>
 						<div class="blog-line"></div>
 						<?=GetMessage("BLOG_BLOG_BLOG_CATEGORY")?>
 						<?$i=0;
-						foreach($arResult["postPreview"]["Category"] as $v)
+						foreach ($arResult["postPreview"]["Category"] as $v)
 						{
-							if($i!=0)
+							if ($i!=0)
+							{
 								echo ",";
+							}
 							?> <?=$v["NAME"]?><?
 							$i++;
 						}
@@ -422,10 +438,10 @@ else
 			<tr id="tr_TEXT">
 				<th valign="top" align="right" nowrap><b><?=GetMessage("BLOG_TEXT")?></b></th>
 				<td class="blog-detail-text">
-					<?if($arResult["allow_html"] == "Y")
+					<?if ($arResult["allow_html"] == "Y")
 					{
 						?>
-						<input type="radio" id="blg-text-text" name="POST_MESSAGE_TYPE" value="text"<?if($arResult["PostToShow"]["DETAIL_TEXT_TYPE"] != "html") echo " checked";?> onclick="showEditField('text', 'Y')"> <label for="blg-text-text">Text</label> / <input type="radio" id="blg-text-html" name="POST_MESSAGE_TYPE" value="html"<?if($arResult["PostToShow"]["DETAIL_TEXT_TYPE"] == "html") echo " checked";?> onclick="showEditField('html', 'Y')"> <label for="blg-text-html">HTML</label>
+						<input type="radio" id="blg-text-text" name="POST_MESSAGE_TYPE" value="text"<?if ($arResult["PostToShow"]["DETAIL_TEXT_TYPE"] != "html") echo " checked";?> onclick="showEditField('text', 'Y')"> <label for="blg-text-text">Text</label> / <input type="radio" id="blg-text-html" name="POST_MESSAGE_TYPE" value="html"<?if ($arResult["PostToShow"]["DETAIL_TEXT_TYPE"] == "html") echo " checked";?> onclick="showEditField('html', 'Y')"> <label for="blg-text-html">HTML</label>
 						<input type="hidden" name="editor_loaded" id="editor_loaded" value="N">
 						<div id="edit-post-html" style="display:none;">
 						</div>
@@ -477,23 +493,29 @@ else
 								<table class="blog-blog-edit-table-smiles">
 									<?
 									$ind = 0;
-									foreach($arResult["Smiles"] as $arSmiles)
+									foreach ($arResult["Smiles"] as $arSmiles)
 									{
 										if ($ind == 0)
+										{
 											echo "<tr>";
+										}
 										?>
 											<td align="center"><img src="/bitrix/images/blog/smile/<?=$arSmiles["IMAGE"]?>" width="<?=$arSmiles["IMAGE_WIDTH"]?>" height="<?=$arSmiles["IMAGE_HEIGHT"]?>" title="<?=$arSmiles["LANG_NAME"]?>" OnClick="emoticon('<?=$arSmiles["TYPE"]?>')" style="cursor:pointer"></td>
 										<?
-										if($ind == 1)
+										if ($ind == 1)
 										{
 											echo "</tr>";
 											$ind = 0;
 										}
 										else
+										{
 											$ind++;
+										}
 									}
-									if($ind!=1)
+									if ($ind!=1)
+									{
 										echo "</tr>";
+									}
 									?>
 								</table>
 							</td>
@@ -502,7 +524,7 @@ else
 				</td>
 			</tr>
 			<?
-			if($arResult["allow_html"] == "Y")
+			if ($arResult["allow_html"] == "Y")
 			{
 				?>
 				<script type="text/javascript" src="/bitrix/js/main/ajax.js"></script>
@@ -517,16 +539,11 @@ else
 				$APPLICATION->SetTemplateCSS('ajax/ajax.css');
 			}
 
-
-			?>
-			<?if($arResult["PostToShow"]["DETAIL_TEXT_TYPE"] == "html" && $arResult["allow_html"] == "Y")
+			if ($arResult["PostToShow"]["DETAIL_TEXT_TYPE"] == "html" && $arResult["allow_html"] == "Y")
 			{
-				
 				?>
 				<script>
-				<!--
 				setTimeout("showEditField('html', 'N')", 100);
-				//-->
 				</script>
 				<?
 			}
@@ -534,9 +551,7 @@ else
 			{
 				?>
 				<script>
-				<!--
 				showEditField('text', 'N');
-				//-->
 				</script>
 				<?
 			}
@@ -552,7 +567,7 @@ else
 						<table class="blog-blog-edit-table" id="img_TABLE">
 						<?
 						$i=0;
-						foreach($arResult["Images"] as $aImg)
+						foreach ($arResult["Images"] as $aImg)
 						{
 							if ($i==0)
 								print "<tr>";
@@ -563,16 +578,20 @@ else
 									<input type="checkbox" name="IMAGE_ID_del[<?=$aImg["ID"]?>]" id="img_del_<?=$aImg["ID"]?>"> <label for="img_del_<?=$aImg["ID"]?>"><?=GetMessage("BLOG_DELETE")?></label>
 								</td>
 							<?
-							if($i == 3)
+							if ($i == 3)
 							{
 								echo "</tr>";
 								$i = 0;
 							}
 							else
+							{
 								$i++;
+							}
 						}
-						if($i!=3)
+						if ($i!=3)
+						{
 							echo "</tr>";
+						}
 						?>
 						</table>
 					</td>
@@ -601,28 +620,9 @@ else
 			<tr>
 				<th valign="top" align="right" nowrap><b><?=GetMessage("BLOG_CATEGORY")?></b></th>
 				<td>
-					<?/*
-					<select name="CATEGORY_ID[]" id="CATEGORY_ID" multiple="multiple" size="5">
-						<option value="0"<?=(IntVal($arResult["PostToShow"]["CATEGORY_ID"])==0 ? " selected" : "")?>><?=GetMessage("BLOG_NO_CATEGORY")?></option>
-						<?
-						foreach($arResult["Category"] as $arCategory)
-						{
-							if($arCategory["Selected"]=="Y")
-								$value .= $arCategory["~NAME"].", ";
-							?>
-							<option value="<?=$arCategory["ID"]?>"<?=($arCategory["Selected"]=="Y" ? " selected" : "")?>><?=$arCategory["NAME"]?></option>
-							<?
-						}
-						$value = substr($value, 0, strlen($value)-2);
-						?>
-					</select>
-					
-					<br />
-					<div id="category-add"><a href="javascript:AddCategory();" class="blog-category-add" title="<?=GetMessage("BLOG_CATEGORY_ADD")?>"></a>&nbsp;<a href="javascript:AddCategory();" title="<?=GetMessage("BLOG_CATEGORY_ADD")?>"><?=GetMessage("BLOG_CATEGORY_ADD")?></a></div>
-					*/?>
 					<div id="category-new">
 						<?
-						if(IsModuleInstalled("search"))
+						if (IsModuleInstalled("search"))
 						{
 							$APPLICATION->IncludeComponent("bitrix:search.tags.input", ".default", Array(
 								"NAME"	=>	"TAGS",
@@ -666,7 +666,7 @@ else
 				</td>
 			</tr>
 
-			<?if($arResult["enable_trackback"] == "Y")
+			<?if ($arResult["enable_trackback"] == "Y")
 			{
 				?>
 				<tr>
@@ -682,7 +682,7 @@ else
 				<?
 			}
 			?>
-			<?if($arResult["POST_PROPERTIES"]["SHOW"] == "Y"):?>
+			<?if ($arResult["POST_PROPERTIES"]["SHOW"] == "Y"):?>
 				<?foreach ($arResult["POST_PROPERTIES"]["DATA"] as $FIELD_NAME => $arPostField):?>
 				<tr>
 					<th><b><?=$arPostField["EDIT_FORM_LABEL"]?>:</b></th>
@@ -695,12 +695,34 @@ else
 				</tr>			
 				<?endforeach;?>
 			<?endif;?>
-			<?if($USER->IsAdmin()):?>
+			<?if ($USER->IsAdmin()):?>
 				<tr>
-					<td colspan="2"><a href="/bitrix/admin/userfield_edit.php?lang=ru&ENTITY_ID=BLOG_POST&back_url=<?=$arResult["CUR_PAGE"]?>"><?=GetMessage("BLOG_POST_PROPERTY_ADD")?></a></th>
+					<td colspan="2"><a href="/bitrix/admin/userfield_edit.php?ENTITY_ID=BLOG_POST&back_url=<?=$arResult["CUR_PAGE"]?>"><?=GetMessage("BLOG_POST_PROPERTY_ADD")?></a></th>
 				</tr>
 			<?endif;?>
 			</table>
+			<?
+//			userconsent only for once for registered early users
+			if ($arParams['USER_CONSENT'] == 'Y' && !$arParams['USER_CONSENT_WAS_GIVEN'])
+			{
+				$APPLICATION->IncludeComponent(
+					"bitrix:main.userconsent.request",
+					"",
+					array(
+						"ID" => $arParams["USER_CONSENT_ID"],
+						"IS_CHECKED" => $arParams["USER_CONSENT_IS_CHECKED"],
+						"AUTO_SAVE" => "Y",
+						"IS_LOADED" => $arParams["USER_CONSENT_IS_LOADED"],
+						"ORIGIN_ID" => "sender/sub",
+						"ORIGINATOR_ID" => "",
+						"REPLACE" => array(
+							'button_caption' => GetMessage("B_B_MS_SEND"),
+							'fields' => array('Alias', 'Personal site', 'Birthday', 'Photo')
+						),
+					)
+				);
+			}
+			?>
 			<br />
 			<input type="hidden" name="save" value="Y">
 			<input tabindex="3" type="submit" name="save" value="<?=GetMessage("BLOG_SAVE")?>">
@@ -716,9 +738,7 @@ else
 		<sup>1</sup> - <?=GetMessage("BLOG_FAVORITE_SORT_HINT")?>
 		</span>
 		<script>
-		<!--
 		document.REPLIER.POST_TITLE.focus();
-		//-->
 		</script>
 		<?
 	}

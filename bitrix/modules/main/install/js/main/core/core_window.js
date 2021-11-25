@@ -14,9 +14,6 @@ BX.WindowManager = {
 	register: function (w)
 	{
 		this.currently_loaded = null;
-		var div = w.Get();
-
-		div.style.zIndex = w.zIndex = this.GetZIndex();
 
 		w.WM_REG_INDEX = this._stack.length;
 		this._stack.push(w);
@@ -343,6 +340,7 @@ BX.CWindow = function(div, type)
 
 	BX.ready(BX.delegate(function() {
 		document.body.appendChild(this.DIV);
+		BX.ZIndexManager.register(this.DIV);
 	}, this));
 };
 
@@ -358,6 +356,8 @@ BX.CWindow.prototype.Show = function(bNotRegister)
 		BX.WindowManager.register(this);
 		BX.onCustomEvent(this, 'onWindowRegister');
 	}
+
+	BX.ZIndexManager.bringToFront(this.DIV);
 };
 
 BX.CWindow.prototype.Hide = function()
@@ -632,8 +632,15 @@ BX.CWindow.prototype.Move = function(x, y)
 		if (left > (scrollSize.scrollWidth - floatWidth - dxShadow))
 			left = scrollSize.scrollWidth - floatWidth - dxShadow;
 
-		if (top > (scrollSize.scrollHeight - floatHeight - dxShadow))
-			top = scrollSize.scrollHeight - floatHeight - dxShadow;
+		var scrollHeight = Math.max(
+			document.body.scrollHeight, document.documentElement.scrollHeight,
+			document.body.offsetHeight, document.documentElement.offsetHeight,
+			document.body.clientHeight, document.documentElement.clientHeight,
+			scrollSize.scrollHeight
+		);
+
+		if (top > (scrollHeight - floatHeight - dxShadow))
+			top = scrollHeight - floatHeight - dxShadow;
 
 		//Top side
 		if (top < 0)
@@ -766,6 +773,15 @@ BX.CWindowDialog.prototype.CreateOverlay = function(zIndex)
 	if (null == this.OVERLAY)
 	{
 		var windowSize = BX.GetWindowScrollSize();
+
+		// scrollHeight in BX.GetWindowScrollSize may be incorrect
+		var scrollHeight = Math.max(
+			document.body.scrollHeight, document.documentElement.scrollHeight,
+			document.body.offsetHeight, document.documentElement.offsetHeight,
+			document.body.clientHeight, document.documentElement.clientHeight,
+			windowSize.scrollHeight
+		);
+
 		this.OVERLAY = document.body.appendChild(BX.create("DIV", {
 			style: {
 				position: 'absolute',
@@ -773,9 +789,15 @@ BX.CWindowDialog.prototype.CreateOverlay = function(zIndex)
 				left: '0px',
 				zIndex: zIndex || (parseInt(this.DIV.style.zIndex)-2),
 				width: windowSize.scrollWidth + "px",
-				height: windowSize.scrollHeight + "px"
+				height: scrollHeight + "px"
 			}
 		}));
+
+		var component = BX.ZIndexManager.getComponent(this.DIV);
+		if (component)
+		{
+			component.setOverlay(this.OVERLAY);
+		}
 	}
 
 	return this.OVERLAY;
@@ -788,7 +810,6 @@ BX.CWindowDialog.prototype.Show = function()
 	this.CreateOverlay();
 
 	this.OVERLAY.style.display = 'block';
-	this.OVERLAY.style.zIndex = parseInt(this.DIV.style.zIndex)-2;
 
 	BX.unbind(window, 'resize', BX.proxy(this.__resizeOverlay, this));
 	BX.bind(window, 'resize', BX.proxy(this.__resizeOverlay, this));
@@ -1481,7 +1502,7 @@ BX.CDialog.prototype.SetHead = function(head)
 	this.adjustSize();
 };
 
-BX.CDialog.prototype.Notify = function(note, bError)
+BX.CDialog.prototype.Notify = function(note, bError, html)
 {
 	if (!this.PARTS.NOTIFY)
 	{
@@ -1506,6 +1527,11 @@ BX.CDialog.prototype.Notify = function(note, bError)
 		BX.addClass(this.PARTS.NOTIFY, 'adm-warning-block-red');
 	else
 		BX.removeClass(this.PARTS.NOTIFY, 'adm-warning-block-red');
+
+	if(html !== true)
+	{
+		note = BX.util.htmlspecialchars(note);
+	}
 
 	this.PARTS.NOTIFY.firstChild.innerHTML = note || '&nbsp;';
 	this.PARTS.NOTIFY.firstChild.style.width = (this.PARAMS.width-50) + 'px';
@@ -1707,13 +1733,23 @@ BX.CDialog.prototype.adjustSizeEx = function()
 
 BX.CDialog.prototype.__adjustSizeEx = function()
 {
-	var ob = this.PARTS.CONTENT_DATA.firstChild, new_height = 0;
+	var ob = this.PARTS.CONTENT_DATA.firstChild,
+		new_height = 0,
+		marginTop,
+		marginBottom;
+
 	while (ob)
 	{
-		new_height += ob.offsetHeight
-			+ parseInt(BX.style(ob, 'margin-top'))
-			+ parseInt(BX.style(ob, 'margin-bottom'));
-
+		if (BX.type.isElementNode(ob))
+		{
+			marginTop = parseInt(BX.style(ob, 'margin-top'), 10);
+			if (isNaN(marginTop))
+				marginTop = 0;
+			marginBottom = parseInt(BX.style(ob, 'margin-bottom'), 10);
+			if (isNaN(marginBottom))
+				marginBottom = 0;
+			new_height += ob.offsetHeight + marginTop + marginBottom;
+		}
 		ob = BX.nextSibling(ob);
 	}
 
@@ -1737,7 +1773,7 @@ BX.CDialog.prototype.Show = function(bNotRegister)
 
 		BX.WindowManager.currently_loaded = this;
 
-		this.CreateOverlay(parseInt(BX.style(wait, 'z-index'))-1);
+		this.CreateOverlay();
 		this.OVERLAY.style.display = 'block';
 		this.OVERLAY.className = 'bx-core-dialog-overlay';
 
@@ -1782,10 +1818,14 @@ BX.CDialog.prototype.Show = function(bNotRegister)
 
 		this.__adjustSize();
 
+		BX.removeCustomEvent(this, 'onWindowResize', BX.proxy(this.__adjustSize, this));
 		BX.addCustomEvent(this, 'onWindowResize', BX.proxy(this.__adjustSize, this));
 
 		if (this.PARAMS.resizable && (this.PARAMS.content_url || this.PARAMS.resize_id))
-			BX.addCustomEvent(this, 'onWindowResizeFinished', BX.delegate(this.__onResizeFinished, this));
+		{
+			BX.removeCustomEvent(this, 'onWindowResizeFinished', BX.proxy(this.__onResizeFinished, this));
+			BX.addCustomEvent(this, 'onWindowResizeFinished', BX.proxy(this.__onResizeFinished, this));
+		}
 	}
 };
 
@@ -1798,14 +1838,22 @@ BX.CDialog.prototype.adjustPos = function()
 {
 	if (!this.bExpanded)
 	{
-		var windowSize = BX.GetWindowInnerSize();
-		var windowScroll = BX.GetWindowScrollPos();
+		var currentWindow = window;
+		var topWindow = BX.PageObject.getRootWindow();
+		if (topWindow.BX.SidePanel && topWindow.BX.SidePanel.Instance && topWindow.BX.SidePanel.Instance.getTopSlider())
+		{
+			currentWindow = topWindow.BX.SidePanel.Instance.getTopSlider().getWindow();
+		}
+		var windowSize = currentWindow.BX.GetWindowInnerSize();
+		var windowScroll = currentWindow.BX.GetWindowScrollPos();
+
+		var style = {
+			left: parseInt(windowScroll.scrollLeft + windowSize.innerWidth / 2 - parseInt(this.DIV.offsetWidth) / 2) + 'px',
+			top: Math.max(parseInt(windowScroll.scrollTop + windowSize.innerHeight / 2 - parseInt(this.DIV.offsetHeight) / 2), 0) + 'px'
+		};
 
 		BX.adjust(this.DIV, {
-			style: {
-				left: parseInt(windowScroll.scrollLeft + windowSize.innerWidth / 2 - parseInt(this.DIV.offsetWidth) / 2) + 'px',
-				top: Math.max(parseInt(windowScroll.scrollTop + windowSize.innerHeight / 2 - parseInt(this.DIV.offsetHeight) / 2), 0) + 'px'
-			}
+			style: style
 		});
 	}
 };
@@ -1865,17 +1913,16 @@ BX.CAdminDialog.prototype.SetHead = function()
 
 		while (ob)
 		{
-			marginLeft = parseInt(BX.style(ob, 'margin-left'), 10);
-			if (isNaN(marginLeft))
+			if (BX.type.isElementNode(ob))
 			{
-				marginLeft = 0;
+				marginLeft = parseInt(BX.style(ob, 'margin-left'), 10);
+				if (isNaN(marginLeft))
+					marginLeft = 0;
+				marginRight = parseInt(BX.style(ob, 'margin-right'), 10);
+				if (isNaN(marginRight))
+					marginRight = 0;
+				new_width += ob.offsetWidth + marginLeft + marginRight;
 			}
-			marginRight = parseInt(BX.style(ob, 'margin-right'), 10);
-			if (isNaN(marginRight))
-			{
-				marginRight = 0;
-			}
-			new_width += ob.offsetWidth + marginLeft + marginRight;
 			ob = BX.nextSibling(ob);
 		}
 
@@ -1914,21 +1961,6 @@ BX.CAdminDialog.prototype.SetContent = function(html)
 	{
 		this.__form.appendChild(BX.create('INPUT', {props:{type:'submit'},style:{display:'none'}}));
 		this.__form.onsubmit = BX.delegate(this.__submit, this);
-	}
-};
-
-BX.CAdminDialog.prototype.__adjustSizeEx = function()
-{
-	var ob = this.PARTS.CONTENT_DATA.firstChild,
-		new_height = 0;
-	while (ob)
-	{
-		new_height += ob.offsetHeight
-			+ parseInt(BX.style(ob, 'margin-top'))
-			+ parseInt(BX.style(ob, 'margin-bottom'));
-		ob = BX.nextSibling(ob);
-	 if (new_height)
-	 	this.PARTS.CONTENT_DATA.style.height = new_height + 'px';
 	}
 };
 
@@ -2207,6 +2239,7 @@ BX.COpener = function(arParams)
 	this.ATTACH_MODE = arParams.ATTACH_MODE || 'bottom';
 
 	this.ACTIVE_CLASS = arParams.ACTIVE_CLASS || '';
+	this.PUBLIC_FRAME = arParams.PUBLIC_FRAME || 0;
 	this.LEVEL = arParams.LEVEL || 0;
 
 	this.CLOSE_ON_CLICK = typeof arParams.CLOSE_ON_CLICK != 'undefined' ? !!arParams.CLOSE_ON_CLICK : true;
@@ -2220,6 +2253,8 @@ BX.COpener = function(arParams)
 		this.TIMEOUT = arParams.TIMEOUT || 1000;
 	else
 		this.TIMEOUT = 0;
+
+	this.bMenuInit = false;
 
 	if (!!this.PARAMS.MENU_URL)
 	{
@@ -2258,7 +2293,7 @@ BX.COpener.prototype.Init = function()
 
 	//BX.bind(window, 'scroll', BX.delegate(this.__close_immediately, this));
 
-	this.bMenuInit = false;
+	//this.bMenuInit = false;
 };
 
 BX.COpener.prototype.Load = function()
@@ -2340,6 +2375,7 @@ BX.COpener.prototype.GetMenu = function()
 				SET_ID: this.checkAdminMenu() ? 'bx-admin-prefix' : '',
 				CLOSE_ON_CLICK: !!this.CLOSE_ON_CLICK,
 				ADJUST_ON_CLICK: !!this.ADJUST_ON_CLICK,
+				PUBLIC_FRAME: !!this.PUBLIC_FRAME,
 				LEVEL: this.LEVEL,
 				parent: BX(this.DIV),
 				parent_attach: BX(this.ATTACH)
@@ -2506,6 +2542,7 @@ BX.CMenu = function(arParams)
 	this.PARAMS.ATTACH_MODE = this.PARAMS.ATTACH_MODE || 'bottom';
 	this.PARAMS.CLOSE_ON_CLICK = typeof this.PARAMS.CLOSE_ON_CLICK == 'undefined' ? true : this.PARAMS.CLOSE_ON_CLICK;
 	this.PARAMS.ADJUST_ON_CLICK = typeof this.PARAMS.ADJUST_ON_CLICK == 'undefined' ? true : this.PARAMS.ADJUST_ON_CLICK;
+	this.PARAMS.PUBLIC_FRAME = typeof this.PARAMS.PUBLIC_FRAME == 'undefined' ? false : this.PARAMS.PUBLIC_FRAME;
 	this.PARAMS.LEVEL = this.PARAMS.LEVEL || 0;
 
 	this.DIV.className = 'bx-core-popup-menu bx-core-popup-menu-' + this.PARAMS.ATTACH_MODE + ' bx-core-popup-menu-level' + this.PARAMS.LEVEL + (typeof this.PARAMS.ADDITIONAL_CLASS != 'undefined' ? ' ' + this.PARAMS.ADDITIONAL_CLASS : '');
@@ -2652,6 +2689,16 @@ BX.CMenu.prototype.addItem = function(item)
 			item.ACTION = null;
 		}
 
+		var attrs = {};
+		if (!!item.LINK || BX.browser.IsIE() && !BX.browser.IsDoctype())
+		{
+			attrs.href = item.LINK || 'javascript:void(0)';
+		}
+		if (this.PARAMS.PUBLIC_FRAME)
+		{
+			attrs.target = '_top';
+		}
+
 		item.NODE = BX.create(!!item.LINK || BX.browser.IsIE() && !BX.browser.IsDoctype() ? 'A' : 'SPAN', {
 			props: {
 				className: 'bx-core-popup-menu-item'
@@ -2662,14 +2709,14 @@ BX.CMenu.prototype.addItem = function(item)
 					title: !!BX.message['MENU_ENABLE_TOOLTIP'] || !!item.SHOW_TITLE ? item.TITLE || '' : '',
 				BXMENULEVEL: this.PARAMS.LEVEL
 			},
-			attrs: !!item.LINK || BX.browser.IsIE() && !BX.browser.IsDoctype() ? {href: item.LINK || 'javascript:void(0)'} : {},
+			attrs: attrs,
 			events: {
 				mouseover: function()
 				{
 					BX.onCustomEvent('onMenuItemHover', [this.BXMENULEVEL, this.OPENER])
 				}
 			},
-			html: '<span class="bx-core-popup-menu-item-icon' + (item.GLOBAL_ICON ? ' '+item.GLOBAL_ICON : '') + '"></span><span class="bx-core-popup-menu-item-text">'+item.TEXT+'</span>'
+			html: '<span class="bx-core-popup-menu-item-icon' + (item.GLOBAL_ICON ? ' '+item.GLOBAL_ICON : '') + '"></span><span class="bx-core-popup-menu-item-text">'+(item.HTML||(item.TEXT? BX.util.htmlspecialchars(item.TEXT) : ''))+'</span>'
 		});
 
 		if (bHasMenu && !item.DISABLED)
@@ -3748,6 +3795,8 @@ BX.CHintSimple.prototype.Init = function()
 {
 	this.DIV = document.body.appendChild(BX.create('DIV', {props: {className: 'bx-tooltip-simple'}, style: {display: 'none'}, children: [(this.CONTENT = BX.create('DIV'))]}));
 
+	BX.ZIndexManager.register(this.DIV);
+
 	if (this.HINT_TITLE)
 		this.CONTENT.appendChild(BX.create('B', {text: this.HINT_TITLE}));
 
@@ -3776,7 +3825,10 @@ BX.adminInformer = {
 		var informer = BX("admin-informer");
 
 		if(informer)
+		{
 			document.body.appendChild(informer);
+			BX.ZIndexManager.register(informer);
+		}
 
 		BX.addCustomEvent("onTopPanelCollapse", BX.proxy(BX.adminInformer.Close, BX.adminInformer));
 	},
@@ -3893,6 +3945,9 @@ BX.adminInformer = {
 			),0
 		);
 		BX.addClass(informer, "adm-informer-active");
+
+		BX.ZIndexManager.bringToFront(informer);
+
 		setTimeout(function() {BX.addClass(informer, "adm-informer-animate");},0);
 	},
 

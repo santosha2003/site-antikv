@@ -191,9 +191,9 @@ if ((int)$ORDER_ID <= 0)
 		}
 		elseif ($arProperties["TYPE"] == "TEXT")
 		{
-			if (strlen($curVal) <= 0)
+			if ($curVal == '')
 			{
-				if(strlen($arProperties["DEFAULT_VALUE"])>0 && !isset($curVal))
+				if($arProperties["DEFAULT_VALUE"] <> '' && !isset($curVal))
 					$arProperties["VALUE"] = $arProperties["DEFAULT_VALUE"];
 				elseif ($arProperties["IS_EMAIL"] == "Y")
 					$arProperties["VALUE"] = $USER->GetEmail();
@@ -249,7 +249,7 @@ if ((int)$ORDER_ID <= 0)
 			$arProperties["FIELD_NAME"] = "ORDER_PROP_".$arProperties["ID"].'[]';
 			$arProperties["SIZE1"] = ((intval($arProperties["SIZE1"]) > 0) ? $arProperties["SIZE1"] : 5);
 			$arProperties["VARIANTS"] = array();
-			if (!is_array($curVal) && strlen($curVal) > 0)
+			if (!is_array($curVal) && $curVal <> '')
 				$curVal = explode(",", $curVal);
 
 			$arDefVal = explode(",", $arProperties["DEFAULT_VALUE"]);
@@ -287,7 +287,7 @@ if ((int)$ORDER_ID <= 0)
 		elseif ($arProperties["TYPE"] == "LOCATION")
 		{
 			$arProperties["VARIANTS"] = array();
-			if (strlen($locationForZip) > 0 && $arProperties["IS_LOCATION"] == "Y")
+			if ($locationForZip <> '' && $arProperties["IS_LOCATION"] == "Y")
 				$curVal = $locationForZip;
 
 			$locationID = $arProperties["ID"];
@@ -344,21 +344,21 @@ if ((int)$ORDER_ID <= 0)
 				{
 					$locationFound = true;
 					$arVariants["SELECTED"] = "Y";
-					$arProperties["VALUE_FORMATED"] = $arVariants["COUNTRY_NAME"].((strlen($arVariants["CITY_NAME"]) > 0) ? " - " : "").$arVariants["CITY_NAME"];
+					$arProperties["VALUE_FORMATED"] = $arVariants["COUNTRY_NAME"].(($arVariants["CITY_NAME"] <> '') ? " - " : "").$arVariants["CITY_NAME"];
 					$arProperties["VALUE"] = $arVariants["ID"];
 				}
-				$arVariants["NAME"] = $arVariants["COUNTRY_NAME"].((strlen($arVariants["CITY_NAME"]) > 0) ? " - " : "").$arVariants["CITY_NAME"];
+				$arVariants["NAME"] = $arVariants["COUNTRY_NAME"].(($arVariants["CITY_NAME"] <> '') ? " - " : "").$arVariants["CITY_NAME"];
 				$arProperties["VARIANTS"][] = $arVariants;
 			}
 
 			// this is not a COUNTRY, REGION or CITY, but must appear in $arProperties["VARIANTS"]
-			if(CSaleLocation::isLocationProMigrated() && !$locationFound && IntVal($curVal))
+			if(CSaleLocation::isLocationProMigrated() && !$locationFound && intval($curVal))
 			{
 				// CSaleLocation::GetById() is enought intelligent to accept modern (not-country-or-region-or-city) ID or CODE
 				$item = CSaleLocation::GetById($curVal);
 				if($item)
 				{
-					$item['NAME'] = $item["COUNTRY_NAME"].((strlen($item["CITY_NAME"]) > 0) ? " - " : "").$item["CITY_NAME"];
+					$item['NAME'] = $item["COUNTRY_NAME"].(($item["CITY_NAME"] <> '') ? " - " : "").$item["CITY_NAME"];
 					$item['SELECTED'] = 'Y';
 					$arProperties["VARIANTS"][] = $item;
 				}
@@ -389,7 +389,7 @@ if ((int)$ORDER_ID <= 0)
 			}
 		}
 
-		if ($arProperties["TYPE"] == "CHECKBOX" && strlen($curVal) <= 0 && $arProperties["REQUIED"] != "Y")
+		if ($arProperties["TYPE"] == "CHECKBOX" && $curVal == '' && $arProperties["REQUIED"] != "Y")
 		{
 			$curVal = "N";
 		}
@@ -412,9 +412,9 @@ if ((int)$ORDER_ID <= 0)
 	/*
 	* action
 	*/
-	if ((strlen($_REQUEST["BasketRefresh"]) > 0 OR strlen($_REQUEST["action"]) > 0))
+	if (($_REQUEST["BasketRefresh"] <> '' OR $_REQUEST["action"] <> ''))
 	{
-		if(strlen($_REQUEST["action"]) > 0)
+		if($_REQUEST["action"] <> '')
 		{
 			$id = intval($_REQUEST["id"]);
 			if($id > 0)
@@ -489,18 +489,18 @@ if ((int)$ORDER_ID <= 0)
 	 */
 	if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["BasketOrder"]) AND !$USER->IsAuthorized())
 	{
-		if (strlen($payerEMail) <= 0)
+		if ($payerEMail == '')
 			$errorMessage .= GetMessage("STOF_ERROR_REG_EMAIL")."<br>";
 		elseif (!check_email($payerEMail))
 			$errorMessage .= GetMessage("STOF_ERROR_REG_BAD_EMAIL")."<br>";
 
-		$pos = strpos($payerEMail, "@");
-		$payerEMailNew = substr($payerEMail, 0, $pos);
+		$pos = mb_strpos($payerEMail, "@");
+		$payerEMailNew = mb_substr($payerEMail, 0, $pos);
 		$dbUserLogin = CUser::GetByLogin($payerEMailNew);
 		if ($arUserLogin = $dbUserLogin->Fetch())
 			$errorMessage .= GetMessage("STOF_ERROR_REG_UNIQUE_LOGIN")."<br>";
 
-		$rsUsers = CUser::GetList(($by="id"), ($order="desc"), array("EMAIL" => $payerEMail));
+		$rsUsers = CUser::GetList("id", "desc", array("EMAIL" => $payerEMail));
 		$arUser = $rsUsers->Fetch();
 		if (count($arUser) > 1)
 			$errorMessage .= GetMessage("STOF_ERROR_REG_UNIQUE_EMAIL")."<br>";
@@ -535,7 +535,7 @@ if ((int)$ORDER_ID <= 0)
 	$arShoppingCart = CSaleBasket::DoGetUserShoppingCart(SITE_ID, $currentUserId, intval(CSaleBasket::GetBasketUserID()), $arErrors);
 	$productLimit = "";
 
-	if (strlen($_REQUEST["BasketRefresh"]) > 0 || strlen($_REQUEST["BasketOrder"]) > 0 || strlen($_REQUEST["AJAX_CALL"]) > 0)
+	if ($_REQUEST["BasketRefresh"] <> '' || $_REQUEST["BasketOrder"] <> '' || $_REQUEST["AJAX_CALL"] <> '')
 	{
 		if (in_array("QUANTITY", $arParams["COLUMNS_LIST"]))
 		{
@@ -621,7 +621,7 @@ if ((int)$ORDER_ID <= 0)
 		$arWarnings
 	);
 
-	if ((!empty($arErrors) || !empty($arWarnings)) && strlen($_REQUEST["AJAX_CALL"]) > 0 && !isset($_POST["BasketRefresh"]))
+	if ((!empty($arErrors) || !empty($arWarnings)) && $_REQUEST["AJAX_CALL"] <> '' && !isset($_POST["BasketRefresh"]))
 	{
 		foreach($arErrors as $val)
 			$errorMessage .= $val["TEXT"]."<br>";
@@ -652,7 +652,7 @@ if ((int)$ORDER_ID <= 0)
 	/*********************************************************/
 
 	$ORDER_ID = "";
-	if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["BasketOrder"]) AND strlen($errorMessage) <= 0 AND check_bitrix_sessid())
+	if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["BasketOrder"]) AND $errorMessage == '' AND check_bitrix_sessid())
 	{
 		if (!empty($arWarnings))
 		{
@@ -709,10 +709,10 @@ if ((int)$ORDER_ID <= 0)
 				$arFields = array(
 					"ORDER_ID" => $ORDER_ID,
 					"ORDER_DATE" => Date($DB->DateFormatToPHP(CLang::GetDateFormat("SHORT", SITE_ID))),
-					"ORDER_USER" => ( (strlen($payerName) > 0) ? $payerName : $USER->GetFullName() ),
+					"ORDER_USER" => ( ($payerName <> '') ? $payerName : $USER->GetFullName() ),
 					"PRICE" => SaleFormatCurrency($arBasketItems["PRICE"], $arBasketItems["CURRENCY"]),
 					"BCC" => COption::GetOptionString("sale", "order_email", "order@".$SERVER_NAME),
-					"EMAIL" => (strlen($payerEMail)>0 ? $payerEMail : $USER->GetEmail()),
+					"EMAIL" => ($payerEMail <> '' ? $payerEMail : $USER->GetEmail()),
 					"ORDER_LIST" => $strOrderList,
 					"SALE_EMAIL" => COption::GetOptionString("sale", "order_email", "order@".$SERVER_NAME),
 					"DELIVERY_PRICE" => $arBasketItems["PRICE_DELIVERY"],
@@ -1034,7 +1034,7 @@ if ((int)$ORDER_ID <= 0)
 
 		$arResult["ORDER_DESCRIPTION"] = $ORDER_DESCRIPTION;
 
-		if (strlen($COUPON) > 0)
+		if ($COUPON <> '')
 			$arResult["COUPON"] = htmlspecialcharsEx($COUPON);
 
 		$arOrderForDiscount = array(
@@ -1131,7 +1131,7 @@ else
 			if ($arPaySysAction = $dbPaySysAction->Fetch())
 			{
 					$arPaySysAction["NAME"] = htmlspecialcharsEx($arPaySysAction["NAME"]);
-					if (strlen($arPaySysAction["ACTION_FILE"]) > 0)
+					if ($arPaySysAction["ACTION_FILE"] <> '')
 					{
 						if ($arPaySysAction["NEW_WINDOW"] != "Y")
 						{
@@ -1140,8 +1140,8 @@ else
 							$pathToAction = $_SERVER["DOCUMENT_ROOT"].$arPaySysAction["ACTION_FILE"];
 
 							$pathToAction = str_replace("\\", "/", $pathToAction);
-							while (substr($pathToAction, strlen($pathToAction) - 1, 1) == "/")
-								$pathToAction = substr($pathToAction, 0, strlen($pathToAction) - 1);
+							while (mb_substr($pathToAction, mb_strlen($pathToAction) - 1, 1) == "/")
+								$pathToAction = mb_substr($pathToAction, 0, mb_strlen($pathToAction) - 1);
 
 							if (file_exists($pathToAction))
 							{
@@ -1151,7 +1151,7 @@ else
 								$arPaySysAction["PATH_TO_ACTION"] = $pathToAction;
 							}
 
-							if(strlen($arPaySysAction["ENCODING"]) > 0)
+							if($arPaySysAction["ENCODING"] <> '')
 							{
 								define("BX_SALE_ENCODING", $arPaySysAction["ENCODING"]);
 								AddEventHandler("main", "OnEndBufferContent", "ChangeEncoding");

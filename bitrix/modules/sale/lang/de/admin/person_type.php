@@ -29,4 +29,9 @@ $MESS["PERS_TYPE_SORT"] = "Sort.";
 $MESS["PERS_TYPE_UPD"] = "Speichern";
 $MESS["PERS_TYPE_RESET"] = "Zurücksetzen";
 $MESS["SPT_UNSET"] = "Zurücksetzen";
+$MESS["PERS_ACTIVE"] = "Aktiv";
+$MESS["SALE_YES"] = "Ja";
+$MESS["SALE_NO"] = "Nein";
+$MESS["SALE_FIELD_ACTIVE"] = "Aktiv";
+$MESS["SALE_ALL"] = "Alle";
 ?>

@@ -1,5 +1,14 @@
-<?
-if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+<?php
+
+use Bitrix\Main,
+	Bitrix\Sale;
+
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
+{
+	die();
+}
+
+$this->setFramemode(false);
 
 if (!CModule::IncludeModule("sale"))
 {
@@ -7,90 +16,186 @@ if (!CModule::IncludeModule("sale"))
 	return;
 }
 
-global $APPLICATION;
+global $APPLICATION, $USER;
 
 $APPLICATION->RestartBuffer();
 
-$bUseAccountNumber = (COption::GetOptionString("sale", "account_number_template", "") !== "") ? true : false;
+$bUseAccountNumber = Sale\Integration\Numerator\NumeratorOrder::isUsedNumeratorForOrder();
 
-$ORDER_ID = urldecode(urldecode($_REQUEST["ORDER_ID"]));
-$paymentId = isset($_REQUEST["PAYMENT_ID"]) ? $_REQUEST["PAYMENT_ID"] : 0;
+$orderId = urldecode(urldecode($_REQUEST["ORDER_ID"]));
+$paymentId = $_REQUEST["PAYMENT_ID"] ?? '';
+$hash = $_REQUEST["HASH"] ?? null;
+$returnUrl = $_REQUEST["RETURN_URL"] ?? '';
+
+$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+/** @var Sale\Order $orderClassName */
+$orderClassName = $registry->getOrderClassName();
 
 $arOrder = false;
-if ($bUseAccountNumber)
+$checkedBySession = false;
+if (!$USER->IsAuthorized() && is_array($_SESSION['SALE_ORDER_ID']) && empty($hash))
 {
-	$dbOrder = CSaleOrder::GetList(
-		array("DATE_UPDATE" => "DESC"),
-		array(
-			"LID" => SITE_ID,
-			"USER_ID" => IntVal($GLOBALS["USER"]->GetID()),
-			"ACCOUNT_NUMBER" => $ORDER_ID
-		)
+	$realOrderId = 0;
+
+	if ($bUseAccountNumber)
+	{
+		$dbRes = $orderClassName::getList([
+			'filter' => [
+				"LID" => SITE_ID,
+				"ACCOUNT_NUMBER" => $orderId
+			],
+			'order' => [
+				"DATE_UPDATE" => "DESC"
+			]
+		]);
+		$arOrder = $dbRes->fetch();
+		if ($arOrder)
+		{
+			$realOrderId = intval($arOrder["ID"]);
+		}
+	}
+	else
+	{
+		$realOrderId = intval($orderId);
+	}
+
+	$checkedBySession = in_array($realOrderId, $_SESSION['SALE_ORDER_ID']);
+}
+
+if ($bUseAccountNumber && !$arOrder)
+{
+	$arFilter = array(
+		"LID" => SITE_ID,
+		"ACCOUNT_NUMBER" => $orderId
 	);
 
-	$arOrder = $dbOrder->GetNext();
+	if (empty($hash))
+	{
+		$arFilter["USER_ID"] = intval($USER->GetID());
+	}
+
+	$dbRes = $orderClassName::getList([
+		'filter' => $arFilter,
+		'order' => [
+			"DATE_UPDATE" => "DESC"
+		]
+	]);
+
+	$arOrder = $dbRes->fetch();
 }
 
 if (!$arOrder)
 {
-	$dbOrder = CSaleOrder::GetList(
-		array("DATE_UPDATE" => "DESC"),
-		array(
-			"LID" => SITE_ID,
-			"USER_ID" => IntVal($GLOBALS["USER"]->GetID()),
-			"ID" => $ORDER_ID
-		)
+	$arFilter = array(
+		"LID" => SITE_ID,
+		"ID" => $orderId
 	);
+	if (!$checkedBySession && empty($hash))
+		$arFilter["USER_ID"] = intval($USER->GetID());
 
-	$arOrder = $dbOrder->GetNext();
+	$dbRes = $orderClassName::getList([
+		'filter' => $arFilter,
+		'order' => [
+			"DATE_UPDATE" => "DESC"
+		]
+	]);
+
+	$arOrder = $dbRes->fetch();
 }
 
 if ($arOrder)
 {
-	/** @var \Bitrix\Sale\Order $order */
-	$order = \Bitrix\Sale\Order::load($arOrder['ID']);
+	/** @var Sale\Payment|null $paymentItem */
+	$paymentItem = null;
 
-	/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
-	$paymentCollection = $order->getPaymentCollection();
+	/** @var Sale\Order $order */
+	$order = $orderClassName::load($arOrder['ID']);
 
-	if ($paymentId > 0)
+	if ($order)
 	{
-		/** @var \Bitrix\Sale\Payment $paymentItem */
-		$paymentItem = $paymentCollection->getItemById($paymentId);
-	}
-	else
-	{
-		/** @var \Bitrix\Sale\Payment $item */
-		foreach ($paymentCollection as $item)
+		$guestStatuses = Main\Config\Option::get("sale", "allow_guest_order_view_status", "");
+		$guestStatuses = ($guestStatuses <> '') ?  unserialize($guestStatuses, ['allowed_classes' => false]) : [];
+
+		if (
+			!Sale\OrderStatus::isAllowPay($order->getField('STATUS_ID'))
+			||
+			(
+				!empty($hash)
+				&& (
+					$order->getHash() !== $hash
+					||
+					!Sale\Helpers\Order::isAllowGuestView($order)
+				)
+			)
+		)
 		{
-			if (!$item->isInner())
-			{
-				$paymentItem = $item;
-				break;
-			}
+			LocalRedirect('/');
+			return;
 		}
-	}
 
-	$service = \Bitrix\Sale\PaySystem\Manager::getObjectById($paymentItem->getPaymentSystemId());
-	if ($service)
-	{
-		$context = \Bitrix\Main\Application::getInstance()->getContext();
+		/** @var Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $order->getPaymentCollection();
 
-		$service->initiatePay($paymentItem, $context->getRequest());
-
-		if($service->getField('ENCODING') != '')
+		if ($paymentCollection)
 		{
-			define("BX_SALE_ENCODING", $service->getField('ENCODING'));
-
-			AddEventHandler("main", "OnEndBufferContent", "ChangeEncoding");
-			function ChangeEncoding($content)
+			if ($paymentId)
 			{
-				global $APPLICATION;
-				header("Content-Type: text/html; charset=".BX_SALE_ENCODING);
-				$content = $APPLICATION->ConvertCharset($content, SITE_CHARSET, BX_SALE_ENCODING);
-				$content = str_replace("charset=".SITE_CHARSET, "charset=".BX_SALE_ENCODING, $content);
+				$data = Sale\PaySystem\Manager::getIdsByPayment($paymentId);
+
+				if ($data[1] > 0)
+					$paymentItem = $paymentCollection->getItemById($data[1]);
+			}
+
+			if ($paymentItem === null)
+			{
+				/** @var Sale\Payment $item */
+				foreach ($paymentCollection as $item)
+				{
+					if (!$item->isInner() && !$item->isPaid())
+					{
+						$paymentItem = $item;
+						break;
+					}
+				}
+			}
+
+			if ($paymentItem !== null)
+			{
+				$service = Sale\PaySystem\Manager::getObjectById($paymentItem->getPaymentSystemId());
+				if ($service)
+				{
+					$context = Main\Application::getInstance()->getContext();
+
+					if ($returnUrl)
+					{
+						$service->getContext()->setUrl($returnUrl);
+					}
+
+					$result = $service->initiatePay($paymentItem, $context->getRequest());
+					if (!$result->isSuccess())
+					{
+						echo implode('<br>', $result->getErrorMessages());
+					}
+
+					if($service->getField('ENCODING') != '')
+					{
+						define("BX_SALE_ENCODING", $service->getField('ENCODING'));
+
+						AddEventHandler("main", "OnEndBufferContent", "ChangeEncoding");
+						function ChangeEncoding($content)
+						{
+							global $APPLICATION;
+							header("Content-Type: text/html; charset=".BX_SALE_ENCODING);
+							$content = $APPLICATION->ConvertCharset($content, SITE_CHARSET, BX_SALE_ENCODING);
+							$content = str_replace("charset=".SITE_CHARSET, "charset=".BX_SALE_ENCODING, $content);
+						}
+					}
+				}
 			}
 		}
 	}
 }
-?>
+else
+{
+	ShowError(GetMessage('SOP_ORDER_NOT_FOUND'));
+}

@@ -1,6 +1,0 @@
-<?
-$MESS['LEARNING_COURSE_COMPLEX_NAME'] = 'Apmokymø kursas';
-$MESS['LEARNING_COURSE_COMPLEX_DESC'] = 'Apmokymø kursas';
-$MESS['LEARNING_SERVICE'] = 'Apmokymas';
-$MESS['LEARNING_COURSE_SERVICE'] = 'Kursai';
-?>

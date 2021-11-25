@@ -44,7 +44,7 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("MAP_TYPE"),
 			"TYPE" => "LIST",
 			"VALUES" => array("Yandex","Google"),
-			'DEFAULT' => "Yandex",
+			"DEFAULT" => "0",
 		),
 		"CACHE_TIME" => array("DEFAULT"=>"3600"),
 	)

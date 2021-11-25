@@ -1,13 +1,26 @@
 <?
+/** @global CUser $USER */
+/** @global CMain $APPLICATION */
+/** @global CDatabase $DB */
+use Bitrix\Main\Loader;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
+
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
+
+$publicMode = $adminPage->publicMode;
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+
 if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_price')))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-CModule::IncludeModule("catalog");
+Loader::includeModule('catalog');
 $bReadOnly = !$USER->CanDoOperation('catalog_extra');
 
 IncludeModuleLangFile(__FILE__);
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 
 if ($ex = $APPLICATION->GetException())
 {
@@ -22,32 +35,35 @@ if ($ex = $APPLICATION->GetException())
 
 $sTableID = "tbl_catalog_extra";
 
-$oSort = new CAdminSorting($sTableID, "ID", "asc");
+$oSort = new CAdminUiSorting($sTableID, "ID", "asc");
 
-$lAdmin = new CAdminList($sTableID, $oSort);
-
-$arFilterFields = array(
-	'find_id_start',
-	'find_id_end',
-	'find_name',
-	'find_perc_start',
-	'find_perc_end',
-);
-
-$lAdmin->InitFilter($arFilterFields);
+$lAdmin = new CAdminUiList($sTableID, $oSort);
 
 $arFilter = array();
 
-if (!empty($find_id_start))
-	$arFilter['>=ID'] = $find_id_start;
-if (!empty($find_id_end))
-	$arFilter['<=ID'] = $find_id_end;
-if (!empty($find_name))
-	$arFilter["~NAME"] = $find_name;
-if (!empty($find_perc_start))
-	$arFilter['>=PERCENTAGE'] = $find_perc_start;
-if (!empty($find_perc_end))
-	$arFilter['<=PERCENTAGE'] = $find_perc_end;
+$filterFields = array(
+	array(
+		"id" => "ID",
+		"name" => "ID",
+		"type" => "number",
+		"filterable" => "",
+		"default" => true
+	),
+	array(
+		"id" => "NAME",
+		"name" => GetMessage("EXTRA_NAME"),
+		"filterable" => "~",
+		"quickSearch" => "%"
+	),
+	array(
+		"id" => "PERCENTAGE",
+		"name" => GetMessage("EXTRA_PERCENTAGE"),
+		"type" => "number",
+		"filterable" => ""
+	),
+);
+
+$lAdmin->AddFilter($filterFields, $arFilter);
 
 if ($lAdmin->EditAction() && !$bReadOnly)
 {
@@ -79,7 +95,7 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 {
 	if ($_REQUEST['action_target']=='selected')
 	{
-		$arID = Array();
+		$arID = array();
 		$dbResultList = CExtra::GetList(array($by => $order), $arFilter, false, false, array('ID'));
 		while ($arResult = $dbResultList->Fetch())
 			$arID[] = $arResult['ID'];
@@ -87,7 +103,7 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -110,6 +126,14 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 				}
 				break;
 		}
+	}
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
 	}
 }
 
@@ -147,33 +171,32 @@ $lAdmin->AddHeaders($arHeaders);
 
 $arVisibleColumns = $lAdmin->GetVisibleHeaderColumns();
 
-$arNavParams = (isset($_REQUEST["mode"]) && "excel" == $_REQUEST["mode"]
-	? false
-	: array("nPageSize" => CAdminResult::GetNavSize($sTableID))
-);
+global $by, $order;
 
 $dbResultList = CExtra::GetList(
 	array($by => $order),
 	$arFilter,
 	false,
-	$arNavParams
+	false
 );
 
-$dbResultList = new CAdminResult($dbResultList, $sTableID);
+$dbResultList = new CAdminUiResult($dbResultList, $sTableID);
 $dbResultList->NavStart();
 
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("cat_extra_nav")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => $selfFolderUrl."cat_extra.php"));
 
-while ($arExtra = $dbResultList->NavNext(true, "f_"))
+while ($arExtra = $dbResultList->NavNext(false))
 {
-	$row =& $lAdmin->AddRow($f_ID, $arExtra);
+	$editUrl = $selfFolderUrl."cat_extra_edit.php?ID=".$arExtra['ID']."&lang=".LANGUAGE_ID;
+	$editUrl = $adminSidePanelHelper->editUrlToPublicPage($editUrl);
+	$row =& $lAdmin->AddRow($arExtra["ID"], $arExtra, $editUrl);
 
-	$row->AddField("ID", $f_ID);
+	$row->AddField("ID", $arExtra["ID"]);
 
 	if ($bReadOnly)
 	{
-		$row->AddViewField("NAME", $f_NAME);
-		$row->AddViewField("PERCENTAGE", $f_PERCENTAGE);
+		$row->AddViewField("NAME", $arExtra["NAME"]);
+		$row->AddViewField("PERCENTAGE", $arExtra["PERCENTAGE"]);
 	}
 	else
 	{
@@ -183,13 +206,22 @@ while ($arExtra = $dbResultList->NavNext(true, "f_"))
 		$row->AddViewField("RECALCULATE", '');
 	}
 
-	$arActions = Array();
-	$arActions[] = array("ICON"=>"edit", "TEXT"=>GetMessage("CEN_UPDATE_ALT"), "ACTION"=>$lAdmin->ActionRedirect("/bitrix/admin/cat_extra_edit.php?ID=".$f_ID."&lang=".LANGUAGE_ID), "DEFAULT"=>true);
+	$arActions = array();
+	$arActions[] = array(
+		"ICON" => "edit",
+		"TEXT" => GetMessage("CEN_UPDATE_ALT"),
+		"LINK" => $editUrl,
+		"DEFAULT" => true
+	);
 
 	if (!$bReadOnly)
 	{
 		$arActions[] = array("SEPARATOR" => true);
-		$arActions[] = array("ICON"=>"delete", "TEXT"=>GetMessage("CEN_DELETE_ALT"), "ACTION"=>"if(confirm('".GetMessage('CEN_DELETE_CONF')."')) ".$lAdmin->ActionDoGroup($f_ID, "delete"));
+		$arActions[] = array(
+			"ICON" => "delete",
+			"TEXT" => GetMessage("CEN_DELETE_ALT"),
+			"ACTION"=>"if(confirm('".GetMessage('CEN_DELETE_CONF')."')) ".$lAdmin->ActionDoGroup($arExtra["ID"], "delete")
+		);
 	}
 
 	$row->AddActions($arActions);
@@ -211,23 +243,25 @@ $lAdmin->AddFooter(
 
 if (!$bReadOnly)
 {
-	$lAdmin->AddGroupActionTable(
-		array(
-			"delete" => GetMessage("MAIN_ADMIN_LIST_DELETE"),
-		)
-	);
+	$lAdmin->AddGroupActionTable([
+		'edit' => true,
+		'delete' => true
+	]);
 }
 
 if (!$bReadOnly)
 {
+	$addUrl = $selfFolderUrl."cat_extra_edit.php?lang=".LANGUAGE_ID;
+	$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
 	$aContext = array(
 		array(
 			"TEXT" => GetMessage("CEN_ADD_NEW"),
 			"ICON" => "btn_new",
-			"LINK" => "cat_extra_edit.php?lang=".LANG,
+			"LINK" => $addUrl,
 			"TITLE" => GetMessage("CEN_ADD_NEW_ALT")
 		),
 	);
+	$lAdmin->setContextSettings(array("pagePath" => $selfFolderUrl."cat_extra.php"));
 	$lAdmin->AddAdminContextMenu($aContext);
 }
 
@@ -236,42 +270,7 @@ $lAdmin->CheckListMode();
 $APPLICATION->SetTitle(GetMessage("EXTRA_TITLE"));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
-$oFilter = new CAdminFilter(
-	$sTableID."_filter",
-	array(
-		GetMessage("EXTRA_NAME"),
-		GetMessage("EXTRA_PERCENTAGE"),
-	)
-);
-?>
-<form name="find_form" method="get" action="<?echo $APPLICATION->GetCurPage();?>">
-<?$oFilter->Begin();?>
-<tr>
-	<td><? echo "ID" ?>:</td>
-	<td>
-		<input type="text" name="find_id_start" size="10" value="<?echo htmlspecialcharsex($find_id_start)?>">
-			...
-		<input type="text" name="find_id_end" size="10" value="<?echo htmlspecialcharsex($find_id_end)?>">
-	</td>
-</tr>
-<tr>
-	<td><? echo GetMessage("EXTRA_NAME")?>:</td>
-	<td><input type="text" name="find_name" size="47" value="<?echo htmlspecialcharsbx($find_name)?>"></td>
-</tr>
-<tr>
-	<td><? echo GetMessage("EXTRA_PERCENTAGE")?>:</td>
-	<td>
-		<input type="text" name="find_perc_start" value="<?echo htmlspecialcharsex($find_perc_start)?>" size="15">
-			...
-		<input type="text" name="find_perc_end" value="<?echo htmlspecialcharsex($find_perc_end)?>" size="15">
-	</td>
-</tr>
-<?
-$oFilter->Buttons(array("table_id"=>$sTableID,"url"=>$APPLICATION->GetCurPage(),"form"=>"find_form"));
-$oFilter->End();
-?>
-</form>
-<?
+$lAdmin->DisplayFilter($filterFields);
 $lAdmin->DisplayList();
 
 echo BeginNote();
@@ -279,4 +278,3 @@ echo GetMessage("EXTRA_NOTES");
 echo EndNote();
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
-?>

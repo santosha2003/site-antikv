@@ -17,7 +17,7 @@ The site pages can contain both static and dynamic information.
 
 [LIST]
 [*][B]Static information[/B] remains unchanged with time. For example, advertisement, company roots, contact information etc. This type of information can be created and edited by users permitted to edit the site pages;
-[*]At the same time, eventually changing information (dynamic information) can be also required. <b>Dynamic information</b> is displayed in the page body and can be edited using the system tools. The examples of the dynamic information are: latest company news; catalogue of products and services; photo gallery; random photo; banners, etc.
+[*]At the same time, information which is changed occassionally (dynamic information) can be also required. [B]Dynamic information[/B] is displayed in the page body and can be edited using the system tools. The examples of the dynamic information are: latest company news; catalogue of products and services; photo gallery; random photo; banners, etc.
 [/LIST]
 
 For users without any programming skills, it is more convenient to create pages in the visual HTML editor whose tools are similar to those of Microsoft Word. Besides that, the HTML editor shows the page just as it will look in the public section.

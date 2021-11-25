@@ -10,16 +10,8 @@ if(COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) ==
 //update iblocks, demo discount and precet
 $shopLocalization = $wizard->GetVar("shopLocalization");
 
-if ($_SESSION["WIZARD_CATALOG_IBLOCK_ID"])
-{
-	$IBLOCK_CATALOG_ID = $_SESSION["WIZARD_CATALOG_IBLOCK_ID"];
-	//unset($_SESSION["WIZARD_CATALOG_IBLOCK_ID"]);
-}
-if ($_SESSION["WIZARD_OFFERS_IBLOCK_ID"])
-{
-	$IBLOCK_OFFERS_ID = $_SESSION["WIZARD_OFFERS_IBLOCK_ID"];
-	unset($_SESSION["WIZARD_OFFERS_IBLOCK_ID"]);
-}
+$IBLOCK_CATALOG_ID = (isset($_SESSION["WIZARD_CATALOG_IBLOCK_ID"]) ? (int)$_SESSION["WIZARD_CATALOG_IBLOCK_ID"] : 0);
+$IBLOCK_OFFERS_ID = (isset($_SESSION["WIZARD_OFFERS_IBLOCK_ID"]) ? (int)$_SESSION["WIZARD_OFFERS_IBLOCK_ID"] : 0);
 //reference update
 /*$rsIBlock = CIBlock::GetList(array(), array("XML_ID" => "clothes_colors", "TYPE" => "references"));
 if ($arIBlock = $rsIBlock->Fetch())
@@ -94,24 +86,11 @@ if ($IBLOCK_CATALOG_ID)
 		{
 			CCatalog::Add(array('IBLOCK_ID' => $IBLOCK_OFFERS_ID, 'PRODUCT_IBLOCK_ID' => $IBLOCK_CATALOG_ID, 'SKU_PROPERTY_ID' => $ID_SKU));
 		}
-
-		//create facet index
-		$index = \Bitrix\Iblock\PropertyIndex\Manager::createIndexer($IBLOCK_CATALOG_ID);
-		$index->startIndex();
-		$index->continueIndex(0);
-		$index->endIndex();
-
-		$index = \Bitrix\Iblock\PropertyIndex\Manager::createIndexer($IBLOCK_OFFERS_ID);
-		$index->startIndex();
-		$index->continueIndex(0);
-		$index->endIndex();
-
-		\Bitrix\Iblock\PropertyIndex\Manager::checkAdminNotification();
 	}
 
 	//user fields for sections
 	$arLanguages = Array();
-	$rsLanguage = CLanguage::GetList($by, $order, array());
+	$rsLanguage = CLanguage::GetList();
 	while($arLanguage = $rsLanguage->Fetch())
 		$arLanguages[] = $arLanguage["LID"];
 
@@ -140,8 +119,14 @@ if ($IBLOCK_CATALOG_ID)
 	}
 
 //demo discount
-	$dbDiscount = CCatalogDiscount::GetList(array(), Array("SITE_ID" => WIZARD_SITE_ID));
-	if(!($dbDiscount->Fetch()))
+	$iterator = \Bitrix\Catalog\DiscountTable::getList([
+		'select' => ['ID'],
+		'filter' => ['=SITE_ID' => WIZARD_SITE_ID],
+		'limit' => 1
+	]);
+	$row = $iterator->fetch();
+	unset($iterator);
+	if (empty($row))
 	{
 		if (CModule::IncludeModule("iblock"))
 		{
@@ -149,19 +134,21 @@ if ($IBLOCK_CATALOG_ID)
 			if ($arSect = $dbSect->Fetch())
 				$sofasSectId = $arSect["ID"];
 		}
-		$dbSite = CSite::GetByID(WIZARD_SITE_ID);
-		if($arSite = $dbSite -> Fetch())
-			$lang = $arSite["LANGUAGE_ID"];
-		$defCurrency = "EUR";
-		if($lang == "ru")
-			$defCurrency = "RUB";
-		elseif($lang == "en")
-			$defCurrency = "USD";
+
+		switch ($shopLocalization)
+		{
+			case "ua":
+				$defCurrency = "UAH";
+				break;
+			case "by":
+				$defCurrency = "BYR";
+				break;
+			default:
+				$defCurrency = "RUB";
+		}
 		$arF = Array (
 			"SITE_ID" => WIZARD_SITE_ID,
 			"ACTIVE" => "Y",
-			//"ACTIVE_FROM" => ConvertTimeStamp(mktime(0,0,0,12,15,2011), "FULL"),
-			//"ACTIVE_TO" => ConvertTimeStamp(mktime(0,0,0,03,15,2012), "FULL"),
 			"RENEWAL" => "N",
 			"NAME" => GetMessage("WIZ_DISCOUNT"),
 			"SORT" => 100,
@@ -177,7 +164,132 @@ if ($IBLOCK_CATALOG_ID)
 		);
 		CCatalogDiscount::Add($arF);
 	}
+	unset($row);
+
+	if(\Bitrix\Main\Loader::includeModule('sale'))
+	{
+		$strapIds = array();
+		$specificConditions = array();
+		$dbItem = CIBlockElement::GetList(Array(), Array(
+			"CODE" => array(
+				"strap-elegance",
+				"strap-rainbow",
+				"strap-weaving",
+				"strap-classics",
+			),
+			"IBLOCK_ID"=>$IBLOCK_CATALOG_ID,
+			"IBLOCK_SITE_ID" => WIZARD_SITE_ID,
+		), false, Array("nTopCount" => 100), Array(
+			"ID",
+			"IBLOCK_ID",
+		));
+		while($arItem = $dbItem->Fetch())
+		{
+			$strapIds[] = $arItem['ID'];
+			$specificConditions[] = array(
+				'CLASS_ID' => 'CondIBElement',
+				'DATA' => array(
+					'logic' => 'Equal',
+					'value' => $arItem['ID'],
+				),
+			);
+		}
+
+		$name = GetMessage('WIZ_DISCOUNT_BASKET_GIFTS');
+		$siteId = WIZARD_SITE_ID;
+		$userGroupIds = array();
+
+		$groupIterator = \Bitrix\Main\GroupTable::getList(array(
+			'select' => array('ID'),
+		));
+		while($group = $groupIterator->fetch())
+		{
+			$userGroupIds[] = $group['ID'];
+		}
+
+		$arFields = array(
+			'LID' => $siteId,
+			'NAME' => $name,
+			'ACTIVE_FROM' => '',
+			'ACTIVE_TO' => '',
+			'ACTIVE' => 'Y',
+			'SORT' => '100',
+			'PRIORITY' => '1',
+			'LAST_DISCOUNT' => 'Y',
+			'XML_ID' => '',
+			'CONDITIONS' => array(
+				'CLASS_ID' => 'CondGroup',
+				'DATA' => array(
+					'All' => 'OR',
+					'True' => 'False',
+				),
+				'CHILDREN' => array(
+					array(
+						'CLASS_ID' => 'CondGroup',
+						'DATA' => array(
+							'All' => 'AND',
+							'True' => 'True',
+						),
+						'CHILDREN' => array(
+							array(
+								'CLASS_ID' => 'CondBsktRowGroup',
+								'DATA' => array(
+									'logic' => 'Equal',
+									'Value' => 1,
+									'All' => 'OR',
+								),
+								'CHILDREN' => $specificConditions,
+							),
+							array(
+								'CLASS_ID' => 'CondBsktRowGroup',
+								'DATA' => array(
+									'logic' => 'Equal',
+									'Value' => 1,
+									'All' => 'AND',
+								),
+								'CHILDREN' => array(),
+							),
+						),
+					),
+				),
+			),
+			'ACTIONS' => array(
+				'CLASS_ID' => 'CondGroup',
+				'DATA' => array(
+					'All' => 'AND',
+				),
+				'CHILDREN' => array(
+					array(
+						'CLASS_ID' => 'GiftCondGroup',
+						'DATA' => array(
+							'All' => 'AND',
+						),
+						'CHILDREN' => array(
+							array(
+								'CLASS_ID' => 'GifterCondIBElement',
+								'DATA' => array(
+									'Type' => 'one',
+									'Value' => $strapIds,
+								),
+							),
+						),
+					),
+				),
+			),
+			'USER_GROUPS' => $userGroupIds,
+		);
+
+		if($strapIds)
+		{
+			CSaleDiscount::Add($arFields);
+		}
+	}
+
 //precet
+	$dbSite = CSite::GetByID(WIZARD_SITE_ID);
+	if($arSite = $dbSite -> Fetch())
+		$lang = $arSite["LANGUAGE_ID"];
+	
 	$dbProperty = CIBlockProperty::GetList(Array(), Array("IBLOCK_ID"=>$IBLOCK_CATALOG_ID, "CODE"=>"SALELEADER"));
 	$arFields = array();
 	while($arProperty = $dbProperty->GetNext())
@@ -206,21 +318,16 @@ if ($IBLOCK_CATALOG_ID)
 
 	CAdminFilter::SetDefaultRowsOption("tbl_product_admin_".md5($iblockType.".".$IBLOCK_CATALOG_ID)."_filter", array("miss-0","IBEL_A_F_PARENT"));
 
-//delete 1c props
-	$arPropsToDelete = array("CML2_TAXES", "CML2_BASE_UNIT", "CML2_TRAITS", "CML2_ATTRIBUTES", "CML2_ARTICLE", "CML2_BAR_CODE", "CML2_FILES", "CML2_MANUFACTURER", "CML2_PICTURES");
-	foreach ($arPropsToDelete as $code)
+	//filter for index page
+	$dbProperty = CIBlockProperty::GetList(Array(), Array("IBLOCK_ID"=>$IBLOCK_CATALOG_ID, "CODE"=>"TREND"));
+	if($arProperty = $dbProperty->GetNext())
 	{
-		$dbProperty = CIBlockProperty::GetList(Array(), Array("IBLOCK_ID"=>$IBLOCK_CATALOG_ID, "XML_ID"=>$code));
-		if($arProperty = $dbProperty->GetNext())
+		$dbProps = CIBlockProperty::GetPropertyEnum($arProperty["ID"], Array("SORT"=>"asc"));
+		while ($prop = $dbProps->Fetch())
 		{
-			CIBlockProperty::Delete($arProperty["ID"]);
-		}
-		if ($IBLOCK_OFFERS_ID)
-		{
-			$dbProperty = CIBlockProperty::GetList(Array(), Array("IBLOCK_ID"=>$IBLOCK_OFFERS_ID, "XML_ID"=>$code));
-			if($arProperty = $dbProperty->GetNext())
+			if ($prop["XML_ID"] == "Y")
 			{
-				CIBlockProperty::Delete($arProperty["ID"]);
+				CWizardUtil::ReplaceMacros(WIZARD_SITE_PATH."/_index.php", array("TREND_PROPERTY_VALUE_ID" => $prop["ID"]));
 			}
 		}
 	}

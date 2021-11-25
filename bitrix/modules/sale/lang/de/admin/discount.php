@@ -1,4 +1,6 @@
 <?
+$MESS["BX_SALE_ADM_DSC_HEADER_TITLE_ACTIVE_FROM"] = "Aktiv seit";
+$MESS["BX_SALE_ADM_DSC_HEADER_TITLE_ACTIVE_TO"] = "Aktiv bis";
 $MESS["LANG_FILTER_NAME"] = "Website";
 $MESS["ERROR_UPDATE_REC"] = "Beim Ändern des Datensatzes ist ein Fehler aufgetreten";
 $MESS["PERS_TYPE_ACTIVE"] = "Aktiv";
@@ -16,7 +18,6 @@ $MESS["SDSN_MODIFIED_BY_NEW"] = "Geändert von";
 $MESS["SDSN_TIMESTAMP_X"] = "Geändert am";
 $MESS["SDSN_XML_ID"] = "Externer Code";
 $MESS["BT_SALE_DISCOUNT_LIST_MESS_TITLE"] = "Warenkorbregeln ";
-$MESS["BT_SALE_DISCOUNT_LIST_MESS_NAV"] = "Regeln";
 $MESS["BT_SALE_DISCOUNT_LIST_ERR_DELETE_DISCOUNT"] = "Fehler beim Löschen der Regel";
 $MESS["BT_SALE_DISCOUNT_LIST_MESS_EDIT_DISCOUNT"] = "Regelparameter ändern";
 $MESS["BT_SALE_DISCOUNT_LIST_MESS_EDIT_DISCOUNT_SHORT"] = "Ändern";
@@ -34,4 +35,16 @@ $MESS["BT_SALE_DISCOUNT_LIST_MESS_ACTIVATE_DISCOUNT_SHORT"] = "Aktivieren";
 $MESS["SDSN_USE_COUPONS"] = "Gutscheine";
 $MESS["SDSN_PRESET_ID"] = "Preset";
 $MESS["BX_SALE_ADM_DSC_HEADER_TITLE_PRESET_ID"] = "Die Regel wurde mit einem Preset konfiguriert";
+$MESS["BT_SALE_DISCOUNT_LIST_MESS_TITLE_CATALOG_ID"] = "aus Katalog";
+$MESS["SDSN_LAST_LEVEL_DISCOUNT_NEW"] = "Prioritätslevel deaktivieren";
+$MESS["SDSN_SHOW_IN_CATALOG"] = "Im kommerziellen Katalog anzeigen";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_DATE"] = "Aktiv";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_NAME"] = "Name";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_PRIORITY"] = "Priorität der Anwendung";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_LAST_DISCOUNT"] = "Anwendung weiterer Regeln stoppen";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_LAST_LEVEL_DISCOUNT"] = "Prioritätslevel deaktivieren";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_XML_ID"] = "Externe ID";
+$MESS["BX_SALE_DISCOUNT_LIST_FILTER_USE_COUPONS"] = "Gutscheine verwenden";
+$MESS["BX_SALE_DISCOUNT_LIST_MESS_RANGE_FROM"] = "von";
+$MESS["BX_SALE_DISCOUNT_LIST_MESS_RANGE_TO"] = "bis zum";
 ?>

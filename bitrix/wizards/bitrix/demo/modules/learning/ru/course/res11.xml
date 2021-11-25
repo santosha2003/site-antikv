@@ -1,2 +1,149 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE11"><presentation><material><mattext>��� ���� ����� ������� � ���������� ���������� ����� �����:</mattext></material><response_lid ident="LID11" rcardinality="Multiple"><render_choice><response_label ident="ANS8"><material><mattext>������� ��������������� ������ �� &quot;������� �����&quot; � ���������������� �������</mattext></material></response_label><response_label ident="ANS9"><material><mattext>������� ��������������� ����� � ���� ������� ������ &quot;�������&quot; ����������������� ����</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID11">ANS8</varequal><varequal respident="LID11">ANS9</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>N</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="LES"><lesson_id>881</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>0</childs_cnt>
+<is_childs>0</is_childs>
+<sort>200</sort>
+<timestamp_x>1406636851</timestamp_x>
+<date_create>1406636851</date_create>
+<created_user_name>(admin) Иван Иванов</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>Режим правки</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p><b>Режим правки</b> предназначен для настройки параметров компонентов, включенных в шаблон сайта и в <b>Основную рабочую область</b> конкретной страницы. </p>
+
+<p>Для включения режима нажмите на кнопку <img height="63" width="86" border="0" src="cid:resources/res11/lFOjl.jkBjR.edit_mode_95_new.png"/>. После включения режима правки станет доступным функционал по настройке компонентов и работе с данными, которые выводятся компонентами.</p>
+
+<p>При проведении указателя мыши над областью сайта, где расположен компонент, появится cерая рамка, указывающая область компонента и отобразится меню компонента. Например, в случае с компонентом <b>Каталог</b> это будет выглядеть так:</p>
+
+<p><img height="180" width="638" src="cid:resources/res11/fYApK.S7yM7.catalog_view_11.png" /></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Выделение компонента в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p>При проведении указателя мыши над областью сайта, где расположен компонент, появится красная рамка, указывающая область компонента и отобразится меню компонента. Например, в случае с компонентом <b>Меню</b> это будет выглядеть так:</p>
+
+<p><a href="javascript:ShowImg('/images/content_manager/controls/public_section/hermitage/menu_view_95.png',793,144,'Настройка полей')"><img height="108" border="0" width="600" style="cursor: pointer;" alt="Нажмите на рисунок, чтобы увеличить" src="cid:resources/res11/08csG.THQxf.menu_view_95_sm.png" /></a> </p></td></tr>
+</tbody>
+</table></div>
+
+
+
+<p>Если какой-либо компонент размещен в шаблоне или в <b>Основной рабочей области</b> страницы, но не выводит данные на страницу (например, по условиям настройки может не отображаться <b>Цепочка навигации</b> на индексной странице), то при включенном <b>Режиме правки</b> компонент отображается таким образом: <img src="cid:resources/res11/8xQyY.uOE9E.component_hude_95.png" width="14" border="0" height="14" alt="Компонент, который не выводит данные на редактируемой странице">.</p>
+
+<p>Меню компонента имеет типовые кнопки и кнопки, которые соответствуют выполняемой функции компонента. Так, например, выглядит меню компонента <b>Каталог</b>:</p>
+
+<p><img src="cid:resources/res11/A7ldy.yCufF.catalog_component_11.png" width="348" border="0" height="45" alt="Меню компонента каталог"></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Меню компонента Каталог в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p><img src="cid:resources/res11/RMjiP.wkmxX.menu_component_95.png" width="314" border="0" height="26" alt="Меню компонента каталог"></p></td></tr>
+</tbody>
+</table></div>
+
+
+
+<p>Команды имеют следующее значение:</p>
+
+<table cellspacing=0 cellpadding=0> 		 
+  <tbody> 
+    <tr bgcolor="white">
+    <td bgcolor="#8C8C8C"> 		 
+    <table cellspacing="1" cellpadding="5"> 			 
+          <tbody> 
+            <tr bgcolor="silver"><td colspan="3"><b>Команды меню компонентов</b> 
+               </td></tr>
+           			 
+            <tr bgcolor="white"> <td align="center"><img height="43" width="11" border="0" src="cid:resources/res11/krBwg.9gOTM.move_zone_11.png" /></td> <td><b>Зона перемещения</b></td> <td>Наведя курсор мыши на эту зону и нажав на левую кнопку, можно переместить меню компонента в любое место экрана.</td> </tr>
+           			 
+            <tr bgcolor="#EEEEEE"> <td align="center"><img height="42" width="237" border="0" src="cid:resources/res11/huis1.lSy9i.content_zone_11.png" /></td> <td><b>Зона команд контента</b></td> <td>В этой зоне располагаются команды по управлению контентом, который выводит компонент. В зависимости от функционала компонента команды будут разными, либо их может вообще не быть.</td> </tr>
+           			 
+            <tr bgcolor="white"> <td align="center"><img height="42" width="23" border="0" src="cid:resources/res11/CJR2L.Fn543.fix_but_11.png" /></td> <td><b>Кнопка фиксации положения</b></td> <td>Перемещаемое в другое место экрана меню компонента можно зафиксировать. В этом случае при следующем открытии для редактирования данной страницы и включении <b>Режима правки</b> меню компонента появится в выбранном месте.</td> </tr>
+          			 			 
+            <tr bgcolor="#EEEEEE"> <td align="center" rowspan="2"><img height="40" width="35" border="0" src="cid:resources/res11/DEEpF.HbJYq.menu_component_full_11.png" /></td><td><b>Кнопка вызова меню настройки параметров компонента</b></td> <td>Вызывается меню настройки параметров того компонента, который установлен по умолчанию.</td> </tr>
+
+            <tr bgcolor="EEEEEE"> </td> <td><b>Кнопка выбора компонента для редактирования параметров</b></td> <td>Вызов выпадающего списка компонентов для выбора компонента, параметры которого необходимо редактировать:
+
+<p><img src="cid:resources/res11/sYO9k.Jm1n5.menu_components_11.png" width="457" border="0" height="201" alt=""></p>
+</td> </tr>
+
+            <tr bgcolor="white"> <td align="center"><img height="40" width="12" border="0" src="cid:resources/res11/CtvuQ.2xGNn.vert_menu_11.png" /></td> <td><b>Кнопка вертикального положения команд</b></td> <td>При использовании этой кнопки можно расположить команды управления вертикально, что делает меню более компактным:
+<p><img src="cid:resources/res11/pjjff.zJ7Ds.vert_menu_compact_11.png" width="128" border="0" height="131" alt=""></p>
+</td> </tr>
+
+           </tbody>
+         </table>
+       		</td></tr>
+   </tbody>
+ </table>
+<br><br>
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>Команды меню компонента в Эрмитаже v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><table cellspacing=0 cellpadding=0> 		 
+  <tbody> 
+    <tr bgcolor="white">
+    <td bgcolor="#8C8C8C"> 		 
+    <table cellspacing="1" cellpadding="5"> 			 
+          <tbody> 
+            <tr bgcolor="silver"><td colspan="3"><b>Команды меню компонентов</b> 
+               </td></tr>
+           			 
+            <tr bgcolor="white"> <td align="center"><img height="26" width="15" border="0" src="cid:resources/res11/CDvC1.giQST.move_zone_95.png" /></td> <td><b>Зона перемещения</b></td> <td>Наведя курсор мыши на эту зону и нажав на левую кнопку, можно переместить меню компонента в любое место экрана.</td> </tr>
+           			 
+            <tr bgcolor="#EEEEEE"> <td align="center"><img height="26" width="229" border="0" src="cid:resources/res11/0WmpM.Rjito.content_zone_95.png" /></td> <td><b>Зона команд контента</b></td> <td>В этой зоне располагаются команды по управлению контентом, который выводит компонент. В зависимости от функционала компонента команды будут разными, либо их может вообще не быть.</td> </tr>
+           			 
+            <tr bgcolor="white"> <td align="center"><img height="26" width="18" border="0" src="cid:resources/res11/MDzkk.g8Wgm.fix_but_95.png" /></td> <td><b>Кнопка фиксации положения</b></td> <td>Перемещаемое в другое место экрана меню компонента можно зафиксировать. В этом случае при следующем открытии для редактирования данной страницы и включении <b>Режима правки</b> меню компонента появится в выбранном месте.</td> </tr>
+          			 			 
+            <tr bgcolor="#EEEEEE"> <td align="center" rowspan="2"><img height="24" width="35" border="0" src="cid:resources/res11/UQDlu.Wlgop.menu_component_full_95.png" /></td><td><b>Кнопка вызова меню настройки параметров компонента</b></td> <td>Вызывается меню настройки параметров того компонента, который установлен по умолчанию.</td> </tr>
+
+            <tr bgcolor="EEEEEE"> </td> <td><b>Кнопка выбора компонента для редактирования параметров</b></td> <td>Вызов выпадающего списка компонентов для выбора компонента, параметры которого необходимо редактировать:
+
+<p><img src="cid:resources/res11/PSolt.Pgqa7.menu_components_95.png" width="354" border="0" height="97" alt=""></p>
+</td> </tr>
+
+            <tr bgcolor="white"> <td align="center"><img height="24" width="11" border="0" src="cid:resources/res11/iydu1.EEDIK.vert_menu_95.png" /></td> <td><b>Кнопка вертикального положения команд</b></td> <td>При использовании этой кнопки можно расположить команды управления вертикально, что делает меню более компактным:
+<p><img src="cid:resources/res11/Vo4Lo.7PSA9.vert_menu_compact_95.png" width="122" border="0" height="76" alt=""></p>
+</td> </tr>
+
+           </tbody>
+         </table>
+       		</td></tr>
+   </tbody>
+ </table></td></tr>
+</tbody>
+</table></div><br>
+
+]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>200</edge_sort>
+<id>881</id>
+</content>

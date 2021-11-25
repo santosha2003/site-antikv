@@ -27,9 +27,7 @@ class CBitrixCloudMonitoring
 		if ($domainName != "")
 			$result[$domainName] = $domainName;
 
-		$by = "";
-		$order = "";
-		$siteList = CSite::GetList($by, $order, array("ACTIVE"=>"Y"));
+		$siteList = CSite::GetList('', '', array("ACTIVE"=>"Y"));
 		while($site = $siteList->Fetch())
 		{
 			$domains = explode("\r\n", $site["DOMAINS"]);
@@ -123,7 +121,8 @@ class CBitrixCloudMonitoring
 	 */
 	public function startMonitoring($domain, $is_https, $language_id, $emails, $tests)
 	{
-		try {
+		try
+		{
 			$web_service = new CBitrixCloudMonitoringWebService();
 			$web_service->actionStart($domain, $is_https, $language_id, $emails, $tests);
 			CBitrixCloudMonitoringResult::setExpirationTime(0);
@@ -143,7 +142,8 @@ class CBitrixCloudMonitoring
 	 */
 	public function stopMonitoring($domain)
 	{
-		try {
+		try
+		{
 			$web_service = new CBitrixCloudMonitoringWebService();
 			$web_service->actionStop($domain);
 			CBitrixCloudMonitoringResult::setExpirationTime(0);
@@ -191,7 +191,8 @@ class CBitrixCloudMonitoring
 
 		if ($this->result === null)
 		{
-			try {
+			try
+			{
 				if (CBitrixCloudMonitoringResult::isExpired())
 				{
 					$web_service = new CBitrixCloudMonitoringWebService();

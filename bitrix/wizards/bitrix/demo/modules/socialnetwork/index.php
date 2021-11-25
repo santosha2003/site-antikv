@@ -112,10 +112,29 @@ if(IsModuleInstalled('photogallery') && file_exists($_SERVER["DOCUMENT_ROOT"]."/
 	$res_arr = $res->Fetch();
 	$socnet_photo_id = $res_arr["ID"];
 
-	CWizardUtil::ReplaceMacros($_SERVER["DOCUMENT_ROOT"]."/club/gallery/index.php", array('IBLOCK_ID_GALLERY' => $photo_id));
+	$photo_forum_id = 0;
+	
+	if (CModule::IncludeModule("forum"))
+	{
+		$db_res = CForumNew::GetList(
+			array("SORT"=>"ASC"), 
+			array("XML_ID" => "multiuser")
+		);
+		if ($db_res && $res = $db_res->Fetch())
+			$photo_forum_id = intVal($res["ID"]);
+	}
+
+	CWizardUtil::ReplaceMacros($_SERVER["DOCUMENT_ROOT"]."/club/gallery/index.php", array(
+			'IBLOCK_ID_GALLERY' => $photo_id,
+			'FORUM_ID' => $photo_forum_id
+		)
+	);
+
 	CWizardUtil::ReplaceMacros($_SERVER["DOCUMENT_ROOT"]."/club/index.php", array(
 		'"PHOTO_USER_IBLOCK_TYPE" => "car_gallery_demo"' => '"PHOTO_USER_IBLOCK_TYPE" => "gallery"', 
-		'"PHOTO_USER_IBLOCK_ID" => "'.$socnet_photo_id.'"' => '"PHOTO_USER_IBLOCK_ID" => "'.$photo_id.'"'), 
+		'"PHOTO_USER_IBLOCK_ID" => "'.$socnet_photo_id.'"' => '"PHOTO_USER_IBLOCK_ID" => "'.$photo_id.'"', 
+		'"PHOTO_USE_COMMENTS" => "N"' => '"PHOTO_USE_COMMENTS" => "Y",
+	"PHOTO_FORUM_ID" => "'.$photo_forum_id.'"'), 
 		$skipSharp = true);
 
 	DemoSiteUtil::AddMenuItem("/club/.left.menu.php", Array(

@@ -10,7 +10,7 @@
 
 	BX.Sale.PaySystem = {
 
-		ajaxUrl: "/bitrix/admin/sale_pay_system_ajax.php",
+		ajaxUrl: "sale_pay_system_ajax.php",
 
 		setLHEClass: function (lheDivId)
 		{
@@ -252,10 +252,15 @@
 
 		getHandlerOptions: function (link)
 		{
-			var handlerType = link.value;
+			var handlerType = link.value, psMode;
 
-			if (handlerType == '')
+			if (handlerType === '')
 				return;
+
+			if (BX('PS_MODE'))
+			{
+				psMode = BX('PS_MODE').value;
+			}
 
 			ShowWaitWindow();
 			var postData = {
@@ -265,6 +270,11 @@
 				sessid: BX.bitrix_sessid(),
 				lang: BX.message('LANGUAGE_ID')
 			};
+
+			if (psMode !== undefined)
+			{
+				postData.PS_MODE = psMode;
+			}
 
 			BX.ajax({
 				timeout: 30,
@@ -315,18 +325,41 @@
 						}
 
 						var psMode = BX('pay_system_ps_mode');
-						if (result.PAYMENT_MODE)
+						var isOrderHandler = BX('ACTION_FILE').value === 'orderdocument';
+						if (result.PAYMENT_MODE || isOrderHandler)
 						{
 							var tr = BX.create('tr', {props : {'width': '40%'}});
 							tr.setAttribute('valign', 'top');
 
 							var tdTitle = BX.create('td', {props : {'width': '40%'}});
 							BX.addClass(tdTitle, 'adm-detail-content-cell-l');
-							tdTitle.innerHTML = BX.message('SALE_PS_MODE');
+							tdTitle.innerHTML = result.PAYMENT_MODE_TITLE+':';
 
 							var tdContent = BX.create('td', {props : {'width': '60%'}});
 							BX.addClass(tdContent, 'adm-detail-content-cell-r');
-							tdContent.innerHTML = result.PAYMENT_MODE;
+							if (result.PAYMENT_MODE)
+							{
+								tdContent.innerHTML = result.PAYMENT_MODE;
+							}
+
+							if (isOrderHandler)
+							{
+								var span = BX.create(
+									'span',
+									{
+										text: BX.message('SALE_TEMPLATE_DOCUMENT_ADD'),
+										attrs: {
+											class: 'bx-button-add-template',
+											style: 'margin-left: 5px'
+										}
+									}
+								);
+								BX.bind(span, 'click', function () {
+									BX.SidePanel.Instance.open(result.ORDER_DOC_ADD_LINK, {width: 930, events: {onCloseComplete: function() {BX.Sale.PaySystem.getHandlerOptions(BX("ACTION_FILE"));}}});
+								});
+
+								tdContent.appendChild(span);
+							}
 
 							tr.appendChild(tdTitle);
 							tr.appendChild(tdContent);
@@ -339,16 +372,85 @@
 							psMode.innerHTML = '';
 						}
 
+						var psDesc = BX('pay_system_ps_description');
+						if (psDesc)
+							psDesc.innerHTML = '';
+
+						if (result.DESCRIPTION)
+						{
+							var tBody = BX.create('tr', {
+								children :[
+									BX.create('td', {props : {'width': '40%', className : 'adm-detail-content-cell-l'}}),
+									BX.create('td', {props : {'width': '60%', className : 'adm-detail-content-cell-r'}, html : result.DESCRIPTION})
+								]
+							});
+							psDesc.appendChild(tBody);
+						}
+
+						if (result.NAME !== undefined)
+							BX('NAME').value = result.NAME;
+
+						if (result.PSA_NAME !== undefined)
+							BX('PSA_NAME').value = result.PSA_NAME;
+
+						if (result.SORT)
+							BX('SORT').value = result.SORT;
+
+						var id = BX('ID').value;
+						var logo = BX('LOGOTIP');
+						var parent = BX.findParent(logo, {tag : 'div'});
+						var img = BX.findChild(parent.parentNode, {tag : 'img'});
+
+						if (result.LOGOTIP)
+						{
+							if (result.LOGOTIP.NAME)
+								logo.previousElementSibling.innerHTML = result.LOGOTIP.NAME;
+
+							if (img)
+							{
+								if (result.LOGOTIP.PATH)
+									img.src = result.LOGOTIP.PATH;
+							}
+							else
+							{
+								img = BX.create('img', {
+									attrs: {
+										'src': result.LOGOTIP.PATH,
+									}
+								});
+								img.style.maxHeight = "55px";
+								BX.insertAfter(img, parent);
+								BX.insertAfter(BX.create('br'), parent);
+							}
+						}
+						else if (id <= 0)
+						{
+							if (img)
+								BX.remove(img);
+
+							logo.previousElementSibling.innerHTML = BX.message('JSADM_FILE');
+						}
+
+						this.updateVerificationBlock(result.DOMAIN_VERIFICATION);
 					}
 					else
 					{
 						BX.debug(result.ERROR);
 					}
-				},
+				}.bind(this),
 
 				onfailure: function ()
 				{
 					CloseWaitWindow();
+
+					var psDesc = BX('pay_system_ps_description');
+					if (psDesc)
+						psDesc.innerHTML = '';
+
+					var psMode = BX('pay_system_ps_mode');
+					if (psMode)
+						psMode.innerHTML = '';
+
 					BX.debug("Error");
 				}
 			});
@@ -428,6 +530,25 @@
 					BX.Sale.PaySystem.toggleNextSiblings(rowsToHide[i], 4, true);
 			}
 			window.parent.BX.onCustomEvent('onAdminTabsChange');
+		},
+
+		updateVerificationBlock: function(verificationData)
+		{
+			var validationDomainNode = BX('pay_system_validation_domain');
+			validationDomainNode.style.display = (verificationData.NEED_VERIFICATION) ? "" : "none";
+
+			if (verificationData.NEED_VERIFICATION)
+			{
+				var domainVerificationLinkNode = BX('domain-verification-link');
+				domainVerificationLinkNode.setAttribute('onclick', 'BX.Sale.PaySystem.openVerificationForm(\'' + verificationData.FORM_LINK + '\')');
+			}
+		},
+
+		openVerificationForm: function(url)
+		{
+			BX.SidePanel.Instance.open(url, {
+				width: 750
+			});
 		}
 	}
 })(window);

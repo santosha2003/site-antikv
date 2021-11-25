@@ -55,6 +55,7 @@ class Group extends Base
 			"NAME" => true,
 			"ACTIVE" => true,
 			"DESCRIPTION" => true,
+			"SORT" => true,
 		);
 	}
 
@@ -64,6 +65,11 @@ class Group extends Base
 	}
 
 	public static function canHasChildren()
+	{
+		return true;
+	}
+
+	public static function isHandlerCompatible()
 	{
 		return true;
 	}

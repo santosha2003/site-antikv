@@ -52,4 +52,5 @@ $MESS["SOD_HIST_ENTITY_ID"] = "Einheits-ID";
 $MESS["SOD_HIST_ENTITY_SHIPMENT"] = "Auslieferung";
 $MESS["SOD_HIST_ENTITY_PAYMENT"] = "Bezahlung";
 $MESS["SOD_HIST_ALL"] = "(Alle)";
+$MESS["SOD_HIST_IMPORTANT_TYPES"] = "Wichtige Aktionen anzeigen";
 ?>

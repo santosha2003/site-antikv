@@ -76,7 +76,7 @@ else
 	$source_base = str_replace(array("\\", "//"), "/", "/".$source_base."/");
 	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/classes/".$DBType."/cml2.php");
 	$res = ImportXMLFile($source_base."xml/".LANGUAGE_ID."/photogallery.xml", "gallery", $SITE_ID);
-	
+
 	$db_res = CIBlock::GetList(array(), array("CODE" => "photo", "XML_ID" => "photo-gallery"));
 	if ($db_res && $res = $db_res->Fetch())
 		$iBlockId = intVal($res["ID"]);
@@ -322,7 +322,7 @@ $PhotoRandom = '
 	Array("IBLOCK_TYPE" => "gallery", 
 		"IBLOCKS" => Array("'.$iBlockId.'"), 
 		"DETAIL_URL" => "'.$target.'#SECTION_ID#/#ELEMENT_ID#/", 
-		"CACHE_TYPE" => "A", 
+		"CACHE_TYPE" => "N",
 		"CACHE_TIME" => "180")
 	);?></div>';
 

@@ -30,17 +30,32 @@ foreach($arParams['LIST_ITEM_ID'] as $itemId)
 				)
 			);
 
-			$needValues = array();
-			CIBlockPriceTools::getTreePropertyValues($skuPropList[$itemId], $needValues);
+			CIBlockPriceTools::getTreePropertyValues($skuPropList[$itemId], $arParams['NEED_VALUES'][$itemId]);
 
 			foreach($skuPropList[$itemId] as $propertyCode => &$propertyValue)
 			{
 				if($propertyValue['SHOW_MODE'] == 'PICT')
 				{
-					foreach($propertyValue['VALUES'] as $key => $value)
+					$count = 0;
+					foreach($propertyValue['VALUES'] as $key => &$value)
 					{
 						if(!in_array($value['XML_ID'], $arParams['PROPERTY_VALUE'][$itemId][$propertyCode]))
 							unset($propertyValue['VALUES'][$key]);
+						if(!empty($arParams['PROPERTY_ITERATION_VALUE'][$itemId][$propertyCode]))
+						{
+							foreach($arParams['PROPERTY_ITERATION_VALUE'][$itemId][$propertyCode] as $propValue)
+							{
+								if($propValue == $value['XML_ID'])
+								{
+									$value['ALLOCATION'] = true;
+								}
+							}
+						}
+						else
+						{
+							if(!$count)
+								$value['ALLOCATION'] = true;
+						}
 					}
 				}
 				else

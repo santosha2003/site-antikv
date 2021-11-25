@@ -37,25 +37,20 @@ if($action !== "register")
 	if(!$bNeedAuth && $action != "authorize")
 	{
 		$engine = new Engine\YandexDirect();
-
-		$bNeedAuth = !Service::isAuthorized($engine->getCode());
 		$currentUser = null;
 
-		if(!$bNeedAuth)
+		try
 		{
-			try
+			$currentAuth = Service::getAuth($engine->getCode());
+			if($currentAuth)
 			{
-				$currentAuth = Service::getAuth($engine->getCode());
-				if($currentAuth)
-				{
-					$currentUser = $currentAuth["user"];
-					$bNeedAuth = false;
-				}
+				$currentUser = $currentAuth["user"];
+				$bNeedAuth = false;
 			}
-			catch(Exception $e)
-			{
-				$bNeedAuth = true;
-			}
+		}
+		catch(Exception $e)
+		{
+			$bNeedAuth = true;
 		}
 	}
 
@@ -92,12 +87,25 @@ if(isset($action) && !$bNeedAuth)
 
 			break;
 
-			case 'authorize':
-				$authResult = Service::authorize();
-				$res = array(
-					"result" => true,
-					"location" => $authResult["location"],
-				);
+			case 'unregister':
+				if(Service::isRegistered())
+				{
+					try
+					{
+						Service::clearAuth($engine->getCode());
+						Service::unregister();
+						$res = array("result" => true);
+					}
+					catch(\Bitrix\Main\SystemException $e)
+					{
+						$res = array(
+								'error' => array(
+										'message' => $e->getMessage(),
+										'code' => $e->getCode(),
+								)
+						);
+					}
+				}
 
 			break;
 
@@ -129,7 +137,7 @@ if(isset($action) && !$bNeedAuth)
 				if(is_array($phraseList))
 				{
 					$phraseList = array_values(array_unique($phraseList));
-					$geoList = strlen($geo) > 0 ? preg_split("/[^0-9\\-]+\\s*/", $geo) : array();
+					$geoList = $geo <> '' ? preg_split("/[^0-9\\-]+\\s*/", $geo) : array();
 
 					$phraseHash = md5(implode('|', $phraseList).'|||'.$geo);
 
@@ -201,7 +209,7 @@ if(isset($action) && !$bNeedAuth)
 				if(is_array($phraseList))
 				{
 					$phraseList = array_values(array_unique($phraseList));
-					$geoList = strlen($geo) > 0 ? preg_split("/[^0-9\-]+\\s*/", $geo) : array();
+					$geoList = $geo <> '' ? preg_split("/[^0-9\-]+\\s*/", $geo) : array();
 
 					$phraseHash = md5(implode('|', $phraseList).'|||'.$geo);
 
@@ -892,7 +900,7 @@ if(isset($action) && !$bNeedAuth)
 
 								$bannerList[$key] = $banner;
 							}
-//print_r($bannerListToCheck);
+
 							if($bSale && count($bannerListToCheck) > 0)
 							{
 								$orderStats = Adv\OrderTable::getList(array(

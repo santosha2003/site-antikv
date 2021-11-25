@@ -1,27 +1,26 @@
 <?
+/** @global CMain $APPLICATION */
+/** @global CUser $USER */
+/** @global CDatabase $DB */
+/** @global string $mid */
 $module_id = "form";
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$module_id."/include.php");
+
+use Bitrix\Main\Loader;
+
+Loader::includeModule('form');
 IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$module_id."/options.php");
 $old_module_version = CForm::IsOldVersion();
 $FORM_RIGHT = $APPLICATION->GetGroupRight($module_id);
 if ($FORM_RIGHT>="R") :
 
-if ($REQUEST_METHOD=="GET" && CForm::IsAdmin() && strlen($RestoreDefaults)>0 && check_bitrix_sessid())
+if ($_SERVER['REQUEST_METHOD'] == "GET" && CForm::IsAdmin() && $RestoreDefaults <> '' && check_bitrix_sessid())
 {
 	COption::RemoveOption("form");
-	$arGROUPS = array();
-	$z = CGroup::GetList($v1, $v2, array("ACTIVE" => "Y", "ADMIN" => "N"));
+	$z = CGroup::GetList('', '', array("ACTIVE" => "Y", "ADMIN" => "N"));
 	while($zr = $z->Fetch())
 	{
-		$ar = array();
-		$ar["ID"] = intval($zr["ID"]);
-		$ar["NAME"] = htmlspecialcharsbx($zr["NAME"])." [<a title=\"".GetMessage("MAIN_USER_GROUP_TITLE")."\" href=\"/bitrix/admin/group_edit.php?ID=".intval($zr["ID"])."&lang=".LANGUAGE_ID."\">".intval($zr["ID"])."</a>]";
-		$groups[$zr["ID"]] = "[".$zr["ID"]."] ".$zr["NAME"];
-		$arGROUPS[] = $ar;
+		$APPLICATION->DelGroupRight($module_id, array($zr["ID"]));
 	}
-	reset($arGROUPS);
-	while (list(,$value) = each($arGROUPS))
-		$APPLICATION->DelGroupRight($module_id, array($value["ID"]));
 }
 
 $arAllOptions = array(
@@ -43,19 +42,19 @@ if ($old_module_version!="Y")
 	unset($arAllOptions[5]);
 }
 
-if($REQUEST_METHOD=="POST" && strlen($Update)>0 && CForm::IsAdmin() && check_bitrix_sessid())
+if($_SERVER['REQUEST_METHOD'] == "POST" && $Update <> '' && CForm::IsAdmin() && check_bitrix_sessid())
 {
 	foreach($arAllOptions as $ar)
 	{
 		$name = $ar[0];
-		$val = $$name;
+		$val = ${$name};
 		if($ar[2][0] == "checkbox" && $val != "Y")
 		{
 			$val = "N";
 		}
 		COption::SetOptionString($module_id, $name, $val);
 	}
-	COption::SetOptionString("form", "FORM_DEFAULT_PERMISSION", $FORM_DEFAULT_PERMISSION);
+	COption::SetOptionString("form", "FORM_DEFAULT_PERMISSION", $_POST['FORM_DEFAULT_PERMISSION']);
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['saveCrm'] && CForm::IsAdmin() && check_bitrix_sessid())
@@ -95,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST['saveCrm'] && CForm::IsAdm
 
 					$lastUpdated = $arCrm['ID'];
 
-					if (strlen($arCrm['LOGIN']) > 0 && strlen($arCrm['PASSWORD']) > 0)
+					if ($arCrm['LOGIN'] <> '' && $arCrm['PASSWORD'] <> '')
 					{
 						$arAdditionalAuthData[$arCrm['ID']] = array(
 							'LOGIN' => $arCrm['LOGIN'],
@@ -268,11 +267,11 @@ function CRM(data)
 
 	if (!data.AUTH_HASH)
 	{
-		var content = '<div class="form-crm-settings"><form name="form_'+popup_id+'"><table cellpadding="0" cellspacing="2" border="0"><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_TITLE'))?>:</td><td><input type="text" name="NAME" value="'+(data.NAME||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_SERVER'))?>:</td><td><input type="text" name="URL_SERVER" value="'+(data.URL_SERVER||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_PATH'))?>:</td><td><input type="text" name="URL_PATH" value="'+(data.URL_PATH||'<?=FORM_CRM_DEFAULT_PATH?>')+'"></td></tr><tr><td colspan="2" align="center"><b><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH'))?></b></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_LOGIN'))?>:</td><td><input type="text" name="LOGIN" value="'+(data.LOGIN||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD'))?>:</td><td><input type="password" name="PASSWORD" value="'+(data.PASSWORD||'')+'"></td></tr><tr><td></td><td><a href="javascript:void(0)" onclick="_showPass(document.forms[\'form_'+popup_id+'\'].PASSWORD); BX.hide(this.parentNode);"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD_SHOW'))?></a></td></tr></table></form></div>';
+		var content = '<div class="form-crm-settings"><form name="form_'+popup_id+'"><table cellpadding="0" cellspacing="2" border="0"><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_TITLE'))?>:</td><td><input type="text" name="NAME" value="'+BX.util.htmlspecialchars(data.NAME||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_SERVER'))?>:</td><td><input type="text" name="URL_SERVER" value="'+BX.util.htmlspecialchars(data.URL_SERVER||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_PATH'))?>:</td><td><input type="text" name="URL_PATH" value="'+BX.util.htmlspecialchars(data.URL_PATH||'<?=FORM_CRM_DEFAULT_PATH?>')+'"></td></tr><tr><td colspan="2" align="center"><b><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH'))?></b></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_LOGIN'))?>:</td><td><input type="text" name="LOGIN" value="'+BX.util.htmlspecialchars(data.LOGIN||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD'))?>:</td><td><input type="password" name="PASSWORD" value="'+BX.util.htmlspecialchars(data.PASSWORD||'')+'"></td></tr><tr><td></td><td><a href="javascript:void(0)" onclick="_showPass(document.forms[\'form_'+popup_id+'\'].PASSWORD); BX.hide(this.parentNode);"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD_SHOW'))?></a></td></tr></table></form></div>';
 	}
 	else
 	{
-		var content = '<div class="form-crm-settings form-crm-settings-hide-auth" id="popup_cont_'+popup_id+'"><form name="form_'+popup_id+'"><table cellpadding="0" cellspacing="2" border="0"><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_TITLE'))?>:</td><td><input type="text" name="NAME" value="'+(data.NAME||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_SERVER'))?>:</td><td><input type="text" name="URL_SERVER" value="'+(data.URL_SERVER||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_PATH'))?>:</td><td><input type="text" name="URL_PATH" value="'+(data.URL_PATH||'<?=FORM_CRM_DEFAULT_PATH?>')+'"></td></tr><tr class="form-crm-auth"><td colspan="2" align="center"><b><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH'))?></b></td></tr><tr class="form-crm-auth"><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_LOGIN'))?>:</td><td><input type="text" name="LOGIN" value="'+(data.LOGIN||'')+'"></td></tr><tr class="form-crm-auth"><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD'))?>:</td><td><input type="password" name="PASSWORD" value="'+(data.PASSWORD||'')+'"></td></tr><tr><td align="right"></td><td><a href="javascript:void(0)" onclick="_showPass(document.forms[\'form_'+popup_id+'\'].PASSWORD);BX.hide(this);" class="form-crm-auth"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD_SHOW'))?></a><a href="javascript:void(0)" onclick="BX.removeClass(BX(\'popup_cont_'+popup_id + '\'), \'form-crm-settings-hide-auth\'); BX.hide(this);"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_SHOW'))?></a></td></tr></table></form></div>';
+		var content = '<div class="form-crm-settings form-crm-settings-hide-auth" id="popup_cont_'+popup_id+'"><form name="form_'+popup_id+'"><table cellpadding="0" cellspacing="2" border="0"><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_TITLE'))?>:</td><td><input type="text" name="NAME" value="'+BX.util.htmlspecialchars(data.NAME||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_SERVER'))?>:</td><td><input type="text" name="URL_SERVER" value="'+BX.util.htmlspecialchars(data.URL_SERVER||'')+'"></td></tr><tr><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_FORM_URL_PATH'))?>:</td><td><input type="text" name="URL_PATH" value="'+BX.util.htmlspecialchars(data.URL_PATH||'<?=FORM_CRM_DEFAULT_PATH?>')+'"></td></tr><tr class="form-crm-auth"><td colspan="2" align="center"><b><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH'))?></b></td></tr><tr class="form-crm-auth"><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_LOGIN'))?>:</td><td><input type="text" name="LOGIN" value="'+BX.util.htmlspecialchars(data.LOGIN||'')+'"></td></tr><tr class="form-crm-auth"><td align="right"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD'))?>:</td><td><input type="password" name="PASSWORD" value="'+BX.util.htmlspecialchars(data.PASSWORD||'')+'"></td></tr><tr><td align="right"></td><td><a href="javascript:void(0)" onclick="_showPass(document.forms[\'form_'+popup_id+'\'].PASSWORD);BX.hide(this);" class="form-crm-auth"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_PASSWORD_SHOW'))?></a><a href="javascript:void(0)" onclick="BX.removeClass(BX(\'popup_cont_'+popup_id + '\'), \'form-crm-settings-hide-auth\'); BX.hide(this);"><?=CUtil::JSEscape(GetMessage('FORM_TAB_CRM_ROW_AUTH_SHOW'))?></a></td></tr></table></form></div>';
 	}
 
 	var wnd = new BX.PopupWindow('popup_' + popup_id, window, {
@@ -478,7 +477,7 @@ endif;
 <?$tabControl->BeginNextTab();?>
 <?require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/admin/group_rights.php");?>
 <?$tabControl->Buttons();?>
-<script language="JavaScript">
+<script type="text/javascript">
 function RestoreDefaults()
 {
 	if(confirm('<?echo AddSlashes(GetMessage("MAIN_HINT_RESTORE_DEFAULTS_WARNING"))?>'))
@@ -491,4 +490,4 @@ function RestoreDefaults()
 <input <?if ($FORM_RIGHT<"W") echo "disabled" ?> type="button" title="<?echo GetMessage("MAIN_HINT_RESTORE_DEFAULTS")?>" OnClick="RestoreDefaults();" value="<?echo GetMessage("MAIN_RESTORE_DEFAULTS")?>">
 <?$tabControl->End();?>
 </form>
-<?endif;?>
+<?endif;

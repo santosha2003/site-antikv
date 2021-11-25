@@ -62,6 +62,11 @@ class ShipmentTable extends Main\Entity\DataManager
 		return __FILE__;
 	}
 
+	public static function getUfId()
+	{
+		return 'SHIPMENT';
+	}
+
 	/**
 	 * @param $id
 	 * @return Main\Entity\DeleteResult
@@ -157,6 +162,13 @@ class ShipmentTable extends Main\Entity\DataManager
 				'PRICE_DELIVERY'
 			),
 
+			new Main\Entity\FloatField(
+				'WEIGHT',
+				[
+					'default_value' => 0
+				]
+			),
+
 			new Main\Entity\BooleanField(
 				'CUSTOM_PRICE_DELIVERY',
 				array(
@@ -248,7 +260,6 @@ class ShipmentTable extends Main\Entity\DataManager
 			new Main\Entity\IntegerField(
 				'DELIVERY_ID',
                  array(
-                     'required' => true,
 	                 'title' => Loc::getMessage('ORDER_SHIPMENT_ENTITY_DELIVERY_ID_FIELD'),
                  )
 			),

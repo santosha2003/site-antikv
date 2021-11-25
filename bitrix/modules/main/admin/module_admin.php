@@ -45,7 +45,7 @@ foreach($folders as $folder)
 	{
 		while (false !== ($dir = readdir($handle)))
 		{
-			if(!isset($arModules[$dir]) && is_dir($_SERVER["DOCUMENT_ROOT"].$folder."/".$dir) && $dir!="." && $dir!=".." && $dir!="main" && strpos($dir, ".") === false)
+			if(!isset($arModules[$dir]) && is_dir($_SERVER["DOCUMENT_ROOT"].$folder."/".$dir) && $dir!="." && $dir!=".." && $dir!="main" && mb_strpos($dir, ".") === false)
 			{
 				$module_dir = $_SERVER["DOCUMENT_ROOT"].$folder."/".$dir;
 				if($info = CModule::CreateModuleObject($dir))
@@ -56,8 +56,8 @@ foreach($folders as $folder)
 					$arModules[$dir]["MODULE_VERSION"] = $info->MODULE_VERSION;
 					$arModules[$dir]["MODULE_VERSION_DATE"] = $info->MODULE_VERSION_DATE;
 					$arModules[$dir]["MODULE_SORT"] = $info->MODULE_SORT;
-					$arModules[$dir]["MODULE_PARTNER"] = (strpos($dir, ".") !== false) ? $info->PARTNER_NAME : "";
-					$arModules[$dir]["MODULE_PARTNER_URI"] = (strpos($dir, ".") !== false) ? $info->PARTNER_URI : "";
+					$arModules[$dir]["MODULE_PARTNER"] = (mb_strpos($dir, ".") !== false) ? $info->PARTNER_NAME : "";
+					$arModules[$dir]["MODULE_PARTNER_URI"] = (mb_strpos($dir, ".") !== false) ? $info->PARTNER_URI : "";
 					$arModules[$dir]["IsInstalled"] = $info->IsInstalled();
 				}
 			}
@@ -65,25 +65,31 @@ foreach($folders as $folder)
 		closedir($handle);
 	}
 }
-uasort($arModules, create_function('$a, $b', 'if($a["MODULE_SORT"] == $b["MODULE_SORT"]) return strcasecmp($a["MODULE_NAME"], $b["MODULE_NAME"]); return ($a["MODULE_SORT"] < $b["MODULE_SORT"])? -1 : 1;'));
+\Bitrix\Main\Type\Collection::sortByColumn(
+	$arModules,
+	['MODULE_SORT' => SORT_ASC, 'MODULE_NAME' => SORT_STRING],
+	'',
+	null,
+	true
+);
 
 $fb = ($id == 'fileman' && !$USER->CanDoOperation('fileman_install_control'));
 if($isAdmin && !$fb && check_bitrix_sessid())
 {
-	if(strlen($_REQUEST["uninstall"])>0 || strlen($_REQUEST["install"])>0)
+	if($_REQUEST["uninstall"] <> '' || $_REQUEST["install"] <> '')
 	{
 		$id = str_replace("\\", "", str_replace("/", "", $id));
 		if($Module = CModule::CreateModuleObject($id))
 		{
-			if($Module->IsInstalled() && strlen($_REQUEST["uninstall"])>0)
+			if($Module->IsInstalled() && $_REQUEST["uninstall"] <> '')
 			{
 				OnModuleInstalledEvent($id);
 				$Module->DoUninstall();
 				LocalRedirect($APPLICATION->GetCurPage()."?lang=".LANGUAGE_ID);
 			}
-			elseif(!$Module->IsInstalled() && strlen($_REQUEST["install"]) > 0)
+			elseif(!$Module->IsInstalled() && $_REQUEST["install"] <> '')
 			{
-				if (strtolower($DB->type)=="mysql" && defined("MYSQL_TABLE_TYPE") && strlen(MYSQL_TABLE_TYPE)>0)
+				if ($DB->type == "MYSQL" && defined("MYSQL_TABLE_TYPE") && MYSQL_TABLE_TYPE <> '')
 				{
 					$DB->Query("SET storage_engine = '".MYSQL_TABLE_TYPE."'", true);
 				}
@@ -103,24 +109,29 @@ if($isAdmin && !$fb && check_bitrix_sessid())
 		else
 			$fn = $_SERVER["DOCUMENT_ROOT"].getLocalPath("modules/".preg_replace("/[^a-z0-9.]/", "", $_REQUEST["id"])."/install/version.php");
 
+		$count = intval($_REQUEST['count']);
+		$count = $count > 0? $count: 1;
+
 		if(file_exists($fn) && is_file($fn))
 		{
 			$fc = file_get_contents($fn);
 			if(preg_match("/(\\d+)\\.(\\d+)\\.(\\d+)/", $fc, $match))
 			{
-				if($match[3] > 20)
-					$match[3] -= 10;
-				elseif($match[3] > 0)
-					$match[3] -= 1;
+				if ($match[3]-$count >= 0)
+				{
+					$match[3] -= $count;
+				}
 				else
 				{
-					$match[3] = 99;
-					if($match[2] == 5)
-						$match[2] = 0;
+					$match[3] = (100-$count)+($match[3]);
+					if ($match[2] == 0)
+					{
+						$match[2] = 9;
+						$match[1] -= 1;
+					}
 					else
 					{
-						$match[2] = 5;
-						$match[1] -= 1;
+						$match[2] -= 1;
 					}
 				}
 
@@ -147,14 +158,14 @@ require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_af
 <script>
 function DoAction(oEvent, action, module_id)
 {
-	if (oEvent.ctrlKey || BX.browser.IsMac() && oEvent.altKey)
+	if (oEvent.ctrlKey || BX.browser.IsMac() && (oEvent.altKey || oEvent.metaKey))
 	{
 		BX('version_for_' + module_id).className = 'no-select';
 		if(action == 'version_down')
 		{
 			ShowWaitWindow();
 			BX.ajax.post(
-				'module_admin.php?lang=<?echo LANGUAGE_ID?>&id='+module_id+'&<?echo bitrix_sessid_get()?>&action='+action,
+				'module_admin.php?lang=<?echo LANGUAGE_ID?>&id='+module_id+'&count='+(oEvent.shiftKey? 10: 1)+'&<?echo bitrix_sessid_get()?>&action='+action,
 				null,
 				function(result){
 					CloseWaitWindow();
@@ -189,7 +200,7 @@ function DoAction(oEvent, action, module_id)
 foreach($arModules as $info) :
 ?>
 	<tr>
-		<td><b><?echo htmlspecialcharsex($info["MODULE_NAME"])?></b> <?echo htmlspecialcharsex(strlen($info["MODULE_PARTNER"]) > 0? " <b><i>(".str_replace(array("#NAME#", "#URI#"), array($info["MODULE_PARTNER"], $info["MODULE_PARTNER_URI"]), GetMessage("MOD_PARTNER_NAME")).")</i></b>" : "(".$info["MODULE_ID"].")") ?><br><?echo $info["MODULE_DESCRIPTION"]?></td>
+		<td><b><?echo htmlspecialcharsex($info["MODULE_NAME"])?></b> <?echo htmlspecialcharsex($info["MODULE_PARTNER"] <> ''? " <b><i>(".str_replace(array("#NAME#", "#URI#"), array($info["MODULE_PARTNER"], $info["MODULE_PARTNER_URI"]), GetMessage("MOD_PARTNER_NAME")).")</i></b>" : "(".$info["MODULE_ID"].")") ?><br><?echo $info["MODULE_DESCRIPTION"]?></td>
 		<td ondblclick="<?echo htmlspecialcharsbx("DoAction(event, 'version_down', '".CUtil::AddSlashes($info["MODULE_ID"])."')")?>" id="version_for_<?echo htmlspecialcharsbx($info["MODULE_ID"])?>"><?echo $info["MODULE_VERSION"]?></td>
 		<td nowrap><?echo CDatabase::FormatDate($info["MODULE_VERSION_DATE"], "YYYY-MM-DD HH:MI:SS", CLang::GetDateFormat("SHORT"));?></td>
 		<td nowrap><?if($info["IsInstalled"]):?><?echo GetMessage("MOD_INSTALLED")?><?else:?><span class="required"><?echo GetMessage("MOD_NOT_INSTALLED")?></span><?endif?></td>
@@ -200,7 +211,7 @@ foreach($arModules as $info) :
 				<input type="hidden" name="id" value="<?echo htmlspecialcharsbx($info["MODULE_ID"])?>">
 				<?=bitrix_sessid_post()?>
 				<?if($info["IsInstalled"]):?>
-					<input <?if (!$isAdmin || $info["MODULE_ID"] == 'fileman' || $info["MODULE_ID"] == 'intranet') echo "disabled" ?> type="submit" name="uninstall" value="<?echo GetMessage("MOD_DELETE")?>">
+					<input <?if (!$isAdmin || in_array($info["MODULE_ID"], array("fileman", "intranet", "ui")) || $info["MODULE_ID"] == "rest" && IsModuleInstalled('intranet')) echo "disabled" ?> type="submit" name="uninstall" value="<?echo GetMessage("MOD_DELETE")?>">
 				<?else:?>
 					<input <?if (!$isAdmin) echo "disabled" ?> type="submit" class="adm-btn-green" name="install" value="<?echo GetMessage("MOD_INSTALL_BUTTON")?>">
 				<?endif?>

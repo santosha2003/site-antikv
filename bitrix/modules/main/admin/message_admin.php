@@ -3,7 +3,7 @@
  * Bitrix Framework
  * @package bitrix
  * @subpackage main
- * @copyright 2001-2013 Bitrix
+ * @copyright 2001-2016 Bitrix
  */
 
 /**
@@ -12,6 +12,8 @@
  * @global CMain $APPLICATION
  * @global CDatabase $DB
  */
+
+use Bitrix\Main\Mail\Internal\EventTypeTable;
 
 require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
@@ -28,7 +30,7 @@ $err_mess = "File: ".__FILE__."<br>Line: ";
 // variable with ID of table
 $sTableID = "tbl_main_message";
 // sorting
-$oSort = new CAdminSorting($sTableID, "TIMESTAMP_X", "desc");
+$oSort = new CAdminSorting($sTableID, "id", "desc");
 // list
 $lAdmin = new CAdminList($sTableID, $oSort);
 
@@ -40,6 +42,7 @@ $arFilterFields = Array(
 	"find_timestamp_1",
 	"find_timestamp_2",
 	"find_lid",
+	"find_language_id",
 	"find_active",
 	"find_from",
 	"find_to",
@@ -65,21 +68,21 @@ function CheckFilter($arFilterFields) // checking input fields
 		global ${$f};
 
 	$str = "";
-	if (strlen(trim($find_timestamp_1))>0 || strlen(trim($find_timestamp_2))>0)
+	if (trim($find_timestamp_1) <> '' || trim($find_timestamp_2) <> '')
 	{
 		$date_1_ok = false;
 		$date1_stm = MkDateTime(FmtDate($find_timestamp_1,"D.M.Y"),"d.m.Y");
 		$date2_stm = MkDateTime(FmtDate($find_timestamp_2,"D.M.Y")." 23:59","d.m.Y H:i");
-		if (!$date1_stm && strlen(trim($find_timestamp_1))>0)
+		if (!$date1_stm && trim($find_timestamp_1) <> '')
 			$str.= GetMessage("MAIN_WRONG_TIMESTAMP_FROM")."<br>";
 		else $date_1_ok = true;
-		if (!$date2_stm && strlen(trim($find_timestamp_2))>0)
+		if (!$date2_stm && trim($find_timestamp_2) <> '')
 			$str.= GetMessage("MAIN_WRONG_TIMESTAMP_TILL")."<br>";
-		elseif ($date_1_ok && $date2_stm <= $date1_stm && strlen($date2_stm)>0)
+		elseif ($date_1_ok && $date2_stm <= $date1_stm && $date2_stm <> '')
 			$str.= GetMessage("MAIN_FROM_TILL_TIMESTAMP")."<br>";
 	}
 	$lAdmin->AddFilterError($str);
-	if (strlen($str)>0)
+	if ($str <> '')
 		return false;
 	return true;
 }
@@ -93,6 +96,7 @@ if(CheckFilter($arFilterFields))
 		"TIMESTAMP_1"	=> $find_timestamp_1,
 		"TIMESTAMP_2"	=> $find_timestamp_2,
 		"LANG"			=> $find_lid,
+		"LANGUAGE_ID"	=> $find_language_id,
 		"ACTIVE"		=> $find_active,
 		"FROM"			=> ($find!='' && $find_type == "from"? $find: $find_from),
 		"TO"			=> ($find!='' && $find_type == "to"? $find: $find_to),
@@ -114,7 +118,8 @@ if($lAdmin->EditAction() && $isAdmin) // if saving from list
 		"EMAIL_FROM",
 		"EMAIL_TO",
 		"BCC",
-		"EVENT_NAME"
+		"EVENT_NAME",
+		"LANGUAGE_ID",
 	);
 
 	foreach($FIELDS as $ID=>$arFields)
@@ -144,17 +149,17 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 {
 	if($_REQUEST['action_target']=='selected')
 	{
-		$rsData = CEventMessage::GetList($by, $order, $arFilter);
+		$rsData = CEventMessage::GetList('', '', $arFilter);
 		while($arRes = $rsData->Fetch())
 			$arID[] = $arRes['ID'];
 	}
 
 	foreach($arID as $ID)
 	{
-		if(strlen($ID)<=0)
+		if($ID == '')
 			continue;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$emessage = new CEventMessage;
 		switch($_REQUEST['action'])
@@ -179,6 +184,8 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 	}
 }
 
+global $by, $order;
+
 $rsData = CEventMessage::GetList($by, $order, $arFilter);
 $resultObject = null;
 if(isset($rsData->resultObject))
@@ -191,13 +198,13 @@ $rsData->NavStart();
 // LIST
 $lAdmin->NavText($rsData->GetNavPrint(GetMessage("PAGES")));
 
-
 // Header
 $lAdmin->AddHeaders(array(
 	array("id"=>"ID", "content"=>"ID", 	"sort"=>"id", "default"=>true, "align"=>"right"),
 	array("id"=>"TIMESTAMP_X", "content"=>GetMessage('TIMESTAMP'), "default"=>true, "align"=>"center"),
 	array("id"=>"ACTIVE", "content"=>GetMessage('ACTIVE'), "sort"=>"active", "default"=>true, "align"=>"center"),
 	array("id"=>"LID", "content"=>GetMessage('LANG'), "default"=>true, "align"=>"center"),
+	array("id"=>"LANGUAGE_ID", "content"=>GetMessage("main_mess_admin_lang"), "sort"=>"language_id"),
 	array("id"=>"EVENT_NAME", "content"=>GetMessage("EVENT_TYPE"), "sort"=>"event_name", "default"=>true),
 	array("id"=>"SUBJECT", "content"=>GetMessage('SUBJECT'), "sort"=>"subject", "default"=>true),
 	array("id"=>"EMAIL_FROM", "content"=>GetMessage("F_FROM"), "sort"=>"from"),
@@ -206,17 +213,27 @@ $lAdmin->AddHeaders(array(
 	array("id"=>"BODY_TYPE","content"=>GetMessage("F_BODY_TYPE"), "sort"=>"body_type"),
 ));
 
-
 $arText_HTML = Array("text"=>GetMessage("MAIN_TEXT"), "html"=>GetMessage("MAIN_HTML"));
+
 $arEventTypes = Array();
-$eventTypeDb = \Bitrix\Main\Mail\Internal\EventTypeTable::getList(array(
+$eventTypeDb = EventTypeTable::getList(array(
 	'select' => array('EVENT_NAME', 'NAME'),
-	'filter' => array('LID' => LANGUAGE_ID),
+	'filter' => array('=LID' => LANGUAGE_ID, "=EVENT_TYPE" => EventTypeTable::TYPE_EMAIL),
 	'order' => array('EVENT_NAME' => 'ASC')
 ));
 while($eventType = $eventTypeDb->fetch())
 {
 	$arEventTypes[$eventType["EVENT_NAME"]] = '[' . $eventType["EVENT_NAME"] . '] ' . $eventType["NAME"];
+}
+
+$langOptions = array("" => "");
+$languages = \Bitrix\Main\Localization\LanguageTable::getList(array(
+	"select" => array('LID', 'NAME'),
+	"filter" => array("=ACTIVE" => "Y"),
+	"order" => array("SORT" => "ASC", "NAME" => "ASC")));
+while($language = $languages->fetch())
+{
+	$langOptions[$language["LID"]] = $language["NAME"];
 }
 
 // Body
@@ -231,6 +248,7 @@ while($arRes = $rsData->NavNext(true, "f_"))
 		$strSITE_ID .= htmlspecialcharsbx($ar_LID["LID"])."<br>";
 
 	$row->AddViewField("LID", $strSITE_ID);
+	$row->AddSelectField("LANGUAGE_ID", $langOptions);
 	$row->AddCheckField("ACTIVE");
 	$row->AddInputField("SUBJECT", Array("size"=>30));
 	$row->AddSelectField("BODY_TYPE", $arText_HTML);
@@ -281,17 +299,18 @@ require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_af
 $oFilter = new CAdminFilter(
 	$sTableID."_filter",
 	array(
-		GetMessage('F_ID'),
-		GetMessage('F_TYPE'),
-		GetMessage('F_D_MODIF'),
-		GetMessage('F_SITE'),
-		GetMessage('F_ACTIVE'),
-		GetMessage('F_FROM'),
-		GetMessage('F_TO'),
-		GetMessage('F_BCC'),
-		GetMessage('F_THEME'),
-		GetMessage('F_BODY_TYPE'),
-		GetMessage('F_CONTENT'))
+		"0" => GetMessage('F_ID'),
+		"1" => GetMessage('F_TYPE'),
+		"2" => GetMessage('F_D_MODIF'),
+		"3" => GetMessage('F_SITE'),
+		"language_id" => GetMessage("main_mess_admin_lang1"),
+		"4" => GetMessage('F_ACTIVE'),
+		"5" => GetMessage('F_FROM'),
+		"6" => GetMessage('F_TO'),
+		"7" => GetMessage('F_BCC'),
+		"8" => GetMessage('F_THEME'),
+		"9" => GetMessage('F_BODY_TYPE'),
+		"10" => GetMessage('F_CONTENT'))
 );
 
 $oFilter->Begin();
@@ -318,7 +337,10 @@ $oFilter->Begin();
 		$event_type_ref = array();
 		$event_type_ref_id = array();
 		$ref_en = array();
-		$rsType = CEventType::GetList(array("LID"=>LANGUAGE_ID), array("name"=>"asc"));
+		$rsType = CEventType::GetList(
+			array("LID"=>LANGUAGE_ID, "EVENT_TYPE"=>EventTypeTable::TYPE_EMAIL),
+			array("name"=>"asc")
+		);
 		while($arType = $rsType->Fetch())
 		{
 			$event_type_ref[] = $arType["NAME"].($arType["NAME"] == ''? '' : ' ')."[".$arType["EVENT_NAME"]."]";
@@ -336,6 +358,22 @@ $oFilter->Begin();
 <tr>
 	<td><?=GetMessage("MAIN_F_LID")?></td>
 	<td><?echo CLang::SelectBox("find_lid", htmlspecialcharsbx($find_lid), GetMessage("MAIN_ALL")); ?></td>
+</tr>
+<tr>
+	<td><?echo GetMessage("main_mess_admin_lang2")?></td>
+	<td>
+			<select name="find_language_id">
+				<option value=""><?echo GetMessage("F_FILTER_ALL")?></option>
+				<?
+				unset($langOptions[""]);
+				?>
+				<? foreach($langOptions as $language_id => $name): ?>
+					<option value="<?=$language_id?>"<? if($find_language_id == $language_id) echo " selected" ?>>
+						<?=\Bitrix\Main\Text\HtmlFilter::encode($name)?>
+					</option>
+				<? endforeach ?>
+			</select>
+	</td>
 </tr>
 <tr>
 	<td><?=GetMessage("F_ACTIVE")?></td>

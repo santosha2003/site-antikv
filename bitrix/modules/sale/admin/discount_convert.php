@@ -7,7 +7,8 @@ $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+\Bitrix\Main\Loader::includeModule('sale');
+
 IncludeModuleLangFile(__FILE__);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
@@ -50,7 +51,7 @@ if ('POST' == $_SERVER['REQUEST_METHOD'] && (isset($_REQUEST["Convert"]) && 'Y' 
 		));
 		?><script type="text/javascript">
 			BX.closeWait();
-			DoNext(<? echo CSaleDiscountConvert::$intConverted; ?>, <?=$maxMessage?>, <?=CSaleDiscountConvert::$intNextConvertPerStep; ?>, '<? echo CSaleDiscountConvert::$strSessID; ?>');
+			DoNext(<? echo CSaleDiscountConvert::$intConverted; ?>, <?=$maxMessage?>, <?=CSaleDiscountConvert::$intNextConvertPerStep; ?>, '<?=\CUtil::JSEscape(CSaleDiscountConvert::$strSessID); ?>');
 		</script><?
 	}
 	else

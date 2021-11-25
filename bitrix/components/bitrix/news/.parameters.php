@@ -7,7 +7,7 @@ if(!CModule::IncludeModule("iblock"))
 $arIBlockType = CIBlockParameters::GetIBlockTypes();
 
 $arIBlock=array();
-$rsIBlock = CIBlock::GetList(Array("sort" => "asc"), Array("TYPE" => $arCurrentValues["IBLOCK_TYPE"], "ACTIVE"=>"Y"));
+$rsIBlock = CIBlock::GetList(Array("SORT" => "ASC"), Array("TYPE" => $arCurrentValues["IBLOCK_TYPE"], "ACTIVE"=>"Y"));
 while($arr=$rsIBlock->Fetch())
 {
 	$arIBlock[$arr["ID"]] = "[".$arr["ID"]."] ".$arr["NAME"];
@@ -34,7 +34,7 @@ while ($arr=$rsProp->Fetch())
 }
 
 $arUGroupsEx = Array();
-$dbUGroups = CGroup::GetList($by = "c_sort", $order = "asc");
+$dbUGroups = CGroup::GetList();
 while($arUGroups = $dbUGroups -> Fetch())
 {
 	$arUGroupsEx[$arUGroups["ID"]] = $arUGroups["NAME"];
@@ -349,6 +349,12 @@ $arComponentParameters = array(
 			"DEFAULT" => Array(1),
 			"MULTIPLE" => "Y",
 		),
+		"STRICT_SECTION_CHECK" => array(
+			"PARENT" => "ADDITIONAL_SETTINGS",
+			"NAME" => GetMessage("CP_BN_STRICT_SECTION_CHECK"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => isset($arCurrentValues["DETAIL_STRICT_SECTION_CHECK"])? $arCurrentValues["DETAIL_STRICT_SECTION_CHECK"]: "N",
+		),
 		"CACHE_TIME"  =>  Array("DEFAULT"=>36000000),
 		"CACHE_FILTER" => array(
 			"PARENT" => "CACHE_SETTINGS",
@@ -501,6 +507,7 @@ if($arCurrentValues["USE_CATEGORIES"]=="Y")
 				);
 			}
 }
+
 if(!IsModuleInstalled("forum"))
 {
 	unset($arComponentParameters["GROUPS"]["REVIEW_SETTINGS"]);
@@ -519,7 +526,7 @@ elseif($arCurrentValues["USE_REVIEW"]=="Y")
 		"PARENT" => "REVIEW_SETTINGS",
 		"NAME" => GetMessage("F_MESSAGES_PER_PAGE"),
 		"TYPE" => "STRING",
-		"DEFAULT" => intVal(COption::GetOptionString("forum", "MESSAGES_PER_PAGE", "10"))
+		"DEFAULT" => intval(COption::GetOptionString("forum", "MESSAGES_PER_PAGE", "10"))
 	);
 	$arComponentParameters["PARAMETERS"]["USE_CAPTCHA"] = Array(
 		"PARENT" => "REVIEW_SETTINGS",

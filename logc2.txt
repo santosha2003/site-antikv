@@ -1,0 +1,144 @@
+Array
+(
+    [ACTIVE] => Y
+    [MODIFIED_BY] => 1610
+    [IBLOCK_ID] => 4
+    [ACTIVE_FROM] => 
+    [ACTIVE_TO] => 
+    [SORT] => 500
+    [NAME] => Сирия. Медаль за ранение
+    [CODE] => siriya-medal-za-ranenie
+    [TAGS] => Сирия, орден за ранение, фалеристика, ближний восток, защита отечества, коллекция
+    [PREVIEW_PICTURE] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+            [description] => 
+            [MODULE_ID] => iblock
+            [old_file] => 533758
+        )
+
+    [PREVIEW_TEXT] => 
+    [PREVIEW_TEXT_TYPE] => html
+    [DETAIL_PICTURE] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+            [description] => 
+            [MODULE_ID] => iblock
+            [old_file] => 
+        )
+
+    [DETAIL_TEXT] => Предназначался как награда для военных и гражданских лиц, которые были ранены при защите Сирии.
+    [DETAIL_TEXT_TYPE] => html
+    [TMP_ID] => 0
+    [PROPERTY_VALUES] => Array
+        (
+            [68] => Array
+                (
+                    [411569] => Array
+                        (
+                            [VALUE] => 1953 г.
+                        )
+
+                )
+
+            [69] => Array
+                (
+                    [411570] => Array
+                        (
+                            [VALUE] => Бронза, эмаль
+                        )
+
+                )
+
+            [70] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [71] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [72] => Array
+                (
+                    [411571] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 
+                                    [type] => 
+                                    [tmp_name] => 
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+
+                    [411572] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => 
+                                    [type] => 
+                                    [tmp_name] => 
+                                    [error] => 4
+                                    [size] => 0
+                                )
+
+                        )
+
+                )
+
+            [73] => Array
+                (
+                )
+
+        )
+
+    [IBLOCK_SECTION] => Array
+        (
+            [0] => 1862
+        )
+
+    [XML_ID] => 36801
+    [IPROPERTY_TEMPLATES] => Array
+        (
+            [ELEMENT_META_TITLE] => 
+            [ELEMENT_META_KEYWORDS] => 
+            [ELEMENT_META_DESCRIPTION] => 
+            [ELEMENT_PAGE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_ALT] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_NAME] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_ALT] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_TITLE] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_NAME] => 
+        )
+
+    [WF] => N
+    [WF_NEW] => 
+    [SEARCHABLE_CONTENT] => СИРИЯ. МЕДАЛЬ ЗА РАНЕНИЕ
+
+ПРЕДНАЗНАЧАЛСЯ КАК НАГРАДА ДЛЯ ВОЕННЫХ 
+И ГРАЖДАНСКИХ ЛИЦ, КОТОРЫЕ БЫЛИ РАНЕНЫ ПРИ ЗАЩИТЕ СИРИИ.
+    [ID] => 36801
+)

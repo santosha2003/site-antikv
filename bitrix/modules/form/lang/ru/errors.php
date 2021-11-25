@@ -17,4 +17,5 @@ $MESS ['FORM_ERROR_FORGOT_QUESTION_ID'] = "Ошибка! ID вопроса не 
 $MESS ['FORM_ERROR_FORGOT_ANSWER_TEXT'] = "Ошибка! Параметр \"ANSWER_TEXT\" не определен";
 $MESS ['FORM_ERROR_BAD_EMAIL'] = "Ошибка! Введен некорректный адрес email";
 $MESS ['FORM_ERROR_BAD_URL'] = "Ошибка! Введен некорректный URL";
+$MESS ['FORM_ERROR_NO_ANSWERS'] = "Ошибка! Не указано ни одного ответа для вопроса!";
 ?>

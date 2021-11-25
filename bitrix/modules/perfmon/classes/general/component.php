@@ -24,7 +24,7 @@ class CPerfomanceComponent
 		$arQueryOrder = array();
 		foreach ($arOrder as $strColumn => $strDirection)
 		{
-			$strColumn = strtoupper($strColumn);
+			$strColumn = mb_strtoupper($strColumn);
 			if (preg_match("/^(MIN|MAX|AVG|SUM)_(.*)$/", $strColumn, $arMatch))
 			{
 				$strGroupFunc = $arMatch[1];
@@ -35,7 +35,7 @@ class CPerfomanceComponent
 				$strGroupFunc = "";
 			}
 
-			$strDirection = strtoupper($strDirection) == "ASC"? "ASC": "DESC";
+			$strDirection = mb_strtoupper($strDirection) == "ASC"? "ASC": "DESC";
 			switch ($strColumn)
 			{
 			case "ID":
@@ -87,7 +87,7 @@ class CPerfomanceComponent
 		$arQuerySelect = array();
 		foreach ($arSelect as $strColumn)
 		{
-			$strColumn = strtoupper($strColumn);
+			$strColumn = mb_strtoupper($strColumn);
 			if (preg_match("/^(MIN|MAX|AVG|SUM)_(.*)$/", $strColumn, $arMatch))
 			{
 				$strGroupFunc = $arMatch[1];
@@ -248,11 +248,13 @@ class CPerfomanceComponent
 		{
 			$strSql = "
 				SELECT count('x') CNT
-				FROM b_perf_component c
-				".$obQueryWhere->GetJoins()."
-				".($strQueryWhere? "WHERE ".$strQueryWhere: "")."
-				".($bGroup? "GROUP BY ".implode(", ", $arQueryGroup): "")."
-				".$strHaving."
+				FROM (
+					SELECT 1 FROM b_perf_component c
+					".$obQueryWhere->GetJoins()."
+					".($strQueryWhere? "WHERE ".$strQueryWhere: "")."
+					".($bGroup? "GROUP BY ".implode(", ", $arQueryGroup): "")."
+					".$strHaving."
+				) t
 			";
 			$res_cnt = $DB->Query($strSql);
 			$ar_cnt = $res_cnt->Fetch();

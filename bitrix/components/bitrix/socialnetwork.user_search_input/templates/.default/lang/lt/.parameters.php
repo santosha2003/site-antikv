@@ -1,5 +1,0 @@
-<?
-$MESS ['SEARCH_SHOW_IFRAME'] = "Ádëkite \"frame\"'à prie komponento ðablono";
-$MESS ['SEARCH_PAGE_ELEMENTS'] = "Áraðø iðskleidþiamajame sàraðe skaièius";
-$MESS ['SEARCH_TEXT'] = "Papildomos savybës";
-?>

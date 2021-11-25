@@ -94,7 +94,8 @@
 				allowHideErrors: 		false
 			},
 			ctrls: { // links to controls
-				displayedItems:			{}
+				displayedItems: {},
+				popup: null
 			},
 			sys: {
 				code:					'autocomplete'
@@ -102,7 +103,7 @@
 		});
 
 		this.handleInitStack(nf, BX.ui.autoComplete, opts);
-	}
+	};
 	BX.extend(BX.ui.autoComplete, BX.ui.widget);
 
 	// the following functions can be overrided with inheritance
@@ -110,7 +111,6 @@
 
 		// member of stack of initializers, must be defined even if do nothing
 		init: function(){
-
 			var ctx = this,
 				so = this.opts,
 				sv = this.vars,
@@ -249,6 +249,13 @@
 
 				if(so.paneHConstraint > 0 && so.paneHConstraintType != '')
 					BX.style(sc.pane, so.paneHConstraintType, so.paneHConstraint+'px');
+			}
+
+			if (so.usePopup)
+			{
+				BX.style(sc.pane, 'position', 'inherit');
+				BX.style(sc.pane, 'border', 'none');
+				BX.style(sc.pane, 'box-shadow', 'none');
 			}
 
 			// insert variants
@@ -437,7 +444,9 @@
 			// when nothing were selected (but there were already an attempt of search), open dropdown if it was closed occasionly by user
 			BX.bind(sc.inputs.fake, 'click', function(){
 				if(!sv.opened && sv.value === false && sv.displayedIndex.length > 0)
+				{
 					ctx.showDropdown();
+				}
 			});
 
 			// clear handle
@@ -650,7 +659,8 @@
 
 			// first fill items themselves
 			for(var k in items)
-				this.addItem2Cache(items[k]);
+				if(items.hasOwnProperty(k))
+					this.addItem2Cache(items[k]);
 
 			if(typeof key == 'number' && key != 0){
 
@@ -658,7 +668,8 @@
 					sv.cache.search[key] = [];
 
 				for(var k in items)
-					sv.cache.search[key].push(items[k].VALUE);
+					if(items.hasOwnProperty(k))
+						sv.cache.search[key].push(items[k].VALUE);
 			}
 		},
 
@@ -897,6 +908,11 @@
 
 					//}catch(e){console.dir(e);}
 
+					if (sc.popup)
+					{
+						sc.popup.adjustPosition();
+					}
+
 				},
 				onfailure: function(e){
 
@@ -910,10 +926,14 @@
 					onComplete.call(ctx);
 					if(BX.type.isFunction(onError))
 						onError.call(ctx);
+
+					if (sc.popup)
+					{
+						sc.popup.adjustPosition();
+					}
 				}
 
 			});
-
 		},
 
 		getNavParams: function(){
@@ -1015,6 +1035,7 @@
 			this.vars.opened = true;
 
 			if(this.vars.lastPage == 0){
+				this.whenItemToggle(false, this.ctrls.displayedItems[this.vars.displayedIndex[this.vars.currentGlow]], this.vars.currentGlow);
 				this.vars.currentGlow = 0;
 				this.toggleGlow();
 			}
@@ -1043,7 +1064,6 @@
 		},
 
 		displayVariants: function(items, pageNum){
-
 			var sc = this.ctrls,
 				sv = this.vars,
 				so = this.opts,
@@ -1061,7 +1081,13 @@
 
 			var base = sv.displayedIndex.length;
 
-			for(var k in items){
+			for(var k in items)
+			{
+				if(!items.hasOwnProperty(k))
+					continue;
+
+				if(!items[k])
+					continue;
 
 				var domItem = this.whenRenderVariant(items[k], base + parseInt(k))[0];
 
@@ -1153,13 +1179,36 @@
 		},
 
 		whenDropdownToggle: function(way, upward, inputHeight, flip){
-
-			if(way){
+			if(way)
+			{
 				if(flip)
+				{
 					this.whenDecidePaneOrient(upward, inputHeight, flip);
+				}
+				if (this.opts.usePopup)
+				{
+					this.ctrls.popup = BX.PopupWindowManager.create(
+						'popup-location-search-list',
+						this.ctrls.scope.parentNode,
+						{
+							className: 'bx-sls',
+							content: this.ctrls.pane,
+							bindOptions: { forceBindPosition: true },
+							zIndex: 1020
+						}
+					);
+					this.ctrls.popup.show();
+				}
 				BX.show(this.ctrls.pane);
-			}else
+			}
+			else
+			{
+				if (this.opts.usePopup && this.ctrls.popup)
+				{
+					this.ctrls.popup.destroy();
+				}
 				BX.hide(this.ctrls.pane);
+			}
 
 			this.fireEvent('after-popup-toggled', [way]);
 		},

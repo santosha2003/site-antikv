@@ -1,7 +1,0 @@
-<?
-$MESS["CT_BMLI_MODULE_NOT_INSTALLED"] = "Bendrø sàraðø modulis nëra ádiegtas.";
-$MESS["CT_BMLI_WRONG_IBLOCK_TYPE"] = "Neteisingas informacijos bloko tipas.";
-$MESS["CT_BMLI_WRONG_IBLOCK"] = "Nurodytas sàraðas yra neteisingas.";
-$MESS["CT_BMLI_UNKNOWN_ERROR"] = "Neþinoma klaida.";
-$MESS["CT_BMLI_ACCESS_DENIED"] = "Nepakankamas leidimas perþiûrëti ir redaguoti sàraðà.";
-?>

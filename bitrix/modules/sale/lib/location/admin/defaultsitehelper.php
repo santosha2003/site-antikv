@@ -26,7 +26,7 @@ class DefaultSiteHelper extends Helper
 	* Function returns class name for an attached entity
 	* @return string Entity class name
 	*/
-	public function getEntityRoadMap()
+	public static function getEntityRoadMap()
 	{
 		return array(
 			'main' => array(
@@ -66,7 +66,7 @@ class DefaultSiteHelper extends Helper
 		// strip away empty and removed items
 		foreach($data['LOCATION'] as $id => $item)
 		{
-			if($item['REMOVE'] == 1 || !strlen($item['LOCATION_CODE']))
+			if($item['REMOVE'] == 1 || !mb_strlen($item['LOCATION_CODE']))
 				unset($data['LOCATION'][$id]);
 		}
 
@@ -103,7 +103,7 @@ class DefaultSiteHelper extends Helper
 		}
 		elseif($page == 'detail')
 		{
-			$id = strlen($_REQUEST['id']) ? self::tryParseSiteId($_REQUEST['id']) : false;
+			$id = $_REQUEST['id'] <> ''? self::tryParseSiteId($_REQUEST['id']) : false;
 
 			if($id)
 				$request['filter']['=LID'] = $id;
@@ -113,7 +113,7 @@ class DefaultSiteHelper extends Helper
 	}
 
 	// block add handle, nothing to add
-	public static function add()
+	public static function add($data)
 	{
 		throw new Main\NotSupportedException(Loc::getMessage('SALE_LOCATION_ADMIN_DEFAULT_SITE_HELPER_ADD_OP_UNSUPPORTED'));
 	}
@@ -138,13 +138,13 @@ class DefaultSiteHelper extends Helper
 	}
 
 	// block delete handle, nothing to delete
-	public static function delete()
+	public static function delete($primary)
 	{
 		throw new Main\NotSupportedException(Loc::getMessage('SALE_LOCATION_ADMIN_DEFAULT_SITE_HELPER_DELETE_OP_UNSUPPORTED'));
 	}
 
 	// avoid paging here, kz its based on ID which is absent for this table
-	public static function getList($parameters = array(), $tableId = false)
+	public static function getList($parameters = array(), $tableId = false, $navigation = 20, $params = array())
 	{
 		$entityClass = static::getEntityClass();
 
@@ -179,7 +179,7 @@ class DefaultSiteHelper extends Helper
 
 	public static function tryParseSiteId($sid)
 	{
-		return htmlspecialcharsbx(substr($sid, 0, 2));
+		return htmlspecialcharsbx(mb_substr($sid, 0, 2));
 	}
 
 	public static function getDefaultLocationList($siteId)

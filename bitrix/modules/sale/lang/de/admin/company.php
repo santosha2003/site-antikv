@@ -19,4 +19,6 @@ $MESS["SALE_COMPANY_ERROR_DELETE"] = "Fehler beim Löschen des Eintrags";
 $MESS["SALE_COMPANY_ERROR_NO_NAME"] = "Unternehmensname ist nicht angegeben.";
 $MESS["SALE_COMPANY_ERROR_NO_LOCATION_ID"] = "Unternehmensadresse ist nicht angegeben.";
 $MESS["SALE_COMPANY_LOCATION"] = "Standorte";
+$MESS["SALE_COMPANY_ERROR_DELETE_LINK"] = "Das Unternehmen ist mit einer Bezahlung oder Auslieferung verknüpft";
+$MESS["SALE_COMPANY_SORT"] = "Sortierung";
 ?>

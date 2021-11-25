@@ -15,10 +15,24 @@ Loc::loadMessages(__FILE__);
  * <li> CATALOG_GROUP_ID int mandatory
  * <li> LANG string(2) mandatory
  * <li> NAME string(100) optional
+ * <li> CATALOG_GROUP reference to {@link \Bitrix\Catalog\CatalogGroupTable}
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_GroupLang_Query query()
+ * @method static EO_GroupLang_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_GroupLang_Result getById($id)
+ * @method static EO_GroupLang_Result getList(array $parameters = array())
+ * @method static EO_GroupLang_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_GroupLang createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_GroupLang_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_GroupLang wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_GroupLang_Collection wakeUpCollection($rows)
+ */
 
 class GroupLangTable extends Main\Entity\DataManager
 {
@@ -56,6 +70,11 @@ class GroupLangTable extends Main\Entity\DataManager
 				'validation' => array(__CLASS__, 'validateName'),
 				'title' => Loc::getMessage('GROUP_LANG_ENTITY_NAME_FIELD')
 			)),
+			'CATALOG_GROUP' => new Main\Entity\ReferenceField(
+				'CATALOG_GROUP',
+				'\Bitrix\Catalog\Group',
+				array('=this.CATALOG_GROUP_ID' => 'ref.ID')
+			)
 		);
 	}
 	/**

@@ -86,6 +86,22 @@ if ($iBlockId <= 0)
 	return false;
 CIBlock::SetPermission($iBlockId, Array("1" => "W", "2" => "R"));
 
+$arGalleries = unserialize(COption::GetOptionString("photogallery", "UF_GALLERY_SIZE"));
+$arGalleries = (is_array($arGalleries) ? $arGalleries : array());
+if (!$arGalleries[$iBlockId])
+{
+	$arGalleries[$iBlockId] = Array(
+	    "status" => "done",
+	    "step" => 1,
+	    "elements_cnt" => 13,
+	    "element_number" => 13,
+	    "element_id" => "",
+	    "id" => "123456",
+	    "date" => ""
+	);
+	COption::SetOptionString("photogallery", "UF_GALLERY_SIZE", serialize($arGalleries));
+}
+
 // 3. Add Forum
 $arParams = array(
 	"USE_COMMENTS" => "N",
@@ -139,21 +155,17 @@ if (CModule::IncludeModule("forum"))
 	}
 // 3.2 Add Forum
 	$FID = 0;
-	$db_res = CForumNew::GetList();
+	$db_res = CForumNew::GetList(
+		array("SORT"=>"ASC"), 
+		array("XML_ID" => "multiuser")
+	);
 	if ($db_res && $res = $db_res->Fetch())
-	{
-		do 
-		{
-			if ($res["NAME"] == GetMessage("P_FORUM_NAME"))
-			{
-				$FID = intVal($res["ID"]);
-				break;
-			}
-		}while ($res = $db_res->Fetch());
-	}
+		$FID = intVal($res["ID"]);
+
 	if ($FID <= 0):
 		$arFields = Array(
 			"NAME" => GetMessage("P_FORUM_NAME"),
+			"XML_ID" => "multiuser",
 			"DESCRIPTION" => GetMessage("P_FORUM_DECRIPTION"),
 			"SORT" => 100,
 			"ACTIVE" => "Y",

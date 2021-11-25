@@ -7,7 +7,7 @@ endif;
 ?>
 <noindex>
 <?
-if(strlen($arResult["FATAL_ERROR"])>0)
+if($arResult["FATAL_ERROR"] <> '')
 {
 	?>
 	<span class='errortext'><?=$arResult["FATAL_ERROR"]?></span><br /><br />
@@ -15,7 +15,7 @@ if(strlen($arResult["FATAL_ERROR"])>0)
 }
 else
 {
-	if(strlen($arResult["ERROR_MESSAGE"])>0)
+	if($arResult["ERROR_MESSAGE"] <> '')
 	{
 		?>
 		<span class='errortext'><?=$arResult["ERROR_MESSAGE"]?></span><br /><br />
@@ -117,6 +117,25 @@ else
 			<td><?=$arResult["User"]["LAST_VISIT_FORMATED"]?>&nbsp;</td>
 		</tr>
 		</table>
+		<?
+		if ($arParams['USER_CONSENT'] == 'Y')
+			$APPLICATION->IncludeComponent(
+				"bitrix:main.userconsent.request",
+				"",
+				array(
+					"ID" => $arParams["USER_CONSENT_ID"],
+					"IS_CHECKED" => $arParams["USER_CONSENT_IS_CHECKED"],
+					"AUTO_SAVE" => "Y",
+					"IS_LOADED" => $arParams["USER_CONSENT_IS_LOADED"],
+					"ORIGIN_ID" => "sender/sub",
+					"ORIGINATOR_ID" => "",
+					"REPLACE" => array(
+						'button_caption' => GetMessage("B_B_USER_SAVE"),
+						'fields' => array(GetMessage("B_B_USER_ALIAS"), GetMessage("B_B_USER_SITE"), GetMessage("B_B_USER_BIRTHDAY"), GetMessage("B_B_USER_PHOTO"))
+					),
+				)
+			);
+		?>
 		<div class="blog-buttons">
 			<input type="hidden" name="BLOG_USER_ID" value="<?=$arResult["BlogUser"]["ID"]?>">
 			<input type="hidden" name="ID" value="<?=$arParams["ID"]?>">
@@ -130,7 +149,7 @@ else
 	}
 	else
 	{
-		if(strlen($arResult["urlToEdit"])>0)
+		if($arResult["urlToEdit"] <> '')
 		{
 			?>
 			<?=GetMessage("B_B_USER_TEXT2")?> <a href="<?=$arResult["urlToEdit"]?>"><?=GetMessage("B_B_USER_TEXT3")?></a>.<br /><br />
@@ -144,7 +163,7 @@ else
 			<small><?=$arResult["User"]["DESCRIPTION"]?></small>
 			</td>
 		</tr>
-		<?if(strlen($arResult["Blog"]["urlToBlog"])>0):?>
+		<?if($arResult["Blog"]["urlToBlog"] <> ''):?>
 		<tr>
 			<th nowrap><?=GetMessage("B_B_USER_BLOG")?></th>
 			<td><a href="<?=$arResult["Blog"]["urlToBlog"]?>"><?=$arResult["Blog"]["NAME"]?></a><br />
@@ -152,31 +171,31 @@ else
 			</td>
 		</tr>
 		<?endif;?>
-		<?if(strlen($arResult["User"]["PERSONAL_WWW"])>0):?>
+		<?if($arResult["User"]["PERSONAL_WWW"] <> ''):?>
 		<tr>
 			<th nowrap><?=GetMessage("B_B_USER_SITE")?></th>
 			<td><a target="blank" href="<?=$arResult["User"]["PERSONAL_WWW"]?>" rel="nofollow"><?=$arResult["User"]["PERSONAL_WWW"]?></a></td>
 		</tr>
 		<?endif;?>
-		<?if(strlen($arResult["User"]["PERSONAL_GENDER"])>0):?>
+		<?if($arResult["User"]["PERSONAL_GENDER"] <> ''):?>
 		<tr>
 			<th nowrap><?=GetMessage("B_B_USER_SEX")?></th>
 			<td><?=$arResult["arSex"][$arResult["User"]["PERSONAL_GENDER"]]?>&nbsp;</td>
 		</tr>
 		<?endif;?>
-		<?if(strlen($arResult["User"]["PERSONAL_BIRTHDAY"])>0):?>
+		<?if($arResult["User"]["PERSONAL_BIRTHDAY"] <> ''):?>
 		<tr>
 			<th nowrap><?=GetMessage("B_B_USER_BIRTHDAY")?></th>
 			<td><?=$arResult["User"]["PERSONAL_BIRTHDAY"]?>&nbsp;</td>
 		</tr>
 		<?endif;?>
-		<?if(IntVal($arResult["User"]["PERSONAL_PHOTO"])>0):?>
+		<?if(intval($arResult["User"]["PERSONAL_PHOTO"])>0):?>
 		<tr>
 			<th nowrap><?=GetMessage("B_B_USER_PHOTO")?></th>
 			<td><?=$arResult["User"]["PERSONAL_PHOTO_IMG"]?>&nbsp;</td>
 		</tr>
 		<?endif;?>
-		<?if(IntVal($arResult["User"]["AVATAR"])>0):?>
+		<?if(intval($arResult["User"]["AVATAR"])>0):?>
 		<tr>
 			<th nowrap><?=GetMessage("B_B_USER_AVATAR")?></th>
 			<td><?=$arResult["User"]["AVATAR_IMG"]?>&nbsp;</td>

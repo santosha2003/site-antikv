@@ -65,7 +65,7 @@ else
 			$arResult["MESSAGE_CODE"][] = "E03";
 		}
 
-		$salt = substr($arResult["USER"]["CHECKWORD"], 0, 8);
+		$salt = mb_substr($arResult["USER"]["CHECKWORD"], 0, 8);
 
 		if($arResult["~CHECKWORD"] == '')
 		{
@@ -78,7 +78,7 @@ else
 			$arResult["MESSAGE_CODE"][] = "E05";
 		}
 
-		if(empty($arResult["MESSAGE_CODE"]) && $_SERVER["REQUEST_METHOD"] == "POST" && strlen($_POST["confirm"]) > 0 && check_bitrix_sessid())
+		if(empty($arResult["MESSAGE_CODE"]) && $_SERVER["REQUEST_METHOD"] == "POST" && $_POST["confirm"] <> '' && check_bitrix_sessid())
 		{
 			$arResult["USER"]["NAME"] = trim($_POST["NAME"]);
 			$arResult["USER"]["LAST_NAME"] = trim($_POST["LAST_NAME"]);
@@ -154,7 +154,22 @@ else
 					}
 
 					$obUser->Authorize($arResult["USER"]["ID"], $_POST["USER_REMEMBER"] == "Y");
-					LocalRedirect(SITE_DIR);
+
+					$SITE_DIR = SITE_DIR;
+
+					if (!empty($arResult["USER"]["LID"]))
+					{
+						$rsSite = CSite::GetByID($arResult["USER"]["LID"]);
+						if (
+							($arSite = $rsSite->Fetch())
+							&& !empty($arSite["DIR"])
+						)
+						{
+							$SITE_DIR = $arSite["DIR"];
+						}
+					}
+
+					LocalRedirect($SITE_DIR);
 				}
 				else
 				{

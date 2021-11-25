@@ -1,4 +1,5 @@
 <?
+$MESS["SPOD_DISALLOW_CANCEL"] = "Don't allow order cancellation";
 $MESS["SPOD_DESC_YES"] = "Yes";
 $MESS["SPOD_DESC_NO"] = "No";
 $MESS["SPOD_PATH_TO_LIST"] = "Orders List page";
@@ -18,4 +19,10 @@ $MESS["SPOD_PARAM_RESAMPLE_TYPE"] = "Image scaling";
 $MESS["SPOD_PARAM_RESAMPLE_TYPE_BX_RESIZE_IMAGE_EXACT"] = "Crop";
 $MESS["SPOD_PARAM_RESAMPLE_TYPE_BX_RESIZE_IMAGE_PROPORTIONAL"] = "Constrain proportions";
 $MESS["SPOD_PARAM_RESAMPLE_TYPE_BX_RESIZE_IMAGE_PROPORTIONAL_ALT"] = "Constrain proportions, improved quality";
+$MESS["SPOD_PATH_TO_COPY"] = "Repeat Order page";
+$MESS["SPOD_ALLOW_INNER"] = "Enable payment using internal account";
+$MESS["SPOD_ONLY_INNER_FULL"] = "Allow only the full amount of order to be paid using internal account";
+$MESS["SPOD_RESTRICT_CHANGE_PAYSYSTEM"] = "Orders in these statuses cannot change status";
+$MESS["SPOD_NOT_CHOSEN"] = "(not selected)";
+$MESS["SPOD_REFRESH_PRICE_AFTER_PAYSYSTEM_CHANGE"] = "Recalculate order when payment system status changes";
 ?>

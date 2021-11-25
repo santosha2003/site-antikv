@@ -1,0 +1,131 @@
+Array
+(
+    [ACTIVE] => Y
+    [MODIFIED_BY] => 1610
+    [IBLOCK_ID] => 4
+    [ACTIVE_FROM] => 
+    [ACTIVE_TO] => 
+    [SORT] => 500
+    [NAME] => ФРГ. Почетный Крест Бундесвера "За храбрость" 1 класс.
+    [CODE] => frg-pochetnyy-krest-bundesvera-za-khrabrost-1-klass
+    [TAGS] => 
+    [PREVIEW_PICTURE] => Array
+        (
+            [name] => Фрг почетный крест Бундесвера_001.jpg
+            [type] => image/jpeg
+            [tmp_name] => /var/www/html/upload/tmp/trn/default
+            [size] => 6549
+            [error] => 0
+            [description] => 
+            [COPY_FILE] => Y
+            [copy] => 1
+            [MODULE_ID] => iblock
+        )
+
+    [PREVIEW_TEXT] => 
+    [PREVIEW_TEXT_TYPE] => html
+    [DETAIL_TEXT] => Присуждается за сознательное отбрасывание страха и этичное выполнение военной миссии посредством мужественного поведения перед лицом особой опасности для жизни и здоровья с стойкостью и терпением.
+
+Действующая награда.
+    [DETAIL_TEXT_TYPE] => html
+    [TMP_ID] => 0
+    [PROPERTY_VALUES] => Array
+        (
+            [68] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 2008 г.
+                        )
+
+                )
+
+            [69] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => желтый металл с золочением
+                        )
+
+                )
+
+            [70] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [71] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => 
+                            [DESCRIPTION] => 
+                        )
+
+                )
+
+            [72] => Array
+                (
+                    [n0] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => Фрг почетный крест Бундесвера_001.jpg
+                                    [type] => image/jpeg
+                                    [tmp_name] => /var/www/html/upload/tmp/BXTEMP-2021-11-23/08/bxu/main/d56f1f5b532708e7d957a81f47d62937/file1637602050338/default
+                                    [size] => 120702
+                                    [error] => 0
+                                )
+
+                        )
+
+                    [n1] => Array
+                        (
+                            [VALUE] => Array
+                                (
+                                    [name] => Фрг почетный крест Бундесвера_002.jpg
+                                    [type] => image/jpeg
+                                    [tmp_name] => /var/www/html/upload/tmp/BXTEMP-2021-11-23/08/bxu/main/d56f1f5b532708e7d957a81f47d62937/file1637602224414/default
+                                    [size] => 101239
+                                    [error] => 0
+                                )
+
+                        )
+
+                )
+
+            [73] => Array
+                (
+                )
+
+        )
+
+    [IBLOCK_SECTION] => Array
+        (
+        )
+
+    [XML_ID] => 
+    [IPROPERTY_TEMPLATES] => Array
+        (
+            [ELEMENT_META_TITLE] => 
+            [ELEMENT_META_KEYWORDS] => 
+            [ELEMENT_META_DESCRIPTION] => 
+            [ELEMENT_PAGE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_ALT] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_TITLE] => 
+            [ELEMENT_PREVIEW_PICTURE_FILE_NAME] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_ALT] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_TITLE] => 
+            [ELEMENT_DETAIL_PICTURE_FILE_NAME] => 
+        )
+
+    [SEARCHABLE_CONTENT] => ФРГ. ПОЧЕТНЫЙ КРЕСТ БУНДЕСВЕРА "ЗА ХРАБРОСТЬ" 1 КЛАСС.
+
+ПРИСУЖДАЕТСЯ ЗА СОЗНАТЕЛЬНОЕ ОТБРАСЫВАНИЕ 
+СТРАХА И ЭТИЧНОЕ ВЫПОЛНЕНИЕ ВОЕННОЙ МИССИИ ПОСРЕДСТВОМ МУЖЕСТВЕННОГО ПОВЕДЕНИЯ ПЕРЕД ЛИЦОМ ОСОБОЙ ОПАСНОСТИ ДЛЯ ЖИЗНИ И ЗДОРОВЬЯ С СТОЙКОСТЬЮ И ТЕРПЕНИЕМ. ДЕЙСТВУЮЩАЯ НАГРАДА.
+)

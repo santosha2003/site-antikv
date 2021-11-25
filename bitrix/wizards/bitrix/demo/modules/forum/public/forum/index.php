@@ -5,24 +5,24 @@ $APPLICATION->SetTitle(GetMessage("F_FORUM"));
 	"bitrix:forum",
 	"",
 	Array(
-		"SEF_MODE" => "Y", 
-		"CACHE_TYPE" => "A", 
-		"CACHE_TIME" => "3600", 
-		"DATE_FORMAT" => "d.m.Y", 
-		"DATE_TIME_FORMAT" => "d.m.Y H:i:s", 
+		"SEF_MODE" => "Y",
+		"CACHE_TYPE" => "A",
+		"CACHE_TIME" => "3600",
+		"DATE_FORMAT" => "d.m.Y",
+		"DATE_TIME_FORMAT" => "d.m.Y H:i:s",
 		"FID" => array(
 			#FORUMS_ID#
-		), 
-		"SET_TITLE" => "Y", 
-		"SET_NAVIGATION" => "Y", 
-		"FORUMS_PER_PAGE" => "20", 
-		"TOPICS_PER_PAGE" => "20", 
-		"MESSAGES_PER_PAGE" => "25", 
-		
-		"SHOW_FORUMS_LIST" => "Y", 
-		"SHOW_FORUM_ANOTHER_SITE" => "Y", 
-		"SEF_FOLDER" => "/communication/forum/", 
-		
+		),
+		"SET_TITLE" => "Y",
+		"SET_NAVIGATION" => "Y",
+		"FORUMS_PER_PAGE" => "20",
+		"TOPICS_PER_PAGE" => "20",
+		"MESSAGES_PER_PAGE" => "25",
+
+		"SHOW_FORUMS_LIST" => "Y",
+		"SHOW_FORUM_ANOTHER_SITE" => "Y",
+		"SEF_FOLDER" => "/communication/forum/",
+
 		"SHOW_VOTE" => "#SHOW_VOTE#",
 		"VOTE_CHANNEL_ID" => "#VOTE_CHANNEL_ID#",
 		"VOTE_GROUP_ID" => array(
@@ -31,13 +31,16 @@ $APPLICATION->SetTitle(GetMessage("F_FORUM"));
 		"VOTE_COUNT_QUESTIONS" => "10",
 		"VOTE_COUNT_ANSWERS" => "20",
 		"VOTE_TEMPLATE" => "light",
-
+		"AJAX_POST" => "Y",
+		"SHOW_RATING" => "Y",
+		"RATING_TYPE" => "standart",
+		"RATING_ID" => array("3","4"),
 		"SEF_URL_TEMPLATES" => Array(
 			"index" => "index.php",
 			"list" => "forum#FID#/",
-			"read" => "forum#FID#/topic#TID#/",
+			"read" => "forum#FID#/#TITLE_SEO#",
 			"help" => "help/",
-			"message" => "messages/forum#FID#/topic#TID#/message#MID#/", 
+			"message" => "messages/forum#FID#/message#MID#/#TITLE_SEO#",
 			"message_appr" => "message/approve/forum#FID#/topic#TID#/",
 			"message_move" => "message/move/forum#FID#/topic#TID#/message#MID#/",
 			"pm_list" => "pm/forlder#FID#/",

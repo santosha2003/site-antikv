@@ -46,7 +46,7 @@ $arParams["ELEMENT_SORT_FIELD"] = trim($arParams["ELEMENT_SORT_FIELD"]);
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["ELEMENT_SORT_ORDER"]))
 	$arParams["ELEMENT_SORT_ORDER"]="asc";
 
-if(strlen($arParams["FILTER_NAME"])<=0 || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
+if($arParams["FILTER_NAME"] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
 {
 	$arrFilter = array();
 }
@@ -163,7 +163,7 @@ if($this->StartResultCache(false, array($arrFilter, ($arParams["CACHE_GROUPS"]==
 		"IBLOCK_ACTIVE" => "Y",
 	);
 
-	if(strlen($arParams["SECTION_CODE"]) > 0)
+	if($arParams["SECTION_CODE"] <> '')
 		$arFilter["=CODE"]=$arParams["SECTION_CODE"];
 	else
 		$arFilter["ID"]=$arParams["SECTION_ID"];
@@ -173,7 +173,7 @@ if($this->StartResultCache(false, array($arrFilter, ($arParams["CACHE_GROUPS"]==
 	$arResult = $rsSection->GetNext();
 
 	//Check if have to show root elements
-	if(!$arResult && (strlen($arParams["SECTION_CODE"]) < 1) && !$arParams["SECTION_ID"])
+	if(!$arResult && (mb_strlen($arParams["SECTION_CODE"]) < 1) && !$arParams["SECTION_ID"])
 	{
 		$arResult = array(
 			"ID" => $arParams["SECTION_ID"],
@@ -253,42 +253,14 @@ if($this->StartResultCache(false, array($arrFilter, ($arParams["CACHE_GROUPS"]==
 				$prop = &$arItem["PROPERTIES"][$pid];
 				if(
 					(is_array($prop["VALUE"]) && count($prop["VALUE"])>0)
-					|| (!is_array($prop["VALUE"]) && strlen($prop["VALUE"])>0)
+					|| (!is_array($prop["VALUE"]) && $prop["VALUE"] <> '')
 				)
 				{
 					$arItem["DISPLAY_PROPERTIES"][$pid] = CIBlockFormatProperties::GetDisplayValue($arItem, $prop, "photo_out");
 				}
 			}
 
-			$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
-			$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
-
-			$arItem["PREVIEW_PICTURE"] = (0 < $arItem["PREVIEW_PICTURE"] ? CFile::GetFileArray($arItem["PREVIEW_PICTURE"]) : false);
-			if ($arItem["PREVIEW_PICTURE"])
-			{
-				$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_ALT"];
-				if ($arItem["PREVIEW_PICTURE"]["ALT"] == "")
-					$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["NAME"];
-				$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_TITLE"];
-				if ($arItem["PREVIEW_PICTURE"]["TITLE"] == "")
-					$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["NAME"];
-			}
-
-			$arItem["DETAIL_PICTURE"] = (0 < $arItem["DETAIL_PICTURE"] ? CFile::GetFileArray($arItem["DETAIL_PICTURE"]) : false);
-			if ($arItem["DETAIL_PICTURE"])
-			{
-				$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_ALT"];
-				if ($arItem["DETAIL_PICTURE"]["ALT"] == "")
-					$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["NAME"];
-				$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_TITLE"];
-				if ($arItem["DETAIL_PICTURE"]["TITLE"] == "")
-					$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["NAME"];
-			}
-
-			if(is_array($arItem["PREVIEW_PICTURE"]))
-				$arItem["PICTURE"] = $arItem["PREVIEW_PICTURE"];
-			elseif(is_array($arItem["DETAIL_PICTURE"]))
-				$arItem["PICTURE"] = $arItem["DETAIL_PICTURE"];
+			\Bitrix\Iblock\InheritedProperty\ElementValues::queue($arItem["IBLOCK_ID"], $arItem["ID"]);
 
 			if ($arParams["SET_LAST_MODIFIED"])
 			{
@@ -302,6 +274,25 @@ if($this->StartResultCache(false, array($arrFilter, ($arParams["CACHE_GROUPS"]==
 
 			$arResult["ITEMS"][]=$arItem;
 		}
+
+		foreach ($arResult["ITEMS"] as &$arItem)
+		{
+			$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
+			$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
+
+			\Bitrix\Iblock\Component\Tools::getFieldImageData(
+				$arItem,
+				array('PREVIEW_PICTURE', 'DETAIL_PICTURE'),
+				\Bitrix\Iblock\Component\Tools::IPROPERTY_ENTITY_ELEMENT,
+				'IPROPERTY_VALUES'
+			);
+
+			if(is_array($arItem["PREVIEW_PICTURE"]))
+				$arItem["PICTURE"] = $arItem["PREVIEW_PICTURE"];
+			elseif(is_array($arItem["DETAIL_PICTURE"]))
+				$arItem["PICTURE"] = $arItem["DETAIL_PICTURE"];
+		}
+		unset($arItem);
 
 		$navComponentParameters = array();
 		if ($arParams["PAGER_BASE_LINK_ENABLE"] === "Y")

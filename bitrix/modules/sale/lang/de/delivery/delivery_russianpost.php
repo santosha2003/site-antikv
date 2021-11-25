@@ -18,4 +18,5 @@ $MESS["SALE_DH_RUSSIANPOST_ERROR_NOZIP"] = "Die Versandkosten können nicht bere
 $MESS["SALE_DH_RUSSIANPOST_NAME"] = "Russische Post";
 $MESS["SALE_DH_RUSSIANPOST_DESCRIPTION_INNER"] = "Versandart-Handler  \"Russische Post\". Funktioniert auf der Basis  der Online-Rechner der Versandart - <a href=\"http://www.russianpost.ru/autotarif/SelautotarifRus.aspx\" target=\"_blank\">Tarifrechner für inländische Lieferungen</a> und <a href=\"http://www.russianpost.ru/autotarif/Selautotarif.aspx\" target=\"_blank\">Tarifrechner für ausländische Lieferungen</a>. Die Adresse des E-Shops muss angegeben werden in  <a href=\"/bitrix/admin/settings.php?mid=sale&lang=ru\">Moduleinstellungen</a>. <br /> Einschränkungen: Lieferungen nur von Moskau aus.";
 $MESS["SALE_DH_RUSSIANPOST_DESCRIPTION_INNER2"] = "<br /><b>Beachten Sie</b>, dass für die Arbeit des Handlers im System eine Bestelleigenschaft mit der aktivierten Option <b>\"Als PLZ benutzen\"</b> verfügbar sein soll.";
+$MESS["SALE_DH_RUSSIANPOST_MESSAGE"] = "Dieser Handler des Lieferservices ist veraltet und wird nicht mehr unterstützt. Nutzen Sie bitte den #A1#neuen Handler#A2#.";
 ?>

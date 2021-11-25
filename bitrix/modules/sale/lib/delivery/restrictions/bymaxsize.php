@@ -3,6 +3,8 @@ namespace Bitrix\Sale\Delivery\Restrictions;
 
 use Bitrix\Sale\Delivery\Restrictions;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Internals\Entity;
+use Bitrix\Sale\Shipment;
 
 Loc::loadMessages(__FILE__);
 
@@ -24,7 +26,7 @@ class ByMaxSize extends Restrictions\Base
 	}
 
 	/**
-	 * @param $dimensions
+	 * @param array $dimensionsList
 	 * @param array $restrictionParams
 	 * @param int $deliveryId
 	 * @return bool
@@ -57,25 +59,32 @@ class ByMaxSize extends Restrictions\Base
 		return true;
 	}
 
-	protected static function extractParams(\Bitrix\Sale\Shipment $shipment)
+	protected static function extractParams(Entity $entity)
 	{
 		$result = array();
 
-		foreach($shipment->getShipmentItemCollection() as $shipmentItem)
+		if ($entity instanceof Shipment)
 		{
-			$basketItem = $shipmentItem->getBasketItem();
-			$dimensions = $basketItem->getField("DIMENSIONS");
+			foreach($entity->getShipmentItemCollection() as $shipmentItem)
+			{
+				$basketItem = $shipmentItem->getBasketItem();
 
-			if(is_string($dimensions))
-				$dimensions = unserialize($dimensions);
+				if(!$basketItem)
+					continue;
 
-			$result[] = $dimensions;
+				$dimensions = $basketItem->getField("DIMENSIONS");
+
+				if(is_string($dimensions))
+					$dimensions = unserialize($dimensions, ['allowed_classes' => false]);
+
+				$result[] = $dimensions;
+			}
 		}
 
 		return $result;
 	}
 
-	public static function getParamsStructure()
+	public static function getParamsStructure($entityId = 0)
 	{
 		return array(
 			"MAX_SIZE" => array(

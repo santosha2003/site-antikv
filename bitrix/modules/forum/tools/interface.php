@@ -16,8 +16,8 @@ class CForumHTMLPresrnation
 			$templates["T_LAST_ITEM"] = "<font class=\"forum-chain-last\">#TITLE#</font>";
 		$arItemLast = array_pop($items);
 		foreach ($items as $res)
-			$arItems[] = str_replace(array("#LINK#", "#TITLE#"), array(htmlspecialcharsEx($res["LINK"]), htmlspecialcharsEx($res["TITLE"])), $templates["T_ALL_ITEMS"]);
-		$arItems[] =  str_replace(array("#LINK#", "#TITLE#"), array(htmlspecialcharsEx($arItemLast["LINK"]), htmlspecialcharsEx($arItemLast["TITLE"])), $templates["T_LAST_ITEM"]);
+			$arItems[] = str_replace(array("#LINK#", "#TITLE#"), array(htmlspecialcharsbx($res["LINK"]), htmlspecialcharsbx($res["TITLE"])), $templates["T_ALL_ITEMS"]);
+		$arItems[] =  str_replace(array("#LINK#", "#TITLE#"), array(htmlspecialcharsbx($arItemLast["LINK"]), htmlspecialcharsbx($arItemLast["TITLE"])), $templates["T_LAST_ITEM"]);
 		return implode($templates["T_SEPARATOR"], $arItems);
 	}
 	
@@ -41,7 +41,7 @@ class CForumHTMLPresrnation
 		
 		if ((empty($arFields)) || !is_array($arFields["params"]))
 			return false;
-		if (strLen($arForm["formName"]) <= 0)
+		if ($arForm["formName"] == '')
 			$arForm["formName"] = "form1";
 		if (empty($arForm["formMethod"]))
 			$arForm["formMethod"] = "get";

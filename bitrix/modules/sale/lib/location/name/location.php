@@ -26,23 +26,37 @@ class LocationTable extends NameEntity
 		return 'b_sale_loc_name';
 	}
 
-	public static function add($data = array())
+	public static function add(array $data)
 	{
-		if(strlen($data['NAME']))
+		if($data['NAME'] <> '')
+		{
 			$data['NAME_UPPER'] = ToUpper($data['NAME']); // bitrix to upper
+
+			if(!isset($data['NAME_NORM']) && isset($data['LANGUAGE_ID']))
+			{
+				$data['NAME_NORM'] = Location\Normalizer\Builder::build($data['LANGUAGE_ID'])->normalize($data['NAME']);
+			}
+		}
 
 		return parent::add($data);
 	}
 
-	public static function update($primary, $data = array())
+	public static function update($primary, array $data)
 	{
-		if(strlen($data['NAME']))
+		if($data['NAME'] <> '')
+		{
 			$data['NAME_UPPER'] = ToUpper($data['NAME']); // bitrix to upper
+
+			if(!isset($data['NAME_NORM']) && isset($data['LANGUAGE_ID']))
+			{
+				$data['NAME_NORM'] = Location\Normalizer\Builder::build($data['LANGUAGE_ID'])->normalize($data['NAME']);
+			}
+		}
 
 		return parent::update($primary, $data);
 	}
 
-	public function getReferenceFieldName()
+	public static function getReferenceFieldName()
 	{
 		return 'LOCATION_ID';
 	}
@@ -67,6 +81,9 @@ class LocationTable extends NameEntity
 			'SHORT_NAME' => array(
 				'data_type' => 'string',
 				'title' => Loc::getMessage('SALE_LOCATION_NAME_LOCATION_ENTITY_SHORT_NAME_FIELD')
+			),
+			'NAME_NORM' => array(
+				'data_type' => 'string',
 			),
 			'LANGUAGE_ID' => array(
 				'data_type' => 'string',

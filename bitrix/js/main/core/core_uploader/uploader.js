@@ -7,12 +7,25 @@
 		statuses = { "new" : 0, ready : 1, preparing : 2, inprogress : 3, done : 4, failed : 5, error : 5.2, stopped : 6, changed : 7, uploaded : 8},
 		repo = {},
 		settings = {
-			phpPostMinSize : 1.5 * 1024 * 1024, // Bytes
-			phpUploadMaxFilesize : 1024 * 1024, // Bytes
-			phpPostMaxSize : 10 * 1024 * 1024, // Bytes
+			phpPostMinSize : 5.5 * 1024 * 1024, // Bytes
+			phpUploadMaxFilesize : 5 * 1024 * 1024, // Bytes 5MB because of Cloud
+			phpPostMaxSize : 11 * 1024 * 1024, // Bytes
 			estimatedTimeForUploadFile : 10 * 60, // in sec
-			maxTimeForUploadFile : 15 * 60 // in sec
+			maxTimeForUploadFile : 15 * 60, // in sec
+			maxSize : null
 		};
+
+	BX.UploaderManager = function() {
+
+	};
+	BX.UploaderManager.getById = function(id)
+	{
+		return (
+			typeof repo[id] != 'undefined'
+				? repo[id]
+				: false
+		)
+	};
 	/**
 	 * @params array
 	 * @params[input] - BX(id).
@@ -23,6 +36,8 @@
 	 */
 	BX.Uploader = function(params)
 	{
+		if (settings.maxSize === null && BX.message["bxDiskQuota"] && BX.message("bxDiskQuota"))
+			settings.maxSize = parseInt(BX.message("bxDiskQuota"));
 		var ii;
 		if (!(typeof params == "object" && params && (BX(params["input"]) || params["input"] === null)))
 		{
@@ -49,8 +64,8 @@
 			this.controlID = this.controlId = (params["controlId"] || "bitrixUploader");
 
 			this.dialogName = "BX.Uploader";
-			this.id = (!!params["id"] ? params["id"] : Math.random());
-			this.CID = (!!params["CID"] ? !!params["CID"] : ("CID" + BX.UploaderUtils.getId()));
+			this.id = (BX.type.isNotEmptyString(params["id"]) ? params["id"] : Math.random());
+			this.CID = (params["CID"] && BX.type.isNotEmptyString(params["CID"]) ? params["CID"] : ("CID" + BX.UploaderUtils.getId()));
 			this.streams = new BX.UploaderStreams(params['streams'], this);
 
 			// Limits
@@ -58,9 +73,9 @@
 				phpMaxFileUploads : parseInt(BX.message('phpMaxFileUploads')),
 				phpPostMaxSize : Math.min(parseInt(BX.message('phpPostMaxSize')), settings.phpPostMaxSize),
 				phpUploadMaxFilesize : Math.min(parseInt(BX.message('phpUploadMaxFilesize')), settings.phpUploadMaxFilesize),
-				uploadMaxFilesize : (params["uploadMaxFilesize"] > 0 ? params["uploadMaxFilesize"] : 0),
-				uploadFileWidth : (params["uploadFileWidth"] > 0 ? params["uploadFileWidth"] : 0),
-				uploadFileHeight : (params["uploadFileHeight"] > 0 ? params["uploadFileHeight"] : 0),
+				uploadMaxFilesize : (params["uploadMaxFilesize"] && params["uploadMaxFilesize"] > 0 ? params["uploadMaxFilesize"] : 0),
+				uploadFileWidth : (params["uploadFileWidth"] && params["uploadFileWidth"] > 0 ? params["uploadFileWidth"] : 0),
+				uploadFileHeight : (params["uploadFileHeight"] && params["uploadFileHeight"] > 0 ? params["uploadFileHeight"] : 0),
 				allowUpload : ((params["allowUpload"] == "A" || params["allowUpload"] == "I" || params["allowUpload"] == "F") ? params["allowUpload"] : "A"),
 				allowUploadExt : (typeof params["allowUploadExt"] === "string" ? params["allowUploadExt"] : "")};
 			var keys = ["phpMaxFileUploads", "phpPostMaxSize", "phpUploadMaxFilesize"];
@@ -70,26 +85,22 @@
 			}
 			this.limits["phpPostSize"] = Math.min(this.limits["phpPostMaxSize"], settings.phpPostMinSize);
 
-			this.CEF = !!window["BXDesktopSystem"];
-			if (this.CEF)
-			{
-				this.limits["phpUploadMaxFilesize"] = Math.min(200*1024*1024, parseInt(BX.message('phpUploadMaxFilesize')), parseInt(params["phpUploadMaxFilesize"] ? params["phpUploadMaxFilesize"] : BX.message('phpUploadMaxFilesize')));
-				this.limits["phpPostMaxSize"] = Math.min(210*1024*1024, parseInt(BX.message('phpPostMaxSize')), parseInt(params["phpPostMaxSize"] ? params["phpPostMaxSize"] : BX.message('phpPostMaxSize')));
-				this.limits["uploadMaxFilesize"] = this.limits["phpUploadMaxFilesize"];
-				this.limits["phpPostSize"] = this.limits["phpPostMaxSize"];
-			}
-
 	// ALLOW_UPLOAD = 'A'll files | 'I'mages | 'F'iles with selected extensions
 	// ALLOW_UPLOAD_EXT = comma-separated list of allowed file extensions (ALLOW_UPLOAD='F')
-			this.limits["uploadFile"] = (params["allowUpload"] == "I" ? "image/*" : "");
+			this.limits["uploadFile"] = (params["allowUpload"] === "I" ? "image/*" : "");
 			this.limits["uploadFileExt"] = this.limits["allowUploadExt"];
 
 			if (this.limits["uploadFileExt"].length > 0)
 			{
 				var ext = this.limits["uploadFileExt"].split(this.limits["uploadFileExt"].indexOf(",") >= 0 ? "," : " ");
+				var ext2 = this.limits["uploadFile"] === '' ? [] : [this.limits["uploadFile"]];
 				for (ii = 0; ii < ext.length; ii++)
-					ext[ii] = (ext[ii].charAt(0) == "." ? ext[ii].substr(1) : ext[ii]);
-				this.limits["uploadFileExt"] = ext.join(",");
+				{
+					ext[ii] = (ext[ii].charAt(0) === "." ? ext[ii].substr(1) : ext[ii]);
+					ext2.push('.' + ext[ii]);
+				}
+				this.limits["uploadFileExt"] = ext.join(',');
+				this.limits["uploadFile"] = ext2.join(',');
 			}
 			this.params = params;
 
@@ -98,7 +109,7 @@
 			this.params["uploadFormData"] = (this.params["uploadFormData"] == "N" ? "N" : "Y");
 			this.params["uploadMethod"] = (this.params["uploadMethod"] == "immediate" ? "immediate" : "deferred"); // Should we start upload immediately or by event
 			this.params["uploadFilesForPackage"] = parseInt(this.params["uploadFilesForPackage"] > 0 ? this.params["uploadFilesForPackage"] : 0);
-			this.params["imageExt"] = "jpg,bmp,jpeg,jpe,gif,png";
+			this.params["imageExt"] = "jpg,bmp,jpeg,jpe,gif,png,webp";
 			this.params["uploadInputName"] = (!!this.params["uploadInputName"] ? this.params["uploadInputName"] : "bxu_files");
 			this.params["uploadInputInfoName"] = (!!this.params["uploadInputInfoName"] ? this.params["uploadInputInfoName"] : "bxu_info");
 			this.params["deleteFileOnServer"] = !(this.params["deleteFileOnServer"] === false || this.params["deleteFileOnServer"] === "N");
@@ -139,22 +150,20 @@
 				this.queue = new BX.UploaderQueue(queueFields, this.limits, this);
 
 				this.params["doWeHaveStorage"] = true;
-				BX.addCustomEvent(this, 'onDone', BX.delegate(function(){
-					this.init(this.fileInput);
-				}, this));
+				BX.addCustomEvent(this, 'onDone', function(){ this.init(this.fileInput);}.bind(this));
 				if (!!this.params["filesInputName"] && this.params["pasteFileHashInForm"])
 				{
-					BX.addCustomEvent(this, 'onFileIsUploaded', BX.delegate(function(id, item){
+					BX.addCustomEvent(this, 'onFileIsUploaded', function(id, item){
 						var node = BX.create("INPUT", {props : { type : "hidden", name : this.params["filesInputName"] + '[]', value : item.hash }});
 						if (BX(params["placeHolder"]) && BX(id + 'Item'))
 							BX(id + 'Item').appendChild(node);
 						else if (this.fileInput !== null)
 							this.fileInput.parentNode.insertBefore(node, this.fileInput);
-					}, this));
+					}.bind(this));
 				}
 				if (this.params["deleteFileOnServer"])
 				{
-					BX.addCustomEvent(this, 'onFileIsDeleted', BX.delegate(function(id, file){
+					BX.addCustomEvent(this, 'onFileIsDeleted', function(id, file){
 						if (!!file && !!file.hash)
 						{
 							var data = this.preparePost({mode : "delete", hash : file.hash}, false);
@@ -163,25 +172,25 @@
 								data.data
 							);
 						}
-					}, this));
+					}.bind(this));
 				}
 				BX.onCustomEvent(window, "onUploaderIsInited", [this.id, this]);
 				this.uploads = new BX.UploaderUtils.Hash();
 				this.upload = null;
 				if (this.params["bindBeforeUnload"] === false)
 				{
-					this.__beforeunload = BX.delegate(this.terminate, this);
+					this.__beforeunload = this.terminate.bind(this);
 				}
 				else
 				{
-					this.__beforeunload = BX.delegate(function(e) {
+					this.__beforeunload = (function(e) {
 						if (this.uploads && this.uploads.length > 0)
 						{
 							var confirmationMessage = BX.message("UPLOADER_UPLOADING_ONBEFOREUNLOAD");
 							(e || window.event).returnValue = confirmationMessage;
 							return confirmationMessage;
 						}
-					}, this);
+					}).bind(this);
 				}
 				BX.bind(window, 'beforeunload', this.__beforeunload);
 			}
@@ -194,6 +203,7 @@
 			this.log('input is initialized');
 			if (BX(fileInput))
 			{
+
 				if (fileInput == this.fileInput && !this.form)
 					this.form = this.fileInput.form;
 
@@ -206,7 +216,7 @@
 
 				if (fileInput)
 				{
-					BX.bind(fileInput, "change", BX.delegate(this.onChange, this));
+					BX.bind(fileInput, "change", this.onChange.bind(this));
 					return true;
 				}
 			}
@@ -216,6 +226,9 @@
 				return true;
 			}
 			return false;
+		},
+		destruct : function () {
+			this.releaseDropZone();
 		},
 		log : function(text)
 		{
@@ -256,7 +269,7 @@
 							{
 								for (var i = 0; i < e["dataTransfer"]["types"].length; i++)
 								{
-									if (e["dataTransfer"]["types"][i] == "Files")
+									if (e["dataTransfer"]["types"][i] === "Files")
 									{
 										isFileTransfer = true;
 										break;
@@ -278,6 +291,24 @@
 				}
 			}
 			return dropZone;
+		},
+		releaseDropZone : function() {
+			if (this.dropZone)
+			{
+				BX.unbindAll(this.dropZone.DIV);
+				this.dropZone.DIV.removeAttribute('dropzone');
+
+				BX.removeCustomEvent(this.dropZone, 'dropFiles', this.dropZone.f.dropFiles);
+				BX.removeCustomEvent(this.dropZone, 'dragEnter', this.dropZone.f.dragEnter);
+				BX.removeCustomEvent(this.dropZone, 'dragLeave' , this.dropZone.f.dragLeave);
+				delete this.dropZone.f.dropFiles;
+				delete this.dropZone.f.dragEnter;
+				delete this.dropZone.f.dragLeave;
+				delete this.dropZone._cancelLeave;
+				delete this.dropZone._prepareLeave;
+
+				delete this.dropZone;
+			}
 		},
 		onAttach : function(files, nodes, check)
 		{
@@ -313,7 +344,10 @@
 					else
 					{
 						ext = (f['name'] || f['tmp_url'] || '').split('.').pop();
+						if (ext.indexOf('?') > 0)
+							ext = ext.substr(0, ext.indexOf('?'));
 					}
+
 					ext = (BX.type.isNotEmptyString(ext) ? ext : '').toLowerCase();
 					type = (BX.type.isNotEmptyString(f['type']) ? f['type'] : '').toLowerCase();
 
@@ -349,6 +383,7 @@
 		},
 		onChange : function(fileInput)
 		{
+			BX.onCustomEvent(this, "onFileinputWillBeChanged", [fileInput, this]);
 			BX.PreventDefault(fileInput);
 
 			var files = fileInput;
@@ -363,7 +398,8 @@
 			}
 			else
 			{
-				this.init(fileInput);
+				BX.onCustomEvent(this, "onFileinputIsChanged", [fileInput, this]);
+				this.init((fileInput && fileInput["target"] ? fileInput.target : fileInput));
 				this.onAttach(files);
 			}
 
@@ -391,9 +427,10 @@
 		},
 		preparePost : function(data, prepareForm)
 		{
+			var siteId = (BX.message.SITE_ID ? BX.message("SITE_ID") : "");
 			if (prepareForm === true && this.params["uploadFormData"] == "Y" && !this.post)
 			{
-				var post2 = {"AJAX_POST" : "Y", "data": {}};
+				var post2 = {data : {"AJAX_POST" : "Y", SITE_ID : siteId, USER_ID : BX.message("USER_ID")}, filesCount : 0, size : 10};
 				post2 = (this.form ? BX.UploaderUtils.FormToArray(this.form, post2) : post2);
 				if (!!post2.data[this.params["filesInputName"]])
 				{
@@ -419,7 +456,7 @@
 				post2.size = BX.UploaderUtils.sizeof(post2.data);
 				this.post = post2;
 			}
-			var post = (prepareForm === true && this.params["uploadFormData"] == "Y" ? this.post : {data : {"AJAX_POST" : "Y"}, filesCount : 0, size : 10}), size = 0;
+			var post = (prepareForm === true && this.params["uploadFormData"] == "Y" ? this.post : {data : {"AJAX_POST" : "Y", SITE_ID : siteId, USER_ID : BX.message("USER_ID")}, filesCount : 0, size : 10}), size = 0;
 			post.data["sessid"] = BX.bitrix_sessid();
 			post.size += (6 + BX.bitrix_sessid().length);
 			if (data)
@@ -427,7 +464,8 @@
 				post.data[this.params["uploadInputInfoName"]] = {
 					controlId : this.controlId,
 					CID : this.CID,
-					inputName : this.params["uploadInputName"]
+					inputName : this.params["uploadInputName"],
+					version : BX.Uploader.getVersion()
 				};
 				for (var ii in data)
 				{
@@ -458,7 +496,7 @@
 			}
 			else if (status == statuses.error)
 			{
-				delete item.progress;
+				//delete item.progress;
 				this.queue.itFailed.setItem(item.id, item);
 				this.queue.itForUpload.removeItem(item.id);
 
@@ -468,7 +506,7 @@
 			}
 			else if (status == statuses.uploaded)
 			{
-				delete item.progress;
+				//delete item.progress;
 				this.queue.itUploaded.setItem(item.id, item);
 				this.queue.itForUpload.removeItem(item.id);
 
@@ -678,9 +716,9 @@
 		}
 		else
 		{
-			BX.addCustomEvent(this, "onFileIsUploaded", BX.delegate(function(id, item, data) {
+			BX.addCustomEvent(this, "onFileIsUploaded", (function(id, item, data) {
 				this.dealWithFile(item, data);
-			}, this));
+			}).bind(this));
 		}
 		this.streams = new BX.UploaderStreams(1, this);
 		return this;
@@ -714,7 +752,7 @@
 
 			if (fileInput)
 			{
-				BX.bind(fileInput, "change", BX.delegate(this.onChange, this));
+				BX.bind(fileInput, "change", this.onChange.bind(this));
 				return true;
 			}
 		}
@@ -942,16 +980,23 @@
 				this.log('initialize');
 			}
 		}
-		this._exec = BX.delegate(this.exec, this);
+		this._exec = this.exec.bind(this);
 	};
 
 	BX.UploaderPackage.prototype = {
 		checkFile : function(item)
 		{
 			var error = "";
-			if (this.limits["uploadMaxFilesize"] > 0 && item.file && item.file.size > this.limits["uploadMaxFilesize"])
+			if (item.file)
 			{
-				error = BX.message('FILE_BAD_SIZE') + ' (' + BX.UploaderUtils.getFormattedSize(this.limits["uploadMaxFilesize"], 2) + ')';
+				if (this.limits["uploadMaxFilesize"] > 0 && item.file.size > this.limits["uploadMaxFilesize"])
+				{
+					error = BX.message('FILE_BAD_SIZE') + ' (' + BX.UploaderUtils.getFormattedSize(this.limits["uploadMaxFilesize"], 2) + ')';
+				}
+				else if (settings.maxSize !== null && item.file.size > settings.maxSize)
+				{
+					error = BX.message('UPLOADER_UPLOADING_ERROR6');
+				}
 			}
 			return error;
 		},
@@ -968,6 +1013,10 @@
 			{
 				if (data.hasOwnProperty(item))
 				{
+					if (item === "sessid")
+					{
+						data[item] = BX.bitrix_sessid();
+					}
 					BX.UploaderUtils.appendToForm(fd, item, data[item]);
 				}
 			}
@@ -1012,7 +1061,6 @@
 				return statuses.error;
 			else if (item["uploadStatus"] == statuses.done || item["uploadStatus"] == statuses.error)
 				return item["uploadStatus"];
-
 			var count = (this.limits["phpMaxFileUploads"] - this.post.filesCount - (stream.filesCount || 0)),
 				size = (this.limits["phpPostMaxSize"] - stream.filesSize - stream.postSize),
 				filesSize = (this.limits["phpPostSize"] - stream.filesSize),
@@ -1031,10 +1079,10 @@
 							data.props["restored"] = item["restored"];
 							delete item["restored"];
 						}
-						callback.push(BX.proxy(function() {
+						callback.push((function() {
 							item.uploadStatus = statuses.preparing;
 							this.adjustProcess(stream.id, item, statuses["new"], {});
-						}, this));
+						}).bind(this));
 					}
 					else
 					{
@@ -1081,7 +1129,7 @@
 					{
 						data.props = (data.props || {name : item.name });
 						data.files.push(file);
-						callback.push(BX.proxy(function(file) {
+						callback.push(function(file) {
 							file.uploadStatus = statuses.done;
 							if (item.file == file)
 							{
@@ -1092,14 +1140,14 @@
 								this.adjustProcess(stream.id, item, statuses.preparing, {canvas : item.thumb.thumb, package : 1, packages : 1});
 								item.thumb = null;
 							}
-						}, this))
+						}.bind(this));
 					}
 					else if (!(fileConstructor == '[object File]' || fileConstructor == '[object Blob]'))
 					{
 						data.props = (data.props || {name : item.name });
 						data.props["files"] = (data.props["files"] || {});
 						data.props["files"][(file["thumb"] || "default")] = file;
-						callback.push(BX.proxy(function(file) {
+						callback.push((function(file) {
 							file.uploadStatus = statuses.done;
 							if (item.file == file)
 							{
@@ -1110,7 +1158,7 @@
 								this.adjustProcess(stream.id, item, statuses.preparing, {canvas : item.thumb.thumb, package : 1, packages : 1});
 								item.thumb = null;
 							}
-						}, this))
+						}).bind(this));
 					}
 					else
 					{
@@ -1125,7 +1173,7 @@
 						{
 							data.files.push(blob);
 							data.props = (data.props || {name : item.name});
-							callback.push(BX.proxy(function(file, blob) {
+							callback.push((function(file, blob) {
 								BX.UploaderUtils.applyFilePart(file, blob);
 								if (item.file == file && blob == file)
 								{
@@ -1147,7 +1195,7 @@
 									if (item.thumb.uploadStatus == statuses.done)
 										item.thumb = null;
 								}
-							}, this));
+							}).bind(this));
 						}
 					}
 				}
@@ -1186,10 +1234,10 @@
 			if (this.status != statuses.ready)
 				return;
 			this.status = statuses.inprogress;
-			this.__onAllStreamsAreKilled = BX.delegate(function(streams, stream){
+			this.__onAllStreamsAreKilled = function(streams, stream){
 				this.stop();
 				BX.onCustomEvent(this, 'donePackage', [stream, this, this['lastResponse']]);
-			}, this);
+			}.bind(this);
 			BX.addCustomEvent(this.streams, 'onrelease', this.__onAllStreamsAreKilled);
 			BX.onCustomEvent(this, 'startPackage', [this, streams]);
 			this.log('start');
@@ -1250,9 +1298,9 @@
 			if (stream.pack != this)
 			{
 				this.log('stream is bound: ' + stream.id);
-				BX.addCustomEvent(stream, 'onsuccess', BX.delegate(this.doneStream, this));
-				BX.addCustomEvent(stream, 'onfailure', BX.delegate(this.errorStream, this));
-				BX.addCustomEvent(stream, 'onprogress', BX.delegate(this.progressStream, this));
+				BX.addCustomEvent(stream, 'onsuccess', this.doneStream.bind(this));
+				BX.addCustomEvent(stream, 'onfailure', this.errorStream.bind(this));
+				BX.addCustomEvent(stream, 'onprogress', this.progressStream.bind(this));
 			}
 			if (reinit !== false)
 			{
@@ -1329,9 +1377,6 @@
 		{
 			var result = false, sugestedSize = null;
 
-			if (this.CEF)
-				return result;
-
 			var deltaTime = (stream.xhr.finishTime - stream.xhr.startTime);
 			if (increase !== false)
 			{
@@ -1388,17 +1433,21 @@
 					return ar1;
 				};
 			this.response = merge((this.response || {}), (data || {}));
+			var uploader = this.streams.getUploader();
 			var item, id, file, nonProcessRun, files, ij, copies;
 			for (id in stream.files)
 			{
 				if (stream.files.hasOwnProperty(id))
 				{
 					item = this.repo.getItem(id);
-					if (item && (file = data.files[id]))
+					file = data.files[id];
+					if (item)
 					{
 						if (!file) // has never been loaded
 						{
-							this.queue.restoreFiles(new BX.UploaderUtils.Hash([item]));
+							uploader.queue.restoreFiles(new BX.UploaderUtils.Hash([item]), false, true);
+							delete item.uploadStatus;
+							this.data.setItem(item.id, item);
 						}
 						else if (!file["status"]) // was downloaded partly before but not this time
 						{
@@ -1413,7 +1462,9 @@
 									copies[file["copy"]] = "Y";
 									if (file["copy"] == "default" && file["package"] <= 0)
 									{
-										this.queue.restoreFiles(new BX.UploaderUtils.Hash([item]));
+										uploader.queue.restoreFiles(new BX.UploaderUtils.Hash([item]));
+										delete item.uploadStatus;
+										this.data.setItem(item.id, item);
 										break;
 									}
 
@@ -1446,6 +1497,8 @@
 						}
 						else if ((item.hash = file.hash) && file.status == "uploaded")
 						{
+							if (settings.maxSize !== null)
+								settings.maxSize -= item.file.size;
 							this.adjustProcess(stream.id, item, statuses.uploaded, file);
 						}
 						else // chunks
@@ -1585,6 +1638,14 @@
 								err = data.files[item.id];
 							else if (BX.type.isNotEmptyString(data["error"]))
 								err = data;
+							else if (BX.type.isArray(data["errors"]))
+							{
+								err = {error : ""};
+								for (var ii = 0; ii < data["errors"].length; ii++)
+								{
+									err.error += (BX.type.isPlainObject(data["errors"][ii]) && data["errors"][ii]["message"] ? data["errors"][ii]["message"] : data["errors"][ii]);
+								}
+							}
 							else
 								err = {error : defaultTextError};
 							this.adjustProcess(stream.id, item, statuses.error, err);
@@ -1614,10 +1675,10 @@
 		this.id = 'stream' + _id;
 		this._id = _id;
 		this.manager = streamsManager;
-		this._onsuccess = BX.delegate(this.onsuccess, this);
-		this._onfailure = BX.delegate(this.onfailure, this);
-		this._onerror = BX.delegate(this.onerror, this);
-		this._onprogress = BX.delegate(this.onprogress, this);
+		this._onsuccess = this.onsuccess.bind(this);
+		this._onfailure = this.onfailure.bind(this);
+		this._onerror = this.onerror.bind(this);
+		this._onprogress = this.onprogress.bind(this);
 	};
 	BX.UploaderStream.prototype =
 	{
@@ -1671,6 +1732,7 @@
 					'start': false,
 					'preparePost':false,
 					'processData':true,
+					'skipAuthCheck': true,
 					'timeout' : settings.maxTimeForUploadFile
 				});
 				this.xhr.upload.addEventListener('progress', this._onprogress, false);
@@ -1756,9 +1818,9 @@
 		this.packages = new BX.UploaderUtils.Hash();
 		this.uploaded = uploader;
 		this.timeout = 3000; // time between streams
-		this._exec = BX.delegate(this.exec, this);
-		this._restore = BX.delegate(this.restore, this);
-		this._kill = BX.delegate(this.kill, this);
+		this._exec = this.exec.bind(this);
+		this._restore = this.restore.bind(this);
+		this._kill = this.kill.bind(this);
 		this.count = Math.min(5, (count > 1 ? count : 1));
 		this.status = statuses.ready;
 
@@ -1788,6 +1850,10 @@
 				}
 			}
 			this.start();
+		},
+		getUploader: function()
+		{
+			return this.uploaded;
 		},
 		exec : function()
 		{
@@ -1833,4 +1899,7 @@
 			this.status = statuses.stopped;
 		}
 	};
+	BX.Uploader.getVersion = function() {
+		return "1";
+	}
 }(window));

@@ -1,5 +1,6 @@
 <?php
 use Bitrix\Main\Entity\ReferenceField;
+use Bitrix\Main\Type\DateTime;
 use Bitrix\Sale\Internals\DiscountGroupTable;
 use Bitrix\Sale\Internals\DiscountTable;
 
@@ -33,6 +34,12 @@ class CSaleGiftMainProductsComponent extends CBitrixComponent
 		global $APPLICATION;
 
 		$params = parent::onPrepareComponentParams($params);
+
+		if (isset($params['CUSTOM_SITE_ID']))
+		{
+			$this->setSiteId($params['CUSTOM_SITE_ID']);
+		}
+
 		// remember src params for further ajax query
 		if (!isset($params['SGMP_CUR_BASE_PAGE']))
 		{
@@ -190,10 +197,6 @@ class CSaleGiftMainProductsComponent extends CBitrixComponent
 			),
 		));
 
-		global $USER;
-		$query->addFilter('=DISCOUNT_GROUP.ACTIVE', 'Y');
-		$query->addFilter('DISCOUNT_GROUP.GROUP_ID', $USER->getUserGroupArray());
-
 		$referenceField2 = new ReferenceField(
 			'D',
 			DiscountTable::getEntity(),
@@ -231,6 +234,30 @@ class CSaleGiftMainProductsComponent extends CBitrixComponent
 		$query->addSelect('D.USE_COUPONS', 'USE_COUPONS');
 		$query->addSelect('D.EXECUTE_MODULE', 'EXECUTE_MODULE');
 
+		global $USER;
+		$query->addFilter('=DISCOUNT_GROUP.ACTIVE', 'Y');
+		$query->addFilter('DISCOUNT_GROUP.GROUP_ID', $USER->getUserGroupArray());
+		$query->addFilter('=D.LID', $this->getSiteId());
+
+		\CTimeZone::Disable();
+		$currentDatetime = new DateTime();
+		$query->addFilter(
+			null,
+			[
+				'LOGIC' => 'OR',
+				'>=D.ACTIVE_TO' => $currentDatetime,
+				'=D.ACTIVE_TO' => null,
+			]
+		);
+		$query->addFilter(
+			null,
+			[
+				'LOGIC' => 'OR',
+				'<=D.ACTIVE_FROM' => $currentDatetime,
+				'=D.ACTIVE_FROM' => null,
+			]
+		);
+
 		$discounts = array();
 		$dbResult = $query->exec();
 
@@ -244,6 +271,8 @@ class CSaleGiftMainProductsComponent extends CBitrixComponent
 			$elementIds = array_merge($elementIds, $productElementIds);
 			$sectionIds = array_merge($sectionIds, $productSectionIds);
 		}
+
+		\CTimeZone::Enable();
 
 		return array(array_unique($elementIds), array_unique($sectionIds));
 	}

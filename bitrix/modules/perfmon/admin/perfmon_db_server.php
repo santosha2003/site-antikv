@@ -1,11 +1,13 @@
 <?
+use Bitrix\Main\Loader;
+
 define("ADMIN_MODULE_NAME", "perfmon");
 define("PERFMON_STOP", true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 /** @global CMain $APPLICATION */
 /** @global CDatabase $DB */
 /** @global CUser $USER */
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/perfmon/include.php");
+Loader::includeModule('perfmon');
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/perfmon/prolog.php");
 
 IncludeModuleLangFile(__FILE__);
@@ -49,17 +51,34 @@ $data = array();
 
 if ($statDB->type == "MYSQL")
 {
-	$vars = array();
-	$rs = $statDB->Query("SHOW GLOBAL VARIABLES", false, "", $queryOptions);
-	while ($ar = $rs->Fetch())
-		$vars[$ar["Variable_name"]] = $ar["Value"];
-
 	$stat = array();
 	$rs = $statDB->Query("SHOW GLOBAL STATUS", true, "", $queryOptions);
 	if (!$rs)
 		$rs = $statDB->Query("SHOW STATUS", true, "", $queryOptions);
 	while ($ar = $rs->Fetch())
 		$stat[$ar["Variable_name"]] = $ar["Value"];
+
+	$vars = array();
+	$rs = $statDB->Query("SHOW GLOBAL VARIABLES", false, "", $queryOptions);
+	while ($ar = $rs->Fetch())
+		$vars[$ar["Variable_name"]] = $ar["Value"];
+
+	if (isset($vars["have_innodb"]))
+	{
+		$have_innodb = ($vars["have_innodb"] == "YES");
+	}
+	else
+	{
+		$rs = $statDB->Query("SHOW ENGINES", true, "", $queryOptions);
+		if ($rs)
+		{
+			while ($ar = $rs->Fetch())
+			{
+				if ($ar['Engine'] === 'InnoDB')
+					$have_innodb = true;
+			}
+		}
+	}
 
 	$data = array(
 		array(
@@ -272,25 +291,31 @@ if ($statDB->type == "MYSQL")
 		{
 			if ($stat['Com_select'] == 0)
 			{
-				$value = "&nbsp;";
-				$rec = GetMessage("PERFMON_KPI_REC_QCACHE_NO");
+				$data[0]["ITEMS"][] = array(
+					"KPI_NAME" => GetMessage("PERFMON_KPI_NAME_QCACHE"),
+					"IS_OK" => false,
+					"KPI_VALUE" => "&nbsp;",
+					"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_QCACHE_NO"),
+				);
 			}
-			else
+			elseif ($stat['Com_select'] > $stat['Qcache_not_cached'])
 			{
 				$calc['query_cache_efficiency'] = round($stat['Qcache_hits'] / (($stat['Com_select'] - $stat['Qcache_not_cached']) + $stat['Qcache_hits']) * 100, 2);
+
 				$value = $calc['query_cache_efficiency']."%";
 				$rec = GetMessage("PERFMON_KPI_REC_QCACHE", array(
 					"#PARAM_NAME#" => "<span class=\"perfmon_code\">query_cache_limit</span>",
 					"#PARAM_VALUE#" => CFile::FormatSize($vars['query_cache_limit']),
 					"#GOOD_VALUE#" => "20%",
 				));
+
+				$data[0]["ITEMS"][] = array(
+					"KPI_NAME" => GetMessage("PERFMON_KPI_NAME_QCACHE"),
+					"IS_OK" => $stat['Com_select'] > 0 && $calc['query_cache_efficiency'] >= 20,
+					"KPI_VALUE" => $value,
+					"KPI_RECOMMENDATION" => $rec,
+				);
 			}
-			$data[0]["ITEMS"][] = array(
-				"KPI_NAME" => GetMessage("PERFMON_KPI_NAME_QCACHE"),
-				"IS_OK" => $stat['Com_select'] > 0 && $calc['query_cache_efficiency'] >= 20,
-				"KPI_VALUE" => $value,
-				"KPI_RECOMMENDATION" => $rec,
-			);
 
 			if ($stat['Com_select'] > 0)
 			{
@@ -429,30 +454,6 @@ if ($statDB->type == "MYSQL")
 			"KPI_RECOMMENDATION" => $rec,
 		);
 
-		// Table cache
-		if ($stat['Open_tables'] > 0)
-		{
-			if ($stat['Opened_tables'] > 0)
-				$calc['table_cache_hit_rate'] = round($stat['Open_tables'] / $stat['Opened_tables'] * 100, 2);
-			else
-				$calc['table_cache_hit_rate'] = 100;
-			if (array_key_exists('table_cache', $vars))
-				$table_cache = 'table_cache';
-			else
-				$table_cache = 'table_open_cache';
-			$data[0]["ITEMS"][] = array(
-				"KPI_NAME" => GetMessage("PERFMON_KPI_NAME_TABLE_CACHE"),
-				"IS_OK" => $calc['table_cache_hit_rate'] >= 20,
-				"KPI_VALUE" => $calc['table_cache_hit_rate']."%",
-				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_TABLE_CACHE", array(
-					"#STAT_NAME#" => "<span class=\"perfmon_code\">Open_tables / Opened_tables</span>",
-					"#GOOD_VALUE#" => "20%",
-					"#PARAM_VALUE#" => $vars[$table_cache],
-					"#PARAM_NAME#" => "<span class=\"perfmon_code\">".$table_cache."</span>",
-				)),
-			);
-		}
-
 		// Open files
 		if ($vars['open_files_limit'] > 0)
 		{
@@ -528,7 +529,7 @@ if ($statDB->type == "MYSQL")
 		}
 
 		// InnoDB
-		if ($vars['have_innodb'] == "YES")
+		if ($have_innodb)
 		{
 			if ($stat['Innodb_buffer_pool_reads'] > 0 && $stat['Innodb_buffer_pool_read_requests'] > 0)
 			{
@@ -548,26 +549,29 @@ if ($statDB->type == "MYSQL")
 			$data[0]["ITEMS"][] = array(
 				"KPI_NAME" => "innodb_flush_log_at_trx_commit",
 				"IS_OK" => $vars['innodb_flush_log_at_trx_commit'] == 2 || $vars['innodb_flush_log_at_trx_commit'] == 0,
-				"KPI_VALUE" => strlen($vars['innodb_flush_log_at_trx_commit'])? $vars['innodb_flush_log_at_trx_commit']: GetMessage("PERFMON_KPI_EMPTY"),
+				"KPI_VALUE" => $vars['innodb_flush_log_at_trx_commit'] <> ''? $vars['innodb_flush_log_at_trx_commit'] : GetMessage("PERFMON_KPI_EMPTY"),
 				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_INNODB_FLUSH_LOG", array(
 					"#GOOD_VALUE#" => 2,
 					"#PARAM_NAME#" => "<span class=\"perfmon_code\">innodb_flush_log_at_trx_commit</span>",
 				)),
 			);
-			$data[0]["ITEMS"][] = array(
-				"KPI_NAME" => "sync_binlog",
-				"IS_OK" => $vars['sync_binlog'] == 0 || $vars['sync_binlog'] >= 1000,
-				"KPI_VALUE" => intval($vars['sync_binlog']),
-				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_SYNC_BINLOG", array(
-					"#GOOD_VALUE_1#" => 0,
-					"#GOOD_VALUE_2#" => 1000,
-					"#PARAM_NAME#" => "<span class=\"perfmon_code\">sync_binlog</span>",
-				)),
-			);
+			if ($vars['log_bin'] !== 'OFF')
+			{
+				$data[0]["ITEMS"][] = array(
+					"KPI_NAME" => "sync_binlog",
+					"IS_OK" => $vars['sync_binlog'] == 0 || $vars['sync_binlog'] >= 1000,
+					"KPI_VALUE" => intval($vars['sync_binlog']),
+					"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_SYNC_BINLOG", array(
+						"#GOOD_VALUE_1#" => 0,
+						"#GOOD_VALUE_2#" => 1000,
+						"#PARAM_NAME#" => "<span class=\"perfmon_code\">sync_binlog</span>",
+					)),
+				);
+			}
 			$data[0]["ITEMS"][] = array(
 				"KPI_NAME" => "innodb_flush_method",
 				"IS_OK" => $vars['innodb_flush_method'] == "O_DIRECT",
-				"KPI_VALUE" => strlen($vars['innodb_flush_method'])? $vars['innodb_flush_method']: GetMessage("PERFMON_KPI_EMPTY"),
+				"KPI_VALUE" => $vars['innodb_flush_method'] <> ''? $vars['innodb_flush_method'] : GetMessage("PERFMON_KPI_EMPTY"),
 				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_INNODB_FLUSH_METHOD", array(
 					"#GOOD_VALUE#" => "O_DIRECT",
 					"#PARAM_NAME#" => "<span class=\"perfmon_code\">innodb_flush_method</span>",
@@ -576,7 +580,7 @@ if ($statDB->type == "MYSQL")
 			$data[0]["ITEMS"][] = array(
 				"KPI_NAME" => "transaction-isolation",
 				"IS_OK" => $vars['tx_isolation'] == "READ-COMMITTED",
-				"KPI_VALUE" => strlen($vars['tx_isolation'])? $vars['tx_isolation']: GetMessage("PERFMON_KPI_EMPTY"),
+				"KPI_VALUE" => $vars['tx_isolation'] <> ''? $vars['tx_isolation'] : GetMessage("PERFMON_KPI_EMPTY"),
 				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_REC_TX_ISOLATION", array(
 					"#GOOD_VALUE#" => "READ-COMMITTED",
 					"#PARAM_NAME#" => "<span class=\"perfmon_code\">transaction-isolation</span>",
@@ -731,7 +735,7 @@ elseif ($statDB->type == "ORACLE")
 				"WAIT_EVENT" => $ar["WAIT_EVENT"],
 				"WAIT_PCT" => $ar["PCTTOT"]."%",
 				"WAIT_AVERAGE_WAIT_MS" => $ar["AVERAGE_WAIT_MS"],
-				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_ORA_REC_".strtoupper(str_replace(array(" ", ":", "*"), "_", $ar["WAIT_EVENT"]))),
+				"KPI_RECOMMENDATION" => GetMessage("PERFMON_KPI_ORA_REC_".mb_strtoupper(str_replace(array(" ", ":", "*"), "_", $ar["WAIT_EVENT"]))),
 			);
 		$param = array();
 		$rs = $statDB->Query("SELECT NAME,VALUE from v\$parameter", false, "", $queryOptions);

@@ -1,2 +1,55 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<questestinterop><item ident="QUE9"><presentation><material><mattext>В зависимости от чего изменяется состав контекстной панели?</mattext></material><response_lid ident="LID9" rcardinality="Single"><render_choice><response_label ident="ANS4"><material><mattext>Содержимого рабочей области</mattext></material></response_label><response_label ident="ANS5"><material><mattext>Группы функций, выбранной в административном меню</mattext></material></response_label><response_label ident="ANS6"><material><mattext>Дополнительных полей фильтра, выбранных при поиске элементов</mattext></material></response_label><response_label ident="ANS7"><material><mattext>Параметров, установленных на странице настроек соответствующего модуля</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><respcondition><conditionvar><varequal respident="LID9">ANS4</varequal></conditionvar><setvar>10</setvar></respcondition></resprocessing><bitrix><description></description><description_type>text</description_type><self>Y</self><sort>500</sort><active>Y</active></bitrix></item></questestinterop>
+<?xml version="1.0" encoding="UTF-8"?>
+<content type="CHA"><lesson_id>879</lesson_id>
+<was_chapter_id></was_chapter_id>
+<keywords></keywords>
+<childs_cnt>5</childs_cnt>
+<is_childs>1</is_childs>
+<sort>1000100</sort>
+<timestamp_x>1406636851</timestamp_x>
+<date_create>1406636851</date_create>
+<created_user_name>(admin) РРІР°РЅ РРІР°РЅРѕРІ</created_user_name>
+<created_by>1</created_by>
+<active>Y</active>
+<name>РџСѓР±Р»РёС‡РЅС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ Р­СЂРјРёС‚Р°Р¶ (СЃ РІРµСЂСЃРёРё 9.5)</name>
+<preview_picture></preview_picture>
+<preview_text></preview_text>
+<preview_text_type>text</preview_text_type>
+<detail_text><![CDATA[<p><b>РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ</b> РёРјРµРµС‚ РґРІР° РѕСЃРЅРѕРІРЅС‹С… СЂРµР¶РёРјР°:</p>
+
+<ul>
+<li><b>РЎР°Р№С‚</b> - СЂРµР¶РёРј РґР»СЏ СЂР°Р±РѕС‚С‹ РЅР°Рґ СЃРѕРґРµСЂР¶РёРјС‹Рј СЃР°Р№С‚Р°.</li>
+<li><b>РђРґРјРёРЅРёСЃС‚СЂРёСЂРѕРІР°РЅРёРµ</b>  - Р°РґРјРёРЅРёСЃС‚СЂР°С‚РёРІРЅС‹Р№ СЂР°Р·РґРµР» РґР»СЏ РїРѕР»РЅРѕС„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ РІСЃРµРј РёРЅС‚РµСЂРЅРµС‚-РїСЂРѕРµРєС‚РѕРј.</li>
+</ul>
+
+<p><img height="84" width="700" src="cid:resources/res9/e1uo4.L6ZbG.panel_11.png" /></p>
+
+<div class="learnin-post-text">
+<table class="learning-spoiler">
+<thead onclick="LearningInitSpoiler(this)">
+<tr><th>
+<div>РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ РІ Р­СЂРјРёС‚Р°Р¶Рµ v.9.5</div>
+</th></tr></thead>
+<tbody style="display:none;" class="learning-spoiler">
+<tr><td><p><a href="javascript:ShowImg('/images/content_manager/controls/public_section/hermitage/panel.png',950,107,'РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ')"><img height="70" border="0" width="700" style="cursor: pointer;" alt="РќР°Р¶РјРёС‚Рµ РЅР° СЂРёСЃСѓРЅРѕРє, С‡С‚РѕР±С‹ СѓРІРµР»РёС‡РёС‚СЊ" src="cid:resources/res9/ySgwq.31qNZ.panel_sm.png" /></a> </p></td></tr>
+</tbody>
+</table></div>
+
+<p>Р РµР¶РёРј <b>РђРґРјРёРЅРёСЃС‚СЂРёСЂРѕРІР°РЅРёРµ</b> РѕРїРёСЃР°РЅ РІ РіР»Р°РІРµ <a href="http://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=34&CHAPTER_ID=634" >РђРґРјРёРЅРёСЃС‚СЂР°С‚РёРІРЅС‹Р№ СЂР°Р·РґРµР»</a>.</p>
+
+
+]]></detail_text>
+<detail_picture></detail_picture>
+<detail_text_type>html</detail_text_type>
+<launch></launch>
+<code></code>
+<active_from></active_from>
+<active_to></active_to>
+<rating></rating>
+<rating_type></rating_type>
+<scorm></scorm>
+<linked_lesson_id></linked_lesson_id>
+<course_id></course_id>
+<course_sort></course_sort>
+<edge_sort>1000100</edge_sort>
+<id>879</id>
+</content>

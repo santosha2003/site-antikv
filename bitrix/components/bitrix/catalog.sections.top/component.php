@@ -35,14 +35,14 @@ if (empty($arParams["ELEMENT_SORT_FIELD2"]))
 if (!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["ELEMENT_SORT_ORDER2"]))
 	$arParams["ELEMENT_SORT_ORDER2"] = "desc";
 
-if(strlen($arParams["SECTION_SORT_FIELD"])<=0)
+if($arParams["SECTION_SORT_FIELD"] == '')
 	$arParams["SECTION_SORT_FIELD"]="sort";
-$arParams["SECTION_SORT_ORDER"] = strtolower($arParams["SECTION_SORT_ORDER"]);
+$arParams["SECTION_SORT_ORDER"] = mb_strtolower($arParams["SECTION_SORT_ORDER"]);
 if($arParams["SECTION_SORT_ORDER"]!="desc")
 	$arParams["SECTION_SORT_ORDER"]="asc";
 
 $arrFilter=array();
-if(strlen($arParams["FILTER_NAME"])>0)
+if($arParams["FILTER_NAME"] <> '')
 {
 	global ${$arParams["FILTER_NAME"]};
 	if (is_array(${$arParams["FILTER_NAME"]}))
@@ -52,27 +52,27 @@ if(strlen($arParams["FILTER_NAME"])>0)
 $arParams["SECTION_URL"]=trim($arParams["SECTION_URL"]);
 $arParams["DETAIL_URL"]=trim($arParams["DETAIL_URL"]);
 $arParams["BASKET_URL"]=trim($arParams["BASKET_URL"]);
-if(strlen($arParams["BASKET_URL"])<=0)
+if($arParams["BASKET_URL"] == '')
 	$arParams["BASKET_URL"] = "/personal/basket.php";
 
 $arParams["ACTION_VARIABLE"]=trim($arParams["ACTION_VARIABLE"]);
-if(strlen($arParams["ACTION_VARIABLE"])<=0|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["ACTION_VARIABLE"]))
+if($arParams["ACTION_VARIABLE"] == ''|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["ACTION_VARIABLE"]))
 	$arParams["ACTION_VARIABLE"] = "action";
 
 $arParams["PRODUCT_ID_VARIABLE"]=trim($arParams["PRODUCT_ID_VARIABLE"]);
-if(strlen($arParams["PRODUCT_ID_VARIABLE"])<=0|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PRODUCT_ID_VARIABLE"]))
+if($arParams["PRODUCT_ID_VARIABLE"] == ''|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PRODUCT_ID_VARIABLE"]))
 	$arParams["PRODUCT_ID_VARIABLE"] = "id";
 
 $arParams["PRODUCT_QUANTITY_VARIABLE"]=trim($arParams["PRODUCT_QUANTITY_VARIABLE"]);
-if(strlen($arParams["PRODUCT_QUANTITY_VARIABLE"])<=0|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PRODUCT_QUANTITY_VARIABLE"]))
+if($arParams["PRODUCT_QUANTITY_VARIABLE"] == ''|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PRODUCT_QUANTITY_VARIABLE"]))
 	$arParams["PRODUCT_QUANTITY_VARIABLE"] = "quantity";
 
 $arParams["PRODUCT_PROPS_VARIABLE"]=trim($arParams["PRODUCT_PROPS_VARIABLE"]);
-if(strlen($arParams["PRODUCT_PROPS_VARIABLE"])<=0|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PRODUCT_PROPS_VARIABLE"]))
+if($arParams["PRODUCT_PROPS_VARIABLE"] == ''|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["PRODUCT_PROPS_VARIABLE"]))
 	$arParams["PRODUCT_PROPS_VARIABLE"] = "prop";
 
 $arParams["SECTION_ID_VARIABLE"]=trim($arParams["SECTION_ID_VARIABLE"]);
-if(strlen($arParams["SECTION_ID_VARIABLE"])<=0|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["SECTION_ID_VARIABLE"]))
+if($arParams["SECTION_ID_VARIABLE"] == ''|| !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["SECTION_ID_VARIABLE"]))
 	$arParams["SECTION_ID_VARIABLE"] = "SECTION_ID";
 
 $arParams["SET_TITLE"] = $arParams["SET_TITLE"]!="N";
@@ -146,7 +146,7 @@ if (array_key_exists($arParams["ACTION_VARIABLE"], $_REQUEST) && array_key_exist
 	elseif(array_key_exists($arParams["ACTION_VARIABLE"]."ADD2BASKET", $_REQUEST))
 		$action = "ADD2BASKET";
 	else
-		$action = strtoupper($_REQUEST[$arParams["ACTION_VARIABLE"]]);
+		$action = mb_strtoupper($_REQUEST[$arParams["ACTION_VARIABLE"]]);
 
 	$productID = intval($_REQUEST[$arParams["PRODUCT_ID_VARIABLE"]]);
 	if (($action == "ADD2BASKET" || $action == "BUY") && $productID > 0)
@@ -216,7 +216,7 @@ if (array_key_exists($arParams["ACTION_VARIABLE"], $_REQUEST) && array_key_exist
 		}
 	}
 }
-if(strlen($strError)>0)
+if($strError <> '')
 {
 	ShowError($strError);
 	return;
@@ -315,27 +315,7 @@ if($this->StartResultCache(false, array($arrFilter, CDBResult::NavStringForCache
 	$rsSections->SetUrlTemplates("", $arParams["SECTION_URL"]);
 	while($arSection = $rsSections->GetNext())
 	{
-		$ipropValues = new \Bitrix\Iblock\InheritedProperty\SectionValues($arResult["IBLOCK_ID"], $arResult["ID"]);
-		$arSection["IPROPERTY_VALUES"] = $ipropValues->getValues();
-
-		if(isset($arSection["PICTURE"]))
-		{
-			$arSection["PICTURE"] = CFile::GetFileArray($arSection["PICTURE"]);
-			if ($arSection["PICTURE"])
-			{
-				$arSection["PICTURE"]["ALT"] = $arSection["IPROPERTY_VALUES"]["SECTION_PICTURE_FILE_ALT"];
-				$arSection["PICTURE"]["TITLE"] = $arSection["IPROPERTY_VALUES"]["SECTION_PICTURE_FILE_TITLE"];
-			}
-		}
-		if(isset($arSection["DETAIL_PICTURE"]))
-		{
-			$arSection["DETAIL_PICTURE"] = CFile::GetFileArray($arSection["DETAIL_PICTURE"]);
-			if ($arSection["DETAIL_PICTURE"])
-			{
-				$arSection["DETAIL_PICTURE"]["ALT"] = $arSection["IPROPERTY_VALUES"]["SECTION_DETAIL_PICTURE_FILE_ALT"];
-				$arSection["DETAIL_PICTURE"]["TITLE"] = $arSection["IPROPERTY_VALUES"]["SECTION_DETAIL_PICTURE_FILE_TITLE"];
-			}
-		}
+		\Bitrix\Iblock\InheritedProperty\SectionValues::queue($arSection["IBLOCK_ID"], $arSection["ID"]);
 
 		// list of the element fields that will be used in selection
 		$arSelect = array(
@@ -428,29 +408,7 @@ if($this->StartResultCache(false, array($arrFilter, CDBResult::NavStringForCache
 			$arItem["EDIT_LINK"] = $arButtons["edit"]["edit_element"]["ACTION_URL"];
 			$arItem["DELETE_LINK"] = $arButtons["edit"]["delete_element"]["ACTION_URL"];
 
-			$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
-			$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
-
-			$arItem["PREVIEW_PICTURE"] = (0 < $arItem["PREVIEW_PICTURE"] ? CFile::GetFileArray($arItem["PREVIEW_PICTURE"]) : false);
-			if ($arItem["PREVIEW_PICTURE"])
-			{
-				$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_ALT"];
-				if ($arItem["PREVIEW_PICTURE"]["ALT"] == "")
-					$arItem["PREVIEW_PICTURE"]["ALT"] = $arItem["NAME"];
-				$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_PREVIEW_PICTURE_FILE_TITLE"];
-				if ($arItem["PREVIEW_PICTURE"]["TITLE"] == "")
-					$arItem["PREVIEW_PICTURE"]["TITLE"] = $arItem["NAME"];
-			}
-			$arItem["DETAIL_PICTURE"] = (0 < $arItem["DETAIL_PICTURE"] ? CFile::GetFileArray($arItem["DETAIL_PICTURE"]) : false);
-			if ($arItem["DETAIL_PICTURE"])
-			{
-				$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_ALT"];
-				if ($arItem["DETAIL_PICTURE"]["ALT"] == "")
-					$arItem["DETAIL_PICTURE"]["ALT"] = $arItem["NAME"];
-				$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["IPROPERTY_VALUES"]["ELEMENT_DETAIL_PICTURE_FILE_TITLE"];
-				if ($arItem["DETAIL_PICTURE"]["TITLE"] == "")
-					$arItem["DETAIL_PICTURE"]["TITLE"] = $arItem["NAME"];
-			}
+			\Bitrix\Iblock\InheritedProperty\ElementValues::queue($arItem["IBLOCK_ID"], $arItem["ID"]);
 
 			$arItem["PROPERTIES"] = array();
 			if ($bGetProperties)
@@ -461,7 +419,7 @@ if($this->StartResultCache(false, array($arrFilter, CDBResult::NavStringForCache
 			{
 				$prop = &$arItem["PROPERTIES"][$pid];
 				if((is_array($prop["VALUE"]) && count($prop["VALUE"])>0) ||
-				(!is_array($prop["VALUE"]) && strlen($prop["VALUE"])>0))
+				(!is_array($prop["VALUE"]) && $prop["VALUE"] <> ''))
 				{
 					$arItem["DISPLAY_PROPERTIES"][$pid] = CIBlockFormatProperties::GetDisplayValue($arItem, $prop, "catalog_out");
 				}
@@ -540,6 +498,33 @@ if($this->StartResultCache(false, array($arrFilter, CDBResult::NavStringForCache
 		if(count($arResult["SECTIONS"])>=$arParams["SECTION_COUNT"])
 			break;
 	}
+
+	foreach ($arResult["SECTIONS"] as &$arSection)
+	{
+		$ipropValues = new \Bitrix\Iblock\InheritedProperty\SectionValues($arSection["IBLOCK_ID"], $arSection["ID"]);
+		$arSection["IPROPERTY_VALUES"] = $ipropValues->getValues();
+
+		\Bitrix\Iblock\Component\Tools::getFieldImageData(
+			$arSection,
+			array('PICTURE', 'DETAIL_PICTURE'),
+			\Bitrix\Iblock\Component\Tools::IPROPERTY_ENTITY_SECTION,
+			'IPROPERTY_VALUES'
+		);
+
+		foreach($arSection["ITEMS"] as &$arItem)
+		{
+			$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
+			$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
+			\Bitrix\Iblock\Component\Tools::getFieldImageData(
+				$arItem,
+				array('PREVIEW_PICTURE', 'DETAIL_PICTURE'),
+				\Bitrix\Iblock\Component\Tools::IPROPERTY_ENTITY_ELEMENT,
+				'IPROPERTY_VALUES'
+			);
+		}
+		unset($arItem);
+	}
+	unset($arSection);
 
 	if (
 		'Y' == $arParams['CONVERT_CURRENCY']

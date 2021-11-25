@@ -4,6 +4,7 @@ use	Bitrix\Sale\Internals\StatusTable,
 	Bitrix\Sale\Internals\StatusLangTable,
 	Bitrix\Sale\Internals\StatusGroupTaskTable,
 	Bitrix\Sale\Internals\OrderTable,
+	Bitrix\Sale\Internals\OrderArchiveTable,
 	Bitrix\Sale\Compatible,
 	Bitrix\Main\TaskTable,
 	Bitrix\Main\OperationTable,
@@ -19,13 +20,19 @@ Loc::loadMessages(__FILE__);
 /** @deprecated */
 class CSaleStatus
 {
-	function GetByID($statusId, $languageId = LANGUAGE_ID)
+	public static function GetByID($statusId, $languageId = LANGUAGE_ID, $type = null)
 	{
-		return StatusTable::getList(array(
+		$allowTypes = array(
+			\Bitrix\Sale\OrderStatus::TYPE,
+			\Bitrix\Sale\DeliveryStatus::TYPE,
+		);
+
+		$filter = array(
 			'select' => array(
 				'ID',
 				'SORT',
 				'NOTIFY',
+				'TYPE',
 				'LID' => 'Bitrix\Sale\Internals\StatusLangTable:STATUS.LID',
 				'NAME' => 'Bitrix\Sale\Internals\StatusLangTable:STATUS.NAME',
 				'DESCRIPTION' => 'Bitrix\Sale\Internals\StatusLangTable:STATUS.DESCRIPTION'
@@ -33,13 +40,19 @@ class CSaleStatus
 			'filter' => array(
 				'=ID' => $statusId,
 				'=Bitrix\Sale\Internals\StatusLangTable:STATUS.LID' => $languageId,
-				'=TYPE' => 'O'
 			),
 			'limit'  => 1,
-		))->fetch();
+		);
+
+		if ($type !== null && in_array($type, $allowTypes))
+		{
+			$filter['filter']['=TYPE'] = $type;
+		}
+
+		return StatusTable::getList($filter)->fetch();
 	}
 
-	function GetLangByID($statusId, $languageId = LANGUAGE_ID)
+	public static function GetLangByID($statusId, $languageId = LANGUAGE_ID)
 	{
 		return StatusLangTable::getList(array(
 			'select' => array('*'),
@@ -56,7 +69,7 @@ class CSaleStatus
 	 * @param array $arSelectFields
 	 * @return CDBResult|int
 	 */
-	function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		if (!is_array($arOrder) && !is_array($arFilter))
 		{
@@ -111,7 +124,7 @@ class CSaleStatus
 	/*
 	 * For modern api see: Bitrix\Sale\OrderStatus and Bitrix\Sale\DeliveryStatus
 	 */
-	function GetPermissionsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetPermissionsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		$query = new Compatible\OrderQuery(StatusGroupTaskTable::getEntity());
 
@@ -127,25 +140,24 @@ class CSaleStatus
 		else
 		{
 			$result = new Compatible\CDBResult();
-			CSaleStatusAdapter::adaptResult($result, $query, $taskIdName);
 			return $query->compatibleExec($result, $arNavStartParams);
 		}
 	}
 
 	private static $statusFields, $langFields, $taskFields;
 
-	function CheckFields($ACTION, &$arFields, $statusId = '')
+	public static function CheckFields($ACTION, &$arFields, $statusId = '')
 	{
-		if ((is_set($arFields, "SORT") || $ACTION=="ADD") && IntVal($arFields["SORT"])<= 0)
+		if ((is_set($arFields, "SORT") || $ACTION=="ADD") && intval($arFields["SORT"])<= 0)
 			$arFields["SORT"] = 100;
 
-		if ((is_set($arFields, "ID") || $ACTION=="ADD") && strlen($arFields["ID"])<=0)
+		if ((is_set($arFields, "ID") || $ACTION=="ADD") && $arFields["ID"] == '')
 			return false;
 
-		if (is_set($arFields, "ID") && strlen($statusId)>0 && $statusId!=$arFields["ID"])
+		if (is_set($arFields, "ID") && $statusId <> '' && $statusId!=$arFields["ID"])
 			return false;
 
-		if((is_set($arFields, "ID") && !preg_match("#[A-Za-z]#i", $arFields["ID"])) || (strlen($statusId)>0 && !preg_match("#[A-Za-z]#i", $statusId)))
+		if((is_set($arFields, "ID") && !preg_match("#[A-Za-z]#i", $arFields["ID"])) || ($statusId <> '' && !preg_match("#[A-Za-z]#i", $statusId)))
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(Loc::getMessage("SKGS_ID_NOT_SYMBOL"), "ERROR_ID_NOT_SYMBOL");
 			return false;
@@ -213,7 +225,7 @@ class CSaleStatus
 				) + array_intersect_key($row, self::$taskFields));
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		if (! self::CheckFields('ADD', $arFields))
 			return false;
@@ -232,13 +244,16 @@ class CSaleStatus
 		if (isset($arFields['PERMS']) && is_array($arFields['PERMS']) && ! empty($arFields['PERMS']))
 			self::addTasksBy($statusId, $arFields['PERMS']);
 
-		foreach (GetModuleEvents("sale", "OnStatusAdd", true) as $arEvent)
-			ExecuteModuleEventEx($arEvent, array($statusId, $arFields));
+		if (\Bitrix\Main\Config\Option::get('sale', 'expiration_processing_events', 'N') === 'N')
+		{
+			foreach (GetModuleEvents("sale", "OnStatusAdd", true) as $arEvent)
+				ExecuteModuleEventEx($arEvent, array($statusId, $arFields));
+		}
 
 		return $statusId;
 	}
 
-	function Update($statusId, $arFields)
+	public static function Update($statusId, $arFields)
 	{
 		if (! self::CheckFields('UPDATE', $arFields, $statusId))
 			return false;
@@ -261,13 +276,16 @@ class CSaleStatus
 			self::addTasksBy($statusId, $arFields['PERMS']);
 		}
 
-		foreach (GetModuleEvents("sale", "OnStatusUpdate", true) as $arEvent)
-			ExecuteModuleEventEx($arEvent, array($statusId, $arFields));
+		if (\Bitrix\Main\Config\Option::get('sale', 'expiration_processing_events', 'N') === 'N')
+		{
+			foreach (GetModuleEvents("sale", "OnStatusUpdate", true) as $arEvent)
+				ExecuteModuleEventEx($arEvent, array($statusId, $arFields));
+		}
 
 		return $statusId;
 	}
 
-	function Delete($statusId)
+	public static function Delete($statusId)
 	{
 		if (! $statusId)
 			return false;
@@ -281,6 +299,15 @@ class CSaleStatus
 		))->fetch())
 		{
 			$APPLICATION->ThrowException(Loc::getMessage("SKGS_ERROR_DELETE"), "ERROR_DELETE_STATUS_TO_ORDER");
+			return false;
+		}		
+		
+		if (OrderArchiveTable::getList(array(
+			'filter' => array('=STATUS_ID' => $statusId),
+			'limit' => 1
+		))->fetch())
+		{
+			$APPLICATION->ThrowException(Loc::getMessage("SKGS_ERROR_ARCHIVED_DELETE"), "ERROR_DELETE_STATUS_TO_ARCHIVED_ORDER");
 			return false;
 		}
 
@@ -296,25 +323,25 @@ class CSaleStatus
 		return StatusTable::delete($statusId)->isSuccess();
 	}
 
-	function CreateMailTemplate($ID)
+	public static function CreateMailTemplate($ID)
 	{
 		$ID = trim($ID);
 
 		if ($ID == '')
 			return false;
 
-		if (! self::GetByID($ID, LANGUAGE_ID))
-			return false;
-
 		$eventType = new CEventType();
 		$eventMessage = new CEventMessage();
 
-		$eventType->Delete("SALE_STATUS_CHANGED_".$ID);
-
-		$dbSiteList = CSite::GetList(($b = ""), ($o = ""));
+		if ( $statusData = self::GetByID($ID, LANGUAGE_ID))
+		{
+			$eventType->Delete("SALE_STATUS_CHANGED_".$ID);
+		}
+		
+		$dbSiteList = CSite::GetList();
 		while ($arSiteList = $dbSiteList->Fetch())
 		{
-			IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/status.php", $arSiteList["LANGUAGE_ID"]);
+			\Bitrix\Main\Localization\Loc::loadLanguageFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/status.php", $arSiteList["LANGUAGE_ID"]);
 			$arStatusLang = self::GetLangByID($ID, $arSiteList["LANGUAGE_ID"]);
 
 			$dbEventType = $eventType->GetList(
@@ -326,27 +353,40 @@ class CSaleStatus
 			if (!($arEventType = $dbEventType->Fetch()))
 			{
 				$str  = "";
-				$str .= "#ORDER_ID# - ".Loc::getMessage("SKGS_ORDER_ID")."\n";
-				$str .= "#ORDER_DATE# - ".Loc::getMessage("SKGS_ORDER_DATE")."\n";
-				$str .= "#ORDER_STATUS# - ".Loc::getMessage("SKGS_ORDER_STATUS")."\n";
-				$str .= "#EMAIL# - ".Loc::getMessage("SKGS_ORDER_EMAIL")."\n";
-				$str .= "#ORDER_DESCRIPTION# - ".Loc::getMessage("SKGS_STATUS_DESCR")."\n";
-				$str .= "#TEXT# - ".Loc::getMessage("SKGS_STATUS_TEXT")."\n";
-				$str .= "#SALE_EMAIL# - ".Loc::getMessage("SKGS_SALE_EMAIL")."\n";
+				$str .= "#ORDER_ID# - ".Loc::getMessage("SKGS_ORDER_ID", null, $arSiteList["LANGUAGE_ID"])."\n";
+				$str .= "#ORDER_DATE# - ".Loc::getMessage("SKGS_ORDER_DATE", null, $arSiteList["LANGUAGE_ID"])."\n";
+				$str .= "#ORDER_STATUS# - ".Loc::getMessage("SKGS_ORDER_STATUS", null, $arSiteList["LANGUAGE_ID"])."\n";
+
+				$eventTypeName = Loc::getMessage("SKGS_CHANGING_STATUS_TO", null, $arSiteList["LANGUAGE_ID"])." \"".$arStatusLang["NAME"]."\"";
+
+				if ($statusData['TYPE'] == \Bitrix\Sale\DeliveryStatus::TYPE)
+				{
+					$eventTypeName = Loc::getMessage("SKGS_CHANGING_SHIPMENT_STATUS_TO", null, $arSiteList["LANGUAGE_ID"])." \"".$arStatusLang["NAME"]."\"";
+
+					$str .= "#SHIPMENT_ID# - ".\Bitrix\Main\Localization\Loc::getMessage("SKGS_SHIPMENT_ID", null, $arSiteList["LANGUAGE_ID"])."\n";
+					$str .= "#SHIPMENT_DATE# - ".\Bitrix\Main\Localization\Loc::getMessage("SKGS_SHIPMENT_DATE", null, $arSiteList["LANGUAGE_ID"])."\n";
+					$str .= "#SHIPMENT_STATUS# - ".\Bitrix\Main\Localization\Loc::getMessage("SKGS_SHIPMENT_STATUS", null, $arSiteList["LANGUAGE_ID"])."\n";
+				}
+
+				$str .= "#EMAIL# - ".Loc::getMessage("SKGS_ORDER_EMAIL", null, $arSiteList["LANGUAGE_ID"])."\n";
+				$str .= "#ORDER_DESCRIPTION# - ".Loc::getMessage("SKGS_STATUS_DESCR", null, $arSiteList["LANGUAGE_ID"])."\n";
+				$str .= "#TEXT# - ".Loc::getMessage("SKGS_STATUS_TEXT", null, $arSiteList["LANGUAGE_ID"])."\n";
+				$str .= "#SALE_EMAIL# - ".Loc::getMessage("SKGS_SALE_EMAIL", null, $arSiteList["LANGUAGE_ID"])."\n";
+				$str .= "#ORDER_PUBLIC_URL# - ".Loc::getMessage("SKGS_ORDER_PUBLIC_LINK", null, $arSiteList["LANGUAGE_ID"])."\n";
 
 				$eventTypeID = $eventType->Add(
 					array(
 						"LID" => $arSiteList["LANGUAGE_ID"],
 						"EVENT_NAME" => "SALE_STATUS_CHANGED_".$ID,
-						"NAME" => Loc::getMessage("SKGS_CHANGING_STATUS_TO")." \"".$arStatusLang["NAME"]."\"",
+						"NAME" => $eventTypeName,
 						"DESCRIPTION" => $str
 					)
 				);
 			}
 
 			$dbEventMessage = $eventMessage->GetList(
-				($b = ""),
-				($o = ""),
+				'',
+				'',
 				array(
 					"EVENT_NAME" => "SALE_STATUS_CHANGED_".$ID,
 					"SITE_ID" => $arSiteList["LID"]
@@ -354,14 +394,28 @@ class CSaleStatus
 			);
 			if (!($arEventMessage = $dbEventMessage->Fetch()))
 			{
-				$subject = Loc::getMessage("SKGS_STATUS_MAIL_SUBJ");
+				if ($statusData['TYPE'] == \Bitrix\Sale\DeliveryStatus::TYPE)
+				{
+					$subject = Loc::getMessage("SKGS_SHIPMENT_STATUS_MAIL_SUBJ", null, $arSiteList["LANGUAGE_ID"]);
 
-				$message  = Loc::getMessage("SKGS_STATUS_MAIL_BODY1");
-				$message .= "------------------------------------------\n\n";
-				$message .= Loc::getMessage("SKGS_STATUS_MAIL_BODY2");
-				$message .= Loc::getMessage("SKGS_STATUS_MAIL_BODY3");
-				$message .= "#ORDER_STATUS#\n";
-				$message .= "#ORDER_DESCRIPTION#\n";
+					$message  = Loc::getMessage("SKGS_SHIPMENT_STATUS_MAIL_BODY1", null, $arSiteList["LANGUAGE_ID"]);
+					$message .= "------------------------------------------\n\n";
+					$message .= Loc::getMessage("SKGS_SHIPMENT_STATUS_MAIL_BODY2", null, $arSiteList["LANGUAGE_ID"]);
+					$message .= Loc::getMessage("SKGS_SHIPMENT_STATUS_MAIL_BODY3", null, $arSiteList["LANGUAGE_ID"]);
+					$message .= "#SHIPMENT_STATUS#\n";
+				}
+				else
+				{
+					$subject = Loc::getMessage("SKGS_STATUS_MAIL_SUBJ", null, $arSiteList["LANGUAGE_ID"]);
+
+					$message  = Loc::getMessage("SKGS_STATUS_MAIL_BODY1", null, $arSiteList["LANGUAGE_ID"]);
+					$message .= "------------------------------------------\n\n";
+					$message .= Loc::getMessage("SKGS_STATUS_MAIL_BODY2", null, $arSiteList["LANGUAGE_ID"]);
+					$message .= Loc::getMessage("SKGS_STATUS_MAIL_BODY3", null, $arSiteList["LANGUAGE_ID"]);
+					$message .= "#ORDER_STATUS#\n";
+					$message .= "#ORDER_DESCRIPTION#\n";
+				}
+
 				$message .= "#TEXT#\n\n";
 				$message .= "#SITE_NAME#\n";
 

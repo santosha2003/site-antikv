@@ -21,9 +21,10 @@ $MESS["SUBSCR_2"] = "Щоденна розсилка новин магазину
 $MESS["REGISTERED_USERS"] = "Зареєстровані користувачі";
 $MESS["TASK_WIZARD_CONTENT_EDITOR"] = "Зміна свого профайлу. Управління кешем";
 $MESS["TASK_WIZARD_CONTENT_EDITOR_DESC"] = "Дозволено змінювати інформацію в своєму профайлі. Управління кешем";
-$MESS["SALE_WIZARD_MAIL2"] = "Пошта Росії (розрахунок на підставі табличних даних)";
-$MESS["SALE_WIZARD_MAIL_DESC2"] = "Доставка поштою";
+$MESS["SALE_WIZARD_MAIL2"] = "Пошта Росії";
+$MESS["SALE_WIZARD_MAIL_DESC2"] = "Доставка поштою (розрахунок на підставі табличних даних)";
 $MESS["SALE_WIZARD_MAIL_FIRST"] = "Відправлення 1 класу";
 $MESS["SALE_WIZARD_UA_POST"] = "Нова пошта";
 $MESS["SALE_WIZARD_KAZ_POST"] = "Казпочта";
+$MESS["SALE_WIZARD_MAIL_FIRST_DESC"] = "Доставка здійснюється протягом 1-3 днів, забрати відправлення ви можете у зручний для вас час з найближчого відділення пошти.";
 ?>

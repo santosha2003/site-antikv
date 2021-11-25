@@ -6,6 +6,8 @@
 # mailto:admin@bitrixsoft.com                #
 ##############################################
 
+use Bitrix\Main\UrlRewriter;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/urlrewrite_list.php");
@@ -35,19 +37,20 @@ $arFilterFields = array(
 
 $lAdmin->InitFilter($arFilterFields);
 
-if (StrLen($filter_site_id) <= 0)
+$siteId = \CSite::getDefSite($filter_site_id);
+
+if ($filter_site_id == '')
 {
 	$set_filter = "Y";
-	$filter_site_id = SITE_ID;
+	$filter_site_id = $siteId;
 	$lAdmin->InitFilter($arFilterFields);
 }
 
 $arFilter = array();
 
-if (StrLen($filter_site_id) > 0)	$arFilter["SITE_ID"] = $filter_site_id;
-if (strlen($filter_condition) > 0) $arFilter["CONDITION"] = $filter_condition;
-if (strlen($filter_id) > 0) $arFilter["ID"] = $filter_id;
-if (strlen($filter_path) > 0) $arFilter["PATH"] = $filter_path;
+if ($filter_condition <> '') $arFilter["CONDITION"] = $filter_condition;
+if ($filter_id <> '') $arFilter["ID"] = $filter_id;
+if ($filter_path <> '') $arFilter["PATH"] = $filter_path;
 
 // обработка действий групповых и одиночных
 if (($arID = $lAdmin->GroupAction()) && $isAdmin)
@@ -55,32 +58,27 @@ if (($arID = $lAdmin->GroupAction()) && $isAdmin)
 	if ($_REQUEST['action_target']=='selected')
 	{
 		$arID = Array();
-		$dbResultList = CUrlRewriter::GetList(
-			$arFilter
-		);
+		$dbResultList = UrlRewriter::getList($siteId, $arFilter);
 		while ($arResult = $dbResultList->Fetch())
 			$arID[] = $arResult["CONDITION"];
 	}
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
 		{
 			case "delete":
-				@set_time_limit(0);
-
-				CUrlRewriter::Delete(array("SITE_ID" => $filter_site_id, "CONDITION" => $ID));
-
+				UrlRewriter::delete($siteId, array("CONDITION" => $ID));
 				break;
 		}
 	}
 }
 
 // инициализация списка - выборка данных
-$arResultList = CUrlRewriter::GetList($arFilter, array($by => $order));
+$arResultList = UrlRewriter::getList($siteId, $arFilter, array($by => $order));
 
 $dbResultList = new CDBResult;
 $dbResultList->InitFromArray($arResultList);
@@ -128,7 +126,7 @@ $lAdmin->AddGroupActionTable(
 
 $arDDMenu = array();
 
-$dbRes = CLang::GetList(($b="sort"), ($o="asc"));
+$dbRes = CLang::GetList();
 while(($arRes = $dbRes->Fetch()))
 {
 	$arDDMenu[] = array(

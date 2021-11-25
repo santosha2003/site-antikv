@@ -17,22 +17,19 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admi
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/csv_user_import.php");
 
-if(!$USER->IsAdmin())
+if(!$USER->CanDoOperation('edit_php'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 //Download sample
 $filename = $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/admin/sample.csv";
 if(isset($_REQUEST["getSample"]) && $_REQUEST["getSample"] == "csv" && is_file($filename))
 {
-	if(CModule::IncludeModule("compression"))
-		Ccompress::DisableCompression();
-
 	$file = @fopen($filename, "rb");
 	$contents = @fread($file, filesize($filename));
 	fclose($file);
 
 	header("Content-Type: application/octet-stream");
-	header("Content-Length: ".strlen($contents));
+	header("Content-Length: ".mb_strlen($contents));
 	header("Content-Disposition: attachment; filename=\"sample.csv\"");
 	header("Expires: 0");
 	header("Cache-Control: no-cache, must-revalidate");
@@ -74,10 +71,11 @@ $ldapServer = (isset($_REQUEST["ldapServer"]) ? intval($_REQUEST["ldapServer"]) 
 $attachIBlockID = (isset($_REQUEST["attachIBlockID"]) && intval($_REQUEST["attachIBlockID"]) > 0 ? intval($_REQUEST["attachIBlockID"]) : 0);
 
 $create1cUser = (isset($_REQUEST["create1cUser"]) && $_REQUEST["create1cUser"] == "Y" ? "Y" : "N");
-$newUserLogin = (isset($_REQUEST["newUserLogin"]) && strlen($_REQUEST["newUserLogin"]) > 0 ? $_REQUEST["newUserLogin"] : "");
-$newUserPass = (isset($_REQUEST["newUserPass"]) && strlen($_REQUEST["newUserPass"]) > 0 ? $_REQUEST["newUserPass"] : "");
-$newUserConfirmPass = (isset($_REQUEST["newUserConfirmPass"]) && strlen($_REQUEST["newUserConfirmPass"]) > 0 ? $_REQUEST["newUserConfirmPass"] : "");
-$newUserEmail = (isset($_REQUEST["newUserEmail"]) && strlen($_REQUEST["newUserEmail"]) > 0 ? $_REQUEST["newUserEmail"] : "");
+$newUserLogin = (isset($_REQUEST["newUserLogin"]) && $_REQUEST["newUserLogin"] <> '' ? $_REQUEST["newUserLogin"] : "");
+$newUserPass = (isset($_REQUEST["newUserPass"]) && $_REQUEST["newUserPass"] <> '' ? $_REQUEST["newUserPass"] : "");
+$newUserConfirmPass = (isset($_REQUEST["newUserConfirmPass"]) && $_REQUEST["newUserConfirmPass"] <> '' ? $_REQUEST["newUserConfirmPass"] : "");
+$newUserEmail = (isset($_REQUEST["newUserEmail"]) && $_REQUEST["newUserEmail"] <> '' ? $_REQUEST["newUserEmail"] : "");
+$newUserGroups = isset($_REQUEST['newUserGroups']) && is_array($_REQUEST['newUserGroups']) ? $_REQUEST['newUserGroups'] : array();
 
 //Step
 $tabStep = (isset($_REQUEST["tabStep"]) && intval($_REQUEST["tabStep"]) > 1 ? intval($_REQUEST["tabStep"]) : 1);
@@ -103,13 +101,13 @@ function _OnUserAdd(&$arFields, &$userID)
 	$arFields["ID"] = $arFields["USER_ID"] = $userID;
 	$arFields["URL_LOGIN"] = urlencode($arFields["LOGIN"]);
 
-	if (isset($arFields["EXTERNAL_AUTH_ID"]) && strlen($arFields["EXTERNAL_AUTH_ID"]) > 0 && strlen($GLOBALS["eventLdapLangID"]) > 0)
+	if (isset($arFields["EXTERNAL_AUTH_ID"]) && $arFields["EXTERNAL_AUTH_ID"] <> '' && $GLOBALS["eventLdapLangID"] <> '')
 	{
 		$arFields["BACK_URL"] = "/";
 		$event = new CEvent;
 		$event->Send("LDAP_USER_CONFIRM", $GLOBALS["eventLdapLangID"], $arFields);
 	}
-	elseif ($GLOBALS["sendEmail"] == "Y" && $arFields["EMAIL"] <> '' && $arFields["EMAIL"] <> $GLOBALS["defaultUserEmail"] && strlen($GLOBALS["eventLangID"]) > 0)
+	elseif ($GLOBALS["sendEmail"] == "Y" && $arFields["EMAIL"] <> '' && $arFields["EMAIL"] <> $GLOBALS["defaultUserEmail"] && $GLOBALS["eventLangID"] <> '')
 	{
 		$event = new CEvent;
 		$event->Send("USER_INVITE", $GLOBALS["eventLangID"], $arFields);
@@ -169,8 +167,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $tabStep > 2 && check_bitrix_sessid(
 				"USER_FILTER" => $arLdap['USER_FILTER'],
 				"GROUP_NAME_ATTR" => $arLdap['GROUP_NAME_ATTR'],
 				"CONVERT_UTF8" => $arLdap['CONVERT_UTF8'],
-				"MAX_PAGE_SIZE" => $arLdap['MAX_PAGE_SIZE'],
+				"MAX_PAGE_SIZE" => $arLdap['MAX_PAGE_SIZE']
 			);
+
+			if(isset($arLdap['CONNECTION_TYPE']))
+				$ldap->arFields["CONNECTION_TYPE"] = $arLdap['CONNECTION_TYPE'];
+				
 			if($ldap->Connect())
 			{
 				$ldp = $ldap;
@@ -201,48 +203,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $tabStep > 2 && check_bitrix_sessid(
 			"CONFIRM_PASSWORD" => $newUserConfirmPass,
 		);
 
-		$userID = $user->Add($arFields);
-		if (intval($userID) > 1)
+		$arGroups = array();
+
+		if (!empty($newUserGroups))
 		{
-			$arGroups = explode(",",COption::GetOptionString("intranet", "1C_USER_IMPORT_GROUP_PERMISSIONS", ""));
-			foreach ($arGroups as $index => $groupID)
-			{
-				$dbGroup = CGroup::GetByID($groupID);
-				$arGroup = $dbGroup->Fetch();
-				if (!$arGroup || $arGroup["ID"] == 1)
-					unset($arGroups[$index]);
-			}
+			$arGroups = array_column(
+				\Bitrix\Main\GroupTable::getList(array(
+					'select' => array('ID'),
+					'filter' => array('@ID' => $newUserGroups),
+				))->fetchAll(),
+				'ID'
+			);
+		}
 
-			if (empty($arGroups))
-			{
-				$dbGroup = CGroup::GetList($by="c_sort", $order="desc", array("STRING_ID" => "1C_USER_IMPORT_GROUP"));
-				if ($arExistGroup = $dbGroup->Fetch())
-				{
-					$groupID = $arExistGroup["ID"];
-				}
-				else
-				{
-					$group = new CGroup;
-					$arFields = array(
-						"ACTIVE" => "Y",
-						"NAME" => GetMessage("USER_IMPORT_GROUP_PERM_NAME"),
-						"STRING_ID" => "1C_USER_IMPORT_GROUP",
-					);
-
-					$groupID = $group->Add($arFields);
-				}
-
-				if ($groupID > 0)
-				{
-					$arGroups = array($groupID);
-					COption::SetOptionString("intranet", "1C_USER_IMPORT_GROUP_PERMISSIONS", $groupID);
-				}
-			}
-
-			CUser::SetUserGroup($userID, $arGroups);
+		if (empty($arGroups))
+		{
+			$strError = getMessage('USER_IMPORT_1C_USER_GROUP_EMPTY');
 		}
 		else
-			$strError = $user->LAST_ERROR;
+		{
+			$userID = $user->add($arFields);
+			if (intval($userID) > 1)
+			{
+				\CUser::setUserGroup($userID, $arGroups);
+			}
+			else
+			{
+				$strError = $user->LAST_ERROR;
+			}
+		}
 	}
 
 	if ($strError !== false)
@@ -262,7 +251,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $tabStep > 2 && check_bitrix_sessid(
 			while ($csvImport->ImportUser())
 			{
 				if(($mess = $csvImport->GetErrorMessage()) <> '')
-					echo "<script type=\"text/javascript\">parent.window.ShowError('".CUtil::JSEscape($mess)."');</script>";
+					echo "<script type=\"text/javascript\">parent.window.ShowError('".CUtil::JSEscape(_ShowHtmlspec($mess))."');</script>";
 
 				if (USER_IMPORT_EXECUTION_TIME > 0 && (getmicrotime()-START_EXEC_TIME) > USER_IMPORT_EXECUTION_TIME)
 					die("<script type=\"text/javascript\">parent.window.Start('".$csvFile->GetPos()."',".$cntUsersImport.");</script>");
@@ -273,156 +262,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $tabStep > 2 && check_bitrix_sessid(
 		elseif ($ldp)
 		{
 			//Ldap Ajax
-			$cntUsersImport = 0;
-			$dbLdapServers = CLdapServer::GetById($ldapServer);
-			if(!($ldp = $dbLdapServers->GetNextServer()))
+			function OnLdapBeforeSyncMainImport($arParams)
 			{
-				return false;
+				if(empty($arParams['oLdapServer']))
+					return;
+
+				if(!($arParams['oLdapServer'] instanceof CLDAP))
+					return;
+
+				$arParams['oLdapServer']->arFields["SYNC_USER_ADD"] = 'Y';
+
+				if(is_array($_REQUEST['LDAPMAP']))
+				{
+					$arParams['oLdapServer']->arFields["FIELD_MAP"] = array_merge(
+						$arParams['oLdapServer']->arFields["FIELD_MAP"],
+						$_REQUEST['LDAPMAP']
+					);
+				}
 			}
+			
+			AddEventHandler("ldap", "OnLdapBeforeSync", "OnLdapBeforeSyncMainImport");
+			$cntUsersImport = \CLdapServer::Sync($ldapServer);
 
-			if(!$ldp->Connect())
-			{
-				return false;
-			}
-
-			if(!$ldp->BindAdmin())
-			{
-				$ldp->Disconnect();
-				return false;
-			}
-
-			// selecting all users from LDAP
-			$arLdapUsers = array();
-			$ldapLoginAttr = strtolower($ldp->arFields["~USER_ID_ATTR"]);
-
-			$APPLICATION->ResetException();
-			$dbLdapUsers = $ldp->GetUserList();
-			$ldpEx = $APPLICATION->GetException();
-
-			while($arLdapUser = $dbLdapUsers->Fetch())
-				$arLdapUsers[strtolower($arLdapUser[$ldapLoginAttr])] = $arLdapUser;
-			unset($dbLdapUsers);
-
-			// selecting all users from Bitrix CMS for this LDAP
-			CTimeZone::Disable();
-			$dbUsers = CUser::GetList(($o=""), ($b=""), array("EXTERNAL_AUTH_ID"=>"LDAP#".$ldapServer));
-			CTimeZone::Enable();
-
-			$arUsers = array();
-			while($arUser = $dbUsers->Fetch())
-				$arUsers[strtolower($arUser["LOGIN"])] = $arUser;
-			unset($dbUsers);
-
-			if(!$ldpEx || $ldpEx->msg != 'LDAP_SEARCH_ERROR')
-				$arDelLdapUsers = array_diff(array_keys($arUsers), array_keys($arLdapUsers));
-
-			if(strlen($ldp->arFields["SYNC_LAST"])>0)
-				$syncTime = MakeTimeStamp($ldp->arFields["SYNC_LAST"]);
+			//avoid module dependencies
+			if(property_exists('CLdapServer', 'syncErrors'))
+				$strUserImportError = implode("\n", CLdapServer::$syncErrors);
 			else
-				$syncTime = 0;
+				$strUserImportError = "";
 
-			if(is_array($_REQUEST['LDAPMAP']))
-				$ldp->arFields["FIELD_MAP"] = array_merge($ldp->arFields["FIELD_MAP"], $_REQUEST['LDAPMAP']);
-
-			// selecting a list of groups, from which users will not be imported
-			$noImportGroups = array();
-			$dbGroups = CLdapServer::GetGroupBan($ldapServer);
-			while($arGroup = $dbGroups->Fetch())
-				$noImportGroups[md5($arGroup['LDAP_GROUP_ID'])] = $arGroup['LDAP_GROUP_ID'];
-
-			// department ids are cached here, thus each user never queried more than once
-			// if no intranet installed it is simply not used
-			$departmentCache = array();
-			$strUserImportError = '';
-
-			foreach($arLdapUsers as $userLogin=>$arLdapUserFields)
-			{
-				if(!is_array($arUsers[$userLogin]))
-				{
-					// if user is not found among already existing ones, then import him
-
-					// в $arLdapUserFields - поля текущего user'а, взятые из ldap
-					$userActive = $ldp->getLdapValueByBitrixFieldName("ACTIVE", $arLdapUserFields);
-
-					if($userActive != "Y")
-						continue;
-
-					$arUserFields = $ldp->GetUserFields($arLdapUserFields, $departmentCache);
-
-					// $arUserFields here contains LDAP user fields for a LDAP user
-					// make a check, whether this user belongs to those groups only, from which import will not be made...
-					$allUserGroups = $arUserFields['LDAP_GROUPS'];
-
-					$userImportIsBanned = true;
-					foreach ($allUserGroups as $groupId)
-					{
-						$groupId = trim($groupId);
-						if (!empty($groupId) && !array_key_exists(md5($groupId), $noImportGroups))
-						{
-							$userImportIsBanned = false;
-							break;
-						}
-					}
-
-					// ...if he does not, then import him
-					if (!$userImportIsBanned || empty($allUserGroups))
-					{
-						$ID = $ldp->SetUser($arUserFields);
-						if($ID > 0)
-							$cntUsersImport++;
-					}
-				}
-				else
-				{
-					// if date of update is set - then compare it
-					$ldapTime = time();
-					if($syncTime>0
-						&& strlen($ldp->arFields["SYNC_ATTR"])>0
-						&& preg_match("'([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})\\.0Z'", $arLdapUserFields[strtolower($ldp->arFields["SYNC_ATTR"])], $arTimeMatch)
-						)
-					{
-						$ldapTime = gmmktime($arTimeMatch[4], $arTimeMatch[5], $arTimeMatch[6], $arTimeMatch[2], $arTimeMatch[3], $arTimeMatch[1]);
-						$userTime = MakeTimeStamp($arUsers[$userLogin]["TIMESTAMP_X"]);
-					}
-
-					// if user data needs to be updated - do an update
-					if($syncTime<$ldapTime || $syncTime<$userTime)
-					{
-						// update
-						$arUserFields = $ldp->GetUserFields($arLdapUserFields, $departmentCache);
-						$arUserFields["ID"] = $arUsers[$userLogin]["ID"];
-
-						//echo $arUserFields["LOGIN"]." - updated<br>";
-						$ID = $ldp->SetUser($arUserFields);
-						if($ID > 0)
-							$cntUsersImport++;
-					}
-				}
-				if($USER->LAST_ERROR!='')
-					$strUserImportError .= $arUserFields["LOGIN"].': '.$USER->LAST_ERROR;
-			}
-
-			foreach ($arDelLdapUsers as $userLogin)
-			{
-				$USER = new CUser();
-				if (isset($arUsers[$userLogin]) && $arUsers[$userLogin]['ACTIVE'] == 'Y')
-				{
-					$ID = intval($arUsers[$userLogin]["ID"]);
-					$USER->Update($ID, array('ACTIVE' => 'N'));
-				}
-			}
-
-			$ldp->Disconnect();
-			CLdapServer::Update($ldapServer, array("~SYNC_LAST"=>$DB->CurrentTimeFunction()));
 			if (!empty($strUserImportError))
 			{
-				echo "<script type=\"text/javascript\">parent.window.ShowError('".CUtil::JSEscape($strUserImportError)."');</script>";
+				echo "<script type=\"text/javascript\">parent.window.ShowError('".CUtil::JSEscape(_ShowHtmlspec($strUserImportError))."');</script>";
 			}
+
 			die("<script type=\"text/javascript\">parent.window.End($cntUsersImport);</script>");
 		}
 	}
 }
-
 
 $APPLICATION->SetTitle(GetMessage("USER_IMPORT_TITLE"));
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_after.php");
@@ -512,7 +388,7 @@ endif;
 		<td>
 			<select name="userGroups[]" style="width:300px" size="7" multiple="multiple">
 			<?
-			$dbGroup = CGroup::GetList($by="name", $order="asc", array());
+			$dbGroup = CGroup::GetList("name", "asc");
 			while ($arGroup = $dbGroup->GetNext()):?>
 				<option value="<?=$arGroup["ID"]?>"<?if (in_array($arGroup["ID"], $userGroups)):?> selected<?endif?>><?=$arGroup["NAME"]?></option>
 			<?endwhile?>
@@ -585,7 +461,7 @@ if(CModule::IncludeModule("iblock")):
 			<label for="eventLdapLangID" id="eventLdapLangLabel"><?=GetMessage("USER_IMPORT_EMAIL_TEMPLATE1")?>:</label>
 			<select id="eventLdapLangID" name="eventLdapLangID" style="width:300px;" <?if ($ldapServer < 1):?>disabled="disabled"<?endif?>>
 			<?
-			$dbSites = CSite::GetList($by="name", $order="asc", array());
+			$dbSites = CSite::GetList("name", "asc");
 			while ($arSite = $dbSites->Fetch()):
 			?>
 					<option value="<?=htmlspecialcharsbx($arSite["LID"])?>" <?if ($eventLdapLangID == $arSite["LID"]):?> selected<?endif?>><?=htmlspecialcharsbx($arSite["NAME"])?> (<?=htmlspecialcharsbx($arSite["LID"])?>)</option>
@@ -605,7 +481,7 @@ if(CModule::IncludeModule("iblock")):
 			<label for="event-lang" id="eventLangLabel"><?=GetMessage("USER_IMPORT_EMAIL_TEMPLATE1")?>:</label>
 			<select id="event-lang" name="eventLangID" style="width:300px;">
 			<?
-			$dbSites = CSite::GetList($by="name", $order="asc", array());
+			$dbSites = CSite::GetList("name", "asc");
 			while ($arSite = $dbSites->Fetch()):
 			?>
 					<option value="<?=htmlspecialcharsbx($arSite["LID"])?>" <?if ($eventLangID == $arSite["LID"]):?> selected<?endif?>><?=htmlspecialcharsbx($arSite["NAME"])?> (<?=htmlspecialcharsbx($arSite["LID"])?>)</option>
@@ -631,7 +507,7 @@ if(CModule::IncludeModule("iblock")):
 			<select name="ldapServer" onChange="OnLdapSelect(this.selectedIndex - 1);">
 				<option value="0"><?=GetMessage("USER_IMPORT_SELECT_FROM_LIST")?></option>
 			<?
-			$arAllFields = CLDAPUtil::GetSynFields(); // all user fields that are currently set up in the system
+			$arAllFields = CLdapUtil::GetSynFields(); // all user fields that are currently set up in the system
 
 			$arFieldMaps = array();
 			$indSelected = -1;
@@ -761,7 +637,7 @@ if(CModule::IncludeModule("iblock")):
 <?elseif ($tabStep == 2 && $dataSource == "1c"):?>
 	<tr>
 		<td></td>
-		<td><input type="checkbox" name="create1cUser" id="create-1c-user" value="Y"<?if($create1cUser == "Y"):?> checked<?endif?> onclick="EnableNewUserFields(this.checked)" /><label for="create-1c-user"><?=GetMessage("USER_IMPORT_CREATE_1C_USER")?></label>
+		<td><input type="checkbox" name="create1cUser" id="create-1c-user" value="Y"<?if($create1cUser == "Y"):?> checked<?endif?> onclick="EnableNewUserFields(this.checked)" /> <label for="create-1c-user"><?=GetMessage("USER_IMPORT_CREATE_1C_USER")?></label>
 		</td>
 	</tr>
 	<tr class="adm-detail-required-field">
@@ -781,7 +657,17 @@ if(CModule::IncludeModule("iblock")):
 		<td><label disabled="true" id="newUserEmailLabel"><?=GetMessage("USER_IMPORT_1C_USER_EMAIL")?>:</label></td>
 		<td><input name="newUserEmail" size="30" maxlength="50" value="<?=htmlspecialcharsEx($newUserEmail)?>" type="text"></td>
 	</tr>
-
+	<tr class="adm-detail-required-field">
+		<td class="adm-detail-valign-top"><label disabled="true" id="newUserGroupsLabel"><?=getMessage('USER_IMPORT_1C_USER_GROUP') ?>:</label></td>
+		<td>
+			<select name="newUserGroups[]" style="width: 300px; " size="7" multiple="multiple">
+				<? $groupRes = \CGroup::getList('name', 'asc'); ?>
+				<? while ($item = $groupRes->fetch()): ?>
+					<option value="<?=intval($item['ID']) ?>"><?=htmlspecialcharsbx($item['NAME']) ?></option>
+				<? endwhile ?>
+			</select>
+		</td>
+	</tr>
 <?endif;
 $tabControl->EndTab();
 $tabControl->BeginNextTab();
@@ -927,11 +813,12 @@ function EnableNewUserFields(enabled)
 	form.elements["newUserPass"].disabled = !enabled;
 	form.elements["newUserConfirmPass"].disabled = !enabled;
 	form.elements["newUserEmail"].disabled = !enabled;
+	form.elements["newUserGroups[]"].disabled = !enabled;
 
 	var newUserLoginLabel = document.getElementById("newUserLoginLabel");
 	var newUserPassLabel = document.getElementById("newUserPassLabel");
 	var newUserConfirmPassLabel = document.getElementById("newUserConfirmPassLabel");
-	var newUserEmailLabel = document.getElementById("newUserEmailLabel");
+	var newUserGroupsLabel = document.getElementById("newUserGroupsLabel");
 
 	if (enabled)
 	{
@@ -939,7 +826,8 @@ function EnableNewUserFields(enabled)
 		newUserPassLabel.setAttribute("disabled", "false");
 		newUserConfirmPassLabel.setAttribute("disabled", "false");
 		newUserEmailLabel.setAttribute("disabled", "false");
-		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = false;
+		newUserGroupsLabel.setAttribute("disabled", "false");
+		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = newUserGroupsLabel.disabled = false;
 	}
 	else
 	{
@@ -947,7 +835,8 @@ function EnableNewUserFields(enabled)
 		newUserPassLabel.setAttribute("disabled", "true");
 		newUserConfirmPassLabel.setAttribute("disabled", "true");
 		newUserEmailLabel.setAttribute("disabled", "true");
-		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = true;
+		newUserGroupsLabel.setAttribute("disabled", "true");
+		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = newUserGroupsLabel.disabled = true;
 	}
 }
 

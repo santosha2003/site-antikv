@@ -15,37 +15,39 @@ class OpenGraph extends Parser
 	 */
 	public function handle(HtmlDocument $document)
 	{
-		if(strlen($document->getTitle()) == 0)
+		if($document->getTitle() == '')
 		{
 			$ogTitle = $document->getMetaContent('og:title');
-			if(strlen($ogTitle) > 0)
+			if($ogTitle <> '')
 			{
 				$document->setTitle($ogTitle);
 			}
 		}
 
-		if(strlen($document->getDescription()) == 0)
+		if($document->getDescription() == '')
 		{
 			$ogDescription = $document->getMetaContent('og:description');
-			if(strlen($ogDescription) > 0)
+			if($ogDescription <> '')
 			{
 				$document->setDescription($ogDescription);
 			}
 		}
 
-		if(strlen($document->getImage()) == 0)
+		if($document->getImage() == '')
 		{
 			$ogImage = $document->getMetaContent('og:image:secure_url') ?: $document->getMetaContent('og:image');
-			if(strlen($ogImage) > 0)
+			if($ogImage <> '')
 			{
 				$document->setImage($ogImage);
 			}
 		}
 
+		$this->parseVideoData($document);
+
 		if(!$document->getExtraField('SITE_NAME'))
 		{
 			$ogSiteName = $document->getMetaContent('og:site_name');
-			if(strlen($ogSiteName) > 0)
+			if($ogSiteName <> '')
 			{
 				$document->setExtraField('SITE_NAME', $ogSiteName);
 			}
@@ -58,6 +60,49 @@ class OpenGraph extends Parser
 			if($favicon = $document->getLinkHref('icon'))
 			{
 				$document->setExtraField('FAVICON', $favicon);
+			}
+		}
+	}
+
+	protected function parseVideoData(HtmlDocument $document)
+	{
+		if(!$document->getExtraField('VIDEO'))
+		{
+			$ogVideo = $document->getMetaContent('og:video')
+				?? $document->getMetaContent('og:video:secure_url')
+				?? $document->getMetaContent('og:video:url')
+				?? '';
+			if($ogVideo <> '')
+			{
+				$document->setExtraField('VIDEO', $ogVideo);
+			}
+		}
+
+		if(!$document->getExtraField('VIDEO_TYPE'))
+		{
+			$ogVideoType = $document->getMetaContent('og:video:type') ?? '';
+			if($ogVideoType <> '')
+			{
+				$document->setExtraField('VIDEO_TYPE', $ogVideoType);
+			}
+		}
+
+
+		if(!$document->getExtraField('VIDEO_WIDTH'))
+		{
+			$ogVideoWidth = $document->getMetaContent('og:video:width') ?? '';
+			if($ogVideoWidth <> '')
+			{
+				$document->setExtraField('VIDEO_WIDTH', $ogVideoWidth);
+			}
+		}
+
+		if(!$document->getExtraField('VIDEO_HEIGHT'))
+		{
+			$ogVideoHeight = $document->getMetaContent('og:video:height') ?? '';
+			if($ogVideoHeight <> '')
+			{
+				$document->setExtraField('VIDEO_HEIGHT', $ogVideoHeight);
 			}
 		}
 	}

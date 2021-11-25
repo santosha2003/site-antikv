@@ -30,4 +30,6 @@ $MESS["SALE_ORDER_GENERATE_ACCOUNT_NUMBER_ORDER_NUMBER_WRONG_ID"] = "Ungültige 
 $MESS["SALE_ORDER_GENERATE_ACCOUNT_NUMBER_ORDER_NUMBER_IS_NOT_SET"] = "Angabe der Bestellnummer ist nicht möglich";
 $MESS["SALE_ORDER_GENERATE_ACCOUNT_NUMBER_ORDER_NUMBER_IS_NOT_SET_AS_ID"] = "Die ID kann nicht als Bestellnummer angegeben werden";
 $MESS["SKGO_DUB_STATUS"] = "Die Bestellung ##ID# hat bereits den erforderlichen Status.";
+$MESS["SKGO_ERROR_ORDERS_ARCHIVE"] = "Der Nutzer ##USER_ID# hat archivierte Bestellungen im Modul Onlineshop und kann nicht gelöscht werden.";
+$MESS["SKGO_ERROR_ORDERS_ARCHIVE_CURRENCY"] = "Es gibt archivierte Bestellungen im System, welche die Währung \"#CURRENCY#\" verwenden.";
 ?>

@@ -17,62 +17,64 @@ class CSubscriptionGeneral
 			{
 				if(!is_array($val))
 				{
-					if( (strlen($val) <= 0) || ($val === "NOT_REF") )
+					if( ((string)$val == '') || ($val === "NOT_REF") )
 						continue;
 				}
 				switch(strtoupper($key))
 				{
-				case "ID":
-					$arSqlSearch[] = GetFilterQuery("S.ID",$val,"N");
-					break;
-				case "EMAIL":
-					$arSqlSearch[] = GetFilterQuery("S.EMAIL",$val,"Y",array("@", ".", "_"));
-					break;
-				case "UPDATE_1":
-					$arSqlSearch[] = "S.DATE_UPDATE>=".$DB->CharToDateFunction($val);
-					break;
-				case "UPDATE_2":
-					$arSqlSearch[] = "S.DATE_UPDATE<=".$DB->CharToDateFunction($val." 23:59:59");
-					break;
-				case "INSERT_1":
-					$arSqlSearch[] = "S.DATE_INSERT>=".$DB->CharToDateFunction($val);
-					break;
-				case "INSERT_2":
-					$arSqlSearch[] = "S.DATE_INSERT<=".$DB->CharToDateFunction($val." 23:59:59");
-					break;
-				case "USER":
-					$arSqlSearch[] = GetFilterQuery("U.ID, U.LOGIN, U.NAME, U.LAST_NAME",$val);
-					break;
-				case "USER_ID":
-					$arSqlSearch[] = GetFilterQuery("S.USER_ID",$val,"N");
-					break;
-				case "ANONYMOUS":
-					$arSqlSearch[] = ($val=="Y") ? "(S.USER_ID = 0 or S.USER_ID is null)" : "(S.USER_ID > 0 and S.USER_ID is not null)";
-					break;
-				case "CONFIRMED":
-					$arSqlSearch[] = ($val=="Y") ? "S.CONFIRMED='Y'" : "S.CONFIRMED='N'";
-					break;
-				case "ACTIVE":
-					$arSqlSearch[] = ($val=="Y") ? "S.ACTIVE='Y'" : "S.ACTIVE='N'";
-					break;
-				case "FORMAT":
-					$arSqlSearch[] = ($val=="text") ? "S.FORMAT='text'" : "S.FORMAT='html'";
-					break;
-				case "RUBRIC":
-				case "RUBRIC_MULTI":
-				case "DISTRIBUTION":
-					if(is_array($val))
-						$val = implode(" | ",$val);
-					if(strlen($val)>0)
-					{
-						$from1 = " INNER JOIN b_subscription_rubric SR ON (SR.SUBSCRIPTION_ID=S.ID) ";
-						$arSqlSearch[] = GetFilterQuery("SR.LIST_RUBRIC_ID", $val, "N");
-					}
-					else
-					{
-						$arSqlSearch[] = " 1=0 ";
-					}
-					break;
+					case "ID":
+						$arSqlSearch[] = GetFilterQuery("S.ID", $val, "N");
+						break;
+					case "EMAIL":
+						$arSqlSearch[] = GetFilterQuery("S.EMAIL", $val, "Y", array("@", ".", "_"));
+						break;
+					case "UPDATE_1":
+						$arSqlSearch[] = "S.DATE_UPDATE>=".$DB->CharToDateFunction($val);
+						break;
+					case "UPDATE_2":
+						$arSqlSearch[] = "S.DATE_UPDATE<=".$DB->CharToDateFunction($val." 23:59:59");
+						break;
+					case "INSERT_1":
+						$arSqlSearch[] = "S.DATE_INSERT>=".$DB->CharToDateFunction($val);
+						break;
+					case "INSERT_2":
+						$arSqlSearch[] = "S.DATE_INSERT<=".$DB->CharToDateFunction($val." 23:59:59");
+						break;
+					case "USER":
+						$arSqlSearch[] = GetFilterQuery("U.ID, U.LOGIN, U.NAME, U.LAST_NAME", $val);
+						break;
+					case "USER_ID":
+						$arSqlSearch[] = GetFilterQuery("S.USER_ID", $val, "N");
+						break;
+					case "ANONYMOUS":
+						$arSqlSearch[] = ($val == "Y")? "(S.USER_ID = 0 or S.USER_ID is null)" : "(S.USER_ID > 0 and S.USER_ID is not null)";
+						break;
+					case "CONFIRMED":
+						$arSqlSearch[] = ($val == "Y")? "S.CONFIRMED='Y'" : "S.CONFIRMED='N'";
+						break;
+					case "ACTIVE":
+						$arSqlSearch[] = ($val == "Y")? "S.ACTIVE='Y'" : "S.ACTIVE='N'";
+						break;
+					case "FORMAT":
+						$arSqlSearch[] = ($val == "text")? "S.FORMAT='text'" : "S.FORMAT='html'";
+						break;
+					case "RUBRIC":
+					case "RUBRIC_MULTI":
+					case "DISTRIBUTION":
+						if(is_array($val))
+						{
+							$val = implode(" | ", $val);
+						}
+						if($val <> '')
+						{
+							$from1 = " INNER JOIN b_subscription_rubric SR ON (SR.SUBSCRIPTION_ID=S.ID) ";
+							$arSqlSearch[] = GetFilterQuery("SR.LIST_RUBRIC_ID", $val, "N");
+						}
+						else
+						{
+							$arSqlSearch[] = " 1=0 ";
+						}
+						break;
 				}
 			}
 		}
@@ -81,8 +83,8 @@ class CSubscriptionGeneral
 		$arOrder = array();
 		foreach($aSort as $by => $ord)
 		{
-			$by = strtoupper($by);
-			$ord = (strtoupper($ord) <> "ASC"? "DESC": "ASC");
+			$by = mb_strtoupper($by);
+			$ord = (mb_strtoupper($ord) <> "ASC"? "DESC": "ASC");
 			switch($by)
 			{
 				case "ID":		$arOrder[$by] = "S.ID ".$ord; break;
@@ -174,7 +176,7 @@ class CSubscriptionGeneral
 	}
 
 	//list of subscribed categories
-	function GetRubricList($ID)
+	public static function GetRubricList($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -187,7 +189,7 @@ class CSubscriptionGeneral
 	}
 
 	//array of subscribed categories
-	function GetRubricArray($ID)
+	public static function GetRubricArray($ID)
 	{
 		$ID = intval($ID);
 		$aSubscrRub = array();
@@ -201,12 +203,12 @@ class CSubscriptionGeneral
 	}
 
 	//subscription of current user from cookies
-	function GetUserSubscription()
+	public static function GetUserSubscription()
 	{
 		global $USER;
 		$email_cookie = COption::GetOptionString("main", "cookie_name", "BITRIX_SM")."_SUBSCR_EMAIL";
 
-		$subscr_EMAIL = (strlen($_COOKIE[$email_cookie]) > 0? $_COOKIE[$email_cookie] : $USER->GetParam("EMAIL"));
+		$subscr_EMAIL = ($_COOKIE[$email_cookie] <> ''? $_COOKIE[$email_cookie] : $USER->GetParam("EMAIL"));
 		if($subscr_EMAIL <> "")
 		{
 			$subscr = CSubscription::GetByEmail($subscr_EMAIL, intval($USER->GetID()));
@@ -217,7 +219,7 @@ class CSubscriptionGeneral
 	}
 
 	//get by ID
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -234,7 +236,7 @@ class CSubscriptionGeneral
 	}
 
 	// deletion
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -271,7 +273,7 @@ class CSubscriptionGeneral
 	}
 
 	//check fields before writing
-	function CheckFields(&$arFields, $ID, $SITE_ID=SITE_ID)
+	public function CheckFields(&$arFields, $ID, $SITE_ID=SITE_ID)
 	{
 		global $DB, $APPLICATION;
 
@@ -299,7 +301,7 @@ class CSubscriptionGeneral
 
 		if(is_set($arFields, "EMAIL"))
 		{
-			if(strlen($arFields["EMAIL"]) == 0 || !check_email($arFields["EMAIL"]))
+			if($arFields["EMAIL"] == '' || !check_email($arFields["EMAIL"]))
 				$aMsg[] = array("id"=>"EMAIL", "text"=>GetMessage("class_subscr_addr"));
 			else
 			{
@@ -421,7 +423,7 @@ class CSubscriptionGeneral
 	}
 
 	//adding
-	function Add($arFields, $SITE_ID=SITE_ID)
+	public function Add($arFields, $SITE_ID=SITE_ID)
 	{
 		global $DB;
 
@@ -452,7 +454,7 @@ class CSubscriptionGeneral
 	}
 
 	//Updating record
-	function Update($ID, $arFields, $SITE_ID=SITE_ID)
+	public function Update($ID, $arFields, $SITE_ID=SITE_ID)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -478,10 +480,10 @@ class CSubscriptionGeneral
 
 		$CONFIRM_CODE = $arFields["CONFIRM_CODE"];
 		unset($arFields["CONFIRM_CODE"]);
-		if(!is_set($arFields, "EMAIL") || strtoupper($db_check_arr["EMAIL"]) == strtoupper($arFields["EMAIL"]))
+		if(!is_set($arFields, "EMAIL") || mb_strtoupper($db_check_arr["EMAIL"]) == mb_strtoupper($arFields["EMAIL"]))
 		{
 			//the same email - check confirm code
-			if(strlen($CONFIRM_CODE)>0 && $db_check_arr["CONFIRMED"] <> "Y")
+			if($CONFIRM_CODE <> '' && $db_check_arr["CONFIRMED"] <> "Y")
 			{
 				if($CONFIRM_CODE == $db_check_arr["CONFIRM_CODE"])
 				{
@@ -505,13 +507,13 @@ class CSubscriptionGeneral
 		}
 
 		$strUpdate = $DB->PrepareUpdate("b_subscription", $arFields);
-		if (strlen($strUpdate)>0)
+		if ($strUpdate <> '')
 		{
 			$strSql =
 				"UPDATE b_subscription SET ".
 				$strUpdate.", ".
 				"	DATE_UPDATE=".$DB->GetNowFunction()." ".
-				(strlen($arFields["CONFIRM_CODE"])>0? ",".
+				($arFields["CONFIRM_CODE"] <> ''? ",".
 				"	DATE_CONFIRM=".$DB->GetNowFunction()." "
 				:"").
 				"WHERE ID=".$ID;
@@ -528,7 +530,7 @@ class CSubscriptionGeneral
 				$this->UpdateRubrics($ID, $arFields["RUB_ID"], $SITE_ID);
 		}
 		//send confirmation code if needed
-		if($arFields["SEND_CONFIRM"] <> "N" && strlen($arFields["CONFIRM_CODE"])>0)
+		if($arFields["SEND_CONFIRM"] <> "N" && $arFields["CONFIRM_CODE"] <> '')
 		{
 			$this->ConfirmEvent($ID, $SITE_ID);
 			$this->LAST_MESSAGE = "SENT";
@@ -538,7 +540,7 @@ class CSubscriptionGeneral
 	}
 
 	//message with subscription confirmation
-	function ConfirmEvent($ID, $SITE_ID=SITE_ID)
+	public static function ConfirmEvent($ID, $SITE_ID=SITE_ID)
 	{
 		static $SITE_DIR_CACHE = array();
 		CTimeZone::Disable();
@@ -586,7 +588,7 @@ class CSubscriptionGeneral
 	}
 
 	//checks and set user authorization
-	function Authorize($ID, $CONFIRM_CODE=false)
+	public static function Authorize($ID, $CONFIRM_CODE=false)
 	{
 		global $USER;
 
@@ -624,7 +626,7 @@ class CSubscriptionGeneral
 	}
 
 	//retuns user's subscription authorization
-	function IsAuthorized($ID)
+	public static function IsAuthorized($ID)
 	{
 		return ($_SESSION["SESS_SUBSCR_AUTH"][$ID] == "YES");
 	}
@@ -634,7 +636,7 @@ class CSubscriptionGeneral
 	//*****************************
 
 	//user deletion event
-	function OnUserDelete($user_id)
+	public static function OnUserDelete($user_id)
 	{
 		//clear user subscriptions on user deletion
 		global $DB;
@@ -664,7 +666,7 @@ class CSubscriptionGeneral
 	}
 
 	//user logout event
-	function OnUserLogout($user_id)
+	public static function OnUserLogout($user_id)
 	{
 		//let's reset subscriptions authorization on user logout
 		global $DB;
@@ -684,10 +686,9 @@ class CSubscriptionGeneral
 	//*****************************
 
 	//delete unconfirmed subscriptions
-	function CleanUp()
+	public static function CleanUp()
 	{
 		//must be inherited
 		return "CSubscription::CleanUp();";
 	}
 }
-?>

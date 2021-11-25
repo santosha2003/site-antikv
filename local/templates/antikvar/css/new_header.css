@@ -1,0 +1,35 @@
+.header-new{
+    font-family: 'Graphik LC';
+    color: #6f3508; 
+    font-weight: bold;
+    font-size: 18px;
+}
+div.header-new{
+    border-bottom: 2px solid #a3792f;
+    border-top: 2px solid #a3792f;
+}
+p.header-new{
+    padding: 10px 0 10px 0px;
+}
+a.header-new{
+    padding: 10px 0 10px 0px;
+    text-decoration: none;
+}
+img.header-new{
+    width: 100%;
+    height: 238px;
+}
+
+@media (max-width: 992px){
+    div.header-new{
+        text-align: center;
+    }
+    td.header-new{
+        display: table-row;
+    }
+    img.header-new{
+        width: 70%;
+        height: 70%;
+    }
+    
+}

@@ -18,16 +18,32 @@ Loc::loadMessages(__FILE__);
  * <li> ACTIVE bool optional default 'Y'
  * <li> COUPON string(32) mandatory
  * <li> DATE_APPLY datetime optional
- * <li> ONE_TIME bool optional default 'Y'
+ * <li> TYPE enum optional default 'O'
  * <li> TIMESTAMP_X datetime optional
  * <li> MODIFIED_BY int optional
  * <li> DATE_CREATE datetime optional
  * <li> CREATED_BY int optional
  * <li> DESCRIPTION string optional
+ * <li> CREATED_BY_USER reference to {@link \Bitrix\Main\UserTable}
+ * <li> MODIFIED_BY_USER reference to {@link \Bitrix\Main\UserTable}
+ * <li> DISCOUNT reference to {@link \Bitrix\Catalog\DiscountTable}
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_DiscountCoupon_Query query()
+ * @method static EO_DiscountCoupon_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_DiscountCoupon_Result getById($id)
+ * @method static EO_DiscountCoupon_Result getList(array $parameters = array())
+ * @method static EO_DiscountCoupon_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_DiscountCoupon createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_DiscountCoupon_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_DiscountCoupon wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_DiscountCoupon_Collection wakeUpCollection($rows)
+ */
 
 class DiscountCouponTable extends Main\Entity\DataManager
 {
@@ -84,11 +100,14 @@ class DiscountCouponTable extends Main\Entity\DataManager
 			'TYPE' => new Main\Entity\EnumField('TYPE', array(
 				'column_name' => 'ONE_TIME',
 				'values' => array(self::TYPE_ONE_ROW, self::TYPE_ONE_ORDER, self::TYPE_NO_LIMIT),
-				'default_value' => self::TYPE_ONE_ROW,
+				'default_value' => self::TYPE_ONE_ORDER,
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_ONE_TIME_FIELD')
 			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function()
+					{
+						return new Main\Type\DateTime();
+					},
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_TIMESTAMP_X_FIELD')
 			)),
 			'MODIFIED_BY' => new Main\Entity\IntegerField('MODIFIED_BY', array(
@@ -96,7 +115,10 @@ class DiscountCouponTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_MODIFIED_BY_FIELD')
 			)),
 			'DATE_CREATE' => new Main\Entity\DatetimeField('DATE_CREATE', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function()
+					{
+						return new Main\Type\DateTime();
+					},
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_DATE_CREATE_FIELD')
 			)),
 			'CREATED_BY' => new Main\Entity\IntegerField('CREATED_BY', array(
@@ -109,18 +131,19 @@ class DiscountCouponTable extends Main\Entity\DataManager
 			)),
 			'CREATED_BY_USER' => new Main\Entity\ReferenceField(
 				'CREATED_BY_USER',
-				'Bitrix\Main\User',
+				'\Bitrix\Main\User',
 				array('=this.CREATED_BY' => 'ref.ID')
 			),
 			'MODIFIED_BY_USER' => new Main\Entity\ReferenceField(
 				'MODIFIED_BY_USER',
-				'Bitrix\Main\User',
+				'\Bitrix\Main\User',
 				array('=this.MODIFIED_BY' => 'ref.ID')
 			),
 			'DISCOUNT' => new Main\Entity\ReferenceField(
 				'DISCOUNT',
-				'Bitrix\Catalog\Discount',
-				array('=this.DISCOUNT_ID' => 'ref.ID')
+				'\Bitrix\Catalog\Discount',
+				array('=this.DISCOUNT_ID' => 'ref.ID'),
+				array('join_type' => 'LEFT')
 			)
 		);
 	}
@@ -253,6 +276,25 @@ class DiscountCouponTable extends Main\Entity\DataManager
 	}
 
 	/**
+	 * Delete all coupons for discount.
+	 *
+	 * @param int $discount			Discount id.
+	 * @return void
+	 */
+	public static function deleteByDiscount($discount)
+	{
+		$discount = (int)$discount;
+		if ($discount <= 0)
+			return;
+		$conn = Main\Application::getConnection();
+		$helper = $conn->getSqlHelper();
+		$conn->queryExecute(
+			'delete from '.$helper->quote(self::getTableName()).' where '.$helper->quote('DISCOUNT_ID').' = '.$discount
+		);
+		unset($helper, $conn);
+	}
+
+	/**
 	 * Return methods for coupons manager.
 	 *
 	 * @param Main\Event $event			Event from coupons manager.
@@ -294,6 +336,10 @@ class DiscountCouponTable extends Main\Entity\DataManager
 		if (self::$existCouponsManager === null)
 			self::initUseMode();
 
+		$coupon = trim($coupon);
+		if ($coupon === '')
+			return false;
+
 		$couponIterator = self::getList(array(
 			'select' => array(
 				'ID', 'COUPON', 'DISCOUNT_ID', 'TYPE', 'ACTIVE',
@@ -302,7 +348,9 @@ class DiscountCouponTable extends Main\Entity\DataManager
 			),
 			'filter' => array('=COUPON' => $coupon)
 		));
-		if ($existCoupon = $couponIterator->fetch())
+		$existCoupon = $couponIterator->fetch();
+		unset($couponIterator);
+		if (!empty($existCoupon))
 		{
 			if (!empty(self::$types))
 			{
@@ -325,11 +373,17 @@ class DiscountCouponTable extends Main\Entity\DataManager
 	 */
 	public static function isExist($coupon)
 	{
+		$coupon = trim($coupon);
+		if ($coupon === '')
+			return false;
+
 		$couponIterator = self::getList(array(
 			'select' => array('ID', 'COUPON'),
 			'filter' => array('=COUPON' => $coupon)
 		));
-		if ($existCoupon = $couponIterator->fetch())
+		$existCoupon = $couponIterator->fetch();
+		unset($couponIterator);
+		if (!empty($existCoupon))
 		{
 			return array(
 				'ID' => $existCoupon['ID'],
@@ -395,7 +449,7 @@ class DiscountCouponTable extends Main\Entity\DataManager
 				$multiCoupons[$existCoupon['COUPON']] = $existCoupon['ID'];
 			}
 		}
-		unset($existCoupon, $couponIterator, $coupons);
+		unset($existCoupon, $couponIterator);
 		if (!empty($deactivateCoupons) || !empty($multiCoupons))
 		{
 			$conn = Application::getConnection();

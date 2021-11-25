@@ -8,7 +8,10 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryExtraServiceEdit
 	 * @var \Bitrix\Sale\Delivery\Services\Base $service
 	 */
 
-	global $tabControl, $APPLICATION, $service;
+	global $tabControl, $APPLICATION, $service, $adminSidePanelHelper;
+
+	$selfFolderUrl = (defined("SELF_FOLDER_URL") ? SELF_FOLDER_URL : "/bitrix/admin/");
+	$backUrl = urlencode($APPLICATION->GetCurPageParam("", array("IFRAME", "IFRAME_TYPE")));
 
 	$saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 
@@ -27,31 +30,32 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryExtraServiceEdit
 	Loc::loadMessages(__FILE__);
 
 	$ID = intval($_GET['ID']);
-	$strError = "";
+	global $srvStrError;
 
-	if(isset($_REQUEST["action"]) && $_REQUEST["action"] == "delete_extra_service" && isset($_REQUEST["ES_ID"]))
+	if(isset($_REQUEST["action"]) && $_REQUEST["action"] == "delete_extra_service" && isset($_REQUEST["ES_ID"]) && $saleModulePermissions == "W" && check_bitrix_sessid())
 	{
-		if(intval($_REQUEST["ES_ID"] > 0))
+		if(intval($_REQUEST["ES_ID"]) > 0)
 		{
 			$res = ExtraServices\Table::delete(intval($_REQUEST["ES_ID"]));
 
 			if(!$res->isSuccess())
-				$strError .= Loc::getMessage("SALE_ESDE_ERROR_DELETE").' '.implode("<br>\n",$res->getErrorMessages());
+				$srvStrError .= Loc::getMessage("SALE_ESDE_ERROR_DELETE").' '.implode("<br>\n",$res->getErrorMessages());
 		}
 		else
 		{
-			$strError .= Loc::getMessage("SALE_ESDE_ERROR_ID");
+			$srvStrError .= Loc::getMessage("SALE_ESDE_ERROR_ID");
 		}
 	}
 
 	$tableId = 'table_delivery_extra_service';
 	$oSort = new \CAdminSorting($tableId);
 	$lAdmin = new \CAdminList($tableId, $oSort);
+	$esClasses = ExtraServices\Manager::getClassesList();
 
 	$res = \Bitrix\Sale\Delivery\ExtraServices\Table::getList(array(
 		'filter' => array(
-			'DELIVERY_ID' => $ID,
-			'=CLASS_NAME' => ExtraServices\Manager::getClassesList()
+			'=DELIVERY_ID' => $ID,
+			'=CLASS_NAME' => $esClasses
 		),
 		'select' => array('ID', 'CODE', 'NAME', 'DESCRIPTION', 'CLASS_NAME', 'RIGHTS', 'ACTIVE', 'SORT'),
 		'order' => array('SORT' => 'ASC', 'ID' => 'DESC')
@@ -79,22 +83,23 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryExtraServiceEdit
 
 	while ($record = $dbRecords->Fetch())
 	{
-		$link = 'sale_delivery_eservice_edit.php?ID='.$record['ID'].'&lang='.LANGUAGE_ID.'&'.$tabControl->ActiveTabParam().'&back_url='.urlencode($APPLICATION->GetCurPageParam());
+		$link = $selfFolderUrl.'sale_delivery_eservice_edit.php?ID='.$record['ID'].'&lang='.LANGUAGE_ID.'&'.$tabControl->ActiveTabParam();
+		$link = $adminSidePanelHelper->editUrlToPublicPage($link).'&back_url='.$backUrl;
 		$row =& $lAdmin->AddRow($record['ID'], $record, $link, '');
 		$row->AddField('ID', '<a href="'.$link.'">'.$record['ID'].'</a>');
-		$row->AddField('CODE', $record['CODE']);
-		$row->AddField('NAME', $record['NAME']);
-		$row->AddField('SORT', $record['SORT']);
+		$row->AddField('CODE', htmlspecialcharsbx($record['CODE']));
+		$row->AddField('NAME', htmlspecialcharsbx($record['NAME']));
+		$row->AddField('SORT', intval($record['SORT']));
 		$row->AddField('RIGHTS', $record['RIGHTS']);
 		$row->AddField('ACTIVE', $record['ACTIVE'] == "Y" ? Loc::getMessage('SALE_ESDL_YES') : Loc::getMessage('SALE_ESDL_NO'));
 
-		if(strlen($record['CLASS_NAME']) > 0 && is_callable($record['CLASS_NAME'].'::getClassTitle'))
+		if($record['CLASS_NAME'] <> '' && is_callable($record['CLASS_NAME'].'::getClassTitle'))
 			$className = $record['CLASS_NAME']::getClassTitle();
 		else
 			$className = "";
 
 		$row->AddField('CLASS_NAME', $className);
-		$row->AddField('DESCRIPTION', $record['DESCRIPTION']);
+		$row->AddField('DESCRIPTION', htmlspecialcharsbx($record['DESCRIPTION']));
 
 		if ($saleModulePermissions >= "W")
 		{
@@ -106,14 +111,12 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryExtraServiceEdit
 				"DEFAULT" => true
 			);
 			$arActions[] = array("SEPARATOR" => true);
+			$deleteUrl = $APPLICATION->GetCurPageParam("action=delete_extra_service&ES_ID=".$record['ID']."&". bitrix_sessid_get(), array("back_url", "ES_ID"));
+			$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl).'&back_url='.urlencode($_REQUEST["back_url"]);
 			$arActions[] = array(
 				"ICON"=>"delete",
 				"TEXT"=>Loc::getMessage("SALE_ESDL_DELETE"),
-				"ACTION"=> "javascript:if(confirm('".Loc::getMessage("SALE_ESDL_CONFIRM_DEL_MESSAGE")."')) window.location='".
-					$APPLICATION->GetCurPageParam(
-						"action=delete_extra_service&ES_ID=".$record['ID']."&".bitrix_sessid_get().'&back_url='.urlencode($_REQUEST["back_url"]),
-						array("back_url", "ES_ID")
-					)."';",
+				"ACTION"=> "javascript:if(confirm('".Loc::getMessage("SALE_ESDL_CONFIRM_DEL_MESSAGE")."')) window.location='".$deleteUrl."';",
 			);
 
 			$row->AddActions($arActions);
@@ -124,29 +127,37 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryExtraServiceEdit
 	{
 		$aContext = array();
 
+		$addUrl = $selfFolderUrl.'sale_delivery_eservice_edit.php?lang='.LANGUAGE_ID.'&DELIVERY_ID='.$ID.'&'.$tabControl->ActiveTabParam();
+		$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl).'&back_url='.$backUrl;
 		$addButtonParams =  array(
 			"TEXT" => Loc::getMessage("SALE_ESDL_BUTTON_ADD_NEW"),
-			"LINK" => 'sale_delivery_eservice_edit.php?lang='.LANGUAGE_ID.'&DELIVERY_ID='.$ID.'&'.$tabControl->ActiveTabParam().'&back_url='.urlencode($APPLICATION->GetCurPageParam()),
+			"LINK" => $addUrl,
 			"TITLE" => Loc::getMessage("SALE_ESDL_BUTTON_ADD_NEW"),
 			"ICON" => "btn_new"
 		);
 
+		$menu = array();
+
 		if($service && $embeddedList = $service->getEmbeddedExtraServicesList())
 		{
-			$menu = array();
 
 			foreach($embeddedList as $code => $eserviceParams)
 			{
+				$addUrl = $selfFolderUrl.'sale_delivery_eservice_edit.php?lang='.LANGUAGE_ID.'&DELIVERY_ID='.$ID.'&'.
+					$tabControl->ActiveTabParam().'&ES_CODE='.$code;
+				$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl).'&back_url='.$backUrl;
 				$menu[] = array(
 					'TEXT' => $eserviceParams["NAME"],
-					'LINK' => 'sale_delivery_eservice_edit.php?lang='.LANGUAGE_ID.'&DELIVERY_ID='.$ID.'&'.$tabControl->ActiveTabParam().'&ES_CODE='.$code.'&back_url='.urlencode($APPLICATION->GetCurPageParam()),
+					'LINK' => $addUrl,
 				);
 			}
-		}
 
-		$menu[] =  array(
-			'SEPARATOR' => true,
-		);
+			sortByColumn($menu, array("TEXT" => SORT_ASC));
+
+			$menu[] =  array(
+				'SEPARATOR' => true,
+			);
+		}
 
 		/** @var  \Bitrix\Sale\Delivery\ExtraServices\Base $esClass */
 		foreach(ExtraServices\Manager::getClassesList() as $esClass)
@@ -154,9 +165,14 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryExtraServiceEdit
 			if($esClass == '\Bitrix\Sale\Delivery\ExtraServices\String')
 				continue;
 
+			if($esClass::isEmbeddedOnly())
+				continue;
+
+			$addUrl = $selfFolderUrl.'sale_delivery_eservice_edit.php?lang='.LANGUAGE_ID.'&DELIVERY_ID='.$ID.'&'.$tabControl->ActiveTabParam().'&CLASS_NAME='.urlencode($esClass);
+			$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl).'&back_url='.$backUrl;
 			$menu[] =  array(
 				'TEXT' => $esClass::getClassTitle(),
-				"LINK" => 'sale_delivery_eservice_edit.php?lang='.LANGUAGE_ID.'&DELIVERY_ID='.$ID.'&'.$tabControl->ActiveTabParam().'&CLASS_NAME='.urlencode($esClass).'&back_url='.urlencode($APPLICATION->GetCurPageParam()),
+				"LINK" => $addUrl,
 			);
 		}
 

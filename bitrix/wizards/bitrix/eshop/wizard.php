@@ -28,7 +28,7 @@ class SelectTemplateStep extends CSelectTemplateWizardStep
 	function OnPostForm()
 	{
 		$wizard =& $this->GetWizard();
-		
+
 		$proactive = COption::GetOptionString("statistic", "DEFENCE_ON", "N");
 		if ($proactive == "Y")
 		{
@@ -37,20 +37,20 @@ class SelectTemplateStep extends CSelectTemplateWizardStep
 		}
 		else
 		{
-			$wizard->SetVar("proactive", "N");			
+			$wizard->SetVar("proactive", "N");
 		}
 
 		if ($wizard->IsNextButtonClick())
 		{
-			$arTemplates = array("eshop_bootstrap");
+			$arTemplates = array("eshop_bootstrap_v4");
 
 			$templateID = $wizard->GetVar("wizTemplateID");
 
 			if (!in_array($templateID, $arTemplates))
 				$this->SetError(GetMessage("wiz_template"));
 
-			if (in_array($templateID,  array("eshop_bootstrap")))
-				$wizard->SetVar("templateID", "eshop_bootstrap");
+			if (in_array($templateID,  array("eshop_bootstrap_v4")))
+				$wizard->SetVar("templateID", "eshop_bootstrap_v4");
 		}
 	}
 
@@ -63,21 +63,21 @@ class SelectTemplateStep extends CSelectTemplateWizardStep
 
 		$arTemplateOrder = array();
 
-		if (in_array("eshop_bootstrap", array_keys($arTemplates)))
+		if (in_array("eshop_bootstrap_v4", array_keys($arTemplates)))
 		{
-			$arTemplateOrder[] = "eshop_bootstrap";
+			$arTemplateOrder[] = "eshop_bootstrap_v4";
 		}
 
-		$defaultTemplateID = COption::GetOptionString("main", "wizard_template_id", "eshop_bootstrap", $wizard->GetVar("siteID"));
-		if (!in_array($defaultTemplateID, array("eshop_bootstrap"))) $defaultTemplateID = "eshop_bootstrap";
+		$defaultTemplateID = COption::GetOptionString("main", "wizard_template_id", "eshop_bootstrap_v4", $wizard->GetVar("siteID"));
+		if (!in_array($defaultTemplateID, array("eshop_bootstrap_v4"))) $defaultTemplateID = "eshop_bootstrap_v4";
 		$wizard->SetDefaultVar("wizTemplateID", $defaultTemplateID);
 
 		$arTemplateInfo = array(
-			"eshop_bootstrap" => array(
+			"eshop_bootstrap_v4" => array(
 				"NAME" => GetMessage("WIZ_TEMPLATE_ADAPT_HORIZONTAL"),
 				"DESCRIPTION" => "",
-				"PREVIEW" => $wizard->GetPath()."/site/templates/eshop_bootstrap/images/".LANGUAGE_ID."/preview_horizontal.gif",
-				"SCREENSHOT" => $wizard->GetPath()."/site/templates/eshop_bootstrap/images/".LANGUAGE_ID."/screen_horizontal.gif",
+				"PREVIEW" => $wizard->GetPath()."/site/templates/eshop_bootstrap_v4/images/".LANGUAGE_ID."/preview_horizontal.gif",
+				"SCREENSHOT" => $wizard->GetPath()."/site/templates/eshop_bootstrap_v4/images/".LANGUAGE_ID."/screen_horizontal.gif",
 			),
 		);
 
@@ -115,7 +115,7 @@ class SelectTemplateStep extends CSelectTemplateWizardStep
 
 class SelectThemeStep extends CSelectThemeWizardStep
 {
-	
+
 }
 
 class SiteSettingsStep extends CSiteSettingsWizardStep
@@ -132,8 +132,17 @@ class SiteSettingsStep extends CSiteSettingsWizardStep
 		$siteID = $wizard->GetVar("siteID");
 		$isWizardInstalled = COption::GetOptionString("eshop", "wizard_installed", "N", $siteID) == "Y";
 
-		if(COption::GetOptionString("eshop", "wizard_installed", "N", $siteID) == "Y" && !WIZARD_INSTALL_DEMO_DATA)
-			$this->SetNextStep("data_install");
+		if(
+			(
+				COption::GetOptionString("eshop", "wizard_installed", "N", $siteID) == "Y"
+				&& defined('WIZARD_INSTALL_DEMO_DATA')
+				&& !WIZARD_INSTALL_DEMO_DATA
+			)
+			|| defined("ADDITIONAL_INSTALL")
+		)
+		{
+			$this->SetNextStep("shop_settings");
+		}
 		else
 		{
 			$this->SetNextStep("catalog_settings");
@@ -143,10 +152,10 @@ class SiteSettingsStep extends CSiteSettingsWizardStep
 		$themeID = $wizard->GetVar($templateID."_themeID");
 
 		$wizard->SetDefaultVars(Array(
-			"siteLogo" => file_exists(WIZARD_SITE_PATH."include/logo.png") ? WIZARD_SITE_DIR."include/logo.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap/themes/".$themeID."/images/logo.png"),
-			"siteLogoRetina" => file_exists(WIZARD_SITE_PATH."include/logo_retina.png") ? WIZARD_SITE_DIR."include/logo_retina.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap/themes/".$themeID."/images/logo_retina.png"),
-			"siteLogoMobile" => file_exists(WIZARD_SITE_PATH."include/logo_mobile.png") ? WIZARD_SITE_DIR."include/logo_mobile.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap/themes/".$themeID."/images/logo_mobile.png"),
-			"siteLogoMobileRetina" => file_exists(WIZARD_SITE_PATH."include/logo_mobile_retina.png") ? WIZARD_SITE_DIR."include/logo_mobile_retina.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap/themes/".$themeID."/images/logo_mobile_retina.png")
+			"siteLogo" => file_exists(WIZARD_SITE_PATH."include/logo.png") ? WIZARD_SITE_DIR."include/logo.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap_v4/themes/".$themeID."/images/logo.png"),
+			"siteLogoRetina" => file_exists(WIZARD_SITE_PATH."include/logo_retina.png") ? WIZARD_SITE_DIR."include/logo_retina.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap_v4/themes/".$themeID."/images/logo_retina.png"),
+			"siteLogoMobile" => file_exists(WIZARD_SITE_PATH."include/logo_mobile.png") ? WIZARD_SITE_DIR."include/logo_mobile.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap_v4/themes/".$themeID."/images/logo_mobile.png"),
+			"siteLogoMobileRetina" => file_exists(WIZARD_SITE_PATH."include/logo_mobile_retina.png") ? WIZARD_SITE_DIR."include/logo_mobile_retina.png" : ($isWizardInstalled ? "" : "/bitrix/wizards/bitrix/eshop/site/templates/eshop_bootstrap_v4/themes/".$themeID."/images/logo_mobile_retina.png")
 		));
 
 		$wizard->SetDefaultVars(
@@ -161,7 +170,7 @@ class SiteSettingsStep extends CSiteSettingsWizardStep
 				"installEshopApp" => COption::GetOptionString("eshop", "installEshopApp", "Y", $siteID),
 			)
 		);
-		
+
 	}
 
 	function ShowStep()
@@ -214,26 +223,26 @@ class SiteSettingsStep extends CSiteSettingsWizardStep
 			<label for="siteTelephone" class="wizard-input-title">'.GetMessage("WIZ_COMPANY_TELEPHONE").'</label>
 			'.$this->ShowInputField('text', 'siteTelephone', array("id" => "siteTelephone", "class" => "wizard-field")).'
 		</div>';
-		
+
 		if(LANGUAGE_ID != "ru")
 		{
 			$this->content .= '<div class="wizard-input-form-block">
 				<label for="shopEmail" class="wizard-input-title">'.GetMessage("WIZ_SHOP_EMAIL").'</label>
 				'.$this->ShowInputField('text', 'shopEmail', array("id" => "shopEmail", "class" => "wizard-field")).'
-			</div>';	
+			</div>';
 		}
 		$this->content .= '
 		<div class="wizard-input-form-block">
 			<label for="siteSchedule" class="wizard-input-title">'.GetMessage("WIZ_COMPANY_SCHEDULE").'</label>
 			'.$this->ShowInputField('textarea', 'siteSchedule', array("rows"=>"3", "id" => "siteSchedule", "class" => "wizard-field")).'
-		</div>';	
+		</div>';
 		$this->content .= '
 		<div class="wizard-input-form-block">
 			<label for="siteCopy" class="wizard-input-title">'.GetMessage("WIZ_COMPANY_COPY").'</label>
 			'.$this->ShowInputField('textarea', 'siteCopy', array("rows"=>"3", "id" => "siteCopy", "class" => "wizard-field")).'
 		</div>';
 
-		$firstStep = COption::GetOptionString("main", "wizard_first" . substr($wizard->GetID(), 7)  . "_" . $wizard->GetVar("siteID"), false, $wizard->GetVar("siteID")); 
+		$firstStep = COption::GetOptionString("main", "wizard_first".mb_substr($wizard->GetID(), 7)  . "_" . $wizard->GetVar("siteID"), false, $wizard->GetVar("siteID"));
 		$styleMeta = 'style="display:block"';
 		if($firstStep == "Y") $styleMeta = 'style="display:none"';
 
@@ -250,15 +259,15 @@ class SiteSettingsStep extends CSiteSettingsWizardStep
 				'.$this->ShowInputField('text', 'siteMetaKeywords', array("id" => "siteMetaKeywords", "class" => "wizard-field")).'
 			</div>
 		</div>';
-		
-//install Demo data		
+
+//install Demo data
 		if($firstStep == "Y")
 		{
 			$this->content .= '
 			<div class="wizard-input-form-block"'.(LANGUAGE_ID != "ru" ? ' style="display:none"' : '').'>
 				'.$this->ShowCheckboxField(
-							"installDemoData", 
-							"Y", 
+							"installDemoData",
+							"Y",
 							(array("id" => "installDemoData", "onClick" => "if(this.checked == true){document.getElementById('bx_metadata').style.display='block';}else{document.getElementById('bx_metadata').style.display='none';}"))
 						).'
 				<label for="installDemoData">'.GetMessage("wiz_structure_data").'</label>
@@ -322,9 +331,9 @@ class CatalogSettings extends CWizardStep
 
 		$wizard =& $this->GetWizard();
 		$siteID = $wizard->GetVar("siteID");
-		
+
 		$subscribe = COption::GetOptionString("sale", "subscribe_prod", "");
-		$arSubscribe = unserialize($subscribe);
+		$arSubscribe = unserialize($subscribe, ["allowed_classes" => false]);
 
 		$wizard->SetDefaultVars(
 			Array(
@@ -339,67 +348,6 @@ class CatalogSettings extends CWizardStep
 	function ShowStep()
 	{
 		$wizard =& $this->GetWizard();
-
-		/*$this->content .= '
-			<div class="wizard-input-form-block">
-				<div class="wizard-catalog-title">'.GetMessage("WIZ_STEP_CT").'</div>
-				<div class="wizard-catalog-form">
-					<div class="wizard-catalog-form-item">
-						'. $this->ShowCheckboxField("catalogSubscribe", "Y", (array("id" => "catalog-suscribe")))
-						.' <label for="catalog-suscribe">'.GetMessage("WIZ_CATALOG_SUBSCRIBE").'</label><br />'
-						.' <p>'.GetMessage("WIZ_CATALOG_SUBSCRIBE_DESCR").'</p>
-					</div>
-				</div>
-			</div>';
-
-		$this->content .= '
-			<div class="wizard-input-form-block">
-				<div class="wizard-catalog-title">'.GetMessage("WIZ_CATALOG_VIEW").'</div>
-				<div class="wizard-input-form-block-content">';
-
-
-		$arCatalogViews = array(
-			"bar" => array(
-				"NAME" => GetMessage("WIZ_CATALOG_VIEW_BAR"),
-				"DESCRIPTION" => GetMessage("WIZ_CATALOG_VIEW_BAR_DESCR"),
-				"PREVIEW" => $wizard->GetPath()."/images/".LANGUAGE_ID."/view-bar-small.png",
-				"SCREENSHOT" => $wizard->GetPath()."/images/".LANGUAGE_ID."/view-bar.png",
-			),
-			"list" => array(
-				"NAME" => GetMessage("WIZ_CATALOG_VIEW_LIST"),
-				"DESCRIPTION" => GetMessage("WIZ_CATALOG_VIEW_LIST_DESCR"),
-				"PREVIEW" => $wizard->GetPath()."/images/".LANGUAGE_ID."/view-list-small.png",
-				"SCREENSHOT" => $wizard->GetPath()."/images/".LANGUAGE_ID."/view-list.png",
-			),
-		);
-
-		global $SHOWIMAGEFIRST;
-		$SHOWIMAGEFIRST = true;
-
-		$this->content .= '<div class="wizard-list-view-block ">';
-		foreach ($arCatalogViews as $catalogViewID => $catalogView)
-		{
-			$this->content .= '<span class="wizard-list-view">';
-			$this->content .= '
-			<span class="wizard-list-view-top">
-				'.$this->ShowRadioField("catalogView", $catalogViewID, Array("id" => $catalogViewID)).'
-				<label for="'.$catalogViewID.'">'.$catalogView["NAME"].'</label>
-			</span>';
-
-			if ($catalogView["SCREENSHOT"] && $catalogView["PREVIEW"])
-				$this->content .= CFile::Show2Images($catalogView["PREVIEW"], $catalogView["SCREENSHOT"], 100, 100, '');
-			else
-				$this->content .= CFile::ShowImage($catalogView["SCREENSHOT"], 100, 100, '', "", true);
-
-			$this->content .= '<span class="wizard-list-view-description">'.$catalogView["DESCRIPTION"].'</span>';
-			$this->content .= '</span>';
-
-		}
-		$this->content .= "</div>";
-
-		$this->content .=
-			'</div>
-		</div>';*/
 
 		$this->content .= '
 			<div class="wizard-input-form-block">
@@ -417,48 +365,13 @@ class CatalogSettings extends CWizardStep
 			"S" => GetMessage("SALE_PRODUCT_RESERVE_4_DEDUCTION")
 		);
 
-
-		foreach($arConditions as $conditionID => $conditionName)
-		{
-			$arReserveConditions[$conditionID] = $conditionName;
-		}
 		$this->content .= '
 			<div class="wizard-catalog-form-item">'
-				.$this->ShowSelectField("productReserveCondition", $arReserveConditions).
+				.$this->ShowSelectField("productReserveCondition", $arConditions).
 				'<label>'.GetMessage("SALE_PRODUCT_RESERVE_CONDITION").'</label>
 			</div>';
 		$this->content .= '</div>
 			</div>';
-
-		$this->content .= '<script>
-			function ImgShw(ID, width, height, alt)
-			{
-				var scroll = "no";
-				var top=0, left=0;
-				if(width > screen.width-10 || height > screen.height-28) scroll = "yes";
-				if(height < screen.height-28) top = Math.floor((screen.height - height)/2-14);
-				if(width < screen.width-10) left = Math.floor((screen.width - width)/2-5);
-				width = Math.min(width, screen.width-10);
-				height = Math.min(height, screen.height-28);
-				var wnd = window.open("","","scrollbars="+scroll+",resizable=yes,width="+width+",height="+height+",left="+left+",top="+top);
-				wnd.document.write(
-					"<html><head>"+
-						"<"+"script type=\"text/javascript\">"+
-						"function KeyPress()"+
-						"{"+
-						"	if(window.event.keyCode == 27) "+
-						"		window.close();"+
-						"}"+
-						"</"+"script>"+
-						"<title></title></head>"+
-						"<body topmargin=\"0\" leftmargin=\"0\" marginwidth=\"0\" marginheight=\"0\" onKeyPress=\"KeyPress()\">"+
-						"<img src=\""+ID+"\" border=\"0\" alt=\""+alt+"\" />"+
-						"</body></html>"
-				);
-				wnd.document.close();
-			}
-		</script>';
-		
 	}
 
 	function OnPostForm()
@@ -483,7 +396,7 @@ class ShopSettings extends CWizardStep
 
 		$siteStamp =$wizard->GetPath()."/site/templates/minimal/images/pechat.gif";
 		$siteID = $wizard->GetVar("siteID");
-		
+
 		$wizard->SetDefaultVars(
 			Array(
 				"shopLocalization" => COption::GetOptionString("eshop", "shopLocalization", "ru", $siteID),
@@ -523,6 +436,7 @@ class ShopSettings extends CWizardStep
 	{
 		$wizard =& $this->GetWizard();
 		$siteStamp = $wizard->GetVar("siteStamp", true);
+		$firstStep = COption::GetOptionString("main", "wizard_first".mb_substr($wizard->GetID(), 7)  . "_" . $wizard->GetVar("siteID"), false, $wizard->GetVar("siteID"));
 
 		if (!CModule::IncludeModule("catalog"))
 		{
@@ -561,54 +475,56 @@ class ShopSettings extends CWizardStep
 					<label class="wizard-input-title" for="shopOfName">'.GetMessage("WIZ_SHOP_OF_NAME").'</label>'
 					.$this->ShowInputField('text', 'shopOfName', array("id" => "shopOfName", "class" => "wizard-field")).'
 				</div>';
-	
+
 			$this->content .= '
 				<div class="wizard-input-form-block">
 					<label class="wizard-input-title" for="shopLocation">'.GetMessage("WIZ_SHOP_LOCATION").'</label>'
 					.$this->ShowInputField('text', 'shopLocation', array("id" => "shopLocation", "class" => "wizard-field")).'
 				</div>';
-	
+
 			$this->content .= '
 				<div class="wizard-input-form-block">
 					<label class="wizard-input-title" for="shopAdr">'.GetMessage("WIZ_SHOP_ADR").'</label>'
 					.$this->ShowInputField('textarea', 'shopAdr', array("rows"=>"3", "id" => "shopAdr", "class" => "wizard-field")).'
 				</div>';
 
-			$this->content .= '
-				<div class="wizard-catalog-title">'.GetMessage("WIZ_SHOP_BANK_TITLE").'</div>
-				<table class="wizard-input-table">
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_INN").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopINN', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_KPP").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopKPP', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_NS").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopNS', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_BANK").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopBANK', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_BANKREKV").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopBANKREKV', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_KS").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopKS', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_STAMP").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowFileField("siteStamp", Array("show_file_info"=> "N", "id" => "siteStamp")).'<br />'.CFile::ShowImage($siteStamp, 75, 75, "border=0 vspace=5", false, false).'</td>
-					</tr>
-				</table>
-			</div><!--ru-->
-			';
-	//ua
+			if($firstStep != "Y")
+			{
+				$this->content .= '
+					<div class="wizard-catalog-title">'.GetMessage("WIZ_SHOP_BANK_TITLE").'</div>
+					<table class="wizard-input-table">
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_INN").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopINN', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_KPP").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopKPP', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_NS").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopNS', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_BANK").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopBANK', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_BANKREKV").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopBANKREKV', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_KS").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopKS', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_STAMP").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowFileField("siteStamp", Array("show_file_info" => "N", "id" => "siteStamp")).'<br />'.CFile::ShowImage($siteStamp, 75, 75, "border=0 vspace=5", false, false).'</td>
+						</tr>
+					</table>
+				</div><!--ru-->
+				';
+			}
 			$this->content .= '<div id="ua_bank_details" class="wizard-input-form-block" style="display:'.(($currentLocalization == "ua") ? 'block':'none').'">
 				<div class="wizard-input-form-block">
 					<label class="wizard-input-title" for="shopOfName_ua">'.GetMessage("WIZ_SHOP_OF_NAME").'</label>'
@@ -630,49 +546,52 @@ class ShopSettings extends CWizardStep
 					<p style="color:grey; margin: 3px 0 7px;">'.GetMessage("WIZ_SHOP_ADR_DESCR_UA").'</p>
 				</div>';
 
-			$this->content .= '
-				<div class="wizard-catalog-title">'.GetMessage("WIZ_SHOP_RECV_UA").'</div>
-				<p>'.GetMessage("WIZ_SHOP_RECV_UA_DESC").'</p>
-				<table class="wizard-input-table">
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_EGRPU_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopEGRPU_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_INN_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopINN_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_NDS_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopNDS_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_NS_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopNS_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_BANK_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopBank_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_MFO_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopMFO_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_PLACE_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopPlace_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_FIO_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopFIO_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-					<tr>
-						<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_TAX_UA").':</td>
-						<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopTax_ua', array("class" => "wizard-field")).'</td>
-					</tr>
-				</table>
-			</div>
-			';
+			if($firstStep != "Y")
+			{
+				$this->content .= '
+					<div class="wizard-catalog-title">'.GetMessage("WIZ_SHOP_RECV_UA").'</div>
+					<p>'.GetMessage("WIZ_SHOP_RECV_UA_DESC").'</p>
+					<table class="wizard-input-table">
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_EGRPU_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopEGRPU_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_INN_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopINN_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_NDS_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopNDS_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_NS_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopNS_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_BANK_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopBank_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_MFO_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopMFO_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_PLACE_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopPlace_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_FIO_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopFIO_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+						<tr>
+							<td class="wizard-input-table-left">'.GetMessage("WIZ_SHOP_TAX_UA").':</td>
+							<td class="wizard-input-table-right">'.$this->ShowInputField('text', 'shopTax_ua', array("class" => "wizard-field")).'</td>
+						</tr>
+					</table>
+				</div>
+				';
+			}
 
 			if (CModule::IncludeModule("catalog"))
 			{
@@ -692,7 +611,7 @@ class ShopSettings extends CWizardStep
 					</div>';
 				}
 			}
-			
+
 			$this->content .= '</div>';
 
 			$this->content .= '
@@ -709,7 +628,7 @@ class ShopSettings extends CWizardStep
 			';
 		}
 	}
-	
+
 	function OnPostForm()
 	{
 		$wizard =& $this->GetWizard();
@@ -728,6 +647,12 @@ class PersonType extends CWizardStep
 		$this->SetPrevStep("shop_settings");
 		$this->SetNextCaption(GetMessage("NEXT_BUTTON"));
 		$this->SetPrevCaption(GetMessage("PREVIOUS_BUTTON"));
+
+		if (defined("ADDITIONAL_INSTALL"))
+		{
+			$this->SetNextStep("data_install");
+			$this->SetPrevStep("site_settings");
+		}
 
 		$wizard =& $this->GetWizard();
 		$shopLocalization = $wizard->GetVar("shopLocalization", true);
@@ -787,7 +712,7 @@ class PersonType extends CWizardStep
 		</div>';
 		$this->content .= '</div>';
 	}
-	
+
 	function OnPostForm()
 	{
 		$wizard = &$this->GetWizard();
@@ -845,9 +770,7 @@ class PaySystem extends CWizardStep
 						"delivery" => Array(
 							"courier" => "Y",
 							"self" => "Y",
-							"russianpost" => "N",
 							"rus_post" => "N",
-							"rus_post_first" => "N",
 							"ua_post" => "N",
 							"kaz_post" => "N"
 						)
@@ -859,11 +782,11 @@ class PaySystem extends CWizardStep
 			$wizard->SetDefaultVars(
 				Array(
 					"paysystem" => Array(
-						"cash" => "Y",	
+						"cash" => "Y",
 						"paypal" => "Y",
-					),			
+					),
 					"delivery" => Array(
-						"courier" => "Y",	
+						"courier" => "Y",
 						"self" => "Y",
 						"dhl" => "Y",
 						"ups" => "Y",
@@ -872,7 +795,7 @@ class PaySystem extends CWizardStep
 			);
 		}
 	}
-	
+
 	function OnPostForm()
 	{
 		$wizard = &$this->GetWizard();
@@ -903,20 +826,41 @@ class PaySystem extends CWizardStep
 
 		$wizard =& $this->GetWizard();
 		$shopLocalization = $wizard->GetVar("shopLocalization", true);
-
 		$personType = $wizard->GetVar("personType");
-
 		$arAutoDeliveries = array();
-		if (CModule::IncludeModule("sale"))
+		$isModuleSaleIncluded = \Bitrix\Main\Loader::includeModule("sale");
+
+		if ($isModuleSaleIncluded)
 		{
-			$dbDelivery = CSaleDeliveryHandler::GetList();
-			while($arDelivery = $dbDelivery->Fetch())
+			$dbRes = \Bitrix\Sale\Delivery\Services\Table::getList(array(
+				'filter' => array(
+					'=CLASS_NAME' => array(
+						'\Sale\Handlers\Delivery\SpsrHandler',
+						'\Bitrix\Sale\Delivery\Services\Automatic',
+						'\Sale\Handlers\Delivery\AdditionalHandler'
+					)
+				),
+				'select' => array('ID', 'CODE', 'ACTIVE', 'CLASS_NAME')
+			));
+
+			while($dlv = $dbRes->fetch())
 			{
-				$arAutoDeliveries[$arDelivery["SID"]] = $arDelivery["ACTIVE"];
+				if($dlv['CLASS_NAME'] == '\Sale\Handlers\Delivery\SpsrHandler')
+				{
+					$arAutoDeliveries['spsr'] = $dlv['ACTIVE'];
+				}
+				elseif($dlv['CLASS_NAME'] == '\Sale\Handlers\Delivery\AdditionalHandler' && $dlv['CONFIG']['MAIN']['SERVICE_TYPE'] == 'RUSPOST')
+				{
+					$arAutoDeliveries['ruspost'] = $dlv['ACTIVE'];
+				}
+				elseif(!empty($dlv['CODE']))
+				{
+					$arAutoDeliveries[$dlv['CODE']] = $dlv['ACTIVE'];
+				}
 			}
 		}
+
 		$siteID = WizardServices::GetCurrentSiteID($wizard->GetVar("siteID"));
-		
 		$this->content .= '<div class="wizard-input-form">';
 		$this->content .= '
 		<div class="wizard-input-form-block">
@@ -977,95 +921,128 @@ class PaySystem extends CWizardStep
 			</div>
 			<div class="wizard-catalog-form-item">'.GetMessage("WIZ_PAY_SYSTEM").'</div>
 		</div>';
+
 		if (
 			LANGUAGE_ID != "ru" ||
 			LANGUAGE_ID == "ru" &&
 			(
 				COption::GetOptionString("eshop", "wizard_installed", "N", $siteID) != "Y"
-				|| $shopLocalization == "ru" && ($arAutoDeliveries["russianpost"] != "Y" || $arAutoDeliveries["rus_post"] != "Y" || $arAutoDeliveries["rus_post_first"] != "Y")
+				|| $shopLocalization == "ru" && ($arAutoDeliveries["rus_post"] != "Y")
 				|| $shopLocalization == "ua" && ($arAutoDeliveries["ua_post"] != "Y")
 				|| $shopLocalization == "kz" && ($arAutoDeliveries["kaz_post"] != "Y")
 			)
 		)
 		{
-			$this->content .= '
-			<div class="wizard-input-form-block">
-				<div class="wizard-catalog-title">'.GetMessage("WIZ_DELIVERY_TITLE").'</div>
-				<div>
-					<div class="wizard-input-form-field wizard-input-form-field-checkbox">';
+			$deliveryNotes = array();
+			$deliveryContent = '<div class="wizard-input-form-field wizard-input-form-field-checkbox">';
 
-						if(COption::GetOptionString("eshop", "wizard_installed", "N", $siteID) != "Y")
-						{
-							$this->content .= '<div class="wizard-catalog-form-item">
-								'.$this->ShowCheckboxField('delivery[courier]', 'Y', (array("id" => "deliveryC"))).
-								' <label for="deliveryC">'.GetMessage("WIZ_DELIVERY_C").'</label>
-							</div>
-							<div class="wizard-catalog-form-item">
-								'.$this->ShowCheckboxField('delivery[self]', 'Y', (array("id" => "deliveryS"))).
-								' <label for="deliveryS">'.GetMessage("WIZ_DELIVERY_S").'</label>
-							</div>';
-						}
-						if(LANGUAGE_ID == "ru")
-						{
+			if(COption::GetOptionString("eshop", "wizard_installed", "N", $siteID) != "Y")
+			{
+				$deliveryContent .= '<div class="wizard-catalog-form-item">
+					'.$this->ShowCheckboxField('delivery[courier]', 'Y', (array("id" => "deliveryC"))).
+					' <label for="deliveryC">'.GetMessage("WIZ_DELIVERY_C").'</label>
+				</div>
+				<div class="wizard-catalog-form-item">
+					'.$this->ShowCheckboxField('delivery[self]', 'Y', (array("id" => "deliveryS"))).
+					' <label for="deliveryS">'.GetMessage("WIZ_DELIVERY_S").'</label>
+				</div>';
+			}
 
-							if ($shopLocalization == "ru")
-							{
-								if ($arAutoDeliveries["russianpost"] != "Y")
-									$this->content .=
-										'<div class="wizard-catalog-form-item">'.
-											$this->ShowCheckboxField('delivery[russianpost]', 'Y', (array("id" => "deliveryR"))).
-											' <label for="deliveryR">'.GetMessage("WIZ_DELIVERY_R").'</label>
-										</div>';
-								if ($arAutoDeliveries["rus_post"] != "Y")
-									$this->content .=
-										'<div class="wizard-catalog-form-item">'.
-											$this->ShowCheckboxField('delivery[rus_post]', 'Y', (array("id" => "deliveryR2"))).
-											' <label for="deliveryR2">'.GetMessage("WIZ_DELIVERY_R2").'</label>
-										</div>';
-								if ($arAutoDeliveries["rus_post_first"] != "Y")
-									$this->content .=
-										'<div class="wizard-catalog-form-item">'.
-											$this->ShowCheckboxField('delivery[rus_post_first]', 'Y', (array("id" => "deliveryRF"))).
-											' <label for="deliveryRF">'.GetMessage("WIZ_DELIVERY_RF").'</label>
-										</div>';
-							}
-							elseif ($shopLocalization == "ua")
-							{
-								if ($arAutoDeliveries["ua_post"] != "Y")
-									$this->content .=
-										'<div class="wizard-catalog-form-item">'.
-											$this->ShowCheckboxField('delivery[ua_post]', 'Y', (array("id" => "deliveryU"))).
-											' <label for="deliveryU">'.GetMessage("WIZ_DELIVERY_UA").'</label>
-										</div>';
-							}
-							elseif ($shopLocalization == "kz")
-							{
-								if ($arAutoDeliveries["kaz_post"] != "Y")
-									$this->content .=
-										'<div class="wizard-catalog-form-item">'.
-											$this->ShowCheckboxField('delivery[kaz_post]', 'Y', (array("id" => "deliveryK"))).
-											' <label for="deliveryK">'.GetMessage("WIZ_DELIVERY_KZ").'</label>
-										</div>';
-							}
+			if(LANGUAGE_ID == "ru")
+			{
+				if ($shopLocalization == "ru")
+				{
+					if ($arAutoDeliveries["ruspost"] != "Y" && $isModuleSaleIncluded)
+					{
+						\Bitrix\Sale\Delivery\Services\Manager::getHandlersList();
+						$res = \Sale\Handlers\Delivery\AdditionalHandler::getSupportedServicesList();
+
+						if(!empty($res['NOTES']) && is_array($res['NOTES']))
+						{
+							$deliveryNotes = $res['NOTES'];
 						}
 						else
 						{
-							$this->content .=
-								'<div class="wizard-catalog-form-item">'.
-									$this->ShowCheckboxField('delivery[dhl]', 'Y', (array("id" => "deliveryD"))).
-									' <label for="deliveryD">DHL</label>
-								</div>';
-							$this->content .=
-								'<div class="wizard-catalog-form-item">'.
-									$this->ShowCheckboxField('delivery[ups]', 'Y', (array("id" => "deliveryU"))).
-									' <label for="deliveryU">UPS</label>
+							$deliveryContent .= '									
+								<div class="wizard-catalog-form-item">'.
+									$this->ShowCheckboxField('delivery[ruspost]', 'Y', (array("id" => "deliveryR"))).
+									' <label for="deliveryR">'.GetMessage("WIZ_DELIVERY_R").'</label>
 								</div>';
 						}
-						$this->content .= '
+					}
+
+					if ($arAutoDeliveries["rus_post"] != "Y")
+					{
+						$deliveryContent .=
+							'<div class="wizard-catalog-form-item">'.
+								$this->ShowCheckboxField('delivery[rus_post]', 'Y', (array("id" => "deliveryR2"))).
+								' <label for="deliveryR2">'.GetMessage("WIZ_DELIVERY_R2").'</label>
+							</div>';
+					}
+
+					if ($arAutoDeliveries["rus_post_first"] != "Y")
+					{
+						$deliveryContent .=
+							'<div class="wizard-catalog-form-item">'.
+								$this->ShowCheckboxField('delivery[rus_post_first]', 'Y', (array("id" => "deliveryRF"))).
+								' <label for="deliveryRF">'.GetMessage("WIZ_DELIVERY_RF").'</label>
+							</div>';
+					}
+				}
+				elseif ($shopLocalization == "ua")
+				{
+					if ($arAutoDeliveries["ua_post"] != "Y")
+						$deliveryContent .=
+							'<div class="wizard-catalog-form-item">'.
+								$this->ShowCheckboxField('delivery[ua_post]', 'Y', (array("id" => "deliveryU"))).
+								' <label for="deliveryU">'.GetMessage("WIZ_DELIVERY_UA").'</label>
+							</div>';
+				}
+				elseif ($shopLocalization == "kz")
+				{
+					if ($arAutoDeliveries["kaz_post"] != "Y")
+						$deliveryContent .=
+							'<div class="wizard-catalog-form-item">'.
+								$this->ShowCheckboxField('delivery[kaz_post]', 'Y', (array("id" => "deliveryK"))).
+								' <label for="deliveryK">'.GetMessage("WIZ_DELIVERY_KZ").'</label>
+							</div>';
+				}
+			}
+			else
+			{
+				$deliveryContent .=
+					'<div class="wizard-catalog-form-item">'.
+						$this->ShowCheckboxField('delivery[dhl]', 'Y', (array("id" => "deliveryD"))).
+						' <label for="deliveryD">DHL</label>
+					</div>';
+				$deliveryContent .=
+					'<div class="wizard-catalog-form-item">'.
+						$this->ShowCheckboxField('delivery[ups]', 'Y', (array("id" => "deliveryU"))).
+						' <label for="deliveryU">UPS</label>
 					</div>
-				</div>
-				<div class="wizard-catalog-form-item">'.GetMessage("WIZ_DELIVERY").'</div>
-			</div>';
+				</div>';
+			}
+
+			if(!empty($deliveryNotes))
+			{
+				$deliveryContent ='
+					<link rel="stylesheet" type="text/css" href="/bitrix/wizards/bitrix/eshop/css/style.css">
+					<div class="eshop-wizard-info-note-wrap">
+						<div class="eshop-wizard-info-note">
+							'.implode("<br>\n", $deliveryNotes).'
+						</div>
+					</div>'.
+					$deliveryContent;
+			}
+
+			$this->content  .=
+				'<div class="wizard-input-form-block">
+					<div class="wizard-catalog-title">'.GetMessage("WIZ_DELIVERY_TITLE").'</div>
+					<div>'.
+						$deliveryContent.
+					'</div>
+					<div class="wizard-catalog-form-item">'.GetMessage("WIZ_DELIVERY").'</div>
+				</div>';						;
 		}
 
 		$this->content .= '
@@ -1126,10 +1103,20 @@ class DataInstallStep extends CDataInstallWizardStep
 		else
 			$this->repeatCurrentService = false;
 
-		$wizard =& $this->GetWizard();
-		if($wizard->GetVar("installDemoData") != "Y")
+		$arServices = $this->prepareServices($arServices);
+	}
+
+	public function prepareServices($arServices)
+	{
+		if (defined("ADDITIONAL_INSTALL"))
 		{
+			// sale
+			unset($arServices["sale"]["STAGES"]["locations.php"]);
+			unset($arServices["sale"]["STAGES"]["step2.php"]);
+			unset($arServices["sale"]["STAGES"]["step3.php"]);
 		}
+
+		return $arServices;
 	}
 }
 
@@ -1140,25 +1127,25 @@ class FinishStep extends CFinishWizardStep
 		$this->SetStepID("finish");
 		$this->SetNextStep("finish");
 		$this->SetTitle(GetMessage("FINISH_STEP_TITLE"));
-		$this->SetNextCaption(GetMessage("wiz_go"));  
+		$this->SetNextCaption(GetMessage("wiz_go"));
 	}
 
 	function ShowStep()
 	{
-		$wizard =& $this->GetWizard();		   
+		$wizard =& $this->GetWizard();
 		if ($wizard->GetVar("proactive") == "Y")
 			COption::SetOptionString("statistic", "DEFENCE_ON", "Y");
-		
+
 		$siteID = WizardServices::GetCurrentSiteID($wizard->GetVar("siteID"));
 		$rsSites = CSite::GetByID($siteID);
-		$siteDir = "/"; 
+		$siteDir = "/";
 		if ($arSite = $rsSites->Fetch())
-			$siteDir = $arSite["DIR"]; 
+			$siteDir = $arSite["DIR"];
 
 		$wizard->SetFormActionScript(str_replace("//", "/", $siteDir."/?finish"));
 
 		$this->CreateNewIndex();
-		
+
 		COption::SetOptionString("main", "wizard_solution", $wizard->solutionName, false, $siteID);
 
 		$this->content .=
@@ -1170,12 +1157,9 @@ class FinishStep extends CFinishWizardStep
 				</tr>
 			</table>';
 	//	$this->content .= "<br clear=\"all\"><a href=\"/bitrix/admin/wizard_install.php?lang=".LANGUAGE_ID."&site_id=".$siteID."&wizardName=bitrix:eshop.mobile&".bitrix_sessid_get()."\" class=\"button-next\"><span id=\"next-button-caption\">".GetMessage("wizard_store_mobile")."</span></a><br>";
-		
+
 		if ($wizard->GetVar("installDemoData") == "Y")
-			$this->content .= GetMessage("FINISH_STEP_REINDEX");		
-			
-		
+			$this->content .= GetMessage("FINISH_STEP_REINDEX");
 	}
 
 }
-?>

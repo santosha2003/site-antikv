@@ -20,10 +20,10 @@ $URL_NAME_DEFAULT = array(
 	"profile_view" => "PAGE_NAME=profile_view&UID=#UID#");
 foreach ($URL_NAME_DEFAULT as $URL => $URL_VALUE)
 {
-	if (strLen(trim($arParams["URL_TEMPLATES_".strToUpper($URL)])) <= 0)
-		$arParams["URL_TEMPLATES_".strToUpper($URL)] = $APPLICATION->GetCurPage()."?".$URL_VALUE;
-	$arParams["~URL_TEMPLATES_".strToUpper($URL)] = $arParams["URL_TEMPLATES_".strToUpper($URL)];
-	$arParams["URL_TEMPLATES_".strToUpper($URL)] = htmlspecialcharsEx($arParams["~URL_TEMPLATES_".strToUpper($URL)]);
+	if (trim($arParams["URL_TEMPLATES_".mb_strtoupper($URL)]) == '')
+		$arParams["URL_TEMPLATES_".mb_strtoupper($URL)] = $APPLICATION->GetCurPage()."?".$URL_VALUE;
+	$arParams["~URL_TEMPLATES_".mb_strtoupper($URL)] = $arParams["URL_TEMPLATES_".mb_strtoupper($URL)];
+	$arParams["URL_TEMPLATES_".mb_strtoupper($URL)] = htmlspecialcharsbx($arParams["~URL_TEMPLATES_".mb_strtoupper($URL)]);
 }
 /***************** ADDITIONAL **************************************/
 $arParams["USER_PROPERTY"] = (is_array($arParams["USER_PROPERTY"]) ? $arParams["USER_PROPERTY"] : array());
@@ -46,20 +46,23 @@ if ($arParams["UID"] > 0)
 	$db_user = CUser::GetByID($arParams["UID"]);
 	if ($db_user && ($ar_user = $db_user->Fetch()))
 	{
-		while (list($key, $val) = each($ar_user))
+		foreach ($ar_user as $key => $val)
 		{
-			${"str_".$key} = htmlspecialcharsEx($val);
-			$arResult["str_".$key] = htmlspecialcharsEx($val);
+			if (is_string($val))
+			{
+				${"str_".$key} = htmlspecialcharsbx($val);
+				$arResult["str_".$key] = htmlspecialcharsbx($val);
+			}
 		}
 		$arResult["USER"] = $ar_user;
 
 		$ar_forum_user = CForumUser::GetByUSER_ID($arParams["UID"]);
 		if ($ar_forum_user)
 		{
-			while (list($key, $val) = each($ar_forum_user))
+			foreach ($ar_forum_user as $key => $val)
 			{
 				${"str_FORUM_".$key} = htmlspecialcharsbx($val);
-				$arResult["str_FORUM_".$key] = htmlspecialcharsEx($val);
+				$arResult["str_FORUM_".$key] = htmlspecialcharsbx($val);
 			}
 			$arResult["FORUM_USER"] = $ar_forum_user;
 		}
@@ -79,7 +82,7 @@ endif;
 ********************************************************************/
 $arResult["~profile_view"] = CComponentEngine::MakePathFromTemplate($arParams["~URL_TEMPLATES_PROFILE_VIEW"],
 	array("UID" => $arParams["UID"]));
-$arResult["profile_view"] = htmlspecialcharsEx($arResult["~profile_view"]);
+$arResult["profile_view"] = htmlspecialcharsbx($arResult["~profile_view"]);
 $arResult["IsAuthorized"] = $USER->IsAuthorized() ? "Y" : "N";
 $arResult["IsAdmin"] = $USER->IsAdmin() ? "Y" : "N";
 $bVarsFromForm = false;
@@ -142,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"]=="POST" && $_POST["ACTION"]=="EDIT")
 		if(isset($_POST["TIME_ZONE"]))
 			$arFields["TIME_ZONE"] = $_POST["TIME_ZONE"];
 
-		if (strLen($_POST["NEW_PASSWORD"])>0)
+		if ($_POST["NEW_PASSWORD"] <> '')
 		{
 			$arFields["PASSWORD"] = $_POST["NEW_PASSWORD"];
 			$arFields["CONFIRM_PASSWORD"] = $_POST["NEW_PASSWORD_CONFIRM"];
@@ -182,7 +185,7 @@ if ($_SERVER["REQUEST_METHOD"]=="POST" && $_POST["ACTION"]=="EDIT")
 				$FID = CForumUser::Add($arFields);
 			}
 
-			if ((intVal($FID)<=0) && (!$APPLICATION->GetException()))
+			if ((intval($FID)<=0) && (!$APPLICATION->GetException()))
 				$APPLICATION->ThrowException(GetMessage("FP_ERR_PROF"));
 		}
 	}
@@ -201,7 +204,7 @@ if ($_SERVER["REQUEST_METHOD"]=="POST" && $_POST["ACTION"]=="EDIT")
 	{
 		if ($USER->GetId() == $arParams["UID"])
 			$USER->Authorize($arParams["UID"]);
-		if ($_POST["OLD_LOGIN"]!=$_POST["LOGIN"] || strLen($_POST["NEW_PASSWORD"])>0)
+		if ($_POST["OLD_LOGIN"]!=$_POST["LOGIN"] || $_POST["NEW_PASSWORD"] <> '')
 		{
 			$USER->SendUserInfo($USER->GetParam("USER_ID"), LANG, GetMessage("FP_CHG_REG_INFO"), true);
 		}
@@ -223,7 +226,7 @@ if ($bVarsFromForm)
 		if (array_key_exists($arUserFields[$i], $_REQUEST))
 		{
 			${"str_".$arUserFields[$i]} = htmlspecialcharsbx($_REQUEST[$arUserFields[$i]]);
-			$arResult["str_".$arUserFields[$i]] = htmlspecialcharsEx($_REQUEST[$arUserFields[$i]]);
+			$arResult["str_".$arUserFields[$i]] = htmlspecialcharsbx($_REQUEST[$arUserFields[$i]]);
 		}
 	}
 
@@ -233,7 +236,7 @@ if ($bVarsFromForm)
 		if (array_key_exists("FORUM_".$arUserFields[$i], $_REQUEST))
 		{
 			${"str_FORUM_".$arUserFields[$i]} = htmlspecialcharsbx($_REQUEST["FORUM_".$arUserFields[$i]]);
-			$arResult["str_FORUM_".$arUserFields[$i]] = htmlspecialcharsEx($_REQUEST["FORUM_".$arUserFields[$i]]);
+			$arResult["str_FORUM_".$arUserFields[$i]] = htmlspecialcharsbx($_REQUEST["FORUM_".$arUserFields[$i]]);
 		}
 	}
 }
@@ -250,7 +253,7 @@ $arResult["str_PERSONAL_BIRTHDAY"] = CalendarDate("PERSONAL_BIRTHDAY", $str_PERS
 
 $arResult["SHOW_DELETE_PERSONAL_PHOTO"] = "N";
 $arResult["str_PERSONAL_PHOTO"] = "";
-if (strlen($arResult["USER"]["PERSONAL_PHOTO"]) > 0)
+if ($arResult["USER"]["PERSONAL_PHOTO"] <> '')
 {
 	$arResult["SHOW_DELETE_PERSONAL_PHOTO"] = "Y";
 	$arResult["str_PERSONAL_PHOTO"] = $arResult["USER"]["PERSONAL_PHOTO"];
@@ -263,7 +266,7 @@ $arResult["str_FORUM_AVATAR"] = "";
 $arResult["AVATAR_H"] = COption::GetOptionString("forum", "avatar_max_width", 100);
 $arResult["AVATAR_V"] = COption::GetOptionString("forum", "avatar_max_height", 100);
 $arResult["AVATAR_SIZE"] = COption::GetOptionString("forum", "avatar_max_size", 1048576);
-if (strlen($arResult["FORUM_USER"]["AVATAR"]) > 0)
+if ($arResult["FORUM_USER"]["AVATAR"] <> '')
 {
 	$arResult["SHOW_DELETE_FORUM_AVATAR"] = "Y";
 	$arResult["str_FORUM_AVATAR"] = $arResult["FORUM_USER"]["AVATAR"];
@@ -276,7 +279,7 @@ $arCountry = GetCountryArray();
 $arCountryReturn = array();
 for ($i=0; $i<count($arCountry["reference"]); $i++)
 {
-	$arCountryReturn[$arCountry["reference_id"][$i]] = htmlspecialcharsEx($arCountry["reference"][$i]);
+	$arCountryReturn[$arCountry["reference_id"][$i]] = htmlspecialcharsbx($arCountry["reference"][$i]);
 }
 $arResult["str_PERSONAL_COUNTRY"] = $str_PERSONAL_COUNTRY;
 $arResult["arr_PERSONAL_COUNTRY"]["data"] = $arCountryReturn;
@@ -297,8 +300,8 @@ if (!empty($arParams["USER_PROPERTY"]))
 		{
 			if (!in_array($FIELD_NAME, $arParams["USER_PROPERTY"]))
 				continue;
-			$arUserField["EDIT_FORM_LABEL"] = strLen($arUserField["EDIT_FORM_LABEL"]) > 0 ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
-			$arUserField["EDIT_FORM_LABEL"] = htmlspecialcharsEx($arUserField["EDIT_FORM_LABEL"]);
+			$arUserField["EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"] <> '' ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
+			$arUserField["EDIT_FORM_LABEL"] = htmlspecialcharsbx($arUserField["EDIT_FORM_LABEL"]);
 			$arUserField["~EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"];
 			$arResult["USER_PROPERTIES"]["DATA"][$FIELD_NAME] = $arUserField;
 		}

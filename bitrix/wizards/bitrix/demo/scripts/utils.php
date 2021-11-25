@@ -1,7 +1,7 @@
 <?
 class DemoSiteUtil
 {
-	function GetServices($servicePath, $arFilter = Array())
+	public static function GetServices($servicePath, $arFilter = Array())
 	{
 		$arServices = Array();
 		include($servicePath.".services.php");
@@ -45,7 +45,7 @@ class DemoSiteUtil
 		return $arServices;
 	}
 
-	function GetSelectedServices($string)
+	public static function GetSelectedServices($string)
 	{
 		$arServices = Array();
 		$arRootCnt = Array();
@@ -99,7 +99,7 @@ class DemoSiteUtil
 	}
 
 
-	function GetThemes($themePath)
+	public static function GetThemes($themePath)
 	{
 		$arThemes = Array();
 
@@ -132,7 +132,7 @@ class DemoSiteUtil
 		return $arThemes;
 	}
 
-	function __SortTheme($a, $b)
+	public static function __SortTheme($a, $b)
 	{
 		if ($a["SORT"] > $b["SORT"])
 			return 1;
@@ -142,7 +142,7 @@ class DemoSiteUtil
 			return 0;
 	}
 
-	function SetFilePermission($path, $permissions)
+	public static function SetFilePermission($path, $permissions)
 	{
 		$originalPath = $path;
 
@@ -177,7 +177,7 @@ class DemoSiteUtil
 		return $GLOBALS["APPLICATION"]->SetFileAccessPermission($originalPath, $arPermisson);
 	}
 
-	function AddMenuItem($menuFile, $menuItem)
+	public static function AddMenuItem($menuFile, $menuItem)
 	{
 		if(CModule::IncludeModule('fileman'))
 		{
@@ -198,7 +198,7 @@ class DemoSiteUtil
 		}
 	}
 
-	function GetTemplatesPath($wizardPath)
+	public static function GetTemplatesPath($wizardPath)
 	{
 		$templatesPath = $wizardPath."/templates";
 
@@ -208,7 +208,7 @@ class DemoSiteUtil
 		return $templatesPath;
 	}
 
-	function SetUserOption($category, $option, $settings, $common = false, $userID = false)
+	public static function SetUserOption($category, $option, $settings, $common = false, $userID = false)
 	{
 		global $DBType;
 		require_once($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/main/classes/".strtolower($DBType)."/favorites.php");
@@ -222,4 +222,3 @@ class DemoSiteUtil
 		);
 	}
 }
-?>

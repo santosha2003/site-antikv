@@ -1,6 +1,0 @@
-<?
-$MESS["BT_MOD_CAT_GROUP_ERR_EMPTY_NAME"] = "Truksta kainos tipo ID.";
-$MESS["BT_MOD_CAT_GROUP_ERR_EMPTY_USER_GROUP"] = "Nenurodytos grupës su leidimu perþiûrëti ðá kainos tipà. ";
-$MESS["BT_MOD_CAT_GROUP_ERR_EMPTY_USER_GROUP_BUY"] = "Nenurodytos naudotojø grupës su leidimu pirkti pagal ðá kainos tipà. ";
-$MESS["BT_MOD_CAT_GROUP_ERR_CANNOT_DELETE_BASE_TYPE"] = "Bazinis kainos tipas negali bûti paðalintas.";
-?>

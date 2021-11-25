@@ -6,7 +6,9 @@
  * @copyright 2001-2013 Bitrix
  */
 
-if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+
+use Bitrix\Main\UserField\Types\BaseType;
 
 /**
  * Bitrix vars
@@ -18,7 +20,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
  * @global CUser $USER
  */
 
-$arParams["bVarsFromForm"] = ($arParams["bVarsFromForm"] ? true:false);
+$arParams["bVarsFromForm"] = ($arParams["bVarsFromForm"] ? true : false);
 $arResult["VALUE"] = false;
 $arUserField = &$arParams["arUserField"];
 
@@ -34,7 +36,7 @@ if($arUserField["USER_TYPE"])
 		if(
 			$arUserField["ENTITY_VALUE_ID"] <= 0
 			&& !is_array($arUserField["SETTINGS"]["DEFAULT_VALUE"])
-			&& strlen($arUserField["SETTINGS"]["DEFAULT_VALUE"]) > 0
+			&& $arUserField["SETTINGS"]["DEFAULT_VALUE"] <> ''
 		)
 		{
 			$arResult["VALUE"] = $arParams["~arUserField"]["SETTINGS"]["DEFAULT_VALUE"];
@@ -46,41 +48,61 @@ if($arUserField["USER_TYPE"])
 	}
 	else
 	{
-		if($arUserField["USER_TYPE"]["BASE_TYPE"]=="file")
-			$arResult["VALUE"] = $GLOBALS[$arUserField["FIELD_NAME"]."_old_id"];
+		if($arUserField["USER_TYPE"]["BASE_TYPE"] == "file")
+		{
+			$arResult["VALUE"] = $GLOBALS[$arUserField["FIELD_NAME"] . "_old_id"];
+		}
 		else
+		{
 			$arResult["VALUE"] = $_REQUEST[$arUserField["FIELD_NAME"]];
+		}
 	}
 
-	if (!is_array($arResult["VALUE"]))
+	if(!is_array($arResult["VALUE"]))
 	{
 		$arResult["VALUE"] = array($arResult["VALUE"]);
 	}
-	if (empty($arResult["VALUE"]))
+	if(empty($arResult["VALUE"]))
 	{
 		$arResult["VALUE"] = array(null);
 	}
 
-	foreach ($arResult["VALUE"] as $key => $res)
+	foreach($arResult["VALUE"] as $key => $res)
 	{
-		switch ($arUserField["USER_TYPE"]["BASE_TYPE"])
+		switch($arUserField["USER_TYPE"]["BASE_TYPE"])
 		{
 			case "double":
-				if (strlen($res)>0)
+				if($res <> '')
+				{
 					$res = round(doubleval($res), $arUserField["SETTINGS"]["PRECISION"]);
+				}
 				break;
 			case "int":
-				$res = intval($res);
+				if($res <> '')
+				{
+					$res = intval($res);
+				}
 				break;
 			default:
-				$res = htmlspecialcharsbx($res);
+				if(
+					is_string($res)
+					&& empty($arUserField['USER_TYPE']['USE_FIELD_COMPONENT'])
+				)
+				{
+					$res = htmlspecialcharsbx($res);
+				}
 				break;
 		}
 		$arResult["VALUE"][$key] = $res;
 	}
 
 	$arUserField["~FIELD_NAME"] = $arUserField["FIELD_NAME"];
-	if ($arUserField["MULTIPLE"]=="Y")
+
+	if (
+		$arUserField["MULTIPLE"]==="Y"
+		&&
+		empty($arUserField['USER_TYPE']['USE_FIELD_COMPONENT'])
+	)
 	{
 		$arUserField["FIELD_NAME"] .= "[]";
 
@@ -90,7 +112,7 @@ if($arUserField["USER_TYPE"])
 		}
 	}
 
-	if (is_callable(array($arUserField["USER_TYPE"]['CLASS_NAME'], 'getlist')))
+	if(is_callable(array($arUserField["USER_TYPE"]['CLASS_NAME'], 'getlist')))
 	{
 		$enum = array();
 
@@ -101,7 +123,7 @@ if($arUserField["USER_TYPE"])
 			&& ($arUserField["SETTINGS"]["DISPLAY"] != "CHECKBOX" || $arUserField["MULTIPLE"] <> "Y")
 		)
 		{
-			$enum = array(null => ($arUserField["SETTINGS"]["CAPTION_NO_VALUE"] <> ''? $arUserField["SETTINGS"]["CAPTION_NO_VALUE"] : GetMessage("MAIN_NO")));
+			$enum = array(null => ($arUserField["SETTINGS"]["CAPTION_NO_VALUE"] <> '' ? htmlspecialcharsbx($arUserField["SETTINGS"]["CAPTION_NO_VALUE"]) : GetMessage("MAIN_NO")));
 		}
 
 		$rsEnum = call_user_func_array(
@@ -114,13 +136,16 @@ if($arUserField["USER_TYPE"])
 		if(!$arParams["bVarsFromForm"] && ($arUserField["ENTITY_VALUE_ID"] <= 0))
 			$arResult["VALUE"] = array();
 
-		while($arEnum = $rsEnum->GetNext())
+		if(is_object($rsEnum))
 		{
-			$enum[$arEnum["ID"]] = $arEnum["VALUE"];
-			if(!$arParams["bVarsFromForm"] && ($arUserField["ENTITY_VALUE_ID"] <= 0))
+			while($arEnum = $rsEnum->GetNext())
 			{
-				if($arEnum["DEF"] == "Y")
-					$arResult["VALUE"][] = $arEnum["ID"];
+				$enum[$arEnum["ID"]] = $arEnum["VALUE"];
+				if(!$arParams["bVarsFromForm"] && ($arUserField["ENTITY_VALUE_ID"] <= 0))
+				{
+					if($arEnum["DEF"] == "Y")
+						$arResult["VALUE"][] = $arEnum["ID"];
+				}
 			}
 		}
 		$arUserField["USER_TYPE"]["FIELDS"] = $enum;
@@ -128,9 +153,44 @@ if($arUserField["USER_TYPE"])
 
 	$arParams["form_name"] = !empty($arParams["form_name"]) ? $arParams["form_name"] : "form1";
 
-	$arResult["RANDOM"] = $this->randString();
+	$arResult["RANDOM"] = ($arParams["RANDOM"] <> '' ? $arParams["RANDOM"] : $this->randString());
 
-	$APPLICATION->AddHeadScript($this->getPath()."/script.js");
+	if(!empty($arUserField['USER_TYPE']['USE_FIELD_COMPONENT']))
+	{
+		$arParams['skip_manager'] = true;
 
-	$this->IncludeComponentTemplate();
+		if($arUserField['MULTIPLE'] === 'Y')
+		{
+			$arUserField['FIELD_NAME'] = $arUserField['~FIELD_NAME'];
+		}
+		$arParams['mode'] = ($arParams['mode'] ?? (
+			(!empty($componentTemplate) && !empty($parentComponentTemplate)) ? $componentTemplate : BaseType::MODE_EDIT)
+		);
+		$arParams['VALUE'] = $arResult['VALUE'];
+		$arParams['parentComponent'] = $this->getParent();
+		$field = new \Bitrix\Main\UserField\Renderer($arUserField, $arParams);
+		print $field->render();
+	}
+	else
+	{
+		if($this->initComponentTemplate() || $arParams['skip_manager'])
+		{
+			$APPLICATION->AddHeadScript($this->getPath() . "/script.js");
+
+			$this->IncludeComponentTemplate();
+		}
+		else
+		{
+			$arParams['skip_manager'] = true;
+
+			if($arUserField['MULTIPLE'] === 'Y')
+			{
+				$arUserField['FIELD_NAME'] = $arUserField['~FIELD_NAME'];
+			}
+
+			global $USER_FIELD_MANAGER;
+			echo $USER_FIELD_MANAGER->GetPublicEdit($arUserField, $arParams);
+		}
+	}
+
 }

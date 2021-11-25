@@ -46,14 +46,14 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 	if($_REQUEST['action_target']=='selected')
 	{
 		$arID = Array();
-		$rsData = CLang::GetList($by, $order, Array());
+		$rsData = CLang::GetList('', '', Array());
 		while($arRes = $rsData->Fetch())
 			$arID[] = $arRes['ID'];
 	}
 
 	foreach($arID as $ID)
 	{
-		if(strlen($ID)<=0)
+		if($ID == '')
 			continue;
 
 		switch($_REQUEST['action'])
@@ -86,6 +86,8 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 }
 
 $APPLICATION->SetTitle(GetMessage("TITLE"));
+
+global $by, $order;
 
 $langs = CLang::GetList($by, $order, Array());
 $rsData = new CAdminResult($langs, $sTableID);

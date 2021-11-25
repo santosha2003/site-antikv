@@ -2,6 +2,8 @@
 namespace Bitrix\Sale\Delivery\Restrictions;
 
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Internals\Entity;
+use Bitrix\Sale\Shipment;
 
 Loc::loadMessages(__FILE__);
 
@@ -38,12 +40,15 @@ class ByWeight extends Base
 		return true;
 	}
 
-	protected static function extractParams(\Bitrix\Sale\Shipment $shipment)
+	protected static function extractParams(Entity $entity)
 	{
-		return $shipment->getWeight();
+		if (!($entity instanceof Shipment))
+			return false;
+
+		return $entity->getWeight();
 	}
 
-	public static function getParamsStructure()
+	public static function getParamsStructure($entityId = 0)
 	{
 		return array(
 			"MIN_WEIGHT" => array(

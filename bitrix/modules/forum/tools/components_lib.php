@@ -2,7 +2,7 @@
 IncludeModuleLangFile(__FILE__); 
 class CForumParameters
 {
-	function GetDateTimeFormat($name="", $parent="")
+	public static function GetDateTimeFormat($name="", $parent="")
 	{
 		$timestamp = mktime(7,30,45,2,22,2007);
 		return array(
@@ -28,7 +28,7 @@ class CForumParameters
 		);
 	}
 	
-	function GetDateFormat($name="", $parent="")
+	public static function GetDateFormat($name="", $parent="")
 	{
 		$timestamp = mktime(7,30,45,2,22,2007);
 		return array(
@@ -52,7 +52,7 @@ class CForumParameters
 		);
 	}
 	
-	function GetForumsMultiSelect($name="", $parent="")
+	public static function GetForumsMultiSelect($name="", $parent="")
 	{
 		return array(
 			"PARENT" => $parent,
@@ -64,7 +64,7 @@ class CForumParameters
 		);
 	}
 	
-	function GetForumsList()
+	public static function GetForumsList()
 	{
 		$arGroup = array();
 		$arForum = array();
@@ -73,7 +73,7 @@ class CForumParameters
 		{
 			do 
 			{
-				$arGroup[intVal($res["ID"])] = $res["~NAME"];
+				$arGroup[intval($res["ID"])] = $res["~NAME"];
 			}while ($res = $db_res->GetNext());
 		}
 
@@ -82,21 +82,21 @@ class CForumParameters
 		{
 			do 
 			{
-				$arForum[intVal($res["ID"])] = $res["~NAME"];
-				if ((intVal($res["FORUM_GROUP_ID"]) > 0) && array_key_exists($res["FORUM_GROUP_ID"], $arGroup))
+				$arForum[intval($res["ID"])] = $res["~NAME"];
+				if ((intval($res["FORUM_GROUP_ID"]) > 0) && array_key_exists($res["FORUM_GROUP_ID"], $arGroup))
 				{
-					$arForum[intVal($res["ID"])] .= " [".$arGroup[$res["FORUM_GROUP_ID"]]."]";
+					$arForum[intval($res["ID"])] .= " [".$arGroup[$res["FORUM_GROUP_ID"]]."]";
 				}
 				if ($res["ACTIVE"] != "Y")
 				{
-					$arForum[intVal($res["ID"])] .= " N/A";
+					$arForum[intval($res["ID"])] .= " N/A";
 				}
 			}while ($res = $db_res->GetNext());
 		}
 		return $arForum;
 	}
 	
-	function GetSendMessageRights($name="", $parent="", $default = "A", $object = "MAIL")
+	public static function GetSendMessageRights($name="", $parent="", $default = "A", $object = "MAIL")
 	{
 		if ($object == "ICQ")
 		{
@@ -139,7 +139,7 @@ class CForumParameters
 		);
 	}
 	
-	function GetSetNavigation($name="", $parent="")
+	public static function GetSetNavigation($name="", $parent="")
 	{
 		return array(
 			"PARENT" => $parent,
@@ -149,7 +149,8 @@ class CForumParameters
 			"DEFAULT" => "Y"
 		);
 	}
-	function GetWordLength($name="", $parent="ADDITIONAL_SETTINGS")
+
+	public static function GetWordLength($name="", $parent="ADDITIONAL_SETTINGS")
 	{
 		if (empty($name))
 			$name = GetMessage("F_WORD_LENGTH");
@@ -161,7 +162,8 @@ class CForumParameters
 		);
 		
 	}
-	function GetWordWrapCut($name="", $parent="ADDITIONAL_SETTINGS")
+
+	public static function GetWordWrapCut($name="", $parent="ADDITIONAL_SETTINGS")
 	{
 		if (empty($name))
 			$name = GetMessage("F_WORD_WRAP_CUT");
@@ -180,7 +182,7 @@ class CForumParameters
 		
 	}
 	
-	function GetAjaxType($name="", $parent="ADDITIONAL_SETTINGS")
+	public static function GetAjaxType($name="", $parent="ADDITIONAL_SETTINGS")
 	{
 		if (empty($name))
 			$name = GetMessage("F_AJAX_TYPE");
@@ -191,7 +193,7 @@ class CForumParameters
 			"DEFAULT" => "Y");
 	}
 	
-	function AddPagerSettings(&$arComponentParameters, $sTitle = "", $arParams = array(
+	public static function AddPagerSettings(&$arComponentParameters, $sTitle = "", $arParams = array(
 			// "bAddGroupOnly" => false,
 			// "bDescNumbering" => true
 	))
@@ -239,7 +241,7 @@ class CForumParameters
 
 class CForumFormat
 {
-	function DateFormat($format="", $timestamp="")
+	public static function DateFormat($format="", $timestamp="")
 	{
 		global $DB;
 
@@ -254,13 +256,15 @@ class CForumFormat
 		}
 	}
 	
-	function FormatDate($strDate, $format="DD.MM.YYYY HH:MI:SS", $new_format="DD.MM.YYYY HH:MI:SS")
+	public static function FormatDate($strDate, $format="DD.MM.YYYY HH:MI:SS", $new_format="DD.MM.YYYY HH:MI:SS")
 	{
+		global $DB;
+
 		$strDate = trim($strDate);
 
 		$new_format = str_replace("MI","I", $new_format);
 		$new_format = preg_replace("/([DMYIHS])\\1+/is".BX_UTF_PCRE_MODIFIER, "\\1", $new_format);
-		$arFormat = preg_split("/[^0-9a-z]/is", strtoupper($format));
+		$arFormat = preg_split("/[^0-9a-z]/is", mb_strtoupper($format));
 		$arDate = preg_split("/[^0-9]/", $strDate);
 		$arParsedDate=Array();
 		$bound = min(count($arFormat), count($arDate));
@@ -269,13 +273,13 @@ class CForumFormat
 		{
 			//if ($intval) $r = IntVal($arDate[$i]); else
 			if (preg_match("/^[0-9]/", $arDate[$i]))
-				$r = CDatabase::ForSql($arDate[$i], 4);
+				$r = $DB->ForSql($arDate[$i], 4);
 			else
-				$r = IntVal($arDate[$i]);
+				$r = intval($arDate[$i]);
 
-			$arParsedDate[substr($arFormat[$i], 0, 2)] = $r;
+			$arParsedDate[mb_substr($arFormat[$i], 0, 2)] = $r;
 		}
-		if (intval($arParsedDate["DD"])<=0 || intval($arParsedDate["MM"])<=0 || intval($arParsedDate["YY"])<=0) 
+		if (intval($arParsedDate["DD"])<=0 || intval($arParsedDate["MM"])<=0 || intval($arParsedDate["YY"])<=0)
 			return false;
 
 		$strResult = "";
@@ -291,16 +295,16 @@ class CForumFormat
 					intval($arParsedDate["YY"])
 					);
 
-			for ($i=0; $i<strlen($new_format); $i++)
+			for ($i=0; $i < mb_strlen($new_format); $i++)
 			{
-				$simbol = substr($new_format, $i ,1);
+				$simbol = mb_substr($new_format, $i, 1);
 				switch ($simbol)
 				{
 					case "F":$match=GetMessage("FORUM_MONTH_".date("n", $ux_time));break;
 					case "M":$match=GetMessage("FORUM_MON_".date("n", $ux_time));break;
 					case "l":$match=GetMessage("FORUM_DAY_OF_WEEK_".date("w", $ux_time));break;
 					case "D":$match=GetMessage("FORUM_DOW_".date("w", $ux_time));break;
-					default: $match = date(substr($new_format, $i ,1), $ux_time); break;
+					default: $match = date(mb_substr($new_format, $i, 1), $ux_time); break;
 				}
 				$strResult .= $match;
 			}
@@ -309,55 +313,57 @@ class CForumFormat
 		{
 			if($arParsedDate["MM"]<1 || $arParsedDate["MM"]>12) 
 				$arParsedDate["MM"] = 1;
-			for ($i=0; $i<strLen($new_format); $i++)
+			for ($i=0; $i < mb_strlen($new_format); $i++)
 			{
-				$simbol = substr($new_format, $i ,1);
+				$simbol = mb_substr($new_format, $i, 1);
 				switch ($simbol)
 				{
 					case "F":
 						$match = str_pad($arParsedDate["MM"], 2, "0", STR_PAD_LEFT);
-						if (intVal($arParsedDate["MM"]) > 0)
-							$match=GetMessage("FORUM_MONTH_".intVal($arParsedDate["MM"]));
+						if (intval($arParsedDate["MM"]) > 0)
+							$match=GetMessage("FORUM_MONTH_".intval($arParsedDate["MM"]));
 						break;
 					case "M":
 						$match = str_pad($arParsedDate["MM"], 2, "0", STR_PAD_LEFT);
-						if (intVal($arParsedDate["MM"]) > 0)
-							$match=GetMessage("FORUM_MON_".intVal($arParsedDate["MM"]));
+						if (intval($arParsedDate["MM"]) > 0)
+							$match=GetMessage("FORUM_MON_".intval($arParsedDate["MM"]));
 						break;
 					case "l":
 						$match = str_pad($arParsedDate["DD"], 2, "0", STR_PAD_LEFT);
-						if (intVal($arParsedDate["DD"]) > 0)
-							$match = GetMessage("FORUM_DAY_OF_WEEK_".intVal($arParsedDate["DD"]));
+						if (intval($arParsedDate["DD"]) > 0)
+							$match = GetMessage("FORUM_DAY_OF_WEEK_".intval($arParsedDate["DD"]));
 						break;
 					case "D": 
 						$match = str_pad($arParsedDate["DD"], 2, "0", STR_PAD_LEFT); 
-						if (intVal($arParsedDate["DD"]) > 0)
-							$match = GetMessage("FORUM_DOW_".intVal($arParsedDate["DD"]));
+						if (intval($arParsedDate["DD"]) > 0)
+							$match = GetMessage("FORUM_DOW_".intval($arParsedDate["DD"]));
 						break;
 					case "d": $match = str_pad($arParsedDate["DD"], 2, "0", STR_PAD_LEFT); break;
 					case "m": $match = str_pad($arParsedDate["MM"], 2, "0", STR_PAD_LEFT); break;
-					case "j": $match = intVal($arParsedDate["MM"]); break;
+					case "j": $match = str_pad($arParsedDate["DD"], 2, "0", STR_PAD_LEFT); break;
 					case "Y": $match = str_pad($arParsedDate["YY"], 4, "0", STR_PAD_LEFT); break;
-					case "y": $match = substr($arParsedDate["YY"], 2);break;
+					case "y":
+						$match = mb_substr($arParsedDate["YY"], 2);break;
 					case "H": $match = str_pad($arParsedDate["HH"], 2, "0", STR_PAD_LEFT); break;
 					case "i": $match = str_pad($arParsedDate["MI"], 2, "0", STR_PAD_LEFT); break;
 					case "S": $match = str_pad($arParsedDate["SS"], 2, "0", STR_PAD_LEFT); break;
 					case "g": 
-						$match = intVal($arParsedDate["HH"]);
+						$match = intval($arParsedDate["HH"]);
 						if ($match > 12)
 							$match = $match-12;
 					case "a": 
 					case "A": 
-						$match = intVal($arParsedDate["HH"]);
+						$match = intval($arParsedDate["HH"]);
 						if ($match > 12)
 							$match = ($match-12)." PM";
 						else 
 							$match .= " AM";
 							
-						if (substr($new_format, $i ,1) == "a")
-							$match = strToLower($match);
+						if (mb_substr($new_format, $i, 1) == "a")
+							$match = mb_strtolower($match);
 							
-					default: $match = substr($new_format, $i ,1); break;
+					default:
+						$match = mb_substr($new_format, $i, 1); break;
 				}
 				$strResult .= $match;
 			}
@@ -409,4 +415,3 @@ GetMessage("FORUM_NAVIGATION");
 GetMessage("FORUM_TOP_PAGER");
 
 */
-?>

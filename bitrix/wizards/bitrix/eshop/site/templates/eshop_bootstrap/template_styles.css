@@ -36,9 +36,9 @@ body.bx-background-image{
 		background-size:1280px auto;
 	}
 }
-@media (max-width: 767px){
-	body.bx-background-image{
-		background: none ;
+@media (max-width: 767px) {
+	body.bx-background-image {
+		background: none;
 	}
 }
 
@@ -82,7 +82,6 @@ img {
 	width: auto;
 	max-width: 100%;
 	height: auto;
-	max-height: 100%
 }
 
 .bx-header {}
@@ -97,6 +96,12 @@ img {
 	display: block;
 	height: 50px;
 	border-bottom: none;
+}
+.bx-logo .bx-logo-block img{
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	max-height:100%;
 }
 
 .bx-logo-text,
@@ -167,6 +172,7 @@ img {
 }
 
 .bx-content-seection {
+	min-height: 50vh;
 	padding: 0 45px 5px;
 	background: #fff;
 	border-left: 1px solid #eaebec;
@@ -599,6 +605,17 @@ textarea {
 	}
 }
 /**/
+
+.btn,
+.btn:hover,
+.btn:active,
+.btn:focus{
+	text-shadow: none !important;
+	-webkit-box-shadow:none !important;
+	   -moz-box-shadow:none !important;
+			box-shadow:none !important;
+	outline:none !important;
+}
 
 .btn-primary {
 	background-color: #1485ce;

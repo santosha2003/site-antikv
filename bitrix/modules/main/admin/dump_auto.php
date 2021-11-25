@@ -26,8 +26,8 @@ IncludeModuleLangFile(dirname(__FILE__).'/dump.php');
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/backup.php");
 $strBXError = '';
 $bGzip = function_exists('gzcompress');
-$bMcrypt = function_exists('mcrypt_encrypt');
-$bBitrixCloud = $bMcrypt;
+$encrypt = function_exists('openssl_encrypt');
+$bBitrixCloud = $encrypt;
 if (!CModule::IncludeModule('bitrixcloud'))
 {
 	$bBitrixCloud = false;
@@ -60,7 +60,7 @@ if (!preg_match('/^[a-z0-9\.\-]+$/i', $server_name)) // cyrillic domain hack
 	$converter = new CBXPunycode(defined('BX_UTF') && BX_UTF === true ? 'UTF-8' : 'windows-1251');
 	$host = $converter->Encode($server_name);
 	if (!preg_match('#--p1ai$#', $host)) // trying to guess
-		$host = $converter->Encode(CharsetConverter::ConvertCharset($server_name, 'utf-8', 'windows-1251'));
+		$host = $converter->Encode(\Bitrix\Main\Text\Encoding::convertEncoding($server_name, 'utf-8', 'windows-1251'));
 	$server_name = $host;
 }
 $url = (CMain::IsHTTPS() ? "https://" : "http://").$server_name;
@@ -80,7 +80,7 @@ if($_REQUEST['save'])
 	else
 	{
 		$BUCKET_ID = $_REQUEST['dump_bucket_id'];
-		if (!$bMcrypt)
+		if (!$encrypt)
 		{
 			$_REQUEST['dump_encrypt_key'] = '';
 			if ($BUCKET_ID == -1)
@@ -142,7 +142,7 @@ if($_REQUEST['save'])
 					break;
 				case 2:
 					if ($w%2)
-						$arWeekDays = array(1,3,5);
+						$arWeekDays = array(1,3,5,0);
 					else
 						$arWeekDays = array(0,2,4,6);
 					break;
@@ -168,15 +168,6 @@ if($_REQUEST['save'])
 				);
 				$strMessage .= '<br>'.GetMessage('DUMP_CHECK_BITRIXCLOUD', array('#LINK#' => '/bitrix/admin/bitrixcloud_backup_job.php?lang='.LANGUAGE_ID));
 			}
-
-			$dump_site_id = array();
-			$res = CSite::GetList($by='sort', $order='asc', array('ACTIVE'=>'Y'));
-			while($f = $res->Fetch())
-			{
-				$root = rtrim($f['ABS_DOC_ROOT'],'/');
-				if (is_dir($root))
-					$dump_site_id[] = $f['ID'];
-			}
 		}
 		elseif ($_REQUEST['dump_auto_green_button'])
 			$strError = GetMessage('DUMP_WARN_NO_BITRIXCLOUD');
@@ -197,6 +188,9 @@ if($_REQUEST['save'])
 
 		IntOptionSet("dump_integrity_check", $_REQUEST['dump_integrity_check'] == 'Y');
 		IntOptionSet("dump_use_compression", $bGzip && $_REQUEST['dump_disable_gzip'] != 'Y');
+
+		IntOptionSet("dump_max_exec_time", $_REQUEST['dump_max_exec_time']);
+		IntOptionSet("dump_max_exec_time_sleep", $_REQUEST['dump_max_exec_time_sleep']);
 
 		$dump_archive_size_limit = intval($_REQUEST['dump_archive_size_limit'] * 1024 * 1024);
 		if ($dump_archive_size_limit <= 10240 * 1024)
@@ -235,7 +229,6 @@ if($_REQUEST['save'])
 		COption::SetOptionString("main", "skip_mask_array_auto", serialize($skip_mask_array));
 
 		IntOptionSet('dump_max_file_size', intval($_REQUEST['max_file_size']));
-		IntOptionSet('skip_symlinks', $_REQUEST['skip_symlinks'] == 'Y');
 
 		if ($strError)
 			CAdminMessage::ShowMessage(array(
@@ -281,10 +274,10 @@ else
 			"HTML" => true));
 }
 
-if (!$bMcrypt)
+if (!$encrypt)
 {
 	CAdminMessage::ShowMessage(array(
-		"MESSAGE" => GetMessage("MAIN_DUMP_NOT_INSTALLED"),
+		"MESSAGE" => GetMessage("MAIN_DUMP_NOT_INSTALLED1"),
 		"DETAILS" => GetMessage("MAIN_DUMP_NO_ENC_FUNCTIONS"),
 		"TYPE" => "ERROR",
 		"HTML" => true));
@@ -377,6 +370,13 @@ function BigGreenButton()
 	{
 		document.fd1.dump_auto_time.value = '<?=sprintf('%02d:%d0', rand(0,5), rand(0,3))?>';
 		document.fd1.dump_auto_interval.value = 7;
+	}
+
+	var i = 0;
+	while(ob = BX('dump_site_id' + i))
+	{
+		ob.checked = true;
+		i++;
 	}
 	document.fd1.dump_auto_green_button.value = 1;
 	SaveSettings();
@@ -600,7 +600,7 @@ if ($BUCKET_ID == -1 && !$bBitrixCloud)
 </tr>
 <?
 	$arSitePath = array();
-	$res = CSite::GetList($by='sort', $order='asc', array('ACTIVE'=>'Y'));
+	$res = CSite::GetList('sort', 'asc', array('ACTIVE'=>'Y'));
 	while($f = $res->Fetch())
 	{
 		$root = rtrim($f['ABS_DOC_ROOT'],'/');
@@ -616,14 +616,15 @@ if ($BUCKET_ID == -1 && !$bBitrixCloud)
 		<td>
 			<?
 				if ($s = COption::GetOptionString("main", "dump_site_id"."_auto", ($NS['dump_site_id'])))
-					$dump_site_id = unserialize($s);
+					$dump_site_id = unserialize($s, ['allowed_classes' => false]);
 				else
 					$dump_site_id = array();
 				$i = 0;
 				foreach($arSitePath as $path => $val)
 				{
 					$path = rtrim(str_replace('\\','/',$path),'/');
-					list($k,$v) = each($val);
+					$k = key($val);
+					$v = current($val);
 					echo '<div><input type=checkbox id="dump_site_id'.$i.'" name="dump_site_id[]" value="'.htmlspecialcharsbx($k).'" '.(in_array($k, $dump_site_id) ? ' checked' : '').'> <label for="dump_site_id'.$i.'">'.htmlspecialcharsbx($v).'</label></div>';
 					$i++;
 				}
@@ -685,7 +686,7 @@ if ($DB->type == 'MYSQL')
 		<?
 		$i=-1;
 
-		$res = unserialize(COption::GetOptionString("main","skip_mask_array_auto"));
+		$res = unserialize(COption::GetOptionString("main","skip_mask_array_auto"), ['allowed_classes' => false]);
 		$skip_mask_array = is_array($res)?$res:array();
 
 		foreach($skip_mask_array as $mask)
@@ -709,13 +710,6 @@ if ($DB->type == 'MYSQL')
 	<td><input type="text" name="max_file_size" size="10" value="<?=IntOption("dump_max_file_size", 0)?>">
 	<?echo GetMessage("MAIN_DUMP_FILE_MAX_SIZE_kb")?></td>
 </tr>
-<tr>
-	<td><?echo GetMessage("MAIN_DUMP_SKIP_SYMLINKS")?></td>
-	<td><input type="checkbox" name="skip_symlinks" value="Y" <?=IntOption("skip_symlinks", 0) ? "checked" : ''?>></td>
-</tr>
-
-
-
 
 <tr class="heading">
 	<td colspan="2"><?=GetMessage("DUMP_MAIN_ARC_MODE")?></td>
@@ -723,7 +717,7 @@ if ($DB->type == 'MYSQL')
 
 <tr>
 	<td><?=GetMessage("MAIN_DUMP_ENABLE_ENC")?><span class="required"><sup>2</sup></td>
-	<td><input type="checkbox" name="dump_encrypt" value="Y" <?=($BUCKET_ID == -1 || CPasswordStorage::Get('dump_temporary_cache') ? "checked" : "")?> <?=!$bMcrypt || $BUCKET_ID == -1  ? 'disabled' : ''?>></td>
+	<td><input type="checkbox" name="dump_encrypt" value="Y" <?=($BUCKET_ID == -1 || CPasswordStorage::Get('dump_temporary_cache') ? "checked" : "")?> <?=!$encrypt || $BUCKET_ID == -1  ? 'disabled' : ''?>></td>
 </tr>
 <tr>
 	<td width=40%><?=GetMessage('INTEGRITY_CHECK_OPTION')?></td>
@@ -733,7 +727,16 @@ if ($DB->type == 'MYSQL')
 	<td><?=GetMessage('DISABLE_GZIP')?></td>
 	<td><input type="checkbox" name="dump_disable_gzip" value="Y" <?=IntOption('dump_use_compression') && $bGzip ? '' : 'checked' ?> <?=!$bGzip ? 'disabled' : ''?>>
 </tr>
-
+<tr>
+	<td width=40%><?=GetMessage('STEP_LIMIT')?></td>
+	<td>
+		<input type="text" name="dump_max_exec_time" value="<?=IntOption("dump_max_exec_time", 20)?>" size=2>
+		<?echo GetMessage("MAIN_DUMP_FILE_STEP_sec");?>,
+		<?echo GetMessage("MAIN_DUMP_FILE_STEP_SLEEP")?>
+		<input type="text" name="dump_max_exec_time_sleep" value="<?=IntOption("dump_max_exec_time_sleep", 3)?>" size=2>
+		<?echo GetMessage("MAIN_DUMP_FILE_STEP_sec");?>
+	</td>
+</tr>
 <tr>
 	<td><?=GetMessage("MAIN_DUMP_MAX_ARCHIVE_SIZE")?></td>
 	<td><input type="text" name="dump_archive_size_limit" value="<?=IntOption('dump_archive_size_limit', 100 * 1024 * 1024) / 1024 / 1024?>" size=4> <?=GetMessage("MAIN_DUMP_MAX_ARCHIVE_SIZE_VALUES")?><span class="required"><sup>3</sup></span></td>
@@ -770,6 +773,7 @@ function IntOption($name, $def = 0)
 
 function IntOptionSet($name, $val)
 {
+	$val = intval($val);
 	COption::SetOptionInt('main', $name.'_auto', $val);
 }
 ?>

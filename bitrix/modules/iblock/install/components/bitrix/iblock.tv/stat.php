@@ -13,7 +13,7 @@ if(
 	if(
 		$arFile["STAT_EVENT"]
 		&& !$arFile["WAS_STAT_EVENT"] //not yet for this session
-		&& strlen($arFile["STAT_EVENT1"]) > 0 //event1 defined
+		&& $arFile["STAT_EVENT1"] <> '' //event1 defined
 		&& CModule::IncludeModule('statistic')
 	)
 	{
@@ -31,5 +31,4 @@ if(
 		$_SESSION["player_files"][$_REQUEST["id"]]["WAS_SHOW_COUNTER_EVENT"] = true;
 	}
 }
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/epilog_after.php");
-?>
+CMain::FinalActions();

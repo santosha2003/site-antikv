@@ -2,18 +2,32 @@
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Web\Json;
 use Bitrix\Socialservices\Network;
+use Bitrix\Socialservices\UserTable;
 
 Loc::loadMessages(__FILE__);
 
-if(!defined('B24NETWORK_URL'))
+if(!defined('B24NETWORK_NODE'))
 {
-	define('B24NETWORK_URL', 'https://www.bitrix24.net');
+	$defaultValue = \Bitrix\Main\Config\Option::get('socialservices', 'network_url', '');
+
+	if($defaultValue <> '')
+	{
+		define('B24NETWORK_NODE', $defaultValue);
+	}
+	elseif(defined('B24NETWORK_URL'))
+	{
+		define('B24NETWORK_NODE', B24NETWORK_URL);
+	}
+	else
+	{
+		define('B24NETWORK_NODE', 'https://www.bitrix24.net');
+	}
 }
 
 class CSocServBitrix24Net extends CSocServAuth
 {
 	const ID = "Bitrix24Net";
-	const NETWORK_URL = B24NETWORK_URL;
+	const NETWORK_URL = B24NETWORK_NODE;
 
 	protected $entityOAuth = null;
 
@@ -73,9 +87,9 @@ class CSocServBitrix24Net extends CSocServAuth
 			(defined("ADMIN_SECTION") && ADMIN_SECTION == true ? 'admin=1' : 'site_id='.SITE_ID)
 			.'&backurl='.urlencode($GLOBALS["APPLICATION"]->GetCurPageParam(
 				'check_key='.CSocServAuthManager::GetUniqueKey(),
-				array(
-					"logout", "auth_service_error", "auth_service_id", "check_key"
-				)
+				array_merge(array(
+					"auth_service_error", "auth_service_id", "check_key", "error_message"
+				), \Bitrix\Main\HttpRequest::getSystemParameters())
 			))
 			.'&mode='.$mode;
 
@@ -92,17 +106,21 @@ class CSocServBitrix24Net extends CSocServAuth
 		return $this->getEntityOAuth()->addScope($scope);
 	}
 
-	public function Authorize()
+	public function Authorize($skipCheck = false)
 	{
 		global $APPLICATION;
 		$APPLICATION->RestartBuffer();
 
 		$bProcessState = false;
 		$authError = SOCSERV_AUTHORISATION_ERROR;
+		$errorMessage = '';
 
 		if(
-			(isset($_REQUEST["code"]) && $_REQUEST["code"] <> '')
-			&& CSocServAuthManager::CheckUniqueKey()
+			$skipCheck
+			|| (
+				(isset($_REQUEST["code"]) && $_REQUEST["code"] <> '')
+				&& CSocServAuthManager::CheckUniqueKey()
+			)
 		)
 		{
 			$redirect_uri = \CHTTP::URN2URI('/bitrix/tools/oauth/bitrix24net.php');
@@ -114,70 +132,28 @@ class CSocServBitrix24Net extends CSocServAuth
 				parse_str($_REQUEST["state"], $arState);
 				$bAdmin = isset($arState['admin']);
 			}
-
 			if($bAdmin)
 			{
 				$this->checkRestrictions = false;
 				$this->addScope("admin");
 			}
 
-			if($this->getEntityOAuth($_REQUEST["code"])->GetAccessToken($redirect_uri) !== false)
+			if(!$skipCheck)
+			{
+				$this->getEntityOAuth()->setCode($_REQUEST["code"]);
+			}
+
+			if($this->getEntityOAuth()->GetAccessToken($redirect_uri) !== false)
 			{
 				$arB24NetUser = $this->getEntityOAuth()->GetCurrentUser();
 				if($arB24NetUser)
 				{
-					if(isset($_REQUEST['checkword']) && $arB24NetUser['PROFILE_ID'] > 0)
-					{
-						$profileId = $arB24NetUser['PROFILE_ID'];
-						$checkword = trim($_REQUEST['checkword']);
-
-						$dbRes = CUser::getById($profileId);
-						$arUser = $dbRes->fetch();
-
-						if($arUser && !$arUser['LAST_LOGIN'])
-						{
-							if($arUser['CONFIRM_CODE'] == $checkword)
-							{
-								$arUserFields = array(
-									'CONFIRM_CODE' => '',
-									'XML_ID' => $arB24NetUser['ID'],
-									'EXTERNAL_AUTH_ID' => 'socservices',
-								);
-
-								if($arUser['NAME'] == '' && $arUser['LAST_NAME'] == '')
-								{
-									$arUserFields['NAME'] = $arB24NetUser['NAME'];
-									$arUserFields['LAST_NAME'] = $arB24NetUser['LAST_NAME'];
-
-									if(
-										strlen($arB24NetUser['PERSONAL_PHOTO']) > 0
-										&& self::CheckPhotoURI($arB24NetUser['PERSONAL_PHOTO']))
-									{
-										$arUserFields['PERSONAL_PHOTO'] = CFile::MakeFileArray($arB24NetUser['PERSONAL_PHOTO']);
-									}
-								}
-
-								if($arB24NetUser["TIME_ZONE"] !== null)
-								{
-									$arUserFields["TIME_ZONE"] = $arB24NetUser["TIME_ZONE"];
-								}
-
-								$obUser = new CUser();
-								if($obUser->update($profileId, $arUserFields))
-								{
-									foreach(GetModuleEvents("main", "OnUserInitialize", true) as $arEvent)
-									{
-										ExecuteModuleEventEx($arEvent, array($profileId, $arUserFields));
-									}
-								}
-							}
-						}
-					}
+					$authError = true;
 
 					$arFields = array(
 						'EXTERNAL_AUTH_ID' => self::ID,
 						'XML_ID' => $arB24NetUser["ID"],
-						'LOGIN' => "B24_".$arB24NetUser["ID"],
+						'LOGIN' => isset($arB24NetUser['LOGIN']) ? $arB24NetUser['LOGIN'] : "B24_".$arB24NetUser["ID"],
 						'NAME' => $arB24NetUser["NAME"],
 						'LAST_NAME' => $arB24NetUser["LAST_NAME"],
 						'EMAIL' => $arB24NetUser["EMAIL"],
@@ -187,20 +163,26 @@ class CSocServBitrix24Net extends CSocServAuth
 						'OATOKEN_EXPIRES' => $this->getEntityOAuth()->getAccessTokenExpires(),
 					);
 
-					if(IsModuleInstalled('bitrix24'))
+					foreach(GetModuleEvents("socialservices", "OnBeforeNetworkUserAuthorize", true) as $arEvent)
 					{
-						$this->allowChangeOwner = false;
-
-						$arFields['LOGIN'] = $arFields['EMAIL'];
-						$arFields['TIME_ZONE_OFFSET'] = strval(-intval($arB24NetUser['TIME_ZONE_OFFSET']/60));
+						if(ExecuteModuleEventEx($arEvent, array(&$arFields, $arB24NetUser, $this)) === false)
+						{
+							$authError = SOCSERV_AUTHORISATION_ERROR;
+							$errorMessage = $APPLICATION->GetException();
+							break;
+						}
 					}
 
-					if(strlen(SITE_ID) > 0)
+					if($authError === true)
 					{
-						$arFields["SITE_ID"] = SITE_ID;
-					}
+						if(SITE_ID <> '')
+						{
+							$arFields["SITE_ID"] = SITE_ID;
+						}
 
-					$authError = $this->AuthorizeUser($arFields);
+						$bSaveNetworkAuth = COption::GetOptionString("main", "allow_external_auth_stored_hash", "N") == "Y";
+						$authError = $this->AuthorizeUser($arFields, $bSaveNetworkAuth);
+					}
 				}
 
 				if($authError !== true && !IsModuleInstalled('bitrix24'))
@@ -217,6 +199,11 @@ class CSocServBitrix24Net extends CSocServAuth
 
 		$bSuccess = $authError === true;
 
+		if ($bSuccess)
+		{
+			CSocServAuthManager::SetAuthorizedServiceId(self::ID);
+		}
+
 		// hack to update option used for visualization in module options
 		if($bSuccess && !self::GetOption("bitrix24net_domain"))
 		{
@@ -224,7 +211,7 @@ class CSocServBitrix24Net extends CSocServAuth
 			self::SetOption("bitrix24net_domain", ($request->isHttps() ? "https://" : "http://").$request->getHttpHost());
 		}
 
-		$aRemove = array("logout", "auth_service_error", "auth_service_id", "code", "error_reason", "error", "error_description", "check_key", "current_fieldset", "checkword");
+		$aRemove = array_merge(array("auth_service_error", "auth_service_id", "code", "error_reason", "error", "error_description", "check_key", "current_fieldset", "checkword"), \Bitrix\Main\HttpRequest::getSystemParameters());
 
 		$url = ($APPLICATION->GetCurDir() == "/login/") ? "" : $APPLICATION->GetCurDir();
 
@@ -251,7 +238,7 @@ class CSocServBitrix24Net extends CSocServAuth
 				{
 					foreach($aRemove as $param)
 					{
-						if(strpos($value, $param."=") === 0)
+						if(mb_strpos($value, $param."=") === 0)
 						{
 							unset($arUrlQuery[$key]);
 							break;
@@ -268,7 +255,7 @@ class CSocServBitrix24Net extends CSocServAuth
 			}
 		}
 
-		if(strlen($url) <= 0 || preg_match("'^(http://|https://|ftp://|//)'i", $url))
+		if($url == '' || preg_match("'^(http://|https://|ftp://|//)'i", $url))
 		{
 			$url = \CHTTP::URN2URI('/');
 		}
@@ -287,7 +274,7 @@ class CSocServBitrix24Net extends CSocServAuth
 				{
 					unset($_SESSION['B24_NETWORK_REDIRECT_TRY']);
 					$url = self::getUrl();
-					$url .= (strpos($url, '?') >= 0 ? '&' : '?').'skip_redirect=1';
+					$url .= (mb_strpos($url, '?') >= 0 ? '&' : '?').'skip_redirect=1&error_message='.urlencode($errorMessage);
 				}else
 				{
 					$_SESSION['B24_NETWORK_REDIRECT_TRY'] = true;
@@ -305,12 +292,16 @@ class CSocServBitrix24Net extends CSocServAuth
 				{
 					$url = (isset($urlPath)) ? $urlPath.'?auth_service_id='.self::ID.'&auth_service_error='.$authError : $GLOBALS['APPLICATION']->GetCurPageParam(('auth_service_id='.self::ID.'&auth_service_error='.$authError), $aRemove);
 				}
+				if($errorMessage <> '')
+				{
+					$url .= '&error_message='.urlencode($errorMessage);
+				}
 			}
 		}
 
-		if(CModule::IncludeModule("socialnetwork") && strpos($url, "current_fieldset=") === false)
+		if(CModule::IncludeModule("socialnetwork") && mb_strpos($url, "current_fieldset=") === false)
 		{
-			$url .= ((strpos($url, "?") === false) ? '?' : '&')."current_fieldset=SOCSERV";
+			$url .= ((mb_strpos($url, "?") === false) ? '?' : '&')."current_fieldset=SOCSERV";
 		}
 
 		if($url === $APPLICATION->GetCurPageParam())
@@ -327,6 +318,7 @@ class CSocServBitrix24Net extends CSocServAuth
 </script>
 <?
 
+		\CMain::FinalActions();
 		die();
 	}
 
@@ -335,7 +327,7 @@ class CSocServBitrix24Net extends CSocServAuth
 		if(defined("LICENSE_KEY") && LICENSE_KEY !== "DEMO")
 		{
 			$query = new \Bitrix\Main\Web\HttpClient();
-			$result = $query->get(B24NETWORK_URL.'/client.php?action=register&redirect_uri='.urlencode($domain.'/bitrix/tools/oauth/bitrix24net.php').'&key='.urlencode(LICENSE_KEY));
+			$result = $query->get(static::NETWORK_URL.'/client.php?action=register&redirect_uri='.urlencode($domain.'/bitrix/tools/oauth/bitrix24net.php').'&key='.urlencode(LICENSE_KEY));
 
 			$arResult = null;
 			if($result)
@@ -368,7 +360,7 @@ class CSocServBitrix24Net extends CSocServAuth
 
 class CBitrix24NetOAuthInterface
 {
-	const NET_URL = B24NETWORK_URL;
+	const NET_URL = B24NETWORK_NODE;
 
 	const INVITE_URL = "/invite/";
 	const PASSPORT_URL = "/id/";
@@ -380,6 +372,7 @@ class CBitrix24NetOAuthInterface
 	protected $code = false;
 	protected $access_token = false;
 	protected $accessTokenExpires = 0;
+	protected $lastAuth = null;
 	protected $refresh_token = '';
 	protected $scope = array(
 		'auth',
@@ -411,6 +404,7 @@ class CBitrix24NetOAuthInterface
 		}
 
 		$this->httpTimeout = SOCSERV_DEFAULT_HTTP_TIMEOUT;
+
 		$this->appID = $appID;
 		$this->appSecret = $appSecret;
 		$this->code = $code;
@@ -519,9 +513,13 @@ class CBitrix24NetOAuthInterface
 			"&checkword=".$checkword;
 	}
 
+	public function getLastAuth()
+	{
+		return $this->lastAuth;
+	}
+
 	public function GetAccessToken($redirect_uri = '')
 	{
-
 		if($this->code === false)
 		{
 			$token = $this->getStorageTokens();
@@ -531,24 +529,27 @@ class CBitrix24NetOAuthInterface
 			{
 				$this->access_token = $token["OATOKEN"];
 				$this->accessTokenExpires = $token["OATOKEN_EXPIRES"];
+			}
 
-				if($this->checkAccessToken())
+			if($this->access_token && $this->checkAccessToken())
+			{
+				return true;
+			}
+			elseif(isset($token["REFRESH_TOKEN"]))
+			{
+				if($this->getNewAccessToken($token["REFRESH_TOKEN"], $token["USER_ID"], true))
 				{
 					return true;
-				}
-				elseif(isset($token["REFRESH_TOKEN"]))
-				{
-					if($this->getNewAccessToken($token["REFRESH_TOKEN"], $token["USER_ID"], true))
-					{
-						return true;
-					}
 				}
 			}
 
 			return false;
 		}
 
-		$http = new \Bitrix\Main\Web\HttpClient(array('socketTimeout' => $this->httpTimeout));
+		$http = new \Bitrix\Main\Web\HttpClient(array(
+			'socketTimeout' => $this->httpTimeout,
+			'streamTimeout' => $this->httpTimeout,
+		));
 
 		$result = $http->get(self::NET_URL.self::TOKEN_URL.'?'.http_build_query(array(
 			'code' => $this->code,
@@ -559,7 +560,14 @@ class CBitrix24NetOAuthInterface
 			'grant_type' => 'authorization_code',
 		)));
 
-		$arResult = Json::decode($result);
+		try
+		{
+			$arResult = Json::decode($result);
+		}
+		catch(\Bitrix\Main\ArgumentException $e)
+		{
+			$arResult = array("error" => "ERROR_RESPONSE", "error_description" => "Wrong response from Network");
+		}
 
 		if(isset($arResult["access_token"]) && $arResult["access_token"] <> '')
 		{
@@ -570,6 +578,8 @@ class CBitrix24NetOAuthInterface
 
 			$this->access_token = $arResult["access_token"];
 			$this->accessTokenExpires = time() + $arResult["expires_in"];
+
+			$this->lastAuth = $arResult;
 
 			return true;
 		}
@@ -587,7 +597,10 @@ class CBitrix24NetOAuthInterface
 		if($scope != null)
 			$this->addScope($scope);
 
-		$http = new \Bitrix\Main\Web\HttpClient(array('socketTimeout' => $this->httpTimeout));
+		$http = new \Bitrix\Main\Web\HttpClient(array(
+			'socketTimeout' => $this->httpTimeout,
+			'streamTimeout' => $this->httpTimeout,
+		));
 
 		$result = $http->get(self::NET_URL.self::TOKEN_URL.'?'.http_build_query(array(
 			'client_id' => $this->appID,
@@ -597,7 +610,14 @@ class CBitrix24NetOAuthInterface
 			'grant_type' => 'refresh_token',
 		)));
 
-		$arResult = Json::decode($result);
+		try
+		{
+			$arResult = Json::decode($result);
+		}
+		catch(\Bitrix\Main\ArgumentException $e)
+		{
+			$arResult = array("error" => "ERROR_RESPONSE", "error_description" => "Wrong response from Network");
+		}
 
 		if(isset($arResult["access_token"]) && $arResult["access_token"] <> '')
 		{
@@ -607,18 +627,18 @@ class CBitrix24NetOAuthInterface
 
 			if($save && intval($userId) > 0)
 			{
-				$dbSocservUser = CSocServAuthDB::GetList(
-					array(),
-					array(
-						"USER_ID" => intval($userId),
-						"EXTERNAL_AUTH_ID" => CSocServBitrix24Net::ID
-					), false, false, array("ID")
-				);
+				$dbSocservUser = UserTable::getList([
+					'filter' => [
+						"=USER_ID" => intval($userId),
+						"=EXTERNAL_AUTH_ID" => CSocServBitrix24Net::ID
+					],
+					'select' => ['ID']
+				]);
 
-				$arOauth = $dbSocservUser->Fetch();
+				$arOauth = $dbSocservUser->fetch();
 				if($arOauth)
 				{
-					CSocServAuthDB::Update(
+					UserTable::update(
 						$arOauth["ID"], array(
 							"OATOKEN" => $this->access_token,
 							"OATOKEN_EXPIRES" => $this->accessTokenExpires,
@@ -681,15 +701,15 @@ class CBitrix24NetOAuthInterface
 		$accessToken = '';
 		if(is_object($USER) && $USER->IsAuthorized())
 		{
-			$dbSocservUser = CSocServAuthDB::GetList(
-				array(),
-				array(
-					'USER_ID' => $USER->GetID(),
-					"EXTERNAL_AUTH_ID" => CSocServBitrix24Net::ID
-				), false, false, array("USER_ID", "OATOKEN", "OATOKEN_EXPIRES", "REFRESH_TOKEN")
-			);
+			$dbSocservUser = UserTable::getList([
+				'filter' => [
+					'=USER_ID' => $USER->GetID(),
+					'=EXTERNAL_AUTH_ID' => CSocServBitrix24Net::ID
+				],
+				'select' => ["USER_ID", "OATOKEN", "OATOKEN_EXPIRES", "REFRESH_TOKEN"]
+			]);
 
-			$accessToken = $dbSocservUser->Fetch();
+			$accessToken = $dbSocservUser->fetch();
 		}
 		return $accessToken;
 	}
@@ -711,6 +731,11 @@ class CBitrix24NetTransport
 	const METHOD_PROFILE_ADD_CHECK = 'profile.add.check';
 	const METHOD_PROFILE_UPDATE = 'profile.update';
 	const METHOD_PROFILE_DELETE = 'profile.delete';
+	const METHOD_PROFILE_CONTACTS = 'profile.contacts';
+	const METHOD_PROFILE_RESTORE_PASSWORD = 'profile.password.restore';
+
+	const RESTORE_PASSWORD_METHOD_EMAIL = 'EMAIL';
+	const RESTORE_PASSWORD_METHOD_PHONE = 'PHONE';
 
 	const REPONSE_KEY_BROADCAST = "broadcast";
 
@@ -757,6 +782,7 @@ class CBitrix24NetTransport
 	protected function prepareRequest(array $request)
 	{
 		$request["broadcast_last_check"] = Network::getLastBroadcastCheck();
+		$request["user_lang"] = LANGUAGE_ID;
 		$request["auth"] = $this->access_token;
 
 		return $this->convertRequest($request);
@@ -778,7 +804,10 @@ class CBitrix24NetTransport
 
 		$request = $this->prepareRequest($additionalParams);
 
-		$http = new \Bitrix\Main\Web\HttpClient(array('socketTimeout' => $this->httpTimeout));
+		$http = new \Bitrix\Main\Web\HttpClient(array(
+			'socketTimeout' => $this->httpTimeout,
+			'streamTimeout' => $this->httpTimeout,
+		));
 		$result = $http->post(
 			CBitrix24NetOAuthInterface::NET_URL.self::SERVICE_URL.$methodName,
 			$request
@@ -845,6 +874,22 @@ class CBitrix24NetTransport
 	public function deleteProfile($ID)
 	{
 		return $this->call(self::METHOD_PROFILE_DELETE, array("ID" => $ID));
+	}
+
+	public function getProfileContacts($userId)
+	{
+		return $this->call(self::METHOD_PROFILE_CONTACTS, array("USER_ID" => $userId));
+	}
+
+	/**
+	 * Restore user profile password
+	 * @param int $userId User id whom password should be restored.
+	 * @param string $restoreMethod Restore method (via email or via phone).
+	 * @return mixed
+	 */
+	public function restoreProfilePassword($userId, $restoreMethod)
+	{
+		return $this->call(self::METHOD_PROFILE_RESTORE_PASSWORD, array("USER_ID" => $userId, 'RESTORE_METHOD' => $restoreMethod, 'LANGUAGE_ID' => LANGUAGE_ID));
 	}
 }
 
