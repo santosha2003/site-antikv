@@ -1,9 +1,14 @@
-<?php 
+<?php
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetPageProperty("keywords", "Монеты, ордена, медали, оружие, антиквариат, воинская реликвия, раритет, икона, редкость, картины, фарфор");
 $APPLICATION->SetPageProperty("title", "Rusantikvar.ru — Антикварный салон — Продажа и покупка предметов коллекционирования и антиквариата");
 $APPLICATION->SetTitle("Магазин");
-?><?php $APPLICATION->IncludeComponent(
+?><?php
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("keywords", "Монеты, ордена, медали, оружие, антиквариат, воинская реликвия, раритет, икона, редкость, картины, фарфор");
+$APPLICATION->SetPageProperty("title", "Rusantikvar.ru — Антикварный салон — Продажа и покупка предметов коллекционирования и антиквариата");
+$APPLICATION->SetTitle("Магазин");
+?><?$APPLICATION->IncludeComponent(
 	"bitrix:catalog", 
 	"catalog", 
 	array(
@@ -21,6 +26,7 @@ $APPLICATION->SetTitle("Магазин");
 		"CACHE_GROUPS" => "Y",
 		"CACHE_TIME" => "36000000",
 		"CACHE_TYPE" => "A",
+		"COMPONENT_TEMPLATE" => "catalog",
 		"CONVERT_CURRENCY" => "Y",
 		"CURRENCY_ID" => "RUB",
 		"DETAIL_BACKGROUND_IMAGE" => "-",
@@ -29,13 +35,15 @@ $APPLICATION->SetTitle("Магазин");
 		"DETAIL_META_DESCRIPTION" => "-",
 		"DETAIL_META_KEYWORDS" => "-",
 		"DETAIL_PROPERTY_CODE" => array(
-			0 => "YEAR",
-			1 => "MATERIAL",
-			2 => "DIAMETR",
-			3 => "TIRAGE",
-			4 => "CONDITIO",
-			5 => "FOTO",
-			6 => "",
+			0 => "HIDE_PRICE",
+			1 => "YEAR",
+			2 => "MATERIAL",
+			3 => "DIAMETR",
+			4 => "TIRAGE",
+			5 => "CONDITIO",
+			6 => "RARITY",
+			7 => "FOTO",
+			8 => "",
 		),
 		"DETAIL_SET_CANONICAL_URL" => "N",
 		"DETAIL_SET_VIEWED_IN_COMPONENT" => "N",
@@ -91,12 +99,13 @@ $APPLICATION->SetTitle("Магазин");
 		"LIST_META_DESCRIPTION" => "-",
 		"LIST_META_KEYWORDS" => "-",
 		"LIST_PROPERTY_CODE" => array(
-			0 => "YEAR",
-			1 => "MATERIAL",
-			2 => "DIAMETR",
-			3 => "TIRAGE",
-			4 => "CONDITIO",
-			5 => "",
+			0 => "HIDE_PRICE",
+			1 => "YEAR",
+			2 => "MATERIAL",
+			3 => "DIAMETR",
+			4 => "TIRAGE",
+			5 => "CONDITIO",
+			6 => "",
 		),
 		"MESSAGE_404" => "",
 		"PAGER_BASE_LINK_ENABLE" => "N",
@@ -144,7 +153,14 @@ $APPLICATION->SetTitle("Магазин");
 		"USE_PRODUCT_QUANTITY" => "N",
 		"USE_REVIEW" => "N",
 		"USE_STORE" => "N",
-		"COMPONENT_TEMPLATE" => "catalog",
+		"HIDE_NOT_AVAILABLE_OFFERS" => "N",
+		"USER_CONSENT" => "N",
+		"USER_CONSENT_ID" => "0",
+		"USER_CONSENT_IS_CHECKED" => "Y",
+		"USER_CONSENT_IS_LOADED" => "N",
+		"DETAIL_STRICT_SECTION_CHECK" => "N",
+		"SHOW_SKU_DESCRIPTION" => "N",
+		"COMPATIBLE_MODE" => "Y",
 		"SEF_URL_TEMPLATES" => array(
 			"sections" => "",
 			"section" => "#SECTION_CODE#/",
@@ -159,4 +175,4 @@ $APPLICATION->SetTitle("Магазин");
 		)
 	),
 	false
-);?><?php require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
+);?><?php require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?><?php require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
