@@ -801,6 +801,15 @@ if($this->StartResultCache(false, array($arrFilter, ($arParams["CACHE_GROUPS"]==
 	$arSections = array();
 
 	//EXECUTE
+    //$arFilter['SECTION_CODE'] = '4asy';
+    if($arParams['SECTION_CODE']){
+        $arFilter['SECTION_CODE'] = $arParams['SECTION_CODE'];
+        unset($arFilter['SECTION_ID']);
+    }
+//    echo "<pre>";
+//    print_r($arParams);
+//    echo "</pre>";
+
 	$rsElements = CIBlockElement::GetList($arSort, array_merge($arrFilter, $arFilter), false, $arNavParams, $arSelect);
 	$rsElements->SetUrlTemplates($arParams["DETAIL_URL"]);
 	if(
