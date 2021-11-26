@@ -7,6 +7,7 @@
 node_modules/
 dist/
 license_key.php
+bitrix/backup/
 bitrix/cache/
 bitrix/managed_cache/
 bitrix/stack_cache/
